@@ -1,0 +1,5 @@
+build/
+.nimcache/
+__pycache__/
+got_*.txt
+solution
