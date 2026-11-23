@@ -1,0 +1,287 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+Help the Military Recruitment Office!
+
+Status
+
+Ranking
+
+HMRO - Help the Military Recruitment Office!
+
+no tags
+
+At the end of year 2004, the regional agencies of the Polish Military Recruitment Office (known as WKU in Polish) is sending a call to all boys born in 1984. Every recruit has his personal 11-digit identification number (PESEL, format: YYMMDDXXXXX, where YYMMDD is the date of birth, and XXXXX is a zero-padded integer smaller than 100000). Every agency of the Military Recruitment Office has its own code (MRO, format: a place code consisting of 3 upper case letters and a one-digit number). But this year the army underwent some reforms and not all boys at conscription age are going to be recruited.
+The list of closed down MRO points is as follows: the code of the closed down MRO is followed by the code of some other MRO, to which all the recruits are now going to be assigned. The list of recruits contains their PESEL codes. Your task is to prepare the complete list of
+recruits and determine the codes of their new MRO-s.
+
+Input
+
+s
+ [the number of tests <=
+10
+]
+
+p
+ [the number of boys at conscription age <=
+100000
+]
+
+PESEL and MRO code
+
+z
+ [the number of closed down MRO points <=
+100000
+]
+
+old_code new_code
+ [old_code - the code of closed down MRO,
+new_code - its new MRO code]
+
+p
+ [the number of recruits <=
+100000
+]
+
+PESEL
+ [PESEL code of recruit]
+[empty line]
+[next tests]
+
+Output
+
+one PESEL and MRO code per line in the order of input
+[empty line between tests]
+[other results]
+
+Example
+
+Input:
+1
+4
+84101011111 GDA1
+84010122222 GDA2
+84010233333 GDA2
+84020255555 GDY1
+1
+GDA2 GDA1
+3
+84101011111
+84010122222
+84020255555
+
+Output:
+84101011111 GDA1
+84010122222 GDA1
+84020255555 GDY1
+
+Warning: large Input/Output data, be careful with certain languages
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+Next
+
+>
+
+legion0retr0
+:
+
+2020-08-01 10:11:08
+
+After getting TLE I realized this is a dsu problem
+
+d_sergeevi
+:
+
+2019-01-06 21:50:13
+
+Can anybody help me ? my code is working on my compiler and on ideone, it takes 0.07 seconds for this problem but spoj s telling me that time limit is exceeded or something like that, what should i do  ?
+
+Anonymous
+:
+
+2016-12-03 13:57:27
+
+This might help some of you:
+
+Was getting WA constantly. Reason: didn't realise that the pesel numbers were overflowing long int.
+
+Solution: Changed long int to long long int. Got AC.
+
+Also, unordered_map is way faster than plain old map
+
+Last edit: 2016-12-03 13:57:52
+
+s_jindal00
+:
+
+2016-10-13 18:36:19
+
+Can somebody help me out with an efficient way to change the old value of MRO code associated with every PESEL  to new MRO.  My code do it in O(n) time for one query change and for every query it takes O(n*n)....
+
+mat_79
+:
+
+2016-09-08 12:57:13
+
+Still TLE in Java... Any ideas?
+
+Last edit: 2016-09-08 12:57:32
+
+Marcin Krzy¿anowski
+:
+
+2015-10-07 19:27:01
+
+How anybody could get running time less then 0.5 sek? I used C++11, and some optimizations, I got 1.3sek, the fastest solution. But someones had even 0.1sek in Python. Any hint?
+
+Jens Stimpfle
+:
+
+2014-02-15 22:11:36
+
+I just got AC. Maybe the following helps:
+
+There are duplicate pesels (in the way the Iqram Mahmud describes). You can keep the old one or override with the new one. Both works. (I guess that's what Tasnim Khan meant).
+
+Yes, you have to walk the chain of redirections. The order in which redirections were input doesn't seem to play a role. That means
+
+A -> B
+
+B -> C
+
+redirects A (and B) to C, just as well as
+
+B -> C
+
+A -> B
+
+(or maybe only one version appears in the input, but then again "ignore" that).
+
+Raj Mehta
+:
+
+2013-12-21 14:00:28
+
+getting constantly WA
+
+any help plz
+
+<snip>
+
+Last edit: 2022-11-17 21:36:31
+
+Arnab
+:
+
+2013-10-30 13:40:53
+
+Inputs to be taken at the beginning and the all the outputs at once have to be displayed??
+
+Or is it input and then corresponding output??
+
+Seshadri R
+:
+
+2011-02-03 06:57:48
+
+This problem has quite a few ambiguities and questions raised thereof remain unanswered. Here is one more question. Would the old_code new_code occur in a chained manner? For example, would the following pattern occur in input data?
+
+GDA1 GDA2
+
+GDA2 GDA3
+
+GDA3 GDA4
+
+Thus, all GDA1, GDA2 and GDA3 become closed and GDA4 is the new MRO for all of these?
+
+Last edit: 2011-02-03 06:59:36
+
+ Submit solution!
+
+Added by:
+mima
+
+Date:
+2004-06-01
+
+Time limit:
+30s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All except: NODEJS PERL6 VB.NET
+
+Resource:
+-
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.

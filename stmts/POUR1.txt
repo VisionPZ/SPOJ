@@ -1,0 +1,252 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+Pouring water
+
+Status
+
+Ranking
+
+POUR1 - Pouring water
+
+#gcd
+
+#recursion
+
+Given two vessels, one of which can accommodate
+a
+ litres of water and the other -
+b
+ litres of water, determine the number of steps required to obtain exactly
+c
+ litres of water in one of the vessels.
+
+At the beginning both vessels are empty. The following operations are counted as 'steps':
+
+emptying a vessel,
+
+filling a vessel,
+
+pouring water from one vessel to the other, without spilling, until one of the vessels is either full or empty.
+
+Input
+
+An integer
+t
+, 1<=
+t
+<=100, denoting the number of testcases, followed by
+t
+ sets of input data, each consisting of three positive integers
+a, b, c
+, not larger than 40000, given in separate lines.
+
+Output
+
+For each set of input data, output the minimum number of steps required to obtain c litres, or -1 if this is impossible.
+
+Example
+
+Sample input:
+
+2
+5
+2
+3
+2
+3
+4
+
+Sample output:
+
+2
+-1
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+Next
+
+>
+
+pateltanish_5
+:
+
+2025-04-14 12:38:41
+
+good question
+
+shiva890
+:
+
+2022-01-07 05:36:59
+
+I got tle happy
+
+amolmawale813
+:
+
+2021-10-24 20:37:07
+
+How could we get it's answers??
+
+haiderbaig
+:
+
+2020-09-06 12:23:37
+
+AC in BFS and unordered_maps to mark visited nodes/states
+
+(Strangely, I was getting TLE when I used large arrays to keep track of visited nodes)
+
+pb_81
+:
+
+2020-06-10 17:55:01
+
+can anyone please give some corner test cases. As it is difficult to debug without it. I also tested so many cases but did not find the error!
+
+apoorva222g
+:
+
+2020-03-29 09:26:37
+
+You must simulate by doing "pouring action" only in one jug and "discharging action" only in the opposite jug.
+
+(1)pour in a, discharge in b: if a is empty pour a full, if b is full the discharge and make b empty. Otherwise, transfer water from a to b. Each of those three condition is a step & can happen only once at a time.
+
+(2)pour in b, discharge in a: if b is empty pour it full, if a is full make it empty. Otherwise, transfer water from b to a.
+
+count total steps for (1) and (2), the minimum is the answer.
+
+importme
+:
+
+2020-03-11 14:41:16
+
+Some optimisations necessary for while using  BFS, otherwise TLE. Good question!
+
+parsabn
+:
+
+2019-10-22 15:44:09
+
+good question .
+
+i solved it using Binary Search
+
+Last edit: 2019-10-22 15:44:39
+
+eagleshadow
+:
+
+2019-05-25 12:59:49
+
+Nice Question!
+
+abhinav_jain02
+:
+
+2018-12-21 13:00:35
+
+Good question to ponder. Finally AC using concept of Diophantine equation
+
+ Submit solution!
+
+Added by:
+adrian
+
+Date:
+2004-05-31
+
+Time limit:
+2s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All except: PERL6 VB.NET
+
+Resource:
+An ancient problem, formulated in these words by Mr Tadeusz Ratajczak
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.

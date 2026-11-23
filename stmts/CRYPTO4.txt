@@ -1,0 +1,238 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+The Bytelandian Cryptographer (Act IV)
+
+Status
+
+Ranking
+
+CRYPTO4 - The Bytelandian Cryptographer (Act IV)
+
+no tags
+
+The Bytelandian Cryptographer has been requested by the BBFO to put forward an encryption scheme which would allow the BBFO to communicate with its foreign associates. After some intensive studies, he has decided upon the Vigenďż˝re cipher. Messages written using 26 upper case characters of the Latin alphabet: A, B, ..., Z which are interpreted as integers 0,1, ..., 25 respectively. The secret cypher for transmitting a message is known to both sides and consists of n integers k
+1
+, k
+2
+,...,k
+n
+. Using this cypher, the i-th number x
+i
+ of the input message x is encrypted to the form of the i-th number of the output message y, as follows:
+y
+i
+ =(x
+i
++k
+1+ ((i-1) mod n)
+) mod 26.
+
+You are trying to find out the content of a message transmitted by the BBFO. By a lucky stroke of fortune, your spies managed to intercept the message in both its plaintext and encrypted form (x and y respectively). Unfortunately, during their dramatic escape the files they were carrying where pierced by bullets and fragments of messages x and y were inadvertently lost. Or were they? It is your task to reconstruct as much of message x as you possibly can.
+
+Input
+
+The first line of input contains a single integer t<=200 denoting the number of test cases. t test case descriptions follow.
+
+For each test case, the first line contains one integer m which is some upper bound on the length of the cypher (1<=n<=m<=100000). The second line of input contains the original message x, while the third line contains the encrypted message y. The messages are expressed using characters 'A'-'Z' (interpreted as integers 0-25) and '*' (denoting a single character illegible due to damage). The total length of the input file is not more than 2MB.
+
+Output
+
+For each test case output a single line containing the original message x, with asterisks '*' in place of only those characters whose value cannot be determined.
+
+Example
+
+Input:
+
+4
+1
+A*X*C
+**CM*
+4
+*B***A
+AAAAAA
+6
+*B***A
+AAAAAA
+4
+*AA*******
+AAAAAAAAAA
+
+Output:
+
+A*XHC
+*BA*BA
+*B***A
+*AA**A****
+
+Warning: large Input/Output data, be careful with certain languages.
+The time limit is strict for this problem.
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+Next
+
+>
+
+robertosero
+:
+
+2017-10-31 16:25:19
+
+how can K1 be any integer????
+
+iamayushanand
+:
+
+2016-02-17 14:45:39
+
+nice question
+
+Last edit: 2016-02-20 14:53:53
+
+sidharth jain
+:
+
+2014-07-09 20:28:55
+
+in the end got AC
+
+sidharth jain
+:
+
+2014-07-01 03:38:13
+
+explain the last test case please!
+
+vincent Dass
+:
+
+2013-03-01 12:02:23
+
+Super Problem....Very Easy ....
+
+Ashutosh Singla
+:
+
+2012-06-02 19:52:07
+
+i starts from 0 or 1 ?
+
+Last edit: 2012-06-03 19:30:21
+
+Abhishek Joshi
+:
+
+2012-05-03 06:01:17
+
+explain the first test case please?
+
+Vladimir Tsibrov
+:
+
+2011-10-19 11:25:29
+
+"then for #3 n=3 o/p should have been same" - thats right. but for n=6 output is *B***A. so what characters can be determined 100%?
+
+Darth Vadar
+:
+
+2011-10-18 16:29:01
+
+Input #2 and #3 are same with max cypher length different, then how come the o/p are different? Means, if for #2 n=3 and the o/p is as given, then for #3 n=3 o/p should have been same, but why not?
+
+blashyrkh
+:
+
+2011-05-31 13:11:20
+
+"The total length of the input file is not more than 2MB". Is it a maximum size of encrypted message, or is it a maximum size of input file with t<=200 test cases?
+
+ Submit solution!
+
+Added by:
+Konrad Piwakowski
+
+Date:
+2004-11-16
+
+Time limit:
+17s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All except: NODEJS PERL6 VB.NET
+
+Resource:
+DASM Programming League 2004 (problemset 3)
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.

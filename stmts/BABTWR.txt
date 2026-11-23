@@ -1,0 +1,701 @@
+BABTWR - Tower of Babylon
+
+
+
+	
+				no tags 
+				
+
+
+
+
+	Apart from the Hanging Gardens the Babylonians (around 3000-539 b.c.) built the Tower of Babylon as well. The tower was meant to reach the sky, but the project failed because of a confusion of language imposed from much higher above.
+For the 2638th anniversary a model of the tower will be rebuilt. n different types of blocks are available. Each one of them may be duplicated as many times as you like. Each type has a height y, a width x and a depth z. The blocks are to be stacked one upon eachother so that the resulting tower is as high as possible. Of course the blocks can be rotated as desired before stacking. However for reasons of stability a block can only be stacked upon another if both of its baselines are shorter.
+
+Input
+The number of types of blocks n is located in the first line of each test case. On the subsequent n lines the height yi, the width xi and the depth zi of each type of blocks are given. There are never more than 30 different types available.
+There are many test cases, which come one by one. Input terminates with n = 0.
+
+Edited: You can assume that max(xi, yi, zi) <= 2500.
+
+Output
+For each test case your program should output one line with the height of the highest possible tower.
+
+Example
+Sample input:
+5
+31 41 59
+26 53 58
+97 93 23
+84 62 64
+33 83 27
+1
+1 1 1
+0
+
+Sample output:
+342
+1
+
+
+
+
+
+	 Submit solution!
+
+
+			
+			
+			
+			
+			
+
+hide comments
+
+
+
+		
+		
+		
+			<
+		Previous
+						1 
+							2 
+							3 
+						Next
+		>
+	
+		
+	
+	
+		
+				
+	
+	
+	
+	<!--
+	$(document).ready(function(){
+        $('.pager_link').bind('click', function(me){
+                var href=$(me.currentTarget).attr('href');
+		$('#ccontent').animate({opacity: 0.5},1);
+                $.ajax({
+                        type: "GET",
+                        url: href+",ajax=1",
+                        contentType: "application/x-www-form-urlencoded;charset=ISO-8859-2",
+                        success: function(data){
+                                $('#ccontent').html(data);
+				$('#ccontent').animate({opacity: 1.0},1);
+                        },
+                        error: function(err){
+                                alert('error');
+                        }
+                });
+                return false;
+        });
+	});
+	-->
+	
+	
+
+
+
+			
+	
+		
+			
+		
+		
+			surajxd: 
+								2020-08-23 13:21:52
+		
+				easier version of box stacking algorithm.
+
+						
+	
+				
+	
+		
+			
+		
+		
+			saurav_555: 
+								2020-03-22 17:04:55
+		
+				only 3 rotations are possible 
+because l * b * h = b * l * h
+						
+	
+				
+	
+		
+			
+		
+		
+			cpp219: 
+								2020-02-07 16:20:10
+		
+				good DP problem :) worth doing before searching for solution
+						
+	
+				
+	
+		
+			
+		
+		
+			karan_yadav: 
+								2018-07-25 13:24:21
+		
+				Quite tough if you haven't solved any longest increasing subsequence problem yet. Still worth a try before looking for hints/solution.
+						
+	
+				
+	
+		
+			
+		
+		
+			aman_sachin200: 
+								2018-06-13 18:52:38
+		
+				Quite easy with Top-Down <3 :P!!!!Keep in mind the six rotations possible!!!
+						
+	
+				
+	
+		
+			
+		
+		
+			shiv2111: 
+								2018-01-19 09:13:37
+		
+				6 rotations possible... good  one.
+						
+	
+				
+	
+		
+			
+		
+		
+			aman_9899: 
+								2017-06-21 16:21:08
+		
+				box stacking problem ..!!!
+nice dp
+						
+	
+				
+	
+		
+			
+		
+		
+			cake_is_a_lie: 
+								2017-02-28 15:18:02
+		
+				This can be solved in O(N log N), but it's a bit tricky. There is a pretty obvious O(N^2) solution and even more obvious O(N^3) that should still not TLE I think.
+
+flyingduchman_ "As it's not an ad-hoc, you are unlikely to invent or discover the solution" - what a horribly self-limiting way of thinking. I discovered the O(N^2) solution without reading either of your suggestions and I think it's simple to come up with.
+
+I was also well on the way to getting the O(N log N) before reading about the N log N LIS - i.e. I figured BST or some other query structure could be used to improve the O(N^2) and frankly, reading about LIS didn't help that much in figuring out how.
+						
+	
+				
+	
+		
+			
+		
+		
+			flyingduchman_: 
+								2016-12-23 05:49:40
+		
+				Learn dp solution of LIS(longest increasing subsequence)first. Then learn "box stacking algorithm"-the problem is of. As it's not an ad-hoc, you are unlikely to invent or discover the solution
+						
+	
+				
+	
+		
+			
+		
+		
+			razor123: 
+								2016-11-09 16:02:17
+		
+				3 rotations are possible if u keep (depth > width). 
+						
+	
+			
+
+
+
+
+<!--
+function getCookieVal (offset) {
+        var endstr = document.cookie.indexOf (";", offset);
+        if (endstr == -1) { 
+                endstr = document.cookie.length; 
+        }
+        return unescape(document.cookie.substring(offset, endstr));
+}
+
+function GetCookie (name) {
+  var arg = name + "=";
+  var alen = arg.length;
+  var clen = document.cookie.length;
+  var i = 0;
+  while (i < clen) {
+    var j = i + alen;
+    if (document.cookie.substring(i, j) == arg) {
+      return getCookieVal (j);
+      }
+    i = document.cookie.indexOf(" ", i) + 1;
+    if (i == 0) break; 
+    }
+  return null;
+}
+
+function toggleComments() {
+        var a = document.getElementById('comments_table');
+        var d = a.style.display;
+        if( d == "" || d == "block" ){
+                d = "none";
+                document.getElementById('comments_sh').innerHTML = 'show';
+        } else {
+                d = "block";
+                document.getElementById('comments_sh').innerHTML = 'hide';
+        }
+        a.style.display = d;
+        document.cookie="comments_table="+d+"; path=/;";
+}
+
+if( GetCookie('comments_table') == 'none' ){
+        document.getElementById('comments_sh').innerHTML = 'show';
+        document.getElementById('comments_table').style.display = 'hide';
+}
+
+-->
+
+
+
+			
+			
+			
+                
+                
+        
+        
+         Leave a Comment 
+        
+                
+                
+        
+        
+                
+                        
+                        
+                
+        
+
+
+
+Notes:
+1. Don't post any source code here.
+2. Please be careful, leave short comments only. Don't spam here.
+3. For more discussion (hints, ideas, solutions) please visit our forum.
+4. Authors of the problems are allowed to delete the post and use html code here (e.g. to provide some useful links).
+
+
+        
+        
+
+		
+	
+	
+	
+	
+				
+			 Submit solution!
+		
+		
+		
+
+		
+		
+			
+				
+				
+			
+			
+			Added by:Michał Czuczman
+			Date:2004-07-06
+			Time limit:3s
+			
+			Source limit:50000B
+						Memory limit:1536MB
+										
+					Cluster:
+					
+													Cube (Intel G860)
+								
+					
+				
+						Languages:All 
+			Resource:Swiss Olympiad in Informatics 2004													
+		
+	
+		
+												
+					
+						Vote requirements
+					
+					
+						
+							  user for 1 from 5 needed days							
+							  solve at least 15 problems							
+							  solve this problem
+						
+					
+				
+					
+				
+		
+	
+				
+				
+				
+					Own tags
+				
+				
+			
+					
+						
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+						
+					
+					
+				      
+				      
+				        Add
+				      
+				    
+				    
+				    
+				    
+				    $(document).ready(function(){
+				    	$(document).on('click', '#problem-mytags-btn-add', function(){
+				    		$.ajax({
+				    			url: '/?a=tags&act=cpriv',
+				    			method: 'post',
+				    			dataType: 'json',
+				    			data: {'name': $("#problem-mytags-new").val(), 'pid': '100'},
+				    			success: function(data){
+				    				if(data['result'] == 'success'){
+				    					$('#problem-mytags').html(data['html']);
+				    				}
+				    				$("#problem-mytags-new").val('');
+				    				$("#problem-mytags-new").focus();
+				    			},
+				    			error: function(data){
+				    				//alert('error');
+				    			}
+				    		});
+				    	});
+				    	$(document).on('click', '.mytag', function(){
+				    		
+				    		var tid = $(this).attr('data-id');
+				    		var pid = '100';
+				    		
+				    		$.ajax({
+				    			url: '/?a=tags&act=spriv',
+				    			method: 'post',
+				    			dataType: 'json',
+				    			data: {'pid': pid, 'tid': tid},
+				    			success: function(data){
+				    				if(data['result'] == 'success'){
+				    					$('#problem-mytags').html(data['html']);
+				    				}
+				    			},
+				    			error: function(data){
+				    				//alert('error');
+				    			}
+				    		});
+				    		
+				    		
+				    		return false;
+				    	});
+				    });
+				    
+				    
+		
+				
+		
+				
+		
+		
+			function callback_after_vote(type, data)
+			{
+				var response = $.parseJSON(data);
+				manage_vote_interface(type);
+				//.html('<div class="vote-thank-you">Thank you!</div>');
+				
+
+				if (type == "problem" || type == "implementation") {
+					var progressBarValue = Math.round(2 + 98 * response.avg / 3);
+					var progressBarType;
+					if (progressBarValue < 25) progressBarType = "progress-bar-primary";
+					else if (progressBarValue < 50) progressBarType = "progress-bar-success";
+					else if (progressBarValue < 75) progressBarType = "progress-bar-warning";
+					else progressBarType = "progress-bar-danger";
+					
+					$("#rate-" + type + "-box .progress-bar").css("width", progressBarValue.toString() +"%");
+					$("#rate-" + type + "-box .progress-bar").attr("aria-valuenow", progressBarValue.toString());
+					$("#rate-" + type + "-box .progress-bar").attr("class", "progress-bar " + progressBarType);
+					$("#rate-" + type + "-box .progress-value").html(progressBarValue.toString() +"%");
+				}
+				else if (type == "quality") {
+					var quality_plus = response.sum_plus;
+					var quality_minus = response.sum_minus;
+
+					var box_content = '';
+
+					if (quality_plus > 0 || quality_minus > 0) {
+						if (quality_plus > 0) {
+							box_content += '<font size="+2"><span class="label label-success">' +
+								quality_plus.toString() + 
+								' <span class="fa fa-thumbs-o-up"></span></span></font>';
+						}
+						if (quality_minus > 0) {
+							box_content += '<font size="+2"><span class="label label-danger">' +
+								quality_minus.toString() + 
+								' <span class="fa fa-thumbs-o-down"></span></span></font>';
+						}
+					}
+
+					$( "#rate-" + type + "-box" ).empty().html(box_content);
+				}
+
+				// update count
+				if (response.update_count == 1) {
+					var count = parseInt($("#votes_count").html(), 10);
+					count++;
+					var votes_word = " vote";
+					if (count > 1) votes_word += "s";
+					$("#votes_count").empty().html(count.toString() + votes_word);
+				}
+			}
+			$( ".rate-btn" ).click(function() {
+				var rate_type = $(this).attr('data-rate-type').toString();
+				var rate_type_full = "";
+				var rate = $(this).attr('data-rate').toString();
+				if (rate_type == "p") rate_type_full = "problem";
+				else if (rate_type == "i") rate_type_full = "implementation";
+				else if (rate_type == "q") rate_type_full = "quality";
+				$.get( '/?a=vote&pid=100&t=' + rate_type + '&r=' + rate, function( data ) {
+				  callback_after_vote(rate_type_full, data);
+				});
+			});
+			function manage_vote_interface(type) {
+				number_of_voteboxes--;
+				/*
+				if (number_of_voteboxes == 0) {
+					$( "#vote-box" ).fadeOut(1500, function() {
+						$(this).remove();
+					});
+				} else {
+					$( "#vote-" + type + "-box" ).fadeOut(1500, function() {
+						$(this).remove();
+					});
+				}
+				*/
+				var n = $('.vote-thank-you').length;
+				var offset = (n * 60).toString() + "px";
+				$(document.body).append(
+					'<div class="vote-thank-you" style="margin: 40%;">' +
+					'<div class="alert alert-success" style="position: fixed; top: '+offset+';">' +
+					'<strong>Thank you for voting!</strong>' +				
+					'</div></div>');
+				setTimeout(function(){$( ".vote-thank-you" ).fadeOut(1500, function() {
+					$(this).remove();
+				});},2000);
+			}
+		
+		
+		
+	
+
+
+
+
+
+
+
+
+ul.list-unstyled li{
+	margin-bottom: 5px;
+}
+ul.list-unstyled li a.btn{
+	width: 100%;
+}
+ul.ui-autocomplete{
+	z-index: 10000;
+	width: 200px !important;
+}
+
+
+	
+
+		
+		
+		
+			
+				
+					About | Tutorial | Tools | Clusters | Credits | API | Widgets
+					Legal: 
+					   Terms of Service | Privacy Policy | GDPR Info
+					
+				
+				
+					 RSS 
+				
+			
+		
+		
+		
+			
+	© Spoj.com. All Rights Reserved. Spoj uses Sphere Engine™ © by Sphere Research Labs.
+
+		 
+	
+
+	
+	
+		
+	
+	
+	$(function(){
+		setTimeout(function(){
+			$('.no_a_info').css('visibility', 'visible');
+		}, 5000);
+		
+		if(!$('.aProblemTop').length && !$('.aProblemsTop').length && !$('.aSubmitTop').length && !$('.aStatusTop').length && !$('.aMainRight').length){
+			ga('send', 'event', 'ads', 'no-ads', 'main-contest');
+		}
+		if ($('.aProblemTop').height() == 0){
+			$('.aProblemTop').css({'border': '1px solid #ddd', 'background': '#f0f4e3', 'height': 90});
+			$('.aProblemTop').html($('<p class="text-center">using adblock?</p><h4 class="text-center">Online ads help us to maintain site.</h4><p class="text-center"><strong>please whitelist *.spoj.com</strong></p>'));
+			ga('send', 'event', 'ads', 'adblock2', 'aProblemTop');
+		}
+		if ($('.aProblemsTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aProblemsTop');
+		}
+		if ($('.aSubmitTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aSubmitTop');
+		}
+		if ($('.aStatusTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aStatusTop');
+		}
+		if ($('.aMainRight').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aMainRight');
+		}
+	});
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	(function(d, s, id) {
+	  var js, fjs = d.getElementsByTagName(s)[0];
+	  if (d.getElementById(id)) return;
+	  js = d.createElement(s); js.id = id;
+	  js.src = "//connect.facebook.net/pl_PL/sdk.js#xfbml=1&appId=321676846207&version=v2.0";
+	  fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+	
+	
+
+
+
+
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-YF5KJ19JWE');
+
+
+
+
+    (function(h,o,t,j,a,r){
+        h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+        h._hjSettings={hjid:334656,hjsv:5};
+        a=o.getElementsByTagName('head')[0];
+        r=o.createElement('script');r.async=1;
+        r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+        a.appendChild(r);
+    })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
+
+
+
+(function(){
+  if(typeof _bsa !== 'undefined' && _bsa) {
+    // format, zoneKey, segment:value, options
+    _bsa.init('flexbar', 'CK7D4KJL', 'placement:demo');
+  }
+})();
+
+
+	$(function(){
+		$(document).on('click', '.track', function(){
+			var event = $(this).attr('data-event');
+			var action = $(this).attr('data-action');
+			var value = $(this).attr('data-value');
+			ga('send', 'event', event, action, value);
+		});
+	});
+	//window.open('http://incoming.hotjar.com/s/7366', '_blank');
+	
+
+
+
+

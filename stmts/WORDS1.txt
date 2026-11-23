@@ -1,0 +1,297 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+Play on Words
+
+Status
+
+Ranking
+
+WORDS1 - Play on Words
+
+#graph-theory
+
+#euler-circuit
+
+Some of the secret doors contain a very interesting word puzzle. The team of
+archaeologists has to solve it to open  that doors. Because there is no
+other way to open the doors, the puzzle is very important for us.
+
+There is a large number of magnetic plates on every door. Every plate has one
+word written on it. The plates must be arranged into a sequence in such a way that
+every word begins with the same letter as the previous
+word ends. For example, the word ``ac
+m
+'' can be followed by the word
+"
+m
+otorola''. Your
+task is to write a computer program that will read the list of words and
+determine whether it is possible to arrange all of the plates in
+a sequence (according to the given rule) and consequently to open the door.
+
+Input
+
+The input consists of
+T
+ test cases. The number of them (
+T
+, equal to about 500) is given on
+the first line of the input file.
+Each test case begins with a line containing a single integer number
+N
+ that indicates the number of plates
+(
+1 ≤ N ≤ 100000
+). Then exactly
+N
+lines follow,
+each containing a single word. Each word contains at least two
+and at most 1000 lowercase characters, that means only letters '
+a
+'
+through '
+z
+' will appear in the word. The same word may appear several
+times in the list.
+
+Output
+
+Your program has to determine whether it is possible to arrange all the plates in
+a sequence such that the first letter of each word is equal to the last
+letter of the previous word. All the plates from the list must be used, each
+exactly once. The words mentioned several times must be
+used that number of times.
+
+If there exists such an ordering of plates, your program should print
+the sentence "
+Ordering is possible.
+". Otherwise, output
+the sentence "
+The door cannot be opened.
+".
+
+Example
+
+Sample input:
+
+3
+2
+acm
+ibm
+3
+acm
+malform
+mouse
+2
+ok
+ok
+
+Sample output:
+
+The door cannot be opened.
+Ordering is possible.
+The door cannot be opened.
+
+Warning: large Input/Output data, be careful with certain languages
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Next
+
+>
+
+Sachin verma
+:
+
+2023-03-01 18:49:19
+
+ab
+
+bc
+
+mn
+
+nm
+
+The door cannot be opened.
+
+ajayt9
+:
+
+2022-07-30 15:19:45
+
+I suggest sample input and sample output will be mentioned as below,
+
+sample input
+
+acm
+
+ibm
+
+acm
+
+malform
+
+mouse
+
+sample output
+
+ibm
+
+malform
+
+mouse
+
+ajayt9
+:
+
+2022-07-30 15:14:25
+
+Did not get much about this problem, Sample Input and Sample output is not making much sense
+
+sunny_saraff
+:
+
+2021-10-03 12:26:31
+
+Awesome Problem
+
+lk03021998
+:
+
+2019-01-27 10:09:12
+
+if we take each word as a node of a graph then we have to traverse all the node without visiting a node twice but in case of Euler path we have to cover all the edges repetition  of vertex is allowed then how it is a Euler path question?
+
+karan_yadav
+:
+
+2018-07-27 22:28:46
+
+A really good problem.
+
+Refer to the Wikipedia article "Eulerian path". Personally, I found the Wikipedia article to be better than Geeksforgeeks article.
+
+coolio_1
+:
+
+2018-06-06 19:38:00
+
+Euler Path!
+
+nikhil2504
+:
+
+2017-07-30 00:14:10
+
+Refer Euler Paths and come back !
+
+sam128
+:
+
+2017-07-12 09:57:18
+
+Nice problem..Learnt new concepts..Eulerian path
+
+arthur1991
+:
+
+2017-03-24 21:26:02
+
+i love qianqian
+
+ Submit solution!
+
+Added by:
+adrian
+
+Date:
+2004-06-06
+
+Time limit:
+20s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All
+
+Resource:
+ACM Central European Programming Contest, Prague 1999
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.

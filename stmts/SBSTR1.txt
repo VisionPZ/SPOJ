@@ -1,0 +1,196 @@
+SPOJ.com - Problem SBSTR1
+
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+Substring Check (Bug Funny)
+
+Status
+
+Ranking
+
+SBSTR1 - Substring Check (Bug Funny)
+
+no tags
+
+Given two binary strings, A (of length 10) and B (of length 5), output 1 if B is a substring of A and 0 otherwise.
+
+Please note, that the solution may only be submitted in the following languages: Brainf**k, Whitespace and Intercal.
+
+Input
+
+24 lines consisting of pairs of binary strings A and B separated by a single space.
+
+Output
+
+The logical value of: 'B is a substring of A'.
+
+Example
+
+First two lines of input:
+
+1010110010 10110
+
+1110111011 10011
+
+First two lines of output:
+
+1
+
+0
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+Next
+
+>
+
+jhansi6prsnl
+:
+
+2024-11-17 08:27:29
+
+brainfuck.....wtf?
+
+leoweyles
+:
+
+2024-04-09 21:06:12
+
+cursed af
+
+venom_79
+:
+
+2024-01-28 13:18:45
+
+DELETE THIS PROBLEMMMMMMM
+
+prashanth_kpy
+:
+
+2023-09-29 16:07:08
+
+any other language to code
+
+vicky_yadav
+:
+
+2023-02-15 17:49:48
+
+it's easy problem it can done in big O(n)  use window sliding technique space  complexity O(1)
+
+there is several more approach but this is best of all of them .  happy coding <champ :>?
+
+mdmarufsarker
+:
+
+2023-02-11 23:17:44
+
+Are you kidding with us :D
+
+taleb_13
+:
+
+2023-02-04 15:52:47
+
+where  is cpp ?.brainfuck? cpp17 should added in spoj.  too much backdated
+
+jabibn
+:
+
+2022-11-10 03:32:26
+
+wtf is BRAINF**K???? only 3 compiling options?
+
+niaou
+:
+
+2022-10-09 17:01:36
+
+Time exceeded
+
+Noooooo, so much time wasted :-(
+
+yogomate
+:
+
+2022-08-15 13:03:23
+
+finally a question in which brainfuck can
+
+ be used
+
+ Submit solution!
+
+Added by:
+adrian
+
+Date:
+2004-05-01
+
+Time limit:
+1s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+BF ICK WHITESPACE

@@ -1,0 +1,353 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+Glass Beads
+
+Status
+
+Ranking
+
+BEADS - Glass Beads
+
+no tags
+
+Once upon a time there was a famous actress. As you may expect, she played
+mostly Antique Comedies most of all. All the people loved her. But she was not
+interested in the crowds. Her big hobby were beads of any kind. Many bead
+makers were working for her and they manufactured new necklaces and
+bracelets every day. One day she called her main
+Inspector of Bead
+Makers
+ (
+IBM
+) and told him she wanted a very long and special
+necklace.
+
+The necklace should be made of glass beads of different sizes connected
+to each other but without any thread running through the beads, so that
+means the beads can be disconnected at any point. The actress chose the
+succession of beads she wants to have and the IBM promised to make the
+necklace. But then he realized a problem. The joint between two neighbouring
+beads is not very robust so it is possible that the necklace will get torn
+by its own weight. The situation becomes even worse when the necklace is
+disjoined. Moreover, the point of disconnection is very important. If there
+are small beads at the beginning, the possibility of tearing is much higher
+than if there were large beads. IBM wants to test the robustness of a
+necklace so he needs a program that will be able to determine the worst
+possible point of disjoining the beads.
+
+The description of the necklace is a string
+A =
+a
+1
+a
+2
+ ... a
+m
+
+specifying sizes of the particular beads, where the last character
+
+a
+m
+ is considered to precede character
+
+a
+1
+ in circular fashion.
+
+The disjoint point
+i
+ is said to be worse than the disjoint
+point
+j
+ if and only if the string
+
+a
+i
+a
+i+1
+ ... a
+n
+a
+1
+ ...
+a
+i-1
+ is lexicografically smaller than the string
+
+a
+j
+a
+j+1
+ ... a
+n
+a
+1
+ ...
+a
+j-1
+.
+String
+a
+1
+a
+2
+ ... a
+n
+ is
+lexicographically smaller than the string
+
+b
+1
+b
+2
+ ... b
+n
+ if and only if there
+exists an integer
+i, i <= n
+, so that
+
+a
+j
+=b
+j
+, for each
+j, 1 <= j <
+i
+ and
+a
+i
+ < b
+i
+.
+
+Input
+
+The input consists of
+N
+ cases. The first line of the input
+contains only positive integer
+N
+. Then follow the cases.
+Each case consists of exactly one line containing necklace description.
+Maximal length of each description is 10000 characters.
+Each bead is represented by a lower-case character of
+the English alphabet (a--z), where
+a < b   ...   z
+.
+
+Output
+
+For each case, print exactly one line containing
+only one integer -- number of the
+bead which is the first at the worst possible disjoining, i.e. such
+
+i
+, that the string
+A[i]
+ is lexicographically smallest
+among all the
+n
+ possible disjoinings of a necklace. If there are
+more than one solution, print the one with the lowest
+i
+.
+
+Example
+
+Input:
+
+4
+helloworld
+amandamanda
+dontcallmebfu
+aaabaaa
+
+Output:
+
+10
+11
+6
+5
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+Next
+
+>
+
+rising_stark
+:
+
+2024-07-01 19:57:12
+
+@sagarthecoder
+
+There's no need of LCP. Just the suffix array would suffice
+
+evang12
+:
+
+2022-01-03 07:59:51
+
+For anyone who is having a hard time coming up with a solution:
+
+This problem can be solved by using binary searching to compare substrings lexicographically and using string hashing.
+
+sagarthecoder
+:
+
+2019-10-17 09:29:58
+
+How to slove it using suffix array?
+
+Update: Finally I solved it.
+
+I used suffix array,LCP array.
+
+then  for final output I build Range Minimum query.
+
+But same code gave me WA on ("UVA 719")  which is the same problem as it.
+
+Last edit: 2019-10-17 23:07:53
+
+karan_yadav
+:
+
+2018-07-24 09:39:09
+
+O(n) - Duval Algorithm, Google it!
+
+deepk_keshri
+:
+
+2017-08-28 13:32:46
+
+solved in O(N),just find min of all possible string made by considering from a( i .. n ..i-1).
+
+ayush_mawandia
+:
+
+2017-06-16 12:39:41
+
+easy one...AC in O(N).
+
+nilabja16180
+:
+
+2017-04-03 11:17:52
+
+O(n^2 log n ) works..
+
+Peshal Agarwal
+:
+
+2016-12-18 16:11:47
+
+getting TLE even though using break in both loops
+
+its_mrsuit21
+:
+
+2016-11-28 03:56:02
+
+Help pls! I have tried every test cases i can think of : aaaa, aabb, bbaacc. And still get WA :(
+
+kishalve pethia
+:
+
+2015-12-10 20:33:43
+
+can someone share O(n) algo
+
+Last edit: 2015-12-11 15:20:45
+
+ Submit solution!
+
+Added by:
+adrian
+
+Date:
+2004-06-06
+
+Time limit:
+0.5s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All except: NODEJS PERL6 VB.NET
+
+Resource:
+ACM Central European Programming Contest, Prague 1998
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.

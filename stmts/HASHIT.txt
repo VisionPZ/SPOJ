@@ -1,0 +1,375 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+Hash it!
+
+Status
+
+Ranking
+
+HASHIT - Hash it!
+
+#hash-table
+
+#hashing
+
+Your task is to calculate the result of the hashing process in a table of 101 elements, containing keys that are strings of length at most 15 letters (ASCII codes '
+A
+',...,'
+z
+').
+Implement the following operations:
+
+find the index of the element defined by the key (ignore, if no such element),
+
+insert a new key into the table (ignore insertion of the key that already exists),
+
+delete a key from the table (without moving the others),
+by marking the position in table as
+empty
+ (ignore non-existing keys in the table)
+
+When performing find, insert and delete operations define the following function:
+
+integer Hash(string key)
+,
+which for a string
+key
+=
+a
+1
+...
+a
+n
+ returns the value:
+
+Hash
+(
+key
+)=
+h
+(
+key
+) mod 101, where
+
+h
+(
+key
+)=19 *(ASCII(
+a
+1
+)*1+...+ASCII(
+a
+n
+)*
+n
+).
+Resolve collisions using the open addressing method, i.e. try to insert the key into the table at the first free position: (
+Hash
+(
+key
+)+
+j
+2
++23*
+j
+) mod 101, for
+j
+=1,...,19.
+After examining of at least 20 table entries, we assume that the insert operation cannot be performed.
+
+Input
+
+t
+ [the number of test cases <= 100]
+
+n
+1
+ [the number of operations (one per line)[<= 1000]
+
+ADD:string
+
+[or]
+
+DEL:string
+[other test cases, without empty lines betwee series]
+
+Output
+
+For every test case you have to create a new table, insert or delete keys, and write to the output:
+
+the number of keys in the table [first line]
+
+index:key [sorted by indices]
+
+Example
+
+Input:
+1
+11
+ADD:marsz
+ADD:marsz
+ADD:Dabrowski
+ADD:z
+ADD:ziemii
+ADD:wloskiej
+ADD:do
+ADD:Polski
+DEL:od
+DEL:do
+DEL:wloskiej
+
+Output:
+5
+34:Dabrowski
+46:Polski
+63:marsz
+76:ziemii
+96:z
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Next
+
+>
+
+andrefgard
+:
+
+2024-06-04 20:49:26
+
+dont forget to receive the number of operations for each case
+
+Last edit: 2024-06-05 22:37:41
+
+justynagruba
+:
+
+2021-07-04 11:03:36
+
+Hi, can anyone help me? I do it 4th day. I have WA.
+
+Amitayush Thakur
+:
+
+2021-07-03 15:48:12
+
+Print an empty line after every test case, costed me many WAs.
+
+petr_ivashkov
+:
+
+2020-07-23 20:19:02
+
+Note following:
+
+1. empty strings like
+
+    ADD:
+
+    do not appear in the input
+
+2. consider test cases like: "e", "ee", "eee" (code of 'e' in ASCII is 101, so mod 101 will
+
+    be always 0)
+
+taber
+:
+
+2019-02-22 03:50:44
+
+1
+
+4
+
+ADD:
+
+ADD:e
+
+DEL:
+
+ADD:e
+
+Make sure you account for something like this!
+
+Varkha Sharma
+:
+
+2018-02-03 15:40:00
+
+1
+
+2
+
+ADD:
+
+ADD: ABC
+
+Why on toolkit ans for this is 0 ???
+
+I mean we should add ABC in table after removing leading spaces?
+
+zhaoweicheng98
+:
+
+2017-10-14 10:17:05
+
+Try this test case:
+
+1
+
+6
+
+ADD:e
+
+ADD:ee
+
+ADD:eee
+
+DEL:ee
+
+ADD:eee
+
+ADD:eeee
+
+Saif
+:
+
+2017-06-16 13:59:08
+
+Use this test case:
+
+1
+
+5
+
+ADD:
+
+ADD:e
+
+DEL:e
+
+ADD:ee
+
+ADD:e
+
+kspoj
+:
+
+2017-06-16 08:57:40
+
+Guys, I'm stuck, my code is running fine with most spoj toolkit testcases... But I'm getting WA...
+
+Spoj toolkit is not showing output ("due to some technical issues") for the following test cases:
+
+1
+
+2
+
+ADD    :   xyz
+
+ADD :   abc
+
+Please help _/\_  :(
+
+rishi_devan
+:
+
+2017-05-01 14:40:08
+
+Straightforward !
+
+ Submit solution!
+
+Added by:
+mima
+
+Date:
+2004-06-01
+
+Time limit:
+3s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All except: NODEJS PERL6 VB.NET
+
+Resource:
+-
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.

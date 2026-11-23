@@ -1,0 +1,184 @@
+SPOJ.com - Problem CRYPTO2
+
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+The Bytelandian Cryptographer (Act II)
+
+Status
+
+Ranking
+
+CRYPTO2 - The Bytelandian Cryptographer (Act II)
+
+no tags
+
+Encouraged by his last successful exploit, the Bytelandian fanatic cryptographer impudently encrypted a three-digit number by subtracting 1 from it.
+This time he has
+really
+ overstepped the mark! Soldier, go and beat him, for Burger King & Country! Oh, and remember your good manners, use Brainf**k (no other language is allowed).
+
+Input
+
+An encrypted 3-digit positive integer.
+
+Output
+
+The decrypted value.
+
+Example
+
+Input:
+
+699
+
+Output:
+
+700
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+Next
+
+>
+
+sidhudog
+:
+
+2020-03-29 08:45:47
+
+what is brainfuck is it a language
+
+jathm20eqc_s
+:
+
+2019-06-08 21:40:58
+
+this is not so hard
+
+i got accept first try and use less than 200 character long
+
+rishi_devan
+:
+
+2017-04-27 20:07:00
+
+Only special cases are when
+
+1) Last digit is 9
+
+2) Middle digit is 9
+
+cake_is_a_lie
+:
+
+2017-02-20 13:03:44
+
+Handling 3 digit inputs with 3 digit outputs is sufficient.
+
+ruizhang
+:
+
+2016-06-02 07:06:26
+
+999 is not a valid input.
+
+oscarbrennan
+:
+
+2015-06-20 23:51:24
+
+Values are given in a '000' to '999'
+
+Outputs must be from '001 to '1000'
+
+Do not get rid of zeroes at the start of forget about 1000
+
+Akhilesh Anandh
+:
+
+2015-06-08 17:40:59
+
+Has there been any rejudge recently? I see that my solution that was accepted (about 2 years back) is marked "Wrong Answer" now...
+
+AlB80
+:
+
+2015-01-02 01:03:59
+
+I suppose the cell size is bigger than byte.
+
+Sandeep Singh Jakhar
+:
+
+2012-01-31 18:29:04
+
+Too easy :P
+
+Jared Deckard
+:
+
+2011-06-19 20:23:38
+
+1000 is not a 3 digit number, so no "999". If the input could be "99" my code would fail, but I got AC :P
+
+Supporting "000".."998" will satisfy.
+
+ Submit solution!
+
+Added by:
+adrian
+
+Date:
+2004-05-28
+
+Time limit:
+0.200s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+BF
+
+Resource:
+Sometimes the simplest language is the most pleasing.

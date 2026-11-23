@@ -1,0 +1,229 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+Pyramids
+
+Status
+
+Ranking
+
+PIR - Pyramids
+
+#geometry
+
+Recently in Farland, a country in Asia, the famous scientist Mr. Log Archeo discovered ancient pyramids. But unlike those in Egypt and Central America, they have a triangular (not rectangular) foundation. That is, they are tetrahedrons in the mathematical sense. In order to find out some important facts about the early society of the country (it is widely believed that the pyramid sizes are closely connected with Farland's ancient calendar), Mr. Archeo needs to know the volume of the pyramids. Unluckily, he has reliable data about their edge lengths only. Please, help him!
+
+Input
+
+t [number of tests to follow]
+In each of the next t lines six positive integer numbers not exceeding 1000 separated by spaces (each number is one of the edge lengths of the pyramid ABCD). The order of the edges is the following: AB, AC, AD, BC, BD, CD.
+
+Output
+
+For each test output a real number - the volume, printed accurate to four digits after decimal point.
+
+Example
+
+Input:
+
+2
+1 1 1 1 1 1
+1000 1000 1000 3 4 5
+
+Output:
+
+0.1179
+1999.9937
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+Next
+
+>
+
+lvisser_code
+:
+
+2025-07-18 22:59:03
+
+Straight math, so use FORTRAN.  Inputs are INTEGER, calculate with DOUBLE PRECISION.
+
+thanujasoma18
+:
+
+2024-07-13 11:40:53
+
+why i am getting eof error
+
+heraclitus22
+:
+
+2024-01-28 08:42:55
+
+had to use long doubles otherwise getting wrong answer with mere double. need to reformulate in numerically superior format later.
+
+edit: stayed in integers until the last possible moment and now I can do with just double
+
+Last edit: 2024-01-28 08:55:07
+
+vahe13
+:
+
+2023-08-10 19:41:34
+
+cool
+
+zeesh_0
+:
+
+2021-10-29 11:20:43
+
+Guys, Order is extremely important!
+
+Take double as input.
+
+Last edit: 2022-08-25 17:07:15
+
+Henrique
+:
+
+2021-10-02 01:36:12
+
+Test input does not contain decimal numbers, as some people suggested. It's possible to confirm this by parsing it with python's int() function, which would raise an exception and return a non-zero exit code (NZEC) as the wrong answer. Using int() does not raise an exception, so there are only integer inputs.
+
+[NG]: Nonsense; ever tried print(int(0.1)) ? Use float(x) %1 for detecting non-integers.
+
+Edit: Nonsense, input is a string.
+
+[NG]: True, didn't pay attention. Anyway, the input is valid and the double "saves" only some C people that haven't properly implemented intermediate calculations with integers.
+
+Last edit: 2021-10-04 10:21:28
+
+faraday_vij
+:
+
+2020-05-24 10:04:53
+
+c++14 is giving error where as c++ 4.3.2 giving accepted directly!!
+
+kamina01
+:
+
+2020-04-27 16:36:31
+
+solve using determinant.....
+
+sourav1768
+:
+
+2019-12-31 17:34:56
+
+Rounding off took some time...
+
+angrypig298
+:
+
+2019-06-26 06:12:09
+
+have the same problem with hritwik.
+
+WA with c++14.
+
+AC with c++(g++4.x.x)
+
+ Submit solution!
+
+Added by:
+Adam Dzedzej
+
+Date:
+2004-05-14
+
+Time limit:
+1s
+
+Source limit:
+10000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All except: NODEJS PERL6 VB.NET
+
+Resource:
+ACM ICPC 2002-2003 NEERC, Northern Subregion
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.

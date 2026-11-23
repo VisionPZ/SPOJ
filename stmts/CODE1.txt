@@ -1,0 +1,396 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+Secret Code
+
+Status
+
+Ranking
+
+CODE1 - Secret Code
+
+no tags
+
+The Sarcophagus itself is locked by a secret numerical code. When somebody
+wants to open it, he must know the code and set it exactly on the top of the
+Sarcophagus. A very intricate mechanism then opens the cover. If an incorrect
+code is entered,
+the tickets inside would catch fire immediately and they would
+have been lost forever. The code (consisting of up to 100 integers)
+was hidden in the Alexandrian Library but unfortunately, as you probably
+know, the library burned down completely.
+
+But an almost unknown archaeologist has obtained a copy of the code something
+during the 18th century. He
+was afraid that the code could get to the "wrong people"' so he has
+encoded the numbers in a very special way. He took a random complex number
+
+B
+ that was greater (in absolute value) than any of the encoded numbers. Then
+he counted the numbers as the digits of the system with basis
+B
+. That means
+the sequence of numbers
+a
+n
+,
+
+a
+n-1
+, ...,
+a
+1
+,
+
+a
+0
+ was encoded as the number
+
+X = a
+0
+ + a
+1
+B + a
+2
+B
+2
+ + ...+
+a
+n
+B
+n
+.
+
+Your goal is to decrypt the secret code, i.e. to express a given number
+X
+ in
+the number system to the base
+B
+. In other words, given the
+numbers
+X
+ and
+B
+you are to determine the ``digit''
+
+a
+0
+ through
+a
+n
+.
+
+Input
+
+The input consists of
+T
+ test cases (equal to about 100000). The number of them (
+T
+) is
+given on the first line of the input file. Each test case consists of one single
+line containing four integer numbers
+X
+r
+,
+X
+i
+,
+B
+r
+,
+B
+i
+
+(
+|X
+r
+|,|X
+i
+| <= 1000000
+,
+
+|B
+r
+|,|B
+i
+| <= 16
+). These numbers
+indicate the real and complex components of numbers
+X
+ and
+B
+,
+i.e.
+X = X
+r
+ + i.X
+i
+,
+
+B = B
+r
+ + i.B
+i
+.
+B
+ is the basis of
+the system (
+|B| > 1
+),
+X
+ is the number you have to
+express.
+
+Output
+
+Your program must output a single line for each test case. The line should
+contain the ``digits''
+a
+n
+,
+a
+n-1
+,
+...,
+a
+1
+,
+a
+0
+, separated by
+commas. The following conditions must be satisfied:
+
+for all
+i
+ in
+{0, 1, 2, ...n}
+:
+
+0 <= a
+i
+ < |B|
+
+X = a
+0
+ + a
+1
+B + a
+2
+B
+2
+ + ...+
+a
+n
+B
+n
+
+if
+n > 0
+ then
+a
+n
+ <> 0
+
+n <= 100
+
+If there are no numbers meeting these criteria, output the sentence
+"
+The code cannot be decrypted.
+". If there are more possibilities,
+print any of them.
+
+Example
+
+Sample Input
+
+4
+-935 2475 -11 -15
+1 0 -3 -2
+93 16 3 2
+191 -192 11 -12
+
+Sample output:
+
+8,11,18
+1
+The code cannot be decrypted.
+16,15
+
+Warning: large Input/Output data, be careful with certain languages
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+Next
+
+>
+
+kemar
+:
+
+2021-09-17 18:02:15
+
+It seems that the last line of the input data doesn't end with a '\n' but with a digit.
+
+This costed me 10 WA ! Finally got AC using Python and calculation only with integers.
+
+morino_hikari
+:
+
+2017-07-26 03:43:29
+
+The key to this problem is trying to find out a recursive formula of the residual by moving the constant term from the right side to the left and then quotient both side with the 'complex base'. お大事に。
+
+sourav2706
+:
+
+2015-10-28 15:54:20
+
+can anybody help me regarding the algorithm used in this program
+
+sourav2706
+:
+
+2015-10-28 15:51:10
+
+its total mathematics
+
+Priyanshu Gupta
+:
+
+2015-03-04 11:54:43
+
+getting segmentation fault but not using any array or vector... any idea?
+
+Georeth Chow
+:
+
+2014-12-11 14:49:29
+
+Note the constraint:
+
+    if n > 0 then an <> 0
+
+means
+
+    it's possible n == 0
+
+WA several times
+
+BaburMB
+:
+
+2013-12-07 15:20:11
+
+you can store as sqrt(123-124)
+
+Aneeqa
+:
+
+2013-08-07 17:23:16
+
+it looks like algorithm :p
+
+nilesh soni
+:
+
+2012-05-25 12:18:21
+
+in every problem of spoj for int part of float no., simply x=int(x) does not accept
+
+Why...???
+
+CryptoViral
+:
+
+2012-03-07 11:45:23
+
+ha ha sqrt(-1).......:D
+
+ Submit solution!
+
+Added by:
+adrian
+
+Date:
+2004-06-06
+
+Time limit:
+5s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All
+
+Resource:
+ACM Central European Programming Contest, Prague 1999
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.

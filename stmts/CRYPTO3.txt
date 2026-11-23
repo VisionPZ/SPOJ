@@ -1,0 +1,177 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+The Bytelandian Cryptographer (Act III)
+
+Status
+
+Ranking
+
+CRYPTO3 - The Bytelandian Cryptographer (Act III)
+
+no tags
+
+The Bytelandian cryptographer acknowledged he was sorely beaten in Act 2. He renounced his own methods of encryption and decided to return to the classic techniques.
+
+Not knowing what to do next, he went to the cinema to chew the problem over. To his surprise, he found that the cone containing pop-corn was in fact a rolled up page torn from the classic book,
+RSA for newbies in 24 seconds
+. The page in question contained the entire key-generating and encryption algorithm. Fascinated, he thought up two different prime numbers p and q, and calculated his own public key, and revealed the product
+p × q
+ to the wide world. Then, he began work on his wicked scheme of encryption.
+
+History repeats. Once more, you receive an encrypted message from the cryptographer. This time you know that without additional information you are beaten, so you decide to use the psychological approach. You phone the Bytelandian cryptographer, and ask him whether he couldn't give you a little hint. What you really want to know is the number u of positive integers which are smaller than
+p × q
+ and have no common factors with
+p × q
+ other than 1. But the cryptographer, sensing that this would allow you to decode the message right away, refuses to tell you this number. Eventually, after a lot of asking, he gives you a piece of utterly useless information: he tells you how many positive integers x cannot be represented in the form
+x = a × p + b × q
+, regardless of what non-negative integer values a and b assume.
+
+You begin to wonder whether the information you received from the cryptographer is not by any chance enough to find the value of u.
+Even if the only languages at your disposal are Brainf**k and Intercal...
+
+Input
+
+The number provided by the cryptographer (a positive integer of at most 99 decimal digits). The input ends with a new line symbol.
+
+Output
+
+The value of u.
+
+Example
+
+Input:
+
+1
+
+Output:
+
+2
+
+(This example is possible for p=2, q=3)
+
+ Submit solution!
+
+hide
+ comments
+
+badasshackme
+:
+
+2018-04-17 18:34:13
+
+Chicken McNugget Theorem
+
+rishi_devan
+:
+
+2017-05-12 13:08:38
+
+Need to return 2*x
+
+Last edit: 2017-05-14 12:19:16
+
+cake_is_a_lie
+:
+
+2017-02-20 15:47:46
+
+Learned a lot of math to understand the solution to this. Would recommend.
+
+Mitch Schwartz
+:
+
+2015-11-09 01:51:02
+
+Moved to classical in accordance with previous comment.
+
+Mitch Schwartz
+:
+
+2015-09-14 01:25:18
+
+I think this doesn't belong in riddle, because it can be solved without guessing. Riddle section is for problems that are not fully specified; "guess the sequence" problems are a common example. This is how the riddle section has been used since its creation, even though the word "riddle" may mean other things in common English usage. (Some old problems that would normally belong in riddle were allowed to stay in classical or challenge by reason of grandfather clause. I can think of SUMUP, EASYPROB, EPROBLEM, HARDP.)
+
+I can understand thinking of this task as being riddle-like because of "the ability to make a simple problem difficult to understand", and because many users will not bother with a proof of correctness before submitting, but this does not make it a riddle problem for SPOJ.
+
+If there is no response for a few weeks, I plan to move it back to classical.
+
+Last edit: 2015-09-14 01:26:20
+
+ Submit solution!
+
+Added by:
+adrian
+
+Date:
+2004-05-29
+
+Time limit:
+0.200s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+BF ICK
+
+Resource:
+Sadly, the ability to make a simple problem difficult to understand is seldom considered a talent.
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.

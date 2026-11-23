@@ -1,0 +1,332 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+Factorial
+
+Status
+
+Ranking
+
+FCTRL - Factorial
+
+#math
+
+The most important part of a GSM network is so called
+
+Base Transceiver Station
+ (
+BTS
+). These transceivers form the
+areas called
+cells
+ (this term gave the name to the cellular phone)
+and every phone connects to the BTS with the strongest signal (in
+a little simplified view). Of course, BTSes need some attention and
+technicians need to check their function periodically.
+
+ACM technicians faced a very interesting problem recently. Given a set of
+BTSes to visit, they needed to find the shortest path to visit all of the
+given points and return back to the central company building. Programmers
+have spent several months studying this problem but with no results. They
+were unable to find the solution fast enough. After a long time, one of the
+programmers found this problem in a conference article. Unfortunately, he
+found that the problem is so called "Travelling Salesman Problem" and it is
+very hard to solve. If we have
+N
+ BTSes to be visited, we can visit them in
+any order, giving us
+N
+! possibilities to examine. The function expressing
+that number is called factorial and can be computed as a product
+
+1·2·3·4 ...
+N
+. The number is very high even for a relatively small
+N
+.
+
+The programmers understood they had no chance to solve the problem. But
+because they have already received the research grant from the government,
+they needed to continue with their studies and produce at least
+some
+
+results. So they started to study behaviour of the factorial function.
+
+For example, they defined the function
+Z
+. For any positive integer
+N
+,
+
+Z
+(
+N
+) is the number of zeros at the end of the decimal form of number
+
+N
+!. They noticed that this function never decreases. If we have two numbers
+
+N
+1
+ <
+N
+2
+, then
+
+Z
+(
+N
+1
+) ≤
+Z
+(
+N
+2
+). It is because we can never "lose" any
+trailing zero by multiplying by any positive number. We can only get new
+and new zeros. The function
+Z
+ is very interesting, so we need a computer
+program that can determine its value efficiently.
+
+Input
+
+There is a single positive integer
+T
+ on the first line of input (equal to about 100000). It stands
+for the number of numbers to follow. Then there are
+T
+ lines, each containing
+exactly one positive integer number
+N
+,
+1 ≤
+N
+ ≤ 1000000000.
+
+Output
+
+For every number
+N
+, output a single line containing the single non-negative
+integer
+Z
+(
+N
+).
+
+Example
+
+Input:
+
+6
+3
+60
+100
+1024
+23456
+8735373
+
+Output:
+
+0
+14
+24
+253
+5861
+2183837
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+Next
+
+>
+
+azizshahid9080
+:
+
+2024-05-31 08:59:12
+
+nice one to enhance ourselves
+
+okay4869
+:
+
+2023-06-28 13:13:42
+
+Just keep on div by 5
+
+Last edit: 2023-06-28 13:13:55
+
+jarircse16
+:
+
+2023-06-19 22:38:57
+
+<h1>Very Cool</h1>
+
+yangbowen
+:
+
+2023-05-02 17:53:52
+
+是不是只用判断阶乘中5的数量？
+
+Last edit: 2023-05-02 17:54:41
+
+uma_267
+:
+
+2023-03-16 16:03:05
+
+<snip>
+
+[Simes]: Read the footer - Don't post source code here, use the forum.
+
+Last edit: 2023-03-16 22:52:15
+
+fjkexgnffhwihp
+:
+
+2022-06-22 17:37:16
+
+all there is to do is notice a simple pattern in the number of zeroes at the end of factorials
+
+amankumarjha
+:
+
+2022-01-22 15:24:27
+
+Thanks @kolahzary
+
+25 has 6 zeros not 5.
+
+Last edit: 2022-01-22 15:27:10
+
+ramu_508
+:
+
+2021-11-18 11:09:48
+
+logic of problem
+
+endashvee
+:
+
+2021-10-29 16:05:27
+
+What is an AC?
+
+lvisser_code
+:
+
+2021-06-02 22:23:30
+
+Study a table of factorials, see when a new 0 is added to end.  After looking at 2! .. 50! you should see the pattern.  Your program does not need to compute any factorials.
+
+ Submit solution!
+
+Added by:
+adrian
+
+Date:
+2004-05-09
+
+Time limit:
+6s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All except: NODEJS PERL6 VB.NET
+
+Resource:
+ACM Central European Programming Contest, Prague 2000
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.

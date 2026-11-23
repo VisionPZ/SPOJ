@@ -1,0 +1,341 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+Fake tournament
+
+Status
+
+Ranking
+
+TOUR - Fake tournament
+
+no tags
+
+We consider only special type of tournaments. Each tournament consists of a series of matches. We have
+n
+ competitors at the beginning of a competition and after each match the loser is moved out of the competition and the winner stays in (there are no draws). The tournament ends when there is only one participant left - the winner. It is a task of National Sports Federation to schedule the matches. Members of this committee can pick the contestants for the first match. Then, after they know the result, they say which of the remaining contestants meet in the second match, and so on until there is only one participant left.
+
+It is easy to see that not only skill and training decides about the win, but also "luck" - i.e. the schedule. The members of NSF know it as well.
+
+The committee used the training time to look carefully on the performance of each probable contestant. It is clear now, at the start of the season, that some of the results between the competitors are 100% predictable. Having this information NSF considers if it is possible to schedule the matches in such a way that the given contestant
+x
+ wins. That is to plan the matches for
+x
+ only with those who will lose with him (then he wins the whole tournament of course). If it is possible then w say that
+the tournament can be set for x
+.
+
+Task
+
+Your task is to write a program which determines the number of contestants of a given tournament for which it is possible to set it.
+
+Input
+
+t [number of tests to solve].
+
+In the first line of each test:
+n (1<=n<=1000) - the number of participants of the tournament. We number the participants with numbers 1, 2 ... n.
+The following line contains a list of participants who will inevitably win with participant 1. This list begins with a number
+m
+ (the number of contestants "better" than 1) and numbers n
+1
+, n
+2
+ ... n
+m
+
+delimited by single spaces.
+
+Next
+n-1
+ lines contain analogous lists for participants 2, 3 ... n.
+
+Remark 1. The fact that participant
+a
+ would lose with
+b
+ and
+b
+ would lose with
+c
+ doesn't necessarily mean that
+a
+ would lose with
+c
+ in a direct match.
+
+Remark 2. It is not possible that
+a
+ is on the list of contestants better than
+b
+ and
+b
+ is on the list of
+a
+ at the same time.
+
+Output
+
+For each test your program should output a single integer - the number of participants, for which it is possible to set the tournament.
+
+Example
+
+Input:
+1
+3
+2 3 2
+1 3
+0
+
+Output:
+1
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Next
+
+>
+
+stef_bart
+:
+
+2021-08-09 14:20:07
+
+Test cases are OK!!!
+
+it's never mentioned that games must be played if there's an opportunity
+
+avalon2
+:
+
+2020-06-03 05:36:33
+
+My first problem on SCC
+
+wittystranger
+:
+
+2020-05-06 20:52:29
+
+;)
+
+Last edit: 2020-05-06 21:44:34
+
+pratyushmj1
+:
+
+2019-06-01 20:17:06
+
+@aced in 2nd test case
+
+what if R1: 3-4   3 wins
+
+             R2: 3-2   2 wins
+
+             R3: 2-1   1 wins
+
+so 1 wins ....possible
+
+[
+
+1
+
+4
+
+2 3 4
+
+1 1
+
+1 2
+
+2 2 3
+
+answer is 4. ]
+
+loc_1103
+:
+
+2019-03-15 14:19:11
+
+good questions. Scc can be used but dfs will even work due to low
+
+constraint.Do capacity questions if found trouble in this question
+
+Last edit: 2019-03-15 14:22:15
+
+tejasprince
+:
+
+2018-11-25 06:26:06
+
+Solved using SCC. Do remember that if there are more than 1 SCC with nobody defeating it, then the answer is 0.
+
+aced
+:
+
+2018-10-24 10:37:43
+
+1
+
+0
+
+1 4
+
+1 1
+
+1 2
+
+1 3
+
+answer: 4
+
+It's a cycle a->b->c->d->a. But it's not sure who will win in the end.According to the answer it meaning all the four participant can be set.
+
+another case:
+
+1
+
+4
+
+2 3 4
+
+1 1
+
+1 2
+
+2 2 3
+
+answer is 4.
+
+But there's no way for 1 to win.
+
+If 1 meet 3 or 4 the first he will lose.
+
+If 1 meet 2 the first, then he has to meet 3 or 4 in the second round which he will lose.
+
+So it's impossible for 1 to be set.But the answer is 4.
+
+Last edit: 2018-10-24 11:18:08
+
+shubham_04_04
+:
+
+2018-09-08 18:36:06
+
+Done Dana Done
+
+Last edit: 2018-09-08 18:49:48
+
+nikhil2504
+:
+
+2018-07-23 15:42:10
+
+Comments are misleading!
+
+aman_sachin200
+:
+
+2018-06-11 22:43:37
+
+Awesome One!!!Clears concepts of SCC!! :P
+
+Last edit: 2018-06-11 22:44:09
+
+ Submit solution!
+
+Added by:
+Adam Dzedzej
+
+Date:
+2004-06-08
+
+Time limit:
+1s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All
+
+Resource:
+Internet Contest
+Pogromcy Algorytmów
+ (Algorithm Tamers)
+Round IV, 2001
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.

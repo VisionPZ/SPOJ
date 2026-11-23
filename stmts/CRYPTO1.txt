@@ -1,0 +1,209 @@
+SPOJ.com - Problem CRYPTO1
+
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+The Bytelandian Cryptographer (Act I)
+
+Status
+
+Ranking
+
+CRYPTO1 - The Bytelandian Cryptographer (Act I)
+
+no tags
+
+The infamous Bytelandian Bit-eating Fanatic Organisation (BBFO for short) plans to launch an
+	all-out denial-of-service attack on the Bytelandian McDecimal's fast food
+	network by blocking the entrance to every restaurant with a camel (the
+	purpose being to rid the Organisation of unhealthy competition,
+	obviously). In a sly and perfidious move, the head cryptographer
+	of BBFO decided to disclose the date and time of
+	the planned attack to the management of McDecimal's, but in encrypted form
+	(ha ha). He calculated the number of seconds from midnight 1970.01.01 GMT to
+	the moment of attack, squared it, divided it by 4000000007 and sent the
+	remainder by e-mail to McDecimal's. This made the original date impossible to
+	decode.
+
+Or did it?
+
+*   *   *
+
+You work as the head algorithmist at McDecimal's HQ and know
+	nothing of what is happening in Byteland. Things are not going well. You
+	are playing a quiet game of hearts against your computer and
+	wondering why on earth Management are considering making you redundant.
+	Suddenly, the CEO bursts into your office, saying:
+
+- Look here, young man[lady]! I have this number and those
+	guys claim it is supposed to be some date. I am giving you one second to
+	tell me what it all means!
+
+I am afraid you have no choice. You can't ask any further
+	questions.
+
+You just have to answer, now.
+
+Input
+
+The encrypted timestamp.
+
+Output
+
+The decrypted GMT time and date of attack, somewhere
+	between 1970 and 2030, using standard 26 character formatting.
+
+Example
+
+Input:
+
+1749870067
+
+Output:
+
+Sun Jun 13 16:20:39 2004
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+3
+
+4
+
+Next
+
+>
+
+shell4spoj
+:
+
+2021-07-16 12:49:02
+
+Please check your answer on submission, do not rely on the given example in this problem
+
+badasshackme
+:
+
+2018-04-17 18:09:48
+
+this problem is specialized case of other well known problem for which there is no efficient deterministic algorithm exists. good luck.
+
+icm2015007
+:
+
+2017-12-30 08:01:34
+
+Even if your answer is Sun Jun 13 21:50:39 2004, it gets AC. Turns out in this case there are two solutions.
+
+pavan26
+:
+
+2017-03-02 04:01:42
+
+Use Fermat's Little Theorem but with some manipulation . Try to relate quadratic residues with the theorem.
+
+AC in one go finally.
+
+coolrohan123
+:
+
+2016-12-28 19:42:45
+
+took me 5 hours to solve this.. But happy :)
+
+Ishwar
+:
+
+2016-12-04 07:46:21
+
+elliptic curve cryptography, there you go!!
+
+qlstudio
+:
+
+2016-06-05 16:29:49
+
+The total offset between 1970 and 2030 is 1893456000 seconds. Why in the world is he dividing the result by 4000000007? If x<y, x mod y = x. So I did time.asctime(time.localtime(<timestamp>)). WRONG!
+
+Last edit: 2016-06-05 16:37:34
+
+kethansrinivas
+:
+
+2016-04-30 15:53:06
+
+four WA for changing code due to strftime displaying wrong output as Sun Jun 13 21:50:39 2004 instead of Sun Jun 13 16:20:39 2004 but got AC when submitted the code for 1st output without any changes in spoj. Its weird how there are differences in output of same code between my compiler and spoj.
+
+mike
+:
+
+2015-12-07 16:47:35
+
+Be aware of format of time and avoid spelling mistakes of (Thu, Sep ,..etc)..that costed me 2 WA
+
+Last edit: 2016-01-13 18:12:51
+
+Shubham Dash
+:
+
+2015-12-07 15:21:09
+
+Easy in python
+
+ Submit solution!
+
+Added by:
+adrian
+
+Date:
+2004-05-13
+
+Time limit:
+1s
+
+Source limit:
+10000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All except: NODEJS PERL6 VB.NET
+
+Resource:
+;)

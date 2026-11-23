@@ -1,0 +1,10 @@
+.spoj/
+.spoj-profile/
+.nimcache/
+__pycache__/
+build/
+in/
+out/
+got_*.txt
+*.log
+*.tmp

@@ -1,0 +1,223 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+Small factorials
+
+Status
+
+Ranking
+
+FCTRL2 - Small factorials
+
+#math
+
+#big-numbers
+
+You are asked to calculate factorials of some small positive integers.
+
+Input
+
+An integer t, 1 ≤ t ≤ 100, denoting the number of testcases, followed by t lines, each containing a single integer n, 1 ≤ n ≤ 100.
+
+Output
+
+For each integer n given at input, display a line with the value of n!
+
+Example
+
+Input:
+
+4
+1
+2
+5
+3
+
+Output:
+
+1
+2
+120
+6
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+Next
+
+>
+
+aj008p1
+:
+
+2024-10-18 15:29:38
+
+good question, refines your array handling techniques
+
+gordon_zhang
+:
+
+2024-06-28 06:31:48
+
+It's quite easy to solve this problem with Python. :p
+
+sevix
+:
+
+2024-04-10 14:14:18
+
+i do recomend this:)
+
+crazymakibe
+:
+
+2024-03-22 15:11:59
+
+java solution using ArrayList is not accepted!
+
+akane86
+:
+
+2023-07-01 11:56:27
+
+why does long long not work? because 100! will be much larger than this!
+
+its_mithu
+:
+
+2023-05-03 18:00:11
+
+The decent way of getting AC in this problem is the use of  vector or string.
+
+iamdikshith
+:
+
+2023-02-14 15:41:48
+
+python handles it as the most basic problem!
+
+pavlopare
+:
+
+2023-01-29 07:23:14
+
+plain C is working here (0.01sec , no special math, no long types)
+
+just prepare an array [100] upfront with factorials as strings
+
+aoteki
+:
+
+2023-01-27 06:14:55
+
+This doesn't work in Prolog. the code works correctly in Codewars for a similar Factorial problem.
+
+himanshuo7
+:
+
+2022-11-06 18:22:47
+
+Solved using custom string multiplication!
+
+ Submit solution!
+
+Added by:
+adrian
+
+Date:
+2004-05-28
+
+Time limit:
+1s
+
+Source limit:
+2000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.
