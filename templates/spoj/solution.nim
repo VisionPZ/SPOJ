@@ -7,15 +7,15 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 
 var outputBuffer = ""
@@ -26,10 +26,10 @@ proc appendOutput(text: string) =
     stdout.write outputBuffer
     outputBuffer.setLen 0
 
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 0..<caseCount:
-  let firstValue = nextInt(inputData, scanPos)
-  let secondValue = nextInt(inputData, scanPos)
+let caseCount = nextInt(inputData, i)
+for j in 0..<caseCount:
+  let firstValue = nextInt(inputData, i)
+  let secondValue = nextInt(inputData, i)
   appendOutput($(firstValue + secondValue))
   outputBuffer.add '\n'
 

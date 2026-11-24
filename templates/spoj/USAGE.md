@@ -23,7 +23,7 @@ Create a new problem with `bin/new.sh CODE LIMIT_MS`, then copy `solution.nim`, 
 - Read all of stdin once by looping `readLine(stdin, line)` into one `inputData` string, appending `'\n'` each time.
 - Parse with a hand scanner. `nextInt(data, position)` skips non-digits and builds the value with `int(data[position]) - 48`. Add a minus branch only when the statement allows negative numbers.
 - Keep one `outputBuffer`. `appendOutput(text)` adds text and flushes with `stdout.write` followed by `setLen 0` once the buffer reaches `flushBlockBytes`. Flush once more after the main loop.
-- Name constants (`firstDigitValue`, `flushBlockBytes`), positions (`scanPos`, `leftIndex`), counts (`nodeCount`, `digitCount`) and buffers (`inputData`, `outputBuffer`). No single-letter names except one-line loop indices.
+- Use short index names: `i`, `j`, `k`, `l` for loop counters and positional indexes. Keep descriptive names for semantic values, counts and buffers (`firstDigitValue`, `flushBlockBytes`, `inputData`, `outputBuffer`, `nodeCount`).
 - Target Nim 0.19.4. Avoid `std/syncio`, `readAll`, `addInt`, `%`, `newSeqWith` and `seq.len = n`. Use `mod` and `setLen`. Sorting a `seq` needs an explicit comparator, so a small insertion sort is often simpler.
 - Keep intermediates in `int64`; use two moduli and CRT when an exact determinant or product can overflow.
 
