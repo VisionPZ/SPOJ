@@ -1,0 +1,1067 @@
+AGGRCOW - Aggressive cows
+
+
+
+	
+																	#binary-search
+						
+
+
+
+
+	Farmer John has built a new long barn, with N (2 ≤ N ≤ 100,000)
+stalls. The stalls are located along a straight line at positions
+x1 ... xN (0 ≤ xi ≤ 1,000,000,000).
+His C (2 ≤ C ≤ N) cows don't like this barn layout and become
+aggressive towards each other once put into a stall. To prevent the
+cows from hurting each other, FJ wants to assign the cows to the
+stalls, such that the minimum distance between any two of them is
+as large as possible.  What is the largest minimum distance?
+
+Input
+t – the number of test cases, then t test cases follows.
+
+Line 1: Two space-separated integers: N and C
+Lines 2..N+1: Line i+1 contains an integer stall location, xi
+
+
+Output
+For each test case output one integer: the largest minimum distance.
+
+Example
+Input:
+1
+5 3
+1
+2
+8
+4
+9
+
+Output:
+3
+Explanation
+FJ can put his 3 cows in the stalls at positions 1, 4 and 8, resulting in 
+a minimum distance of 3.
+
+
+
+
+	 Submit solution!
+
+
+			
+			
+			
+			
+			
+
+hide comments
+
+
+
+		
+		
+		
+			<
+		Previous
+						1 
+							2 
+							3 
+							4 
+							5 
+							6 
+							7 
+							8 
+							9 
+							10 
+							11 
+						Next
+		>
+	
+		
+	
+	
+		
+				
+	
+	
+	
+	<!--
+	$(document).ready(function(){
+        $('.pager_link').bind('click', function(me){
+                var href=$(me.currentTarget).attr('href');
+		$('#ccontent').animate({opacity: 0.5},1);
+                $.ajax({
+                        type: "GET",
+                        url: href+",ajax=1",
+                        contentType: "application/x-www-form-urlencoded;charset=ISO-8859-2",
+                        success: function(data){
+                                $('#ccontent').html(data);
+				$('#ccontent').animate({opacity: 1.0},1);
+                        },
+                        error: function(err){
+                                alert('error');
+                        }
+                });
+                return false;
+        });
+	});
+	-->
+	
+	
+
+
+
+			
+	
+		
+			
+		
+		
+			andreasreynard: 
+								2026-09-24 09:36:50
+		
+				How is this problem the BEST in SPOJ ever???
+						
+	
+				
+	
+		
+			
+		
+		
+			theamankalwar: 
+								2026-07-21 05:10:41
+		
+				nice problem 
+						
+	
+				
+	
+		
+			
+		
+		
+			panavkumarsahu: 
+								2026-04-21 14:52:07
+		
+				The test cases are not correct.
+For the test case:
+1
+5 3
+4
+5
+6
+7
+8
+
+The expected output is 2 but my solution is accepted even though my output for the above test case is 0.
+						
+	
+				
+	
+		
+			
+		
+		
+			nerosegnofic: 
+								2025-11-24 11:43:01
+		
+				Nice problem. Loved it. :)
+						
+	
+				
+	
+		
+			
+		
+		
+			sushantsangwan: 
+								2025-08-27 10:25:57
+		
+				can anyone explain how can one do this question...
+						
+	
+				
+	
+		
+			
+		
+		
+			fastrail08: 
+								2025-03-28 19:34:14
+		
+				@geek_abhi Question - Why are we always picking the first position in the sorted array? 
+
+Answer - The first value in the sorted array is the leftmost stall possible. So the distance between the first value will be maximum wrt any stall [idx], where idx > 0. So imagine, [2 3 5 6 8......] as an array and min distance is 4. if you choose '3' you will have to place the next cow at 8. But if you choose '2' you can place the next cow at '6' , saving you 1 position.
+
+I understand your question tho, obv it is not required to choose the first idx and there will be ample amount of arrangements that are possible(will fit with the given criteria of AT LEAST min distance X) even if you don't start with the first value in the array. But I think it isn't always possible to figure out an arrangement in every case if you start with any index other than 0th, given you have to find the arrangement in O(N) TIME. Starting with first value will ALWAYS give you one of many arrangements possible, as it is the leftmost/smallest value possible. 
+
+NOTE - You don't have to count the number of arrangements or find any optimal arrangement (such as every adjacent cow is at a min distance = X, instead of at least x). You need one arrangement to figure out if it is possible with the current min distance 'X'
+						
+	
+				
+	
+		
+			
+		
+		
+			fastrail08: 
+								2025-03-28 19:10:53
+		
+				Here's a tip for people finding the problem statement confusing. You can read it in 2 ways - 
+1) Can I place C cows into N stalls, given the minimum distance between any 2 cows should at least be 'X'. 
+2) Does an arrangement exist, given C cows and N stalls, such that the minimum distance between any cow is at least 'X'.
+
+NOTE - Don't focus on how many different arrangements are possible, you just need to find out 1 arrangement with the given min 'X'.
+
+You have to maximise the value of 'X', till it becomes impossible to place all the cows. As the minimum distance increase, you will need more stalls to place ALL the cows.
+						
+	
+				
+	
+		
+			
+		
+		
+			kishor438: 
+								2025-03-05 18:01:12
+		
+				I wish I never come back to this platform
+
+						
+	
+				
+	
+		
+			
+		
+		
+			udaykiran2427: 
+								2025-02-20 15:07:56
+		
+				had to refer to some video, but a cool problem!!
+
+						
+	
+				
+	
+		
+			
+		
+		
+			aaryan_01: 
+								2025-02-20 06:20:33
+		
+				***ST 
+				Last edit: 2026-11-21 09:15:57
+						
+	
+			
+
+
+
+
+<!--
+function getCookieVal (offset) {
+        var endstr = document.cookie.indexOf (";", offset);
+        if (endstr == -1) { 
+                endstr = document.cookie.length; 
+        }
+        return unescape(document.cookie.substring(offset, endstr));
+}
+
+function GetCookie (name) {
+  var arg = name + "=";
+  var alen = arg.length;
+  var clen = document.cookie.length;
+  var i = 0;
+  while (i < clen) {
+    var j = i + alen;
+    if (document.cookie.substring(i, j) == arg) {
+      return getCookieVal (j);
+      }
+    i = document.cookie.indexOf(" ", i) + 1;
+    if (i == 0) break; 
+    }
+  return null;
+}
+
+function toggleComments() {
+        var a = document.getElementById('comments_table');
+        var d = a.style.display;
+        if( d == "" || d == "block" ){
+                d = "none";
+                document.getElementById('comments_sh').innerHTML = 'show';
+        } else {
+                d = "block";
+                document.getElementById('comments_sh').innerHTML = 'hide';
+        }
+        a.style.display = d;
+        document.cookie="comments_table="+d+"; path=/;";
+}
+
+if( GetCookie('comments_table') == 'none' ){
+        document.getElementById('comments_sh').innerHTML = 'show';
+        document.getElementById('comments_table').style.display = 'hide';
+}
+
+-->
+
+
+
+			
+			
+			
+                
+                
+        
+        
+         Leave a Comment 
+        
+                
+                
+        
+        
+                
+                        
+                        
+                
+        
+
+
+
+Notes:
+1. Don't post any source code here.
+2. Please be careful, leave short comments only. Don't spam here.
+3. For more discussion (hints, ideas, solutions) please visit our forum.
+4. Authors of the problems are allowed to delete the post and use html code here (e.g. to provide some useful links).
+
+
+        
+        
+
+		
+	
+	
+	
+	
+				
+			 Submit solution!
+		
+		
+		
+
+		
+		
+			
+				
+				
+			
+			
+			Added by:Roman Sol
+			Date:2005-02-16
+			Time limit:2s
+			
+			Source limit:10000B
+						Memory limit:1536MB
+										
+					Cluster:
+					
+													Cube (Intel G860)
+								
+					
+				
+						Languages:All 
+			Resource:USACO February 2005 Gold Division													
+		
+	
+		
+												
+					
+						Vote requirements
+					
+					
+						
+							  user for 2 from 5 needed days							
+							  solve at least 15 problems							
+							  solve this problem
+						
+					
+				
+					
+				
+		
+	
+				
+				
+				
+					Own tags
+				
+				
+			
+					
+						
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+						
+					
+					
+				      
+				      
+				        Add
+				      
+				    
+				    
+				    
+				    
+				    $(document).ready(function(){
+				    	$(document).on('click', '#problem-mytags-btn-add', function(){
+				    		$.ajax({
+				    			url: '/?a=tags&act=cpriv',
+				    			method: 'post',
+				    			dataType: 'json',
+				    			data: {'name': $("#problem-mytags-new").val(), 'pid': '297'},
+				    			success: function(data){
+				    				if(data['result'] == 'success'){
+				    					$('#problem-mytags').html(data['html']);
+				    				}
+				    				$("#problem-mytags-new").val('');
+				    				$("#problem-mytags-new").focus();
+				    			},
+				    			error: function(data){
+				    				//alert('error');
+				    			}
+				    		});
+				    	});
+				    	$(document).on('click', '.mytag', function(){
+				    		
+				    		var tid = $(this).attr('data-id');
+				    		var pid = '297';
+				    		
+				    		$.ajax({
+				    			url: '/?a=tags&act=spriv',
+				    			method: 'post',
+				    			dataType: 'json',
+				    			data: {'pid': pid, 'tid': tid},
+				    			success: function(data){
+				    				if(data['result'] == 'success'){
+				    					$('#problem-mytags').html(data['html']);
+				    				}
+				    			},
+				    			error: function(data){
+				    				//alert('error');
+				    			}
+				    		});
+				    		
+				    		
+				    		return false;
+				    	});
+				    });
+				    
+				    
+		
+				
+		
+				
+		
+		
+			function callback_after_vote(type, data)
+			{
+				var response = $.parseJSON(data);
+				manage_vote_interface(type);
+				//.html('<div class="vote-thank-you">Thank you!</div>');
+				
+
+				if (type == "problem" || type == "implementation") {
+					var progressBarValue = Math.round(2 + 98 * response.avg / 3);
+					var progressBarType;
+					if (progressBarValue < 25) progressBarType = "progress-bar-primary";
+					else if (progressBarValue < 50) progressBarType = "progress-bar-success";
+					else if (progressBarValue < 75) progressBarType = "progress-bar-warning";
+					else progressBarType = "progress-bar-danger";
+					
+					$("#rate-" + type + "-box .progress-bar").css("width", progressBarValue.toString() +"%");
+					$("#rate-" + type + "-box .progress-bar").attr("aria-valuenow", progressBarValue.toString());
+					$("#rate-" + type + "-box .progress-bar").attr("class", "progress-bar " + progressBarType);
+					$("#rate-" + type + "-box .progress-value").html(progressBarValue.toString() +"%");
+				}
+				else if (type == "quality") {
+					var quality_plus = response.sum_plus;
+					var quality_minus = response.sum_minus;
+
+					var box_content = '';
+
+					if (quality_plus > 0 || quality_minus > 0) {
+						if (quality_plus > 0) {
+							box_content += '<font size="+2"><span class="label label-success">' +
+								quality_plus.toString() + 
+								' <span class="fa fa-thumbs-o-up"></span></span></font>';
+						}
+						if (quality_minus > 0) {
+							box_content += '<font size="+2"><span class="label label-danger">' +
+								quality_minus.toString() + 
+								' <span class="fa fa-thumbs-o-down"></span></span></font>';
+						}
+					}
+
+					$( "#rate-" + type + "-box" ).empty().html(box_content);
+				}
+
+				// update count
+				if (response.update_count == 1) {
+					var count = parseInt($("#votes_count").html(), 10);
+					count++;
+					var votes_word = " vote";
+					if (count > 1) votes_word += "s";
+					$("#votes_count").empty().html(count.toString() + votes_word);
+				}
+			}
+			$( ".rate-btn" ).click(function() {
+				var rate_type = $(this).attr('data-rate-type').toString();
+				var rate_type_full = "";
+				var rate = $(this).attr('data-rate').toString();
+				if (rate_type == "p") rate_type_full = "problem";
+				else if (rate_type == "i") rate_type_full = "implementation";
+				else if (rate_type == "q") rate_type_full = "quality";
+				$.get( '/?a=vote&pid=297&t=' + rate_type + '&r=' + rate, function( data ) {
+				  callback_after_vote(rate_type_full, data);
+				});
+			});
+			function manage_vote_interface(type) {
+				number_of_voteboxes--;
+				/*
+				if (number_of_voteboxes == 0) {
+					$( "#vote-box" ).fadeOut(1500, function() {
+						$(this).remove();
+					});
+				} else {
+					$( "#vote-" + type + "-box" ).fadeOut(1500, function() {
+						$(this).remove();
+					});
+				}
+				*/
+				var n = $('.vote-thank-you').length;
+				var offset = (n * 60).toString() + "px";
+				$(document.body).append(
+					'<div class="vote-thank-you" style="margin: 40%;">' +
+					'<div class="alert alert-success" style="position: fixed; top: '+offset+';">' +
+					'<strong>Thank you for voting!</strong>' +				
+					'</div></div>');
+				setTimeout(function(){$( ".vote-thank-you" ).fadeOut(1500, function() {
+					$(this).remove();
+				});},2000);
+			}
+		
+		
+		
+	
+
+
+
+
+
+
+
+
+ul.list-unstyled li{
+	margin-bottom: 5px;
+}
+ul.list-unstyled li a.btn{
+	width: 100%;
+}
+ul.ui-autocomplete{
+	z-index: 10000;
+	width: 200px !important;
+}
+
+
+	
+
+		
+		
+		
+			
+				
+					About | Tutorial | Tools | Clusters | Credits | API | Widgets
+					Legal: 
+					   Terms of Service | Privacy Policy | GDPR Info
+					
+				
+				
+					 RSS 
+				
+			
+		
+		
+		
+			
+	© Spoj.com. All Rights Reserved. Spoj uses Sphere Engine™ © by Sphere Research Labs.
+
+		 
+	
+
+	
+	
+		
+	
+	
+	$(function(){
+		setTimeout(function(){
+			$('.no_a_info').css('visibility', 'visible');
+		}, 5000);
+		
+		if(!$('.aProblemTop').length && !$('.aProblemsTop').length && !$('.aSubmitTop').length && !$('.aStatusTop').length && !$('.aMainRight').length){
+			ga('send', 'event', 'ads', 'no-ads', 'main-contest');
+		}
+		if ($('.aProblemTop').height() == 0){
+			$('.aProblemTop').css({'border': '1px solid #ddd', 'background': '#f0f4e3', 'height': 90});
+			$('.aProblemTop').html($('<p class="text-center">using adblock?</p><h4 class="text-center">Online ads help us to maintain site.</h4><p class="text-center"><strong>please whitelist *.spoj.com</strong></p>'));
+			ga('send', 'event', 'ads', 'adblock2', 'aProblemTop');
+		}
+		if ($('.aProblemsTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aProblemsTop');
+		}
+		if ($('.aSubmitTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aSubmitTop');
+		}
+		if ($('.aStatusTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aStatusTop');
+		}
+		if ($('.aMainRight').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aMainRight');
+		}
+	});
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	(function(d, s, id) {
+	  var js, fjs = d.getElementsByTagName(s)[0];
+	  if (d.getElementById(id)) return;
+	  js = d.createElement(s); js.id = id;
+	  js.src = "//connect.facebook.net/pl_PL/sdk.js#xfbml=1&appId=321676846207&version=v2.0";
+	  fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+	
+	
+
+
+
+
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-YF5KJ19JWE');
+
+
+
+
+    (function(h,o,t,j,a,r){
+        h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+        h._hjSettings={hjid:334656,hjsv:5};
+        a=o.getElementsByTagName('head')[0];
+        r=o.createElement('script');r.async=1;
+        r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+        a.appendChild(r);
+    })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
+
+
+
+(function(){
+  if(typeof _bsa !== 'undefined' && _bsa) {
+    // format, zoneKey, segment:value, options
+    _bsa.init('flexbar', 'CK7D4KJL', 'placement:demo');
+  }
+})();
+
+
+	$(function(){
+		$(document).on('click', '.track', function(){
+			var event = $(this).attr('data-event');
+			var action = $(this).attr('data-action');
+			var value = $(this).attr('data-value');
+			ga('send', 'event', event, action, value);
+		});
+	});
+	//window.open('http://incoming.hotjar.com/s/7366', '_blank');
+	
+
+
+
+
