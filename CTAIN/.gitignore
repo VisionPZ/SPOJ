@@ -1,0 +1,7 @@
+build/
+in/
+out/
+got_*.txt
+.nimcache/
+__pycache__/
+.tmp/
