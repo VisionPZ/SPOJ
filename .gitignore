@@ -8,3 +8,7 @@ out/
 got_*.txt
 *.log
 *.tmp
+
+.scratch_*/
+*.out.tmp
+gmon.out
