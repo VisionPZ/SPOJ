@@ -1,12 +1,12 @@
 ## Problem
 
-A maze has three rows and n columns of square blocks. Each block is empty, straight or bent, and the program may rotate any block by a multiple of 90 degrees. Decide whether those rotations form one passage from the left edge to the right edge. Print yes when a passage exists and no otherwise.
+A maze has three rows and n columns of square blocks. Each block is empty, straight, or bent, and the program can rotate any block by a multiple of 90 degrees. Decide whether the patterns form a passage from the left edge to the right edge. Print yes when a passage exists and no otherwise.
 
 The bounds and judge limits are:
 
 | Quantity | Bound |
 | --- | --- |
-| Test cases | no bound in the statement |
+| Test cases | not bounded in the statement |
 | Columns per case | 1 to 200000 |
 | Blocks per column | 3, each of type 0, 1 or 2 |
 | Time limit | 10000 ms |
@@ -16,23 +16,24 @@ The column count sets the scale, so one column must cost a small fixed amount.
 
 ## Idea
 
-State-compression dynamic programming keeps a three-bit mask of the rows whose right side is reachable from the left edge. A table built once maps one column's three block types and the current mask to the next mask. Trying every rotation of the whole maze grows exponentially with n.
+Keep four flags after each column. Three flags say which rows have a passage reaching the right side of that column. The fourth flag records a snake passage, which turns back and crosses to the opposite outer row. The program reads one column, updates the four flags, and repeats. Trying every rotation of the whole maze grows exponentially with n.
 
-One column costs one table lookup after its three integers are read.
+One column costs a fixed set of boolean tests.
 
 ## Why It Works
 
-A straight block opens either the left and right sides or the top and bottom sides. A bent block opens one adjacent pair of sides, and its four rotations cover all four pairs. An empty block opens no side. Two cells in one column join only when the upper cell opens its bottom side and the lower cell opens its top side.
+A straight tile carries a passage across its row or into the adjacent row. A bent tile turns a passage by 90 degrees. Two bent tiles in neighboring rows carry a passage between an outer row and the middle row. A column with types straight, bent, bent, or bent, bent, straight, lets a passage on an outer row reverse and reach the other outer row. The snake flag stores this chance while later all-straight columns keep it alive.
 
-The component of joined rows acts as one unit. A passage entering any row of that component can leave through any row that opens its right side. Columns choose rotations independently, so no earlier choice limits the next column. The reachable-row mask is therefore a complete state.
+The program starts with all three row flags set and the snake flag clear. Each column updates all four flags from the previous flags and its three tile types. After the last column, a set row flag means a passage spans the maze.
 
-The table uses these three rules:
+These rules drive the updates:
 
-- typeCode = topType * 9 + midType * 3 + botType packs the three block types into one key from 0 to 26.
-- reachRows[l] holds the exit rows reachable from entry row l inside one column.
-- nextMaskTable[typeCode][stateMask] gives the reachable rows after that column.
+- A straight top tile keeps a passage on the top row.
+- Two bent tiles in the top and middle rows move a passage between those rows.
+- Bent, straight, bent tiles in the three rows move a passage between the top and bottom rows.
+- The snake flag survives only across columns of three straight tiles.
 
-For the sample, the generator prints the mask trace 7 -> 3 -> 4 -> 4 -> 4 -> 4 -> 2. The last mask is nonzero, so the answer is yes.
+The generator prints the sample state trace 1110 1010 1101 1110 1111 1111 1111. The final row flags are all set, so the answer is yes.
 
 ## Code
 
@@ -41,12 +42,6 @@ For the sample, the generator prints the mask trace 7 -> 3 -> 4 -> 4 -> 4 -> 4 -
 
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
-const bitLeft = 1
-const bitRight = 2
-const bitTop = 4
-const bitBottom = 8
-const orientCount = [1, 2, 4]
-const orientSides = [[0, 0, 0, 0], [3, 12, 0, 0], [5, 6, 10, 9]]
 
 proc nextInt(data: string, scanPos: var int): int =
   while scanPos < data.len and (data[scanPos] < '0' or data[scanPos] > '9'):
@@ -58,56 +53,7 @@ proc nextInt(data: string, scanPos: var int): int =
   return value
 ```
 
-The orientation table stores side bits for each block type: 3 for left and right, 12 for top and bottom, and four corner masks. The scanner skips separators and stops at the buffer end. It reads each integer in one pass and allocates nothing.
-
-```nim
-proc buildReach(topType, midType, botType: int): array[3, int] =
-  var reachRows = [0, 0, 0]
-  for i in 0..<orientCount[topType]:
-    for j in 0..<orientCount[midType]:
-      for k in 0..<orientCount[botType]:
-        var sides = [orientSides[topType][i], orientSides[midType][j], orientSides[botType][k]]
-        let upperLink = (sides[0] and bitBottom) != 0 and (sides[1] and bitTop) != 0
-        let lowerLink = (sides[1] and bitBottom) != 0 and (sides[2] and bitTop) != 0
-        var leftRows = 0
-        var rightRows = 0
-        var compRows = [1, 2, 4]
-        for l in 0..2:
-          if (sides[l] and bitLeft) != 0: leftRows = leftRows or (1 shl l)
-          if (sides[l] and bitRight) != 0: rightRows = rightRows or (1 shl l)
-        if upperLink:
-          compRows[0] = compRows[0] or 2
-          compRows[1] = compRows[1] or 1
-        if lowerLink:
-          compRows[1] = compRows[1] or 4
-          compRows[2] = compRows[2] or 2
-        if upperLink and lowerLink:
-          compRows[0] = compRows[0] or 4
-          compRows[2] = compRows[2] or 1
-        for l in 0..2:
-          if (leftRows and (1 shl l)) != 0:
-            reachRows[l] = reachRows[l] or (rightRows and compRows[l])
-  return reachRows
-```
-
-The loops cover all rotations of the three blocks, at most four per block. compRows marks rows joined by open vertical sides, and the last branch adds the link across both joins. Each combination updates reachRows once, and there are at most 64 combinations.
-
-```nim
-var nextMaskTable: array[27, array[8, int]]
-for i in 0..2:
-  for j in 0..2:
-    for k in 0..2:
-      let reachRows = buildReach(i, j, k)
-      let typeCode = i * 9 + j * 3 + k
-      for l in 0..7:
-        var nextMask = 0
-        if (l and 1) != 0: nextMask = nextMask or reachRows[0]
-        if (l and 2) != 0: nextMask = nextMask or reachRows[1]
-        if (l and 4) != 0: nextMask = nextMask or reachRows[2]
-        nextMaskTable[typeCode][l] = nextMask
-```
-
-The loops cover 27 type triples and eight incoming masks. typeCode packs a triple into one array index. The table is built once before input starts, at a cost of 216 cells.
+The scanner skips separators and stops at the buffer end. It reads each integer in one pass and allocates nothing. Checking the end guard keeps the scan inside the buffer. The cost is one pass per input digit.
 
 ```nim
 var inputData = ""
@@ -124,18 +70,41 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+The first loop reads the whole input into one buffer before parsing starts. appendOutput flushes after flushBlockBytes bytes, which caps memory on large test sets. Reusing the buffer avoids one allocation per answer. The cost is one write per 256 KiB of output.
+
+```nim
 let caseCount = nextInt(inputData, scanPos)
 for i in 0..<caseCount:
   let columnCount = nextInt(inputData, scanPos)
-  var stateMask = 7
+  var topReach = true
+  var midReach = true
+  var botReach = true
+  var snakeReach = false
   for j in 0..<columnCount:
     let topType = nextInt(inputData, scanPos)
     let midType = nextInt(inputData, scanPos)
     let botType = nextInt(inputData, scanPos)
-    let typeCode = topType * 9 + midType * 3 + botType
-    stateMask = nextMaskTable[typeCode][stateMask]
-  if stateMask != 0:
+    let nextTop = (topReach and topType == 1) or
+                  (midReach and topType == 2 and midType == 2) or
+                  (botReach and topType == 2 and midType == 1 and botType == 2) or
+                  (snakeReach and topType == 1 and midType == 2 and botType == 2)
+    let nextMid = (topReach and topType == 2 and midType == 2) or
+                  (midReach and midType == 1) or
+                  (botReach and midType == 2 and botType == 2)
+    let nextBot = (topReach and topType == 2 and midType == 1 and botType == 2) or
+                  (midReach and midType == 2 and botType == 2) or
+                  (botReach and botType == 1) or
+                  (snakeReach and topType == 2 and midType == 2 and botType == 1)
+    let nextSnake = (topReach and topType == 1 and midType == 2 and botType == 2) or
+                    (botReach and topType == 2 and midType == 2 and botType == 1) or
+                    (snakeReach and topType == 1 and midType == 1 and botType == 1)
+    topReach = nextTop
+    midReach = nextMid
+    botReach = nextBot
+    snakeReach = nextSnake
+  if topReach or midReach or botReach:
     appendOutput("yes\n")
   else:
     appendOutput("no\n")
@@ -144,10 +113,10 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The first loop reads the entire input into one buffer before parsing starts. appendOutput flushes after flushBlockBytes bytes, which caps memory on large test sets. The outer loop runs once per case and the inner loop once per column. The last write flushes the partial block.
+The outer loop runs once per case and the inner loop once per column. The four new flags are computed before any old flag is replaced, so one column never reads a half-updated state. The final write flushes the partial block. One column costs three integer reads and a fixed set of tests.
 
 ## Complexity
 
-Building the orientation table visits at most 64 combinations for each of 27 type triples. Scanning reads one integer per block and costs O(n) time and O(1) extra space per case. The output buffer uses one block of memory.
+Reading the input costs time linear in the number of integers and space for one buffer. Each column costs fixed time and four boolean flags. Writing costs time linear in the number of cases and space for one output block.
 
-Total time is O(n) per case with a constant below ten operations per column. Total space is O(1) besides the input buffer and the output block. A naive search over all rotations takes exponential time in n.
+Total time is O(n) per case and total space is O(1) besides the input buffer. A search over all rotations takes exponential time in n.
