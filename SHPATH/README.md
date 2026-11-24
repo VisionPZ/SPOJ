@@ -211,15 +211,15 @@ proc shortestPathsFrom(source: int32, cityCount: int, targetsLeft: var int) =
         if targetsLeft == 0:
           currentDistance = int(guaranteedPathCost) + 1
           break
-      var i = edgeStart[settledVertex]
+      var j = edgeStart[settledVertex]
       let walkLimit = edgeStart[settledVertex + 1]
-      while i < walkLimit:
-        var neighbour = int(edgeTarget[i])
-        var candidateDistance = int32(currentDistance) + edgeCost[i]
+      while j < walkLimit:
+        var neighbour = int(edgeTarget[j])
+        var candidateDistance = int32(currentDistance) + edgeCost[j]
         if candidateDistance < distanceValue[neighbour] and candidateDistance <= guaranteedPathCost:
           distanceValue[neighbour] = candidateDistance
           enqueueBucket(candidateDistance, int32(neighbour))
-        i = i + 1
+        j = j + 1
     if targetsLeft == 0 or currentDistance >= int(guaranteedPathCost): break
     bucketHead[currentDistance] = -1
     var j = (currentDistance + 1) shr 6

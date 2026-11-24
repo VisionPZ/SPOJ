@@ -146,12 +146,12 @@ digits. It needs no sign branch because the spec gives only positive values.
 Work grows with the number of input bytes.
 
 ```nim
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - 48
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - 48
+    i = i + 1
   return value
 ```
 
@@ -166,13 +166,13 @@ var lineBuffer: string
 while readLine(stdin, lineBuffer):
   inputData.add lineBuffer
   inputData.add "\n"
-var scanPos = 0
-var caseCount = nextInt(inputData, scanPos)
+var i = 0
+var caseCount = nextInt(inputData, i)
 var outputBuffer: string
-for caseIndex in 1 .. caseCount:
-  var firstCapacity = nextInt(inputData, scanPos)
-  var secondCapacity = nextInt(inputData, scanPos)
-  var target = nextInt(inputData, scanPos)
+for j in 1 .. caseCount:
+  var firstCapacity = nextInt(inputData, i)
+  var secondCapacity = nextInt(inputData, i)
+  var target = nextInt(inputData, i)
   var answer: int
   if target > firstCapacity and target > secondCapacity:
     answer = -1

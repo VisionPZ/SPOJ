@@ -31,7 +31,7 @@ gives 60, since two 50 gram coins beat one hundred 1 gram coins.
 
 ```nim
 var tokens: seq[string]
-var tokenIndex = 0
+var i = 0
 var coinWeight: seq[int]
 var coinPrice: seq[int]
 var bestPrice: seq[int]
@@ -46,35 +46,35 @@ proc appendTokensFromLine(): int =
   var line = readLineText()
   while line.len == 0:
     line = readLineText()
-  var index = 0
-  while index < line.len:
-    while index < line.len and (line[index] == ' ' or line[index] == '\r' or line[index] == '\t'):
-      index += 1
-    let start = index
-    while index < line.len and line[index] != ' ' and line[index] != '\r' and line[index] != '\t':
-      index += 1
-    if index > start:
-      tokens.add(line[start ..< index])
+  var i = 0
+  while i < line.len:
+    while i < line.len and (line[i] == ' ' or line[i] == '\r' or line[i] == '\t'):
+      i += 1
+    let start = i
+    while i < line.len and line[i] != ' ' and line[i] != '\r' and line[i] != '\t':
+      i += 1
+    if i > start:
+      tokens.add(line[start ..< i])
   return tokens.len
 
 proc nextToken(): string =
   while true:
-    if tokenIndex < tokens.len:
-      let answer = tokens[tokenIndex]
-      tokenIndex += 1
+    if i < tokens.len:
+      let answer = tokens[i]
+      i += 1
       return answer
     setLen(tokens, 0)
-    tokenIndex = 0
+    i = 0
     discard appendTokensFromLine()
 
 proc nextNumber(): int =
   var text = nextToken()
   var value = 0
-  var position = 0
-  while position < text.len:
-    if text[position] in {'0' .. '9'}:
-      value = value * 10 + (text[position].ord - '0'.ord)
-    position += 1
+  var i = 0
+  while i < text.len:
+    if text[i] in {'0' .. '9'}:
+      value = value * 10 + (text[i].ord - '0'.ord)
+    i += 1
   return value
 
 proc appendNumber(buffer: var string, value: int) =
@@ -86,10 +86,10 @@ proc appendNumber(buffer: var string, value: int) =
     while rest > 0:
       digits.add(cast[uint8]('0'.ord + (rest mod 10)))
       rest = rest div 10
-  var index = digits.len - 1
-  while index >= 0:
-    buffer.add(cast[char](digits[index]))
-    index -= 1
+  var i = digits.len - 1
+  while i >= 0:
+    buffer.add(cast[char](digits[i]))
+    i -= 1
 
 var output: string
 
@@ -106,17 +106,17 @@ for _ in 0 ..< caseCount:
   let coinCount = nextNumber()
   setLen(coinWeight, coinCount)
   setLen(coinPrice, coinCount)
-  for index in 0 ..< coinCount:
-    coinPrice[index] = nextNumber()
-    coinWeight[index] = nextNumber()
+  for j in 0 ..< coinCount:
+    coinPrice[j] = nextNumber()
+    coinWeight[j] = nextNumber()
   let target = filledWeight - emptyWeight
   setLen(bestPrice, target + 1)
   bestPrice[0] = 0
   for weight in 1 .. target:
     bestPrice[weight] = impossiblePrice
-  for coin in 0 ..< coinCount:
-    let weight = coinWeight[coin]
-    let price = coinPrice[coin]
+  for j in 0 ..< coinCount:
+    let weight = coinWeight[j]
+    let price = coinPrice[j]
     if weight > 0 and weight <= target:
       for current in weight .. target:
         let candidate = bestPrice[current - weight] + price

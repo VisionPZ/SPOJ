@@ -153,8 +153,8 @@ while testCount > 0:
   for j in 0 ..< coordinateCount:
     currentX = coordinateList[j]
     var coverCount = 0
-    for segIndex in activeList:
-      coverList[coverCount] = segIndex
+    for k in activeList:
+      coverList[coverCount] = k
       coverCount += 1
     var startSeg = startHead[j]
     while startSeg != -1:

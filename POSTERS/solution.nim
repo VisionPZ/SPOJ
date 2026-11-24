@@ -9,15 +9,15 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 
 var outputBuffer = ""
@@ -34,72 +34,72 @@ proc compareInts(first, second: int): int =
 var compressedValues: seq[int]
 var nextFree: seq[int]
 
-proc findNext(position: int): int =
-  var root = position
+proc findNext(i: int): int =
+  var root = i
   while nextFree[root] != root:
     root = nextFree[root]
-  var cursor = position
-  while nextFree[cursor] != cursor:
-    var parent = nextFree[cursor]
-    nextFree[cursor] = root
-    cursor = parent
+  var j = i
+  while nextFree[j] != j:
+    var parent = nextFree[j]
+    nextFree[j] = root
+    j = parent
   return root
 
 proc lowerBound(value: int): int =
-  var low = 0
-  var high = compressedValues.len
-  while low < high:
-    var middle = (low + high) div 2
-    if compressedValues[middle] < value:
-      low = middle + 1
+  var i = 0
+  var j = compressedValues.len
+  while i < j:
+    var k = (i + j) div 2
+    if compressedValues[k] < value:
+      i = k + 1
     else:
-      high = middle
-  return low
+      j = k
+  return i
 
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 0..<caseCount:
-  let posterCount = nextInt(inputData, scanPos)
+let caseCount = nextInt(inputData, i)
+for j in 0..<caseCount:
+  let posterCount = nextInt(inputData, i)
   var leftBounds = newSeq[int](posterCount)
   var rightBounds = newSeq[int](posterCount)
   compressedValues = newSeq[int](posterCount * 6)
-  var compressedPos = 0
-  for posterIndex in 0..<posterCount:
-    let leftBound = nextInt(inputData, scanPos)
-    let rightBound = nextInt(inputData, scanPos)
-    leftBounds[posterIndex] = leftBound
-    rightBounds[posterIndex] = rightBound
-    compressedValues[compressedPos] = leftBound - 1
-    compressedPos += 1
-    compressedValues[compressedPos] = leftBound
-    compressedPos += 1
-    compressedValues[compressedPos] = leftBound + 1
-    compressedPos += 1
-    compressedValues[compressedPos] = rightBound - 1
-    compressedPos += 1
-    compressedValues[compressedPos] = rightBound
-    compressedPos += 1
-    compressedValues[compressedPos] = rightBound + 1
-    compressedPos += 1
+  var l = 0
+  for k in 0..<posterCount:
+    let leftBound = nextInt(inputData, i)
+    let rightBound = nextInt(inputData, i)
+    leftBounds[k] = leftBound
+    rightBounds[k] = rightBound
+    compressedValues[l] = leftBound - 1
+    l += 1
+    compressedValues[l] = leftBound
+    l += 1
+    compressedValues[l] = leftBound + 1
+    l += 1
+    compressedValues[l] = rightBound - 1
+    l += 1
+    compressedValues[l] = rightBound
+    l += 1
+    compressedValues[l] = rightBound + 1
+    l += 1
   sort(compressedValues, compareInts)
   var uniqueCount = 0
-  for valueIndex in 0..<compressedValues.len:
-    if valueIndex == 0 or compressedValues[valueIndex] != compressedValues[uniqueCount - 1]:
-      compressedValues[uniqueCount] = compressedValues[valueIndex]
+  for k in 0..<compressedValues.len:
+    if k == 0 or compressedValues[k] != compressedValues[uniqueCount - 1]:
+      compressedValues[uniqueCount] = compressedValues[k]
       uniqueCount += 1
   compressedValues.setLen(uniqueCount)
   nextFree = newSeq[int](uniqueCount + 1)
-  for freeIndex in 0..uniqueCount:
-    nextFree[freeIndex] = freeIndex
+  for k in 0..uniqueCount:
+    nextFree[k] = k
   var visibleCount = 0
-  for posterIndex in countdown(posterCount - 1, 0):
-    let leftIndex = lowerBound(leftBounds[posterIndex])
-    let rightIndex = lowerBound(rightBounds[posterIndex])
-    var current = findNext(leftIndex)
-    if current <= rightIndex:
+  for k in countdown(posterCount - 1, 0):
+    let i = lowerBound(leftBounds[k])
+    let j = lowerBound(rightBounds[k])
+    var l = findNext(i)
+    if l <= j:
       visibleCount += 1
-      while current <= rightIndex:
-        nextFree[current] = findNext(current + 1)
-        current = findNext(current)
+      while l <= j:
+        nextFree[l] = findNext(l + 1)
+        l = findNext(l)
   appendOutput($(visibleCount))
   outputBuffer.add '\n'
 

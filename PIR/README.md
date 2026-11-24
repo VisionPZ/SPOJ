@@ -63,17 +63,17 @@ import math, strutils
 const flushBlockBytes = 1 shl 18
 const digitBase = 48
 
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and int(inputData[scanPos]) < digitBase:
-    scanPos += 1
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and int(inputData[i]) < digitBase:
+    i += 1
   var value = 0
-  while scanPos < inputData.len and int(inputData[scanPos]) >= digitBase:
-    value = value * 10 + (int(inputData[scanPos]) - digitBase)
-    scanPos += 1
+  while i < inputData.len and int(inputData[i]) >= digitBase:
+    value = value * 10 + (int(inputData[i]) - digitBase)
+    i += 1
   return value
 ```
 
-Both loops advance `scanPos` once per byte, so scanning costs one pass over the input buffer. The cast turns a character into a number before the comparison. The scanner skips spaces and newlines without allocating tokens.
+Both loops advance `i` once per byte, so scanning costs one pass over the input buffer. The cast turns a character into a number before the comparison. The scanner skips spaces and newlines without allocating tokens.
 
 ```nim
 proc addProduct(highWord: var int64, lowWord: var uint64, term: int64) =
@@ -98,8 +98,8 @@ while readLine(stdin, nextLine):
   inputData.add nextLine
   inputData.add '\n'
 
-var scanPos = 0
-let testCount = nextInt(inputData, scanPos)
+var i = 0
+let testCount = nextInt(inputData, i)
 var outputBuffer = ""
 var highWord: int64 = 0
 var lowWord: uint64 = 0
@@ -108,14 +108,14 @@ var lowWord: uint64 = 0
 The read loop adds a newline after each line, so tokens never join across lines. `flushOutput` clears the same buffer with `setLen 0`, so memory stays at one block. Reading finishes before the case loop starts.
 
 ```nim
-var caseIndex = 0
-while caseIndex < testCount:
-  let edgeAB = nextInt(inputData, scanPos)
-  let edgeAC = nextInt(inputData, scanPos)
-  let edgeAD = nextInt(inputData, scanPos)
-  let edgeBC = nextInt(inputData, scanPos)
-  let edgeBD = nextInt(inputData, scanPos)
-  let edgeCD = nextInt(inputData, scanPos)
+var j = 0
+while j < testCount:
+  let edgeAB = nextInt(inputData, i)
+  let edgeAC = nextInt(inputData, i)
+  let edgeAD = nextInt(inputData, i)
+  let edgeBC = nextInt(inputData, i)
+  let edgeBD = nextInt(inputData, i)
+  let edgeCD = nextInt(inputData, i)
 
   let squaredAD = edgeAD * edgeAD
   let squaredBD = edgeBD * edgeBD
@@ -138,7 +138,7 @@ while caseIndex < testCount:
   outputBuffer.add '\n'
   if outputBuffer.len >= flushBlockBytes:
     flushOutput(outputBuffer)
-  caseIndex += 1
+  j += 1
 
 if outputBuffer.len > 0:
   flushOutput(outputBuffer)

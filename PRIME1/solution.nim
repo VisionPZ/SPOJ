@@ -28,12 +28,12 @@ proc primeList(windowLow, windowHigh: int, smallPrimes: seq[int]): seq[int] =
     if value > 1 and not marked[value - windowLow]: primes.add value
   return primes
 
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - 48
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - 48
+    i = i + 1
   return value
 
 var smallPrimes = basePrimes()
@@ -42,12 +42,12 @@ var line: string
 while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
-var scanPos = 0
-var caseCount = nextInt(inputData, scanPos)
+var i = 0
+var caseCount = nextInt(inputData, i)
 var outputBuffer: string
 for _ in 1 .. caseCount:
-  var windowLow = nextInt(inputData, scanPos)
-  var windowHigh = nextInt(inputData, scanPos)
+  var windowLow = nextInt(inputData, i)
+  var windowHigh = nextInt(inputData, i)
   for prime in primeList(windowLow, windowHigh, smallPrimes):
     outputBuffer.add $prime
     outputBuffer.add "\n"

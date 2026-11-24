@@ -151,16 +151,16 @@ square root of n. The window buffer costs 100 KB at worst.
 **Token reader.** Digits are scanned by index, so no token object is built.
 
 ```nim
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - 48
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - 48
+    i = i + 1
   return value```
 
-`scanPos` is a `var int` parameter, so the scan position survives across calls. A digit
-byte becomes `int(inputData[scanPos]) - 48`, with no substring and no parse call. PRIME1 keeps
+`i` is a `var int` parameter, so the scan position survives across calls. A digit
+byte becomes `int(inputData[i]) - 48`, with no substring and no parse call. PRIME1 keeps
 values positive, so no sign branch is needed.
 
 **Driver.** One read of everything, writes in 128 KiB blocks.
@@ -172,12 +172,12 @@ var line: string
 while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
-var scanPos = 0
-var caseCount = nextInt(inputData, scanPos)
+var i = 0
+var caseCount = nextInt(inputData, i)
 var outputBuffer: string
 for _ in 1 .. caseCount:
-  var windowLow = nextInt(inputData, scanPos)
-  var windowHigh = nextInt(inputData, scanPos)
+  var windowLow = nextInt(inputData, i)
+  var windowHigh = nextInt(inputData, i)
   for prime in primeList(windowLow, windowHigh, smallPrimes):
     outputBuffer.add $prime
     outputBuffer.add "\n"
