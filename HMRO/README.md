@@ -59,9 +59,9 @@ proc readDataLine(): string =
 
 proc readCount(text: string): int =
   var value = 0
-  for index in 0 ..< text.len:
-    if text[index] in {'0' .. '9'}:
-      value = value * 10 + (text[index].ord - '0'.ord)
+  for i in 0 ..< text.len:
+    if text[i] in {'0' .. '9'}:
+      value = value * 10 + (text[i].ord - '0'.ord)
   return value
 
 proc compareStrings(first: string, second: string): int =
@@ -79,16 +79,16 @@ proc compareRecords(first: RecruitRecord, second: RecruitRecord): int =
   return 0
 
 proc findIndex(values: var seq[string], wanted: string): int =
-  var low = 0
-  var high = values.len - 1
-  while low <= high:
-    let middle = (low + high) div 2
-    if values[middle] == wanted:
-      return middle
-    if values[middle] < wanted:
-      low = middle + 1
+  var i = 0
+  var j = values.len - 1
+  while i <= j:
+    let k = (i + j) div 2
+    if values[k] == wanted:
+      return k
+    if values[k] < wanted:
+      i = k + 1
     else:
-      high = middle - 1
+      j = k - 1
   return -1
 
 proc findTerminal(parent: var seq[int], node: int): int =
@@ -109,28 +109,28 @@ proc findTerminal(parent: var seq[int], node: int): int =
   return root
 
 let caseCount = readCount(readDataLine())
-for caseIndex in 0 ..< caseCount:
+for j in 0 ..< caseCount:
   let listedCount = readCount(readDataLine())
   var records: seq[RecruitRecord]
   var officeCodes: seq[string]
   for _ in 0 ..< listedCount:
     let line = readDataLine()
-    var splitAt = 0
-    while splitAt < line.len and line[splitAt] != ' ':
-      splitAt += 1
-    let pesel = line[0 ..< splitAt]
-    let office = line[splitAt + 1 ..< line.len]
+    var i = 0
+    while i < line.len and line[i] != ' ':
+      i += 1
+    let pesel = line[0 ..< i]
+    let office = line[i + 1 ..< line.len]
     records.add(RecruitRecord(pesel: pesel, office: office))
     officeCodes.add(office)
   let redirectionCount = readCount(readDataLine())
   var redirections: seq[RedirectionRecord]
   for _ in 0 ..< redirectionCount:
     let line = readDataLine()
-    var splitAt = 0
-    while splitAt < line.len and line[splitAt] != ' ':
-      splitAt += 1
-    let oldOffice = line[0 ..< splitAt]
-    let newOffice = line[splitAt + 1 ..< line.len]
+    var i = 0
+    while i < line.len and line[i] != ' ':
+      i += 1
+    let oldOffice = line[0 ..< i]
+    let newOffice = line[i + 1 ..< line.len]
     redirections.add(RedirectionRecord(oldOffice: oldOffice, newOffice: newOffice))
     officeCodes.add(oldOffice)
     officeCodes.add(newOffice)
@@ -142,37 +142,37 @@ for caseIndex in 0 ..< caseCount:
   sort(records, compareRecords)
   var parent: seq[int]
   setLen(parent, uniqueCodes.len)
-  for index in 0 ..< parent.len:
-    parent[index] = -1
+  for i in 0 ..< parent.len:
+    parent[i] = -1
   for record in redirections:
-    let oldIndex = findIndex(uniqueCodes, record.oldOffice)
-    let newIndex = findIndex(uniqueCodes, record.newOffice)
-    if oldIndex >= 0 and newIndex >= 0:
-      parent[oldIndex] = newIndex
+    let k = findIndex(uniqueCodes, record.oldOffice)
+    let l = findIndex(uniqueCodes, record.newOffice)
+    if k >= 0 and l >= 0:
+      parent[k] = l
   let recruitCount = readCount(readDataLine())
   for _ in 0 ..< recruitCount:
     let pesel = readDataLine()
     var office = ""
-    var low = 0
-    var high = records.len - 1
-    while low <= high:
-      let middle = (low + high) div 2
-      if records[middle].pesel == pesel:
-        office = records[middle].office
+    var i = 0
+    var k = records.len - 1
+    while i <= k:
+      let l = (i + k) div 2
+      if records[l].pesel == pesel:
+        office = records[l].office
         break
-      if records[middle].pesel < pesel:
-        low = middle + 1
+      if records[l].pesel < pesel:
+        i = l + 1
       else:
-        high = middle - 1
+        k = l - 1
     var result = office
-    let officeIndex = findIndex(uniqueCodes, office)
-    if officeIndex >= 0:
-      result = uniqueCodes[findTerminal(parent, officeIndex)]
+    let l = findIndex(uniqueCodes, office)
+    if l >= 0:
+      result = uniqueCodes[findTerminal(parent, l)]
     emit(pesel)
     emit(" ")
     emit(result)
     emit("\n")
-  if caseIndex + 1 < caseCount:
+  if j + 1 < caseCount:
     emit("\n")
 stdout.write(output)
 ```

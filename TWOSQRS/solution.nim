@@ -8,15 +8,15 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int64 =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int64 =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value: int64 = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int64(int(data[position]) - firstDigitValue)
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int64(int(data[i]) - firstDigitValue)
+    i += 1
   return value
 
 var isComposite = newSeq[bool](primeLimit + 1)
@@ -56,9 +56,9 @@ proc appendOutput(text: string) =
     stdout.write outputBuffer
     outputBuffer.setLen 0
 
-let caseCount = int(nextInt(inputData, scanPos))
-for caseIndex in 0..<caseCount:
-  let value = nextInt(inputData, scanPos)
+let caseCount = int(nextInt(inputData, i))
+for j in 0..<caseCount:
+  let value = nextInt(inputData, i)
   if isSumOfTwoSquares(value):
     appendOutput("Yes")
   else:

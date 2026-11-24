@@ -1,29 +1,29 @@
 const flushBlockBytes = 1 shl 16
 
-proc nextToken(data: string, scanPos: var int): tuple[first: int, length: int] =
-  while scanPos < data.len and data[scanPos] <= ' ':
-    scanPos += 1
-  let tokenStart = scanPos
-  while scanPos < data.len and data[scanPos] > ' ':
-    scanPos += 1
+proc nextToken(data: string, i: var int): tuple[first: int, length: int] =
+  while i < data.len and data[i] <= ' ':
+    i += 1
+  let tokenStart = i
+  while i < data.len and data[i] > ' ':
+    i += 1
   result.first = tokenStart
-  result.length = scanPos - tokenStart
+  result.length = i - tokenStart
 
 proc containsPattern(data: string, textStart, textLen, patternStart, patternLen: int): bool =
   if patternLen > textLen:
     return false
-  var startOffset = 0
-  while startOffset + patternLen <= textLen:
+  var i = 0
+  while i + patternLen <= textLen:
     var matched = true
-    var patternIndex = 0
-    while patternIndex < patternLen:
-      if data[textStart + startOffset + patternIndex] != data[patternStart + patternIndex]:
+    var j = 0
+    while j < patternLen:
+      if data[textStart + i + j] != data[patternStart + j]:
         matched = false
         break
-      patternIndex += 1
+      j += 1
     if matched:
       return true
-    startOffset += 1
+    i += 1
   return false
 
 var inputData = ""
@@ -32,14 +32,14 @@ while readLine(stdin, lineBuffer):
   inputData.add(lineBuffer)
   inputData.add('\n')
 
-var scanPos = 0
+var i = 0
 var outputBuffer = ""
 
 while true:
-  let textToken = nextToken(inputData, scanPos)
+  let textToken = nextToken(inputData, i)
   if textToken.length == 0:
     break
-  let patternToken = nextToken(inputData, scanPos)
+  let patternToken = nextToken(inputData, i)
   if patternToken.length == 0:
     break
   if containsPattern(inputData, textToken.first, textToken.length, patternToken.first, patternToken.length):

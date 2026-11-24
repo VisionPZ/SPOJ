@@ -14,31 +14,31 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc skipWhitespace(data: string, position: var int) =
-  while position < data.len and data[position] <= ' ':
-    position += 1
+proc skipWhitespace(data: string, i: var int) =
+  while i < data.len and data[i] <= ' ':
+    i += 1
 
-proc scanInteger(data: string, position: var int): int =
-  skipWhitespace(data, position)
+proc scanInteger(data: string, i: var int): int =
+  skipWhitespace(data, i)
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 
-proc scanTokenSpan(data: string, position: var int): tuple[first: int, last: int] =
-  skipWhitespace(data, position)
-  let tokenFirst = position
-  while position < data.len and data[position] > ' ':
-    position += 1
-  return (tokenFirst, position)
+proc scanTokenSpan(data: string, i: var int): tuple[first: int, last: int] =
+  skipWhitespace(data, i)
+  let tokenFirst = i
+  while i < data.len and data[i] > ' ':
+    i += 1
+  return (tokenFirst, i)
 
 proc encodeTeam(data: string, tokenFirst: int, tokenLast: int): int =
   var code = 0
-  for charIndex in tokenFirst..<tokenLast:
-    let character = data[charIndex]
+  for i in tokenFirst..<tokenLast:
+    let character = data[i]
     if character >= '0' and character <= '9':
       code = code * base36 + int(character) - firstDigitValue
     else:
@@ -70,25 +70,25 @@ var acceptedPerProblem = newSeq[int](problemCount)
 var submissionSumPerProblem = newSeq[int](problemCount)
 var timeSumPerProblem = newSeq[int](problemCount)
 
-let caseCount = scanInteger(inputData, scanPos)
-for caseIndex in 0..<caseCount:
-  for slotIndex in 0..<teamSlotCount:
-    teamSlotIndices[slotIndex] = -1
-  for pairIndex in 0..<maxTeamCount * problemCount:
-    solvedFlags[pairIndex] = false
-    submissionCounts[pairIndex] = 0
-  for problemIndex in 0..<problemCount:
-    acceptedPerProblem[problemIndex] = 0
-    submissionSumPerProblem[problemIndex] = 0
-    timeSumPerProblem[problemIndex] = 0
+let caseCount = scanInteger(inputData, i)
+for j in 0..<caseCount:
+  for k in 0..<teamSlotCount:
+    teamSlotIndices[k] = -1
+  for l in 0..<maxTeamCount * problemCount:
+    solvedFlags[l] = false
+    submissionCounts[l] = 0
+  for k in 0..<problemCount:
+    acceptedPerProblem[k] = 0
+    submissionSumPerProblem[k] = 0
+    timeSumPerProblem[k] = 0
 
-  let submissionCount = scanInteger(inputData, scanPos)
+  let submissionCount = scanInteger(inputData, i)
   var nextTeamIndex = 0
-  for submissionIndex in 0..<submissionCount:
-    let submissionTime = scanInteger(inputData, scanPos)
-    let teamSpan = scanTokenSpan(inputData, scanPos)
-    let problemSpan = scanTokenSpan(inputData, scanPos)
-    let resultSpan = scanTokenSpan(inputData, scanPos)
+  for k in 0..<submissionCount:
+    let submissionTime = scanInteger(inputData, i)
+    let teamSpan = scanTokenSpan(inputData, i)
+    let problemSpan = scanTokenSpan(inputData, i)
+    let resultSpan = scanTokenSpan(inputData, i)
     let problemIndex = int(inputData[problemSpan.first]) - firstUpperCaseValue
     let isAccepted = inputData[resultSpan.first] == acceptedMark
     let teamCode = encodeTeam(inputData, teamSpan.first, teamSpan.last)
@@ -100,26 +100,26 @@ for caseIndex in 0..<caseCount:
       teamSlotIndices[slotIndex] = nextTeamIndex
       nextTeamIndex += 1
     let teamIndex = teamSlotIndices[slotIndex]
-    let pairIndex = teamIndex * problemCount + problemIndex
-    if not solvedFlags[pairIndex]:
-      submissionCounts[pairIndex] += 1
+    let l = teamIndex * problemCount + problemIndex
+    if not solvedFlags[l]:
+      submissionCounts[l] += 1
       if isAccepted:
-        solvedFlags[pairIndex] = true
+        solvedFlags[l] = true
         acceptedPerProblem[problemIndex] += 1
-        submissionSumPerProblem[problemIndex] += submissionCounts[pairIndex]
+        submissionSumPerProblem[problemIndex] += submissionCounts[l]
         timeSumPerProblem[problemIndex] += submissionTime
 
-  for problemIndex in 0..<problemCount:
-    outputBuffer.add chr(firstUpperCaseValue + problemIndex)
+  for k in 0..<problemCount:
+    outputBuffer.add chr(firstUpperCaseValue + k)
     outputBuffer.add ' '
-    outputBuffer.add $acceptedPerProblem[problemIndex]
+    outputBuffer.add $acceptedPerProblem[k]
     outputBuffer.add ' '
-    if acceptedPerProblem[problemIndex] > 0:
-      appendAverage(submissionSumPerProblem[problemIndex],
-                    acceptedPerProblem[problemIndex], outputBuffer)
+    if acceptedPerProblem[k] > 0:
+      appendAverage(submissionSumPerProblem[k],
+                    acceptedPerProblem[k], outputBuffer)
       outputBuffer.add ' '
-      appendAverage(timeSumPerProblem[problemIndex],
-                    acceptedPerProblem[problemIndex], outputBuffer)
+      appendAverage(timeSumPerProblem[k],
+                    acceptedPerProblem[k], outputBuffer)
       outputBuffer.add ' '
     outputBuffer.add '\n'
     flushIfNeeded(outputBuffer)

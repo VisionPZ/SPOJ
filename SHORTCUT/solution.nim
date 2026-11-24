@@ -1,13 +1,13 @@
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    scanPos.inc
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
+    i.inc
   result = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    result = result * 10 + (ord(inputData[scanPos]) - firstDigitValue)
-    scanPos.inc
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    result = result * 10 + (ord(inputData[i]) - firstDigitValue)
+    i.inc
 
 proc considerShortcut(lengthValue: int, firstBreak: int, secondBreak: int,
                       horizontal: bool, xPositions: seq[int], yPositions: seq[int],
@@ -43,8 +43,8 @@ while readLine(stdin, lineBuffer):
   inputData.add '\n'
 
 var outputBuffer = ""
-var scanPos = 0
-let testCount = nextInt(inputData, scanPos)
+var i = 0
+let testCount = nextInt(inputData, i)
 
 var xPositions = newSeq[int](1)
 var yPositions = newSeq[int](1)
@@ -55,8 +55,8 @@ var yCounts = newSeq[int](1)
 var lastOnRow = newSeq[int](1)
 var lastOnColumn = newSeq[int](1)
 
-for caseIndex in 0 ..< testCount:
-  let sectionCount = nextInt(inputData, scanPos)
+for j in 0 ..< testCount:
+  let sectionCount = nextInt(inputData, i)
   let breakCount = sectionCount + 1
   let coordinateOffset = sectionCount + 2
   let bucketCount = 2 * sectionCount + 5
@@ -72,21 +72,21 @@ for caseIndex in 0 ..< testCount:
     lastOnRow.setLen(bucketCount)
     lastOnColumn.setLen(bucketCount)
 
-  for bucketIndex in 0 .. bucketCount - 1:
-    xCounts[bucketIndex] = 0
-    yCounts[bucketIndex] = 0
-    lastOnRow[bucketIndex] = -1
-    lastOnColumn[bucketIndex] = -1
+  for j in 0 .. bucketCount - 1:
+    xCounts[j] = 0
+    yCounts[j] = 0
+    lastOnRow[j] = -1
+    lastOnColumn[j] = -1
 
-  while scanPos < inputData.len and inputData[scanPos] <= ' ':
-    scanPos.inc
+  while i < inputData.len and inputData[i] <= ' ':
+    i.inc
 
   var currentX = 0
   var currentY = 0
   xPositions[0] = 0
   yPositions[0] = 0
-  for sectionIndex in 1 .. sectionCount:
-    case inputData[scanPos]
+  for j in 1 .. sectionCount:
+    case inputData[i]
     of 'N':
       currentY.inc
     of 'S':
@@ -97,30 +97,30 @@ for caseIndex in 0 ..< testCount:
       currentX.dec
     else:
       discard
-    scanPos.inc
-    xPositions[sectionIndex] = currentX
-    yPositions[sectionIndex] = currentY
+    i.inc
+    xPositions[j] = currentX
+    yPositions[j] = currentY
 
-  for breakIndex in 0 .. sectionCount:
-    xCounts[xPositions[breakIndex] + coordinateOffset].inc
-    yCounts[yPositions[breakIndex] + coordinateOffset].inc
+  for k in 0 .. sectionCount:
+    xCounts[xPositions[k] + coordinateOffset].inc
+    yCounts[yPositions[k] + coordinateOffset].inc
 
   var xRunning = 0
   var yRunning = 0
-  for bucketIndex in 0 .. bucketCount - 1:
-    let xBucketSize = xCounts[bucketIndex]
-    let yBucketSize = yCounts[bucketIndex]
-    xCounts[bucketIndex] = xRunning
-    yCounts[bucketIndex] = yRunning
+  for j in 0 .. bucketCount - 1:
+    let xBucketSize = xCounts[j]
+    let yBucketSize = yCounts[j]
+    xCounts[j] = xRunning
+    yCounts[j] = yRunning
     xRunning += xBucketSize
     yRunning += yBucketSize
 
-  for breakIndex in 0 .. sectionCount:
-    let xSlot = xPositions[breakIndex] + coordinateOffset
-    orderByX[xCounts[xSlot]] = breakIndex
+  for k in 0 .. sectionCount:
+    let xSlot = xPositions[k] + coordinateOffset
+    orderByX[xCounts[xSlot]] = k
     xCounts[xSlot].inc
-    let ySlot = yPositions[breakIndex] + coordinateOffset
-    orderByY[yCounts[ySlot]] = breakIndex
+    let ySlot = yPositions[k] + coordinateOffset
+    orderByY[yCounts[ySlot]] = k
     yCounts[ySlot].inc
 
   var bestLength = 1 shl 30
@@ -128,27 +128,27 @@ for caseIndex in 0 ..< testCount:
   var bestEnd = 0
   var bestDirection = 'N'
 
-  for orderIndex in 0 .. sectionCount:
-    let breakIndex = orderByX[orderIndex]
-    let rowSlot = yPositions[breakIndex] + coordinateOffset
+  for j in 0 .. sectionCount:
+    let k = orderByX[j]
+    let rowSlot = yPositions[k] + coordinateOffset
     let previousBreak = lastOnRow[rowSlot]
     if previousBreak >= 0:
-      if abs(breakIndex - previousBreak) != 1:
-        let lengthValue = xPositions[breakIndex] - xPositions[previousBreak]
-        considerShortcut(lengthValue, previousBreak, breakIndex, true,
+      if abs(k - previousBreak) != 1:
+        let lengthValue = xPositions[k] - xPositions[previousBreak]
+        considerShortcut(lengthValue, previousBreak, k, true,
           xPositions, yPositions, bestLength, bestBegin, bestEnd, bestDirection)
-    lastOnRow[rowSlot] = breakIndex
+    lastOnRow[rowSlot] = k
 
-  for orderIndex in 0 .. sectionCount:
-    let breakIndex = orderByY[orderIndex]
-    let columnSlot = xPositions[breakIndex] + coordinateOffset
+  for j in 0 .. sectionCount:
+    let k = orderByY[j]
+    let columnSlot = xPositions[k] + coordinateOffset
     let previousBreak = lastOnColumn[columnSlot]
     if previousBreak >= 0:
-      if abs(breakIndex - previousBreak) != 1:
-        let lengthValue = yPositions[breakIndex] - yPositions[previousBreak]
-        considerShortcut(lengthValue, previousBreak, breakIndex, false,
+      if abs(k - previousBreak) != 1:
+        let lengthValue = yPositions[k] - yPositions[previousBreak]
+        considerShortcut(lengthValue, previousBreak, k, false,
           xPositions, yPositions, bestLength, bestBegin, bestEnd, bestDirection)
-    lastOnColumn[columnSlot] = breakIndex
+    lastOnColumn[columnSlot] = k
 
   outputBuffer.add $bestLength
   outputBuffer.add ' '

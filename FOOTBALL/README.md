@@ -85,16 +85,16 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int =
+proc nextInt(data: string, i: var int): int =
   let dataLength = data.len
-  while position < dataLength and (data[position] < '0' or data[position] > '9'):
-    position += 1
+  while i < dataLength and (data[i] < '0' or data[i] > '9'):
+    i += 1
   result = 0
-  while position < dataLength and data[position] >= '0' and data[position] <= '9':
-    result = result * 10 + (int(data[position]) - firstDigitValue)
-    position += 1
+  while i < dataLength and data[i] >= '0' and data[i] <= '9':
+    result = result * 10 + (int(data[i]) - firstDigitValue)
+    i += 1
 ```
 
 readLine runs once per input line and appends to one buffer. The scanner skips separators and consumes digits in place. The parse visits each input byte once.
@@ -121,14 +121,14 @@ The buffer flushes after 256 KiB, not after each answer. A per-case write enters
 The outer loop runs caseCount times, and the inner loop runs vertexCount times.
 
 ```
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 0..<caseCount:
-  let vertexCount = nextInt(inputData, scanPos)
+let caseCount = nextInt(inputData, i)
+for j in 0..<caseCount:
+  let vertexCount = nextInt(inputData, i)
   var greenPieceSum = 0
   var greenPentagonVertices = 0
   var boundaryState = stateHexagonEdge
-  for vertexIndex in 0..<vertexCount:
-    let adjoiningGreenPieces = nextInt(inputData, scanPos)
+  for k in 0..<vertexCount:
+    let adjoiningGreenPieces = nextInt(inputData, i)
     greenPieceSum += adjoiningGreenPieces
     case boundaryState
     of statePentagonFace:

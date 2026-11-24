@@ -11,38 +11,38 @@ while readLine(stdin, lineBuffer):
   inputData.add(lineBuffer)
   inputData.add('\n')
 
-var scanPos = 0
+var i = 0
 
-proc skipWhitespace(data: string, pos: var int) =
-  while pos < data.len and data[pos] <= ' ':
-    inc pos
+proc skipWhitespace(data: string, i: var int) =
+  while i < data.len and data[i] <= ' ':
+    inc i
 
-proc nextInt(data: string, pos: var int): int =
-  skipWhitespace(data, pos)
+proc nextInt(data: string, i: var int): int =
+  skipWhitespace(data, i)
   result = 0
-  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    result = result * 10 + (int(data[pos]) - firstDigitCode)
-    inc pos
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    result = result * 10 + (int(data[i]) - firstDigitCode)
+    inc i
 
-proc readWord(data: string, pos: var int): tuple[start: int, length: int] =
-  skipWhitespace(data, pos)
-  result.start = pos
-  while pos < data.len and data[pos] >= 'a' and data[pos] <= 'z':
-    inc pos
-  result.length = pos - result.start
+proc readWord(data: string, i: var int): tuple[start: int, length: int] =
+  skipWhitespace(data, i)
+  result.start = i
+  while i < data.len and data[i] >= 'a' and data[i] <= 'z':
+    inc i
+  result.length = i - result.start
 
-proc bitAdd(tree: var seq[int], index: int) =
-  var idx = index
-  while idx < tree.len:
-    tree[idx] += 1
-    idx += idx and (-idx)
+proc bitAdd(tree: var seq[int], i: int) =
+  var j = i
+  while j < tree.len:
+    tree[j] += 1
+    j += j and (-j)
 
-proc bitSum(tree: var seq[int], index: int): int =
-  var idx = index
+proc bitSum(tree: var seq[int], i: int): int =
+  var j = i
   result = 0
-  while idx > 0:
-    result += tree[idx]
-    idx -= idx and (-idx)
+  while j > 0:
+    result += tree[j]
+    j -= j and (-j)
 
 var outputBuffer = ""
 
@@ -56,80 +56,80 @@ proc appendAnswer(answer: int64) =
   if outputBuffer.len >= flushBlockBytes:
     flushOutput()
 
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 0 .. caseCount - 1:
-  let sourceWord = readWord(inputData, scanPos)
-  let targetWord = readWord(inputData, scanPos)
-  let pairCount = nextInt(inputData, scanPos)
+let caseCount = nextInt(inputData, i)
+for j in 0 .. caseCount - 1:
+  let sourceWord = readWord(inputData, i)
+  let targetWord = readWord(inputData, i)
+  let pairCount = nextInt(inputData, i)
 
   var adjacencyMask: array[letterKinds, int]
-  for pairIndex in 0 .. pairCount - 1:
-    skipWhitespace(inputData, scanPos)
-    let leftLetter = int(inputData[scanPos]) - firstLetterCode
-    inc scanPos
-    skipWhitespace(inputData, scanPos)
-    let rightLetter = int(inputData[scanPos]) - firstLetterCode
-    inc scanPos
+  for k in 0 .. pairCount - 1:
+    skipWhitespace(inputData, i)
+    let leftLetter = int(inputData[i]) - firstLetterCode
+    inc i
+    skipWhitespace(inputData, i)
+    let rightLetter = int(inputData[i]) - firstLetterCode
+    inc i
     adjacencyMask[leftLetter] = adjacencyMask[leftLetter] or (1 shl rightLetter)
     adjacencyMask[rightLetter] = adjacencyMask[rightLetter] or (1 shl leftLetter)
 
   var possible = true
   var sourceFreq: array[letterKinds, int]
   var targetFreq: array[letterKinds, int]
-  for offset in 0 .. sourceWord.length - 1:
-    inc sourceFreq[int(inputData[sourceWord.start + offset]) - firstLetterCode]
-  for offset in 0 .. targetWord.length - 1:
-    inc targetFreq[int(inputData[targetWord.start + offset]) - firstLetterCode]
-  for letterIndex in 0 .. letterKinds - 1:
-    if sourceFreq[letterIndex] != targetFreq[letterIndex]:
+  for k in 0 .. sourceWord.length - 1:
+    inc sourceFreq[int(inputData[sourceWord.start + k]) - firstLetterCode]
+  for k in 0 .. targetWord.length - 1:
+    inc targetFreq[int(inputData[targetWord.start + k]) - firstLetterCode]
+  for k in 0 .. letterKinds - 1:
+    if sourceFreq[k] != targetFreq[k]:
       possible = false
 
   var answer: int64 = 0
   if possible and sourceWord.length > 0:
     var positionLists: array[letterKinds, seq[int]]
-    for letterIndex in 0 .. letterKinds - 1:
-      positionLists[letterIndex] = newSeq[int](targetFreq[letterIndex])
+    for k in 0 .. letterKinds - 1:
+      positionLists[k] = newSeq[int](targetFreq[k])
     var filled: array[letterKinds, int]
-    for offset in 0 .. targetWord.length - 1:
-      let letterIndex = int(inputData[targetWord.start + offset]) - firstLetterCode
-      positionLists[letterIndex][filled[letterIndex]] = offset
-      inc filled[letterIndex]
+    for k in 0 .. targetWord.length - 1:
+      let l = int(inputData[targetWord.start + k]) - firstLetterCode
+      positionLists[l][filled[l]] = k
+      inc filled[l]
 
     var targetIndexAt = newSeq[int](sourceWord.length)
-    for letterIndex in 0 .. letterKinds - 1:
-      filled[letterIndex] = 0
-    for offset in 0 .. sourceWord.length - 1:
-      let letterIndex = int(inputData[sourceWord.start + offset]) - firstLetterCode
-      targetIndexAt[offset] = positionLists[letterIndex][filled[letterIndex]]
-      inc filled[letterIndex]
+    for k in 0 .. letterKinds - 1:
+      filled[k] = 0
+    for k in 0 .. sourceWord.length - 1:
+      let l = int(inputData[sourceWord.start + k]) - firstLetterCode
+      targetIndexAt[k] = positionLists[l][filled[l]]
+      inc filled[l]
 
     var connectedNeighbours: array[letterKinds, seq[int]]
-    for letterIndex in 0 .. letterKinds - 1:
-      connectedNeighbours[letterIndex] = newSeq[int]()
-      for otherIndex in 0 .. letterKinds - 1:
-        if (adjacencyMask[letterIndex] and (1 shl otherIndex)) != 0:
-          connectedNeighbours[letterIndex].add(otherIndex)
+    for k in 0 .. letterKinds - 1:
+      connectedNeighbours[k] = newSeq[int]()
+      for l in 0 .. letterKinds - 1:
+        if (adjacencyMask[k] and (1 shl l)) != 0:
+          connectedNeighbours[k].add(l)
 
     var totalTree = newSeq[int](sourceWord.length + 1)
     var letterTrees: array[letterKinds, seq[int]]
     var letterTotals: array[letterKinds, int]
-    for letterIndex in 0 .. letterKinds - 1:
-      letterTrees[letterIndex] = newSeq[int](sourceWord.length + 1)
+    for k in 0 .. letterKinds - 1:
+      letterTrees[k] = newSeq[int](sourceWord.length + 1)
 
-    for offset in 0 .. sourceWord.length - 1:
-      let letterIndex = int(inputData[sourceWord.start + offset]) - firstLetterCode
-      let positionIndex = targetIndexAt[offset] + 1
-      let allInversions = offset - bitSum(totalTree, positionIndex)
+    for k in 0 .. sourceWord.length - 1:
+      let l = int(inputData[sourceWord.start + k]) - firstLetterCode
+      let i = targetIndexAt[k] + 1
+      let allInversions = k - bitSum(totalTree, i)
       var connectedInversions = 0
-      for neighbourIndex in connectedNeighbours[letterIndex]:
-        connectedInversions += letterTotals[neighbourIndex] - bitSum(letterTrees[neighbourIndex], positionIndex)
+      for j in connectedNeighbours[l]:
+        connectedInversions += letterTotals[j] - bitSum(letterTrees[j], i)
       if connectedInversions != allInversions:
         possible = false
         break
       answer += int64(connectedInversions)
-      bitAdd(totalTree, positionIndex)
-      bitAdd(letterTrees[letterIndex], positionIndex)
-      inc letterTotals[letterIndex]
+      bitAdd(totalTree, i)
+      bitAdd(letterTrees[l], i)
+      inc letterTotals[l]
 
   if not possible:
     outputBuffer.add("-1\n")

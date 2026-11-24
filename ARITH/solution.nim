@@ -58,9 +58,9 @@ proc addReversed(first: seq[int], second: seq[int]): seq[int] =
   var answer: seq[int]
   var carry = 0
   let size = max(first.len, second.len)
-  for position in 0 ..< size:
-    let top = if position < first.len: first[position] else: 0
-    let bottom = if position < second.len: second[position] else: 0
+  for i in 0 ..< size:
+    let top = if i < first.len: first[i] else: 0
+    let bottom = if i < second.len: second[i] else: 0
     let value = top + bottom + carry
     answer.add(value mod 10)
     carry = value div 10
@@ -71,9 +71,9 @@ proc addReversed(first: seq[int], second: seq[int]): seq[int] =
 proc subtractReversed(first: seq[int], second: seq[int]): seq[int] =
   var answer: seq[int]
   var borrow = 0
-  for position in 0 ..< first.len:
-    let top = first[position]
-    let bottom = if position < second.len: second[position] else: 0
+  for i in 0 ..< first.len:
+    let top = first[i]
+    let bottom = if i < second.len: second[i] else: 0
     var value = top - bottom - borrow
     if value < 0:
       value += 10
@@ -86,8 +86,8 @@ proc subtractReversed(first: seq[int], second: seq[int]): seq[int] =
 proc multiplyByDigit(first: seq[int], digit: int): seq[int] =
   var answer: seq[int]
   var carry = 0
-  for position in 0 ..< first.len:
-    let value = first[position] * digit + carry
+  for i in 0 ..< first.len:
+    let value = first[i] * digit + carry
     answer.add(value mod 10)
     carry = value div 10
   while carry > 0:
@@ -100,24 +100,24 @@ proc multiplyByDigit(first: seq[int], digit: int): seq[int] =
 proc multiplyReversed(first: seq[int], second: seq[int]): seq[int] =
   var answer: seq[int]
   setLen(answer, first.len + second.len)
-  for position in 0 ..< second.len:
+  for i in 0 ..< second.len:
     var carry = 0
-    for inner in 0 ..< first.len:
-      let value = answer[inner + position] + second[position] * first[inner] + carry
-      answer[inner + position] = value mod 10
+    for j in 0 ..< first.len:
+      let value = answer[j + i] + second[i] * first[j] + carry
+      answer[j + i] = value mod 10
       carry = value div 10
-    var writeAt = first.len + position
+    var k = first.len + i
     while carry > 0:
-      let value = answer[writeAt] + carry
-      answer[writeAt] = value mod 10
+      let value = answer[k] + carry
+      answer[k] = value mod 10
       carry = value div 10
-      writeAt += 1
+      k += 1
   return answer
 
 proc digitsToString(digits: seq[int]): string =
   var text = ""
-  for position in countdown(digits.len - 1, 0):
-    text.add((digits[position] + '0'.ord).chr)
+  for i in countdown(digits.len - 1, 0):
+    text.add((digits[i] + '0'.ord).chr)
   return text
 
 proc renderPair(first: string, operator: char, second: string) =
@@ -142,8 +142,8 @@ proc renderPair(first: string, operator: char, second: string) =
     rows.add(resultRow)
   else:
     var partialTexts: seq[string]
-    for row in 0 ..< secondDigits.len:
-      let partial = dropLeadingZeros(multiplyByDigit(firstDigits, secondDigits[row]))
+    for i in 0 ..< secondDigits.len:
+      let partial = dropLeadingZeros(multiplyByDigit(firstDigits, secondDigits[i]))
       partialTexts.add(digitsToString(partial))
     var resultDigits = dropLeadingZeros(multiplyReversed(firstDigits, secondDigits))
     let resultText = digitsToString(resultDigits)
@@ -153,8 +153,8 @@ proc renderPair(first: string, operator: char, second: string) =
     if secondDigits.len == 1:
       rows.add(resultRow)
     else:
-      for row in 0 ..< secondDigits.len:
-        rows.add(makeTextRow(width - row - partialTexts[row].len, width - row, partialTexts[row]))
+      for i in 0 ..< secondDigits.len:
+        rows.add(makeTextRow(width - i - partialTexts[i].len, width - i, partialTexts[i]))
       let lastPartial = makeTextRow(width - (secondDigits.len - 1) - partialTexts[^1].len, width - (secondDigits.len - 1), partialTexts[^1])
       rows.add(dashBetween(lastPartial, resultRow))
       rows.add(resultRow)
@@ -179,10 +179,10 @@ for _ in 0 ..< pairCount:
     break
   var operator = '+'
   var splitAt = -1
-  for index in 0 ..< line.len:
-    if line[index] in {'+', '-', '*'}:
-      operator = line[index]
-      splitAt = index
+  for i in 0 ..< line.len:
+    if line[i] in {'+', '-', '*'}:
+      operator = line[i]
+      splitAt = i
       break
   if splitAt < 0:
     continue

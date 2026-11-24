@@ -17,9 +17,9 @@ proc compareAccounts(first: string, second: string): int =
 
 proc normalize(text: string): string =
   var trimmed = ""
-  for index in 0 ..< text.len:
-    if text[index] notin {' ', '\t', '\r', '\v', '\f'}:
-      trimmed.add(text[index])
+  for i in 0 ..< text.len:
+    if text[i] notin {' ', '\t', '\r', '\v', '\f'}:
+      trimmed.add(text[i])
     elif trimmed.len > 0 and trimmed[^1] != ' ':
       trimmed.add(' ')
   if trimmed.len > 0 and trimmed[^1] == ' ':
@@ -37,27 +37,27 @@ proc readNonEmptyLine(): string =
 proc readCount(): int =
   var value = 0
   let text = readNonEmptyLine()
-  for index in 0 ..< text.len:
-    if text[index] in {'0' .. '9'}:
-      value = value * 10 + (text[index].ord - '0'.ord)
+  for i in 0 ..< text.len:
+    if text[i] in {'0' .. '9'}:
+      value = value * 10 + (text[i].ord - '0'.ord)
   return value
 
 let caseCount = readCount()
-for caseIndex in 0 ..< caseCount:
+for i in 0 ..< caseCount:
   let accountCount = readCount()
   var accounts: seq[string]
   for _ in 0 ..< accountCount:
     accounts.add(readNonEmptyLine())
   sort(accounts, compareAccounts)
-  var index = 0
-  while index < accounts.len:
+  var j = 0
+  while j < accounts.len:
     var repeatCount = 1
-    while index + repeatCount < accounts.len and accounts[index + repeatCount] == accounts[index]:
+    while j + repeatCount < accounts.len and accounts[j + repeatCount] == accounts[j]:
       repeatCount += 1
-    emit(accounts[index])
+    emit(accounts[j])
     emit(" ")
     emit($repeatCount)
     emit("\n")
-    index += repeatCount
+    j += repeatCount
   emit("\n")
 stdout.write(output)

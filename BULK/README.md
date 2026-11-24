@@ -36,13 +36,13 @@ The generator produced this worked example for a single cube. The six faces have
 The scanner walks one input buffer by index. It skips the double spaces without allocating tokens.
 
 ```
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ':
-    inc(scanPos)
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ':
+    inc(i)
   result = 0
-  while scanPos < inputData.len and inputData[scanPos] > ' ':
-    result = result * 10 + (int(inputData[scanPos]) - firstDigitValue)
-    inc(scanPos)
+  while i < inputData.len and inputData[i] > ' ':
+    result = result * 10 + (int(inputData[i]) - firstDigitValue)
+    inc(i)
 ```
 
 The loop runs once per digit. The sign branch is absent because the input has no negative values.
@@ -51,9 +51,9 @@ This block finds the constant coordinate and the signed double area of each face
 
 ```
       var doubledArea = 0
-      for pointIndex in 0 ..< pointCount:
-        let currentIndex = vertexStart + pointIndex * 3
-        let nextIndex = vertexStart + ((pointIndex + 1) mod pointCount) * 3
+      for l in 0 ..< pointCount:
+        let currentIndex = vertexStart + l * 3
+        let nextIndex = vertexStart + ((l + 1) mod pointCount) * 3
         var currentU = 0
         var currentV = 0
         var nextU = 0
@@ -98,7 +98,7 @@ This block gives every edge an angle index around its line.
           angleIndex = if interiorSign > 0: 1 else: 3
         edges.add(EdgeRecord(lineKey: encodeLine(edgeAxis, firstCoord, secondCoord),
                              low: edgeLow, high: edgeHigh,
-                             direction: direction, faceIndex: faceIndex,
+                             direction: direction, faceIndex: k,
                              angleIndex: angleIndex))
 ```
 
@@ -109,15 +109,15 @@ This block splits edges at every vertex, then links faces around each shared seg
 ```
       if groupEnd - groupStart >= 2:
         angleGroup.setLen(0)
-        for groupIndex in groupStart ..< groupEnd:
-          angleGroup.add(subEdges[groupIndex])
+        for l in groupStart ..< groupEnd:
+          angleGroup.add(subEdges[l])
         sort(angleGroup, cmpAngle)
-        for angleIndex in 0 ..< angleGroup.len:
-          let firstFace = angleGroup[angleIndex].faceIndex
-          let firstDirection = angleGroup[angleIndex].direction
-          let nextIndex = (angleIndex + 1) mod angleGroup.len
-          let secondFace = angleGroup[nextIndex].faceIndex
-          let secondDirection = angleGroup[nextIndex].direction
+        for l in 0 ..< angleGroup.len:
+          let firstFace = angleGroup[l].faceIndex
+          let firstDirection = angleGroup[l].direction
+          let k = (l + 1) mod angleGroup.len
+          let secondFace = angleGroup[k].faceIndex
+          let secondDirection = angleGroup[k].direction
           let relation = -firstDirection * secondDirection
           links[firstFace].add(LinkRecord(otherFace: secondFace, relation: relation))
           links[secondFace].add(LinkRecord(otherFace: firstFace, relation: relation))
@@ -128,13 +128,13 @@ Splitting first removes T-junctions. Sorting by angle pairs neighbours at non-ma
 This block propagates signs and collects one closed surface per component.
 
 ```
-    while headIndex < queue.len:
-      let currentFace = queue[headIndex]
-      inc(headIndex)
+    while k < queue.len:
+      let currentFace = queue[k]
+      inc(k)
       currentComponent.add(currentFace)
-      for linkIndex in 0 ..< links[currentFace].len:
-        let nextFace = links[currentFace][linkIndex].otherFace
-        let wanted = orientations[currentFace] * links[currentFace][linkIndex].relation
+      for l in 0 ..< links[currentFace].len:
+        let nextFace = links[currentFace][l].otherFace
+        let wanted = orientations[currentFace] * links[currentFace][l].relation
         if orientations[nextFace] == 0:
           orientations[nextFace] = wanted
           queue.add(nextFace)
@@ -146,16 +146,16 @@ This block sums the volumes and applies the nesting signs.
 
 ```
   var totalVolume: int64 = 0
-  for componentIndex in 0 ..< components.len:
+  for l in 0 ..< components.len:
     var depthParity = 0
-    for otherIndex in 0 ..< components.len:
-      if otherIndex == componentIndex:
+    for k in 0 ..< components.len:
+      if k == l:
         continue
-      if pointInsideComponent(sampleX4[componentIndex], sampleY4[componentIndex],
-                              sampleZ4[componentIndex], components[otherIndex],
+      if pointInsideComponent(sampleX4[l], sampleY4[l],
+                              sampleZ4[l], components[k],
                               faces, allCoords):
         depthParity = 1 - depthParity
-    let componentVolume = componentVolumes[componentIndex]
+    let componentVolume = componentVolumes[l]
     let volumeSign = if componentVolume > 0: 1 else: -1
     let depthSign = if depthParity == 0: 1 else: -1
     totalVolume += int64(volumeSign * depthSign) * componentVolume

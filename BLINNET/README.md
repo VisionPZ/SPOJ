@@ -62,7 +62,7 @@ var line: string
 while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
-var scanPos = 0
+var i = 0
 ```
 
 `flushBlockBytes` is 128 KiB. The read loop runs to EOF, so all input lands in one string. Cost: one pass over the input bytes.
@@ -71,24 +71,24 @@ var scanPos = 0
 
 ```nim
 proc nextInt(): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - 48
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - 48
+    i = i + 1
   return value
 ```
 
-The scanner skips bytes below a space, then accumulates digits by index. `scanPos` is shared state, so no token object is built. Cost: one pass over each number's digits.
+The scanner skips bytes below a space, then accumulates digits by index. `i` is shared state, so no token object is built. Cost: one pass over each number's digits.
 
 **Word reader.**
 
 ```nim
 proc nextWord(): string =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
-  var wordStart = scanPos
-  while scanPos < inputData.len and inputData[scanPos] > ' ': scanPos = scanPos + 1
-  return inputData[wordStart .. scanPos - 1]
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
+  var j = i
+  while i < inputData.len and inputData[i] > ' ': i = i + 1
+  return inputData[j .. i - 1]
 ```
 
 The loop stops at the next whitespace byte. The caller discards each city name, since the neighbour indices identify cities. Cost: one slice per name.
@@ -135,13 +135,13 @@ var outputBuffer: string
 for _ in 1 .. testCount:
   var cityCount = nextInt()
   connectionList = newSeq[Connection]()
-  for cityIndex in 0 .. cityCount - 1:
+  for j in 0 .. cityCount - 1:
     discard nextWord()
     var neighbourCount = nextInt()
     for _ in 1 .. neighbourCount:
       var neighbourIndex = nextInt() - 1
       var connectionCost = nextInt()
-      connectionList.add (connectionCost, cityIndex, neighbourIndex)
+      connectionList.add (connectionCost, j, neighbourIndex)
   var edgeTotal = connectionList.len
 ```
 
@@ -153,13 +153,13 @@ The loop runs once per test case. Each neighbour pair adds one connection with i
   sort(connectionList, cheaperConnection)
   parentIndex = repeat(0, cityCount)
   rankLevel = repeat(0, cityCount)
-  for index in 0 .. cityCount - 1: parentIndex[index] = index
+  for j in 0 .. cityCount - 1: parentIndex[j] = j
   var treeCost = 0
   var treeEdges = 0
-  for position in 0 .. edgeTotal - 1:
-    var connectionCost = connectionList[position].connectionCost
-    var firstRoot = findRoot(connectionList[position].firstCity)
-    var secondRoot = findRoot(connectionList[position].secondCity)
+  for j in 0 .. edgeTotal - 1:
+    var connectionCost = connectionList[j].connectionCost
+    var firstRoot = findRoot(connectionList[j].firstCity)
+    var secondRoot = findRoot(connectionList[j].secondCity)
     if firstRoot == secondRoot: continue
     if rankLevel[firstRoot] < rankLevel[secondRoot]:
       swap(firstRoot, secondRoot)

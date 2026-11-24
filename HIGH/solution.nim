@@ -10,15 +10,15 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 
 proc modPower(baseValue: int64, exponentValue: int64, modulus: int64): int64 =
@@ -37,33 +37,33 @@ proc modPower(baseValue: int64, exponentValue: int64, modulus: int64): int64 =
 proc determinantModulo(matrix: array[maxCities, array[maxCities, int64]],
                        size: int, modulus: int64): int64 =
   var work: array[maxCities, array[maxCities, int64]]
-  for row in 0..<size:
-    for column in 0..<size:
-      work[row][column] = matrix[row][column] mod modulus
-      if work[row][column] < 0:
-        work[row][column] += modulus
+  for i in 0..<size:
+    for j in 0..<size:
+      work[i][j] = matrix[i][j] mod modulus
+      if work[i][j] < 0:
+        work[i][j] += modulus
   var result: int64 = 1
-  for pivot in 0..<size:
-    var pivotRow = pivot
-    while pivotRow < size and work[pivotRow][pivot] == 0:
-      pivotRow += 1
-    if pivotRow == size:
+  for i in 0..<size:
+    var j = i
+    while j < size and work[j][i] == 0:
+      j += 1
+    if j == size:
       return 0
-    if pivotRow != pivot:
-      for column in 0..<size:
-        swap work[pivot][column], work[pivotRow][column]
+    if j != i:
+      for k in 0..<size:
+        swap work[i][k], work[j][k]
       result = modulus - result
-    let pivotValue = work[pivot][pivot]
+    let pivotValue = work[i][i]
     result = result * pivotValue mod modulus
     let inversePivot = modPower(pivotValue, modulus - 2, modulus)
-    for row in pivot + 1..<size:
-      if work[row][pivot] == 0:
+    for k in i + 1..<size:
+      if work[k][i] == 0:
         continue
-      let factor = work[row][pivot] * inversePivot mod modulus
-      for column in pivot..<size:
-        work[row][column] = (work[row][column] - factor * work[pivot][column]) mod modulus
-        if work[row][column] < 0:
-          work[row][column] += modulus
+      let factor = work[k][i] * inversePivot mod modulus
+      for l in i..<size:
+        work[k][l] = (work[k][l] - factor * work[i][l]) mod modulus
+        if work[k][l] < 0:
+          work[k][l] += modulus
   return result
 
 proc spanningTreeCount(matrix: array[maxCities, array[maxCities, int64]],
@@ -84,17 +84,17 @@ proc appendOutput(text: string) =
     stdout.write outputBuffer
     outputBuffer.setLen 0
 
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 0..<caseCount:
-  let cityCount = nextInt(inputData, scanPos)
-  let connectionCount = nextInt(inputData, scanPos)
+let caseCount = nextInt(inputData, i)
+for j in 0..<caseCount:
+  let cityCount = nextInt(inputData, i)
+  let connectionCount = nextInt(inputData, i)
   var matrix: array[maxCities, array[maxCities, int64]]
-  for row in 0..<cityCount - 1:
-    for column in 0..<cityCount - 1:
-      matrix[row][column] = 0
-  for connectionIndex in 0..<connectionCount:
-    let firstCity = nextInt(inputData, scanPos) - 1
-    let secondCity = nextInt(inputData, scanPos) - 1
+  for k in 0..<cityCount - 1:
+    for l in 0..<cityCount - 1:
+      matrix[k][l] = 0
+  for k in 0..<connectionCount:
+    let firstCity = nextInt(inputData, i) - 1
+    let secondCity = nextInt(inputData, i) - 1
     if firstCity < cityCount - 1:
       matrix[firstCity][firstCity] += 1
       if secondCity < cityCount - 1:

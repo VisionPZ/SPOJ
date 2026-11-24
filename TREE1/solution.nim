@@ -3,36 +3,36 @@ const flushBlockBytes = 1 shl 18
 const firstDigitValue = 48
 const limbDigitCount = 9
 
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    scanPos += 1
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
+    i += 1
   var numberValue = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    numberValue = numberValue * 10 + int(inputData[scanPos]) - firstDigitValue
-    scanPos += 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    numberValue = numberValue * 10 + int(inputData[i]) - firstDigitValue
+    i += 1
   return numberValue
 
 proc binomialCoefficient(groupSize: int, chooseCount: int): int =
   var coefficient = 1
-  for step in 1 .. chooseCount:
-    coefficient = coefficient * (groupSize - chooseCount + step) div step
+  for j in 1 .. chooseCount:
+    coefficient = coefficient * (groupSize - chooseCount + j) div j
   return coefficient
 
-proc collectInterleaveFactors(prefixKeys: seq[int], startIndex: int, lowKey: int, highKey: int, factors: var seq[int]) =
-  let pivotKey = prefixKeys[startIndex]
+proc collectInterleaveFactors(prefixKeys: seq[int], i: int, lowKey: int, highKey: int, factors: var seq[int]) =
+  let pivotKey = prefixKeys[i]
   let leftKeyCount = pivotKey - lowKey
   let rightKeyCount = highKey - pivotKey
   if leftKeyCount > 0:
-    collectInterleaveFactors(prefixKeys, startIndex + 1, lowKey, pivotKey - 1, factors)
+    collectInterleaveFactors(prefixKeys, i + 1, lowKey, pivotKey - 1, factors)
   if rightKeyCount > 0:
-    collectInterleaveFactors(prefixKeys, startIndex + 1 + leftKeyCount, pivotKey + 1, highKey, factors)
+    collectInterleaveFactors(prefixKeys, i + 1 + leftKeyCount, pivotKey + 1, highKey, factors)
   factors.add binomialCoefficient(leftKeyCount + rightKeyCount, leftKeyCount)
 
 proc multiplyBySmall(bigValue: var seq[int], factor: int) =
   var carry = 0
-  for limbIndex in 0 .. bigValue.high:
-    let product = bigValue[limbIndex] * factor + carry
-    bigValue[limbIndex] = product mod baseValue
+  for j in 0 .. bigValue.high:
+    let product = bigValue[j] * factor + carry
+    bigValue[j] = product mod baseValue
     carry = product div baseValue
   while carry > 0:
     bigValue.add(carry mod baseValue)
@@ -40,10 +40,10 @@ proc multiplyBySmall(bigValue: var seq[int], factor: int) =
 
 proc appendPaddedLimb(outputBuffer: var string, limbValue: int) =
   var placeValue = 1
-  for digitIndex in 1 .. limbDigitCount:
+  for j in 1 .. limbDigitCount:
     placeValue = placeValue * 10
   var remaining = limbValue
-  for digitIndex in 1 .. limbDigitCount:
+  for j in 1 .. limbDigitCount:
     placeValue = placeValue div 10
     let digitValue = remaining div placeValue
     outputBuffer.add char(firstDigitValue + digitValue)
@@ -51,8 +51,8 @@ proc appendPaddedLimb(outputBuffer: var string, limbValue: int) =
 
 proc appendBigAnswer(outputBuffer: var string, bigValue: seq[int]) =
   outputBuffer.add $bigValue[bigValue.high]
-  for limbIndex in countdown(bigValue.high - 1, 0):
-    appendPaddedLimb(outputBuffer, bigValue[limbIndex])
+  for j in countdown(bigValue.high - 1, 0):
+    appendPaddedLimb(outputBuffer, bigValue[j])
   outputBuffer.add '\n'
 
 var inputData = ""
@@ -61,14 +61,14 @@ while readLine(stdin, oneLine):
   inputData.add oneLine
   inputData.add '\n'
 
-var scanPos = 0
-let dataSetCount = nextInt(inputData, scanPos)
+var i = 0
+let dataSetCount = nextInt(inputData, i)
 var outputBuffer = ""
-for dataSetIndex in 0 .. dataSetCount - 1:
-  let treeSize = nextInt(inputData, scanPos)
+for j in 0 .. dataSetCount - 1:
+  let treeSize = nextInt(inputData, i)
   var prefixKeys = newSeq[int](treeSize)
-  for keyIndex in 0 .. treeSize - 1:
-    prefixKeys[keyIndex] = nextInt(inputData, scanPos)
+  for k in 0 .. treeSize - 1:
+    prefixKeys[k] = nextInt(inputData, i)
   var interleaveFactors: seq[int] = @[]
   collectInterleaveFactors(prefixKeys, 0, 1, treeSize, interleaveFactors)
   var bigAnswer = @[1]

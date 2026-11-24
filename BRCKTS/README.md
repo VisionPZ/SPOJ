@@ -25,10 +25,10 @@ An opening bracket adds 1 to the running prefix, and a closing bracket subtracts
 
 Each formula below maps one part of the tree to a value.
 
-- `segmentSum[nodeIndex] = segmentSum[leftChild] + segmentSum[rightChild]` adds the totals of the two halves.
-- `segmentMinPrefix[nodeIndex] = min(segmentMinPrefix[leftChild], segmentSum[leftChild] + segmentMinPrefix[rightChild])` compares prefixes inside the left half with prefixes that continue into the right half.
-- `treeSize + bracketPosition - 1` maps a 1-based bracket position to its leaf.
-- `nodeIndex shr 1` moves from a child to its parent, so a flip visits one node per level.
+- `segmentSum[i] = segmentSum[leftChild] + segmentSum[rightChild]` adds the totals of the two halves.
+- `segmentMinPrefix[i] = min(segmentMinPrefix[leftChild], segmentSum[leftChild] + segmentMinPrefix[rightChild])` compares prefixes inside the left half with prefixes that continue into the right half.
+- `treeSize + j - 1` maps a 1-based bracket position to its leaf.
+- `i shr 1` moves from a child to its parent, so a flip visits one node per level.
 - `segmentSum[1] == 0 and segmentMinPrefix[1] >= 0` is the final check at the root.
 
 This trace of the sample word lists each bracket, its value, and the running prefix.
@@ -54,7 +54,7 @@ const
 
 var
   inputData = ""
-  inputPosition = 0
+  i = 0
   outputBuffer = ""
   segmentSum = newSeq[int](treeArraySize)
   segmentMinPrefix = newSeq[int](treeArraySize)
@@ -71,15 +71,15 @@ proc loadInput() =
     inputData.add '\n'
 
 proc skipWhitespace() =
-  while inputPosition < inputData.len and ord(inputData[inputPosition]) <= spaceCode:
-    inc inputPosition
+  while i < inputData.len and ord(inputData[i]) <= spaceCode:
+    inc i
 
 proc readInteger(): int =
   skipWhitespace()
   result = 0
-  while inputPosition < inputData.len and inputData[inputPosition] >= '0' and inputData[inputPosition] <= '9':
-    result = result * 10 + (ord(inputData[inputPosition]) - firstDigitCode)
-    inc inputPosition
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    result = result * 10 + (ord(inputData[i]) - firstDigitCode)
+    inc i
 ```
 
 The read loop runs once per input line, and the scanner walks the buffer by index. Whitespace skipping also absorbs carriage returns. This costs one pass over the input bytes.
@@ -87,53 +87,53 @@ The read loop runs once per input line, and the scanner walks the buffer by inde
 ```
 proc loadBracketWord(wordLength: int) =
   skipWhitespace()
-  var leafIndex = treeSize
-  while leafIndex < treeSize + wordLength:
-    if inputData[inputPosition] == '(':
-      segmentSum[leafIndex] = 1
-      segmentMinPrefix[leafIndex] = 1
+  var j = treeSize
+  while j < treeSize + wordLength:
+    if inputData[i] == '(':
+      segmentSum[j] = 1
+      segmentMinPrefix[j] = 1
     else:
-      segmentSum[leafIndex] = -1
-      segmentMinPrefix[leafIndex] = -1
-    inc leafIndex
-    inc inputPosition
-  while leafIndex < treeSize + treeSize:
-    segmentSum[leafIndex] = 0
-    segmentMinPrefix[leafIndex] = emptyPrefixValue
-    inc leafIndex
+      segmentSum[j] = -1
+      segmentMinPrefix[j] = -1
+    inc j
+    inc i
+  while j < treeSize + treeSize:
+    segmentSum[j] = 0
+    segmentMinPrefix[j] = emptyPrefixValue
+    inc j
 ```
 
 The first loop runs exactly wordLength times, and the second runs treeSize minus wordLength times. Padding cannot change a parent result. This costs O(treeSize) per test case.
 
 ```
 proc rebuildParents() =
-  var nodeIndex = treeSize - 1
-  while nodeIndex >= 1:
-    let leftChild = nodeIndex shl 1
+  var i = treeSize - 1
+  while i >= 1:
+    let leftChild = i shl 1
     let rightChild = leftChild or 1
-    segmentSum[nodeIndex] = segmentSum[leftChild] + segmentSum[rightChild]
-    segmentMinPrefix[nodeIndex] = min(segmentMinPrefix[leftChild], segmentSum[leftChild] + segmentMinPrefix[rightChild])
-    dec nodeIndex
+    segmentSum[i] = segmentSum[leftChild] + segmentSum[rightChild]
+    segmentMinPrefix[i] = min(segmentMinPrefix[leftChild], segmentSum[leftChild] + segmentMinPrefix[rightChild])
+    dec i
 ```
 
 The loop visits each internal node once, from treeSize minus 1 down to 1. The merge keeps the prefix that stops at the left boundary, because that prefix is already inside the left half. This costs O(treeSize) per test case.
 
 ```
-proc flipBracket(bracketPosition: int) =
-  var nodeIndex = treeSize + bracketPosition - 1
-  if segmentSum[nodeIndex] == 1:
-    segmentSum[nodeIndex] = -1
-    segmentMinPrefix[nodeIndex] = -1
+proc flipBracket(j: int) =
+  var i = treeSize + j - 1
+  if segmentSum[i] == 1:
+    segmentSum[i] = -1
+    segmentMinPrefix[i] = -1
   else:
-    segmentSum[nodeIndex] = 1
-    segmentMinPrefix[nodeIndex] = 1
-  nodeIndex = nodeIndex shr 1
-  while nodeIndex >= 1:
-    let leftChild = nodeIndex shl 1
+    segmentSum[i] = 1
+    segmentMinPrefix[i] = 1
+  i = i shr 1
+  while i >= 1:
+    let leftChild = i shl 1
     let rightChild = leftChild or 1
-    segmentSum[nodeIndex] = segmentSum[leftChild] + segmentSum[rightChild]
-    segmentMinPrefix[nodeIndex] = min(segmentMinPrefix[leftChild], segmentSum[leftChild] + segmentMinPrefix[rightChild])
-    nodeIndex = nodeIndex shr 1
+    segmentSum[i] = segmentSum[leftChild] + segmentSum[rightChild]
+    segmentMinPrefix[i] = min(segmentMinPrefix[leftChild], segmentSum[leftChild] + segmentMinPrefix[rightChild])
+    i = i shr 1
 ```
 
 The upward loop runs once per tree level, at most 15 steps here. The leaf flips sign, and the parent merge matches the build. This costs O(log n) per replacement.
@@ -155,7 +155,7 @@ loadInput()
 var testNumber = 1
 while true:
   skipWhitespace()
-  if inputPosition >= inputData.len: break
+  if i >= inputData.len: break
   let wordLength = readInteger()
   treeSize = 1
   while treeSize < wordLength:
@@ -166,7 +166,7 @@ while true:
   outputBuffer.add "Test "
   outputBuffer.add $testNumber
   outputBuffer.add ":\n"
-  for operationIndex in 0 ..< operationCount:
+  for j in 0 ..< operationCount:
     let operation = readInteger()
     if operation == 0:
       if isBalanced():

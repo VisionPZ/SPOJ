@@ -67,15 +67,15 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + (int(data[position]) - firstDigitValue)
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + (int(data[i]) - firstDigitValue)
+    i += 1
   return value
 ```
 
@@ -99,28 +99,28 @@ proc markVisibleFromSource(terrain: seq[int], rowCount: int, colCount: int,
                            visible: var seq[bool]) =
   let sourceHeight = 2 * terrain[sourceRow * colCount + sourceCol] + 1
   usedDirections.setLen 0
-  for row in 0..<rowCount:
-    for col in 0..<colCount:
-      if row == sourceRow and col == sourceCol:
+  for i in 0..<rowCount:
+    for j in 0..<colCount:
+      if i == sourceRow and j == sourceCol:
         continue
-      let colGap = col - sourceCol
-      let rowGap = row - sourceRow
+      let colGap = j - sourceCol
+      let rowGap = i - sourceRow
       let steps = greatestCommonDivisor(abs(colGap), abs(rowGap))
       let dirCol = colGap div steps
       let dirRow = rowGap div steps
-      let dirIndex = (dirCol + directionOffset) * directionWidth + dirRow + directionOffset
-      if directionMaxSteps[dirIndex] == 0:
-        usedDirections.add dirIndex
-      if steps > directionMaxSteps[dirIndex]:
-        directionMaxSteps[dirIndex] = steps
+      let k = (dirCol + directionOffset) * directionWidth + dirRow + directionOffset
+      if directionMaxSteps[k] == 0:
+        usedDirections.add k
+      if steps > directionMaxSteps[k]:
+        directionMaxSteps[k] = steps
   visible[sourceRow * colCount + sourceCol] = true
-  for dirIndex in usedDirections:
-    let dirCol = dirIndex div directionWidth - directionOffset
-    let dirRow = dirIndex mod directionWidth - directionOffset
+  for k in usedDirections:
+    let dirCol = k div directionWidth - directionOffset
+    let dirRow = k mod directionWidth - directionOffset
     let stepX = if dirCol == 0: 1 else: 2 * abs(dirCol)
     let stepY = if dirRow == 0: 1 else: 2 * abs(dirRow)
     let scale = stepX * stepY
-    let maxSteps = directionMaxSteps[dirIndex]
+    let maxSteps = directionMaxSteps[k]
     var nextCrossX = if dirCol == 0: infiniteCross else: stepY
     var nextCrossY = if dirRow == 0: infiniteCross else: stepX
     let advanceX = 2 * stepY
@@ -136,8 +136,8 @@ proc markVisibleFromSource(terrain: seq[int], rowCount: int, colCount: int,
     var ascendingDen = 1
     var descendingNum = 0
     var descendingDen = 1
-    for step in 1..maxSteps:
-      let centerCross = step * scale
+    for l in 1..maxSteps:
+      let centerCross = l * scale
       while nextCrossX < centerCross or nextCrossY < centerCross:
         let cellCross = min(nextCrossX, nextCrossY)
         let currentHeight = 2 * terrain[currentRow * colCount + currentCol] - sourceHeight
@@ -160,20 +160,20 @@ proc markVisibleFromSource(terrain: seq[int], rowCount: int, colCount: int,
           hasAscending = true
           ascendingNum = enteringCandidate
           ascendingDen = previousCross
-      let targetRow = sourceRow + step * dirRow
-      let targetCol = sourceCol + step * dirCol
+      let targetRow = sourceRow + l * dirRow
+      let targetCol = sourceCol + l * dirCol
       let targetHeight = 2 * terrain[targetRow * colCount + targetCol] + 1
       let targetSlope = targetHeight - sourceHeight
       var isVisible = false
       if targetSlope >= 0:
         isVisible = not hasAscending or
-                    targetSlope * ascendingDen >= ascendingNum * step
+                    targetSlope * ascendingDen >= ascendingNum * l
       else:
         isVisible = not hasDescending or
-                    targetSlope * descendingDen >= descendingNum * step
+                    targetSlope * descendingDen >= descendingNum * l
       if isVisible:
         visible[targetRow * colCount + targetCol] = true
-    directionMaxSteps[dirIndex] = 0
+    directionMaxSteps[k] = 0
 ```
 
 The queue holds at most P times Q cell indices. Output is appended to one buffer and flushed in large blocks.
@@ -187,25 +187,25 @@ proc appendOutput(text: string) =
     stdout.write outputBuffer
     outputBuffer.setLen 0
 
-let testCount = nextInt(inputData, scanPos)
-for testIndex in 1..testCount:
-  let rowCount = nextInt(inputData, scanPos)
-  let colCount = nextInt(inputData, scanPos)
+let testCount = nextInt(inputData, i)
+for j in 1..testCount:
+  let rowCount = nextInt(inputData, i)
+  let colCount = nextInt(inputData, i)
   var terrain = newSeq[int](rowCount * colCount)
-  for cellIndex in 0..<rowCount * colCount:
-    terrain[cellIndex] = nextInt(inputData, scanPos)
-  let firstRow = nextInt(inputData, scanPos) - 1
-  let firstCol = nextInt(inputData, scanPos) - 1
-  let secondRow = nextInt(inputData, scanPos) - 1
-  let secondCol = nextInt(inputData, scanPos) - 1
+  for k in 0..<rowCount * colCount:
+    terrain[k] = nextInt(inputData, i)
+  let firstRow = nextInt(inputData, i) - 1
+  let firstCol = nextInt(inputData, i) - 1
+  let secondRow = nextInt(inputData, i) - 1
+  let secondCol = nextInt(inputData, i) - 1
   let firstIndex = firstRow * colCount + firstCol
   let secondIndex = secondRow * colCount + secondCol
   var visible = newSeq[bool](rowCount * colCount)
   markVisibleFromSource(terrain, rowCount, colCount, firstRow, firstCol, visible)
   markVisibleFromSource(terrain, rowCount, colCount, secondRow, secondCol, visible)
   var distance = newSeq[int](rowCount * colCount)
-  for cellIndex in 0..<rowCount * colCount:
-    distance[cellIndex] = -1
+  for k in 0..<rowCount * colCount:
+    distance[k] = -1
   var queue = newSeq[int](rowCount * colCount)
   var queueHead = 0
   var queueTail = 0
@@ -218,10 +218,10 @@ for testIndex in 1..testCount:
     let currentRow = current div colCount
     let currentCol = current mod colCount
     let currentHeight = terrain[current]
-    for neighborIndex in 0..<4:
+    for l in 0..<4:
       var neighborRow = currentRow
       var neighborCol = currentCol
-      case neighborIndex
+      case l
       of 0: neighborRow -= 1
       of 1: neighborRow += 1
       of 2: neighborCol -= 1

@@ -33,13 +33,13 @@ const
   coordinateBase = 1001
   quarterScale = 4
 
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ':
-    inc(scanPos)
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ':
+    inc(i)
   result = 0
-  while scanPos < inputData.len and inputData[scanPos] > ' ':
-    result = result * 10 + (int(inputData[scanPos]) - firstDigitValue)
-    inc(scanPos)
+  while i < inputData.len and inputData[i] > ' ':
+    result = result * 10 + (int(inputData[i]) - firstDigitValue)
+    inc(i)
 
 proc cmpEdge(leftEdge, rightEdge: EdgeRecord): int =
   if leftEdge.lineKey != rightEdge.lineKey:
@@ -67,13 +67,13 @@ proc encodeLine(axisIndex, firstCoord, secondCoord: int): int =
 proc insideOrthoPolygon(allCoords: seq[int], vertexStart, vertexCount,
                         queryU4, queryV4: int): bool =
   var inside = false
-  for pointIndex in 0 ..< vertexCount:
-    let currentIndex = vertexStart + pointIndex * 3
-    let nextIndex = vertexStart + ((pointIndex + 1) mod vertexCount) * 3
-    let firstU = allCoords[currentIndex + 1]
-    let firstV = allCoords[currentIndex + 2]
-    let secondU = allCoords[nextIndex + 1]
-    let secondV = allCoords[nextIndex + 2]
+  for i in 0 ..< vertexCount:
+    let j = vertexStart + i * 3
+    let k = vertexStart + ((i + 1) mod vertexCount) * 3
+    let firstU = allCoords[j + 1]
+    let firstV = allCoords[j + 2]
+    let secondU = allCoords[k + 1]
+    let secondV = allCoords[k + 2]
     if (firstV * quarterScale > queryV4) != (secondV * quarterScale > queryV4):
       let vDifference = secondV - firstV
       let crossing = (int64(firstU) * quarterScale - int64(queryU4)) * int64(vDifference) +
@@ -86,8 +86,8 @@ proc pointInsideComponent(sampleX4, sampleY4, sampleZ4: int,
                           componentFaces: seq[int], faces: seq[FaceRecord],
                           allCoords: seq[int]): bool =
   var crossings = 0
-  for faceIndex in componentFaces:
-    let face = faces[faceIndex]
+  for i in componentFaces:
+    let face = faces[i]
     if face.axis != 0:
       continue
     if face.plane * quarterScale <= sampleX4:
@@ -105,36 +105,36 @@ proc solveBulk(allCoords: var seq[int], faces: var seq[FaceRecord],
   sort(edges, cmpEdge)
   sort(points, cmpPoint)
 
-  var pointIndex = 0
-  var edgeIndex = 0
-  while edgeIndex < edges.len:
-    let startKey = edges[edgeIndex].lineKey
-    var pointBegin = pointIndex
+  var i = 0
+  var j = 0
+  while j < edges.len:
+    let startKey = edges[j].lineKey
+    var pointBegin = i
     while pointBegin < points.len and points[pointBegin].lineKey < startKey:
       inc(pointBegin)
     var pointEnd = pointBegin
     while pointEnd < points.len and points[pointEnd].lineKey == startKey:
       inc(pointEnd)
-    pointIndex = pointEnd
+    i = pointEnd
 
     subEdges.setLen(0)
-    var currentEdge = edgeIndex
+    var currentEdge = j
     while currentEdge < edges.len and edges[currentEdge].lineKey == startKey:
       let edgeLow = edges[currentEdge].low
       let edgeHigh = edges[currentEdge].high
-      var positionIndex = pointBegin
-      while positionIndex < pointEnd and points[positionIndex].position < edgeLow:
-        inc(positionIndex)
+      var k = pointBegin
+      while k < pointEnd and points[k].position < edgeLow:
+        inc(k)
       var previousPosition = edgeLow
-      while positionIndex < pointEnd and points[positionIndex].position < edgeHigh:
-        let splitPosition = points[positionIndex].position
+      while k < pointEnd and points[k].position < edgeHigh:
+        let splitPosition = points[k].position
         if splitPosition > previousPosition:
           subEdges.add(SubEdgeRecord(low: previousPosition, high: splitPosition,
                                      faceIndex: edges[currentEdge].faceIndex,
                                      direction: edges[currentEdge].direction,
                                      angleIndex: edges[currentEdge].angleIndex))
           previousPosition = splitPosition
-        inc(positionIndex)
+        inc(k)
       if previousPosition < edgeHigh:
         subEdges.add(SubEdgeRecord(low: previousPosition, high: edgeHigh,
                                    faceIndex: edges[currentEdge].faceIndex,
@@ -152,42 +152,42 @@ proc solveBulk(allCoords: var seq[int], faces: var seq[FaceRecord],
         inc(groupEnd)
       if groupEnd - groupStart >= 2:
         angleGroup.setLen(0)
-        for groupIndex in groupStart ..< groupEnd:
-          angleGroup.add(subEdges[groupIndex])
+        for l in groupStart ..< groupEnd:
+          angleGroup.add(subEdges[l])
         sort(angleGroup, cmpAngle)
-        for angleIndex in 0 ..< angleGroup.len:
-          let firstFace = angleGroup[angleIndex].faceIndex
-          let firstDirection = angleGroup[angleIndex].direction
-          let nextIndex = (angleIndex + 1) mod angleGroup.len
-          let secondFace = angleGroup[nextIndex].faceIndex
-          let secondDirection = angleGroup[nextIndex].direction
+        for l in 0 ..< angleGroup.len:
+          let firstFace = angleGroup[l].faceIndex
+          let firstDirection = angleGroup[l].direction
+          let k = (l + 1) mod angleGroup.len
+          let secondFace = angleGroup[k].faceIndex
+          let secondDirection = angleGroup[k].direction
           let relation = -firstDirection * secondDirection
           links[firstFace].add(LinkRecord(otherFace: secondFace, relation: relation))
           links[secondFace].add(LinkRecord(otherFace: firstFace, relation: relation))
       groupStart = groupEnd
 
-    edgeIndex = currentEdge
+    j = currentEdge
 
   orientations.setLen(faces.len)
-  for faceIndex in 0 ..< faces.len:
-    orientations[faceIndex] = 0
+  for l in 0 ..< faces.len:
+    orientations[l] = 0
   var queue: seq[int] = @[]
   var components: seq[seq[int]] = @[]
-  for startFace in 0 ..< faces.len:
-    if orientations[startFace] != 0:
+  for l in 0 ..< faces.len:
+    if orientations[l] != 0:
       continue
-    orientations[startFace] = 1
+    orientations[l] = 1
     queue.setLen(0)
-    queue.add(startFace)
+    queue.add(l)
     var currentComponent: seq[int] = @[]
-    var headIndex = 0
-    while headIndex < queue.len:
-      let currentFace = queue[headIndex]
-      inc(headIndex)
+    var k = 0
+    while k < queue.len:
+      let currentFace = queue[k]
+      inc(k)
       currentComponent.add(currentFace)
-      for linkIndex in 0 ..< links[currentFace].len:
-        let nextFace = links[currentFace][linkIndex].otherFace
-        let wanted = orientations[currentFace] * links[currentFace][linkIndex].relation
+      for l in 0 ..< links[currentFace].len:
+        let nextFace = links[currentFace][l].otherFace
+        let wanted = orientations[currentFace] * links[currentFace][l].relation
         if orientations[nextFace] == 0:
           orientations[nextFace] = wanted
           queue.add(nextFace)
@@ -197,12 +197,12 @@ proc solveBulk(allCoords: var seq[int], faces: var seq[FaceRecord],
   var sampleX4: seq[int] = @[]
   var sampleY4: seq[int] = @[]
   var sampleZ4: seq[int] = @[]
-  for componentIndex in 0 ..< components.len:
-    let component = components[componentIndex]
+  for l in 0 ..< components.len:
+    let component = components[l]
     var componentVolume: int64 = 0
-    for faceIndex in component:
-      let face = faces[faceIndex]
-      componentVolume += int64(orientations[faceIndex]) * int64(face.doubledArea) * int64(face.plane)
+    for k in component:
+      let face = faces[k]
+      componentVolume += int64(orientations[k]) * int64(face.doubledArea) * int64(face.plane)
     componentVolumes.add(componentVolume)
     let firstFace = faces[component[0]]
     sampleX4.add(quarterScale * allCoords[firstFace.vertexStart] + 1)
@@ -210,16 +210,16 @@ proc solveBulk(allCoords: var seq[int], faces: var seq[FaceRecord],
     sampleZ4.add(quarterScale * allCoords[firstFace.vertexStart + 2] + 1)
 
   var totalVolume: int64 = 0
-  for componentIndex in 0 ..< components.len:
+  for l in 0 ..< components.len:
     var depthParity = 0
-    for otherIndex in 0 ..< components.len:
-      if otherIndex == componentIndex:
+    for k in 0 ..< components.len:
+      if k == l:
         continue
-      if pointInsideComponent(sampleX4[componentIndex], sampleY4[componentIndex],
-                              sampleZ4[componentIndex], components[otherIndex],
+      if pointInsideComponent(sampleX4[l], sampleY4[l],
+                              sampleZ4[l], components[k],
                               faces, allCoords):
         depthParity = 1 - depthParity
-    let componentVolume = componentVolumes[componentIndex]
+    let componentVolume = componentVolumes[l]
     let volumeSign = if componentVolume > 0: 1 else: -1
     let depthSign = if depthParity == 0: 1 else: -1
     totalVolume += int64(volumeSign * depthSign) * componentVolume
@@ -235,8 +235,8 @@ when isMainModule:
     inputData.add('\n')
 
   var outputBuffer = ""
-  var scanPos = 0
-  let testCount = nextInt(inputData, scanPos)
+  var i = 0
+  let testCount = nextInt(inputData, i)
 
   var allCoords: seq[int] = @[]
   var faces: seq[FaceRecord] = @[]
@@ -246,31 +246,31 @@ when isMainModule:
   var links: seq[seq[LinkRecord]] = @[]
   var orientations: seq[int] = @[]
 
-  for caseIndex in 0 ..< testCount:
-    let faceCount = nextInt(inputData, scanPos)
+  for j in 0 ..< testCount:
+    let faceCount = nextInt(inputData, i)
     allCoords.setLen(0)
     faces.setLen(0)
     edges.setLen(0)
     points.setLen(0)
     links.setLen(faceCount)
-    for faceIndex in 0 ..< faceCount:
-      links[faceIndex] = @[]
+    for k in 0 ..< faceCount:
+      links[k] = @[]
 
-    for faceIndex in 0 ..< faceCount:
-      let pointCount = nextInt(inputData, scanPos)
+    for k in 0 ..< faceCount:
+      let pointCount = nextInt(inputData, i)
       let vertexStart = allCoords.len
-      for pointIndex in 0 ..< pointCount:
-        allCoords.add(nextInt(inputData, scanPos))
-        allCoords.add(nextInt(inputData, scanPos))
-        allCoords.add(nextInt(inputData, scanPos))
+      for l in 0 ..< pointCount:
+        allCoords.add(nextInt(inputData, i))
+        allCoords.add(nextInt(inputData, i))
+        allCoords.add(nextInt(inputData, i))
 
       var constantAxis = 0
       let firstX = allCoords[vertexStart]
       let firstY = allCoords[vertexStart + 1]
       var allSameX = true
       var allSameY = true
-      for pointIndex in 0 ..< pointCount:
-        let baseIndex = vertexStart + pointIndex * 3
+      for l in 0 ..< pointCount:
+        let baseIndex = vertexStart + l * 3
         if allCoords[baseIndex] != firstX: allSameX = false
         if allCoords[baseIndex + 1] != firstY: allSameY = false
       if allSameX:
@@ -281,9 +281,9 @@ when isMainModule:
         constantAxis = 2
 
       var doubledArea = 0
-      for pointIndex in 0 ..< pointCount:
-        let currentIndex = vertexStart + pointIndex * 3
-        let nextIndex = vertexStart + ((pointIndex + 1) mod pointCount) * 3
+      for l in 0 ..< pointCount:
+        let currentIndex = vertexStart + l * 3
+        let nextIndex = vertexStart + ((l + 1) mod pointCount) * 3
         var currentU = 0
         var currentV = 0
         var nextU = 0
@@ -310,8 +310,8 @@ when isMainModule:
                            doubledArea: doubledArea, vertexStart: vertexStart,
                            vertexCount: pointCount))
 
-      for pointIndex in 0 ..< pointCount:
-        let baseIndex = vertexStart + pointIndex * 3
+      for l in 0 ..< pointCount:
+        let baseIndex = vertexStart + l * 3
         let coordX = allCoords[baseIndex]
         let coordY = allCoords[baseIndex + 1]
         let coordZ = allCoords[baseIndex + 2]
@@ -319,9 +319,9 @@ when isMainModule:
         points.add(PointRecord(lineKey: encodeLine(1, coordZ, coordX), position: coordY))
         points.add(PointRecord(lineKey: encodeLine(2, coordX, coordY), position: coordZ))
 
-      for pointIndex in 0 ..< pointCount:
-        let currentIndex = vertexStart + pointIndex * 3
-        let nextIndex = vertexStart + ((pointIndex + 1) mod pointCount) * 3
+      for l in 0 ..< pointCount:
+        let currentIndex = vertexStart + l * 3
+        let nextIndex = vertexStart + ((l + 1) mod pointCount) * 3
         var edgeAxis = 0
         if allCoords[currentIndex] != allCoords[nextIndex]:
           edgeAxis = 0
@@ -358,7 +358,7 @@ when isMainModule:
           angleIndex = if interiorSign > 0: 1 else: 3
         edges.add(EdgeRecord(lineKey: encodeLine(edgeAxis, firstCoord, secondCoord),
                              low: edgeLow, high: edgeHigh,
-                             direction: direction, faceIndex: faceIndex,
+                             direction: direction, faceIndex: k,
                              angleIndex: angleIndex))
 
     let volume = solveBulk(allCoords, faces, edges, points, subEdges, links, orientations)

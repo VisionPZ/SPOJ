@@ -23,11 +23,11 @@ Each state scans at most L split points, so one case costs O(K L^2).
 
 ## Why It Works
 
-`prefixFrequency` sums the frequencies up to a letter. `prefixWeighted` sums each frequency times its letter index. The cost of a block leftIndex through rightIndex is the weighted sum minus `(leftIndex - 1)` times the plain sum. The subtraction shifts every letter to its position inside the block.
+`prefixFrequency` sums the frequencies up to a letter. `prefixWeighted` sums each frequency times its letter index. The cost of a block `k` through `l` is the weighted sum minus `(k - 1)` times the plain sum. The subtraction shifts every letter to its position inside the block.
 
-`minimumCost[keyIndex][letterIndex]` holds the cheapest cost for the first letterIndex letters on keyIndex keys. The program tries every `splitIndex` from keyIndex minus one up to letterIndex minus one. The last key takes the letters after that split. The guard on `infiniteCost` skips prefixes that no key assignment can reach. Adding to an unreachable state would overflow and create a false negative cost.
+`minimumCost[k][l]` holds the cheapest cost for the first `l` letters on `k` keys. The program tries every `i` from `k` minus one up to `l` minus one. The last key takes the letters after that split. The guard on `infiniteCost` skips prefixes that no key assignment can reach. Adding to an unreachable state would overflow and create a false negative cost.
 
-The scan visits `splitIndex` in increasing order and replaces the answer only on a strictly lower cost. The smallest `splitIndex` therefore survives a tie. That choice maximizes the letters on the last key. Repeating the choice from the back fills the earlier keys in the required order.
+The scan visits `i` in increasing order and replaces the answer only on a strictly lower cost. The smallest `i` therefore survives a tie. That choice maximizes the letters on the last key. Repeating the choice from the back fills the earlier keys in the required order.
 
 Here is the sample case solved by the program.
 
@@ -58,78 +58,78 @@ The loop reads every line into `inputData`. Adding a newline preserves token bou
 ```
 proc nextInteger(): int =
   let dataLength = inputData.len
-  while scanPosition < dataLength and inputData[scanPosition] != '-' and
-      (inputData[scanPosition] < '0' or inputData[scanPosition] > '9'):
-    inc scanPosition
+  while i < dataLength and inputData[i] != '-' and
+      (inputData[i] < '0' or inputData[i] > '9'):
+    inc i
   var isNegative = false
-  if scanPosition < dataLength and inputData[scanPosition] == '-':
+  if i < dataLength and inputData[i] == '-':
     isNegative = true
-    inc scanPosition
+    inc i
   var numberValue = 0
-  while scanPosition < dataLength and inputData[scanPosition] >= '0' and
-      inputData[scanPosition] <= '9':
-    numberValue = numberValue * 10 + (ord(inputData[scanPosition]) - firstDigitValue)
-    inc scanPosition
+  while i < dataLength and inputData[i] >= '0' and
+      inputData[i] <= '9':
+    numberValue = numberValue * 10 + (ord(inputData[i]) - firstDigitValue)
+    inc i
   if isNegative:
     return -numberValue
   return numberValue
 ```
 
-The scanner advances `scanPosition` only forward. It handles a minus sign before the digits. The inner loop runs once per input character.
+The scanner advances `i` only forward. It handles a minus sign before the digits. The inner loop runs once per input character.
 
 ```
     prefixFrequency[0] = 0
     prefixWeighted[0] = 0
-    for letterIndex in 1..letterCount:
-      frequencyValues[letterIndex] = int64(nextInteger())
-      prefixFrequency[letterIndex] = prefixFrequency[letterIndex - 1] + frequencyValues[letterIndex]
-      prefixWeighted[letterIndex] = prefixWeighted[letterIndex - 1] +
-          frequencyValues[letterIndex] * int64(letterIndex)
+    for l in 1..letterCount:
+      frequencyValues[l] = int64(nextInteger())
+      prefixFrequency[l] = prefixFrequency[l - 1] + frequencyValues[l]
+      prefixWeighted[l] = prefixWeighted[l - 1] +
+          frequencyValues[l] * int64(l)
 
-    for leftIndex in 1..letterCount:
-      for rightIndex in leftIndex..letterCount:
-        let frequencySum = prefixFrequency[rightIndex] - prefixFrequency[leftIndex - 1]
-        let weightedSum = prefixWeighted[rightIndex] - prefixWeighted[leftIndex - 1]
-        segmentCost[leftIndex][rightIndex] = weightedSum - int64(leftIndex - 1) * frequencySum
+    for k in 1..letterCount:
+      for l in k..letterCount:
+        let frequencySum = prefixFrequency[l] - prefixFrequency[k - 1]
+        let weightedSum = prefixWeighted[l] - prefixWeighted[k - 1]
+        segmentCost[k][l] = weightedSum - int64(k - 1) * frequencySum
 ```
 
-The inner loop visits letterCount times for each leftIndex. The offset `(leftIndex - 1)` restarts positions at one on each key. Every block cost takes constant time.
+The inner loop visits letterCount times for each `k`. The offset `(k - 1)` restarts positions at one on each key. Every block cost takes constant time.
 
 ```
-    for keyIndex in 1..keyCount:
-      for letterIndex in keyIndex..letterCount:
+    for k in 1..keyCount:
+      for l in k..letterCount:
         var chosenCost = infiniteCost
         var chosenSplit = -1
-        for splitIndex in (keyIndex - 1)..(letterIndex - 1):
-          if minimumCost[keyIndex - 1][splitIndex] >= infiniteCost:
+        for i in (k - 1)..(l - 1):
+          if minimumCost[k - 1][i] >= infiniteCost:
             continue
-          let candidateCost = minimumCost[keyIndex - 1][splitIndex] +
-              segmentCost[splitIndex + 1][letterIndex]
+          let candidateCost = minimumCost[k - 1][i] +
+              segmentCost[i + 1][l]
           if candidateCost < chosenCost:
             chosenCost = candidateCost
-            chosenSplit = splitIndex
-        minimumCost[keyIndex][letterIndex] = chosenCost
-        bestSplitAt[keyIndex][letterIndex] = chosenSplit
+            chosenSplit = i
+        minimumCost[k][l] = chosenCost
+        bestSplitAt[k][l] = chosenSplit
 ```
 
-The scan visits letterIndex minus keyIndex plus one split points. The guard skips states with no reachable prefix. Strict comparison keeps the smallest tie split. This block costs O(K L^2) per case.
+The scan visits `l` minus `k` plus one split points. The guard skips states with no reachable prefix. Strict comparison keeps the smallest tie split. This block costs O(K L^2) per case.
 
 ```
     var remainingLetters = letterCount
-    var keyIndex = keyCount
-    while keyIndex >= 1:
-      let splitIndex = bestSplitAt[keyIndex][remainingLetters]
-      groupStart[keyIndex] = splitIndex + 1
-      groupEnd[keyIndex] = remainingLetters
-      remainingLetters = splitIndex
-      dec keyIndex
+    var k = keyCount
+    while k >= 1:
+      let i = bestSplitAt[k][remainingLetters]
+      groupStart[k] = i + 1
+      groupEnd[k] = remainingLetters
+      remainingLetters = i
+      dec k
 
-    for outputKeyIndex in 1..keyCount:
-      appendCharacter(keyCharacters[outputKeyIndex])
+    for l in 1..keyCount:
+      appendCharacter(keyCharacters[l])
       appendText(": ")
-      if groupStart[outputKeyIndex] <= groupEnd[outputKeyIndex]:
-        for letterIndex in groupStart[outputKeyIndex]..groupEnd[outputKeyIndex]:
-          appendCharacter(letterCharacters[letterIndex])
+      if groupStart[l] <= groupEnd[l]:
+        for k in groupStart[l]..groupEnd[l]:
+          appendCharacter(letterCharacters[k])
       appendText("\n")
     appendText("\n")
 ```

@@ -61,24 +61,24 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - 48
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - 48
+    i += 1
   return value
 
-proc nextLine(data: string, position: var int): string =
-  let startPos = position
-  while position < data.len and data[position] != '\n':
-    position += 1
-  let result = data[startPos ..< position]
-  if position < data.len:
-    position += 1
+proc nextLine(data: string, i: var int): string =
+  let j = i
+  while i < data.len and data[i] != '\n':
+    i += 1
+  let result = data[j ..< i]
+  if i < data.len:
+    i += 1
   return result
 ```
 
@@ -92,19 +92,19 @@ proc baseVerb(inflectedVerb: string): string =
     return inflectedVerb.substr(0, inflectedVerb.len - 2)
   return inflectedVerb
 
-proc objectTail(parts: seq[string], firstIndex: int): string =
+proc objectTail(parts: seq[string], i: int): string =
   var result = ""
-  for index in firstIndex..<parts.len:
+  for j in i..<parts.len:
     if result.len > 0:
       result.add ' '
-    result.add parts[index]
+    result.add parts[j]
   return result
 
 proc parseStatement(line: string): Statement =
   let content = line.substr(0, line.len - 2)
-  let separatorPos = content.find(' ')
-  result.subjectText = content.substr(0, separatorPos - 1)
-  var remainder = content.substr(separatorPos + 1)
+  let i = content.find(' ')
+  result.subjectText = content.substr(0, i - 1)
+  var remainder = content.substr(i + 1)
   if remainder.startsWith("don't "):
     result.isNegative = true
     remainder = remainder.substr(6)
@@ -113,13 +113,13 @@ proc parseStatement(line: string): Statement =
     remainder = remainder.substr(8)
   else:
     result.isNegative = result.subjectText == "nobody"
-  let verbEnd = remainder.find(' ')
-  if verbEnd < 0:
+  let j = remainder.find(' ')
+  if j < 0:
     result.activityVerb = remainder
     result.activityObject = ""
   else:
-    result.activityVerb = remainder.substr(0, verbEnd - 1)
-    result.activityObject = remainder.substr(verbEnd + 1)
+    result.activityVerb = remainder.substr(0, j - 1)
+    result.activityObject = remainder.substr(j + 1)
   if result.subjectText == "nobody" or
      (not result.isNegative and result.subjectText != "I" and
       result.subjectText != "you"):
@@ -239,11 +239,11 @@ proc whoAnswer(question: Question, statements: seq[Statement]): string =
                                       question.activityObject) & "."
   if matchingSubjects.len > 0:
     var enumerated = ""
-    for index in 0..<matchingSubjects.len:
-      let displaySubject = swappedSubject(matchingSubjects[index])
-      if index == 0:
+    for i in 0..<matchingSubjects.len:
+      let displaySubject = swappedSubject(matchingSubjects[i])
+      if i == 0:
         enumerated = displaySubject
-      elif index == matchingSubjects.len - 1:
+      elif i == matchingSubjects.len - 1:
         enumerated = enumerated & " and " & displaySubject
       else:
         enumerated = enumerated & ", " & displaySubject
@@ -271,9 +271,9 @@ proc whatAnswer(question: Question, statements: seq[Statement]): string =
     if not appliesTo(statement, question.subjectText):
       continue
     var alreadySeen = false
-    for index in 0..<seenVerbs.len:
-      if seenVerbs[index] == statement.activityVerb and
-         seenObjects[index] == statement.activityObject:
+    for i in 0..<seenVerbs.len:
+      if seenVerbs[i] == statement.activityVerb and
+         seenObjects[i] == statement.activityObject:
         alreadySeen = true
         break
     if alreadySeen:
@@ -292,8 +292,8 @@ proc whatAnswer(question: Question, statements: seq[Statement]): string =
   if pieces.len == 2:
     answer = answer & ", and " & pieces[1]
   elif pieces.len > 2:
-    for index in 1..<pieces.len - 1:
-      answer = answer & ", " & pieces[index]
+    for i in 1..<pieces.len - 1:
+      answer = answer & ", " & pieces[i]
     answer = answer & ", and " & pieces[pieces.len - 1]
   return answer & "."
 ```
@@ -311,31 +311,31 @@ proc appendOutput(text: string) =
     stdout.write outputBuffer
     outputBuffer.setLen 0
 
-var headerPos = 0
-let headerLine = nextLine(inputData, headerPos)
-headerPos = 0
-let caseCount = nextInt(headerLine, headerPos)
+var j = 0
+let headerLine = nextLine(inputData, j)
+j = 0
+let caseCount = nextInt(headerLine, j)
 
-for caseIndex in 1..caseCount:
+for k in 1..caseCount:
   appendOutput("Dialogue #")
-  outputBuffer.add $caseIndex
+  outputBuffer.add $k
   outputBuffer.add ":\n"
   var statements: seq[Statement] = @[]
   while true:
-    let dialogueLine = nextLine(inputData, scanPos)
+    let dialogueLine = nextLine(inputData, i)
     if dialogueLine.len == 0:
-      if scanPos >= inputData.len:
+      if i >= inputData.len:
         break
       continue
-    let lastIndex = dialogueLine.len - 1
-    if dialogueLine[lastIndex] == '!':
+    let l = dialogueLine.len - 1
+    if dialogueLine[l] == '!':
       appendOutput(dialogueLine)
       outputBuffer.add '\n'
       outputBuffer.add '\n'
       break
-    if dialogueLine[lastIndex] == '.':
+    if dialogueLine[l] == '.':
       statements.add parseStatement(dialogueLine)
-    elif dialogueLine[lastIndex] == '?':
+    elif dialogueLine[l] == '?':
       appendOutput(dialogueLine)
       outputBuffer.add '\n'
       var answer: string

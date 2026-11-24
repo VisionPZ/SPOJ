@@ -62,25 +62,25 @@ while readLine(stdin, lineBuffer):
   inputData.add lineBuffer
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
 proc scanInt(): int =
   let dataLength = inputData.len
-  while scanPos < dataLength and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    scanPos.inc
+  while i < dataLength and (inputData[i] < '0' or inputData[i] > '9'):
+    i.inc
   result = 0
-  while scanPos < dataLength and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    result = result * 10 + int(inputData[scanPos]) - firstDigitValue
-    scanPos.inc
+  while i < dataLength and inputData[i] >= '0' and inputData[i] <= '9':
+    result = result * 10 + int(inputData[i]) - firstDigitValue
+    i.inc
 
 proc scanWord(): string =
   let dataLength = inputData.len
-  while scanPos < dataLength and not ((inputData[scanPos] >= 'A' and inputData[scanPos] <= 'Z') or inputData[scanPos] == '*'):
-    scanPos.inc
-  let wordStart = scanPos
-  while scanPos < dataLength and ((inputData[scanPos] >= 'A' and inputData[scanPos] <= 'Z') or inputData[scanPos] == '*'):
-    scanPos.inc
-  result = inputData.substr(wordStart, scanPos - 1)
+  while i < dataLength and not ((inputData[i] >= 'A' and inputData[i] <= 'Z') or inputData[i] == '*'):
+    i.inc
+  let j = i
+  while i < dataLength and ((inputData[i] >= 'A' and inputData[i] <= 'Z') or inputData[i] == '*'):
+    i.inc
+  result = inputData.substr(j, i - 1)
 
 var outputBuffer = ""
 
@@ -96,57 +96,57 @@ The read loop stops when readLine reports the end of input. The scanner walks in
 ```nim
 proc fftTransform(re: var seq[float], im: var seq[float], inverse: bool) =
   let size = re.len
-  var reverseIndex = 0
-  for index in 1 ..< size:
+  var i = 0
+  for k in 1 ..< size:
     var bitMask = size shr 1
-    while (reverseIndex and bitMask) != 0:
-      reverseIndex = reverseIndex xor bitMask
+    while (i and bitMask) != 0:
+      i = i xor bitMask
       bitMask = bitMask shr 1
-    reverseIndex = reverseIndex xor bitMask
-    if index < reverseIndex:
-      swap(re[index], re[reverseIndex])
-      swap(im[index], im[reverseIndex])
+    i = i xor bitMask
+    if k < i:
+      swap(re[k], re[i])
+      swap(im[k], im[i])
   var blockSize = 2
   while blockSize <= size:
     let angle = (if inverse: 2.0 else: -2.0) * circlePi / float(blockSize)
     let stepRe = cos(angle)
     let stepIm = sin(angle)
     let halfBlock = blockSize div 2
-    var blockStart = 0
-    while blockStart < size:
+    var j = 0
+    while j < size:
       var twiddleRe = 1.0
       var twiddleIm = 0.0
-      for offset in 0 ..< halfBlock:
-        let evenRe = re[blockStart + offset]
-        let evenIm = im[blockStart + offset]
-        let oddIndex = blockStart + offset + halfBlock
-        let oddRe = re[oddIndex] * twiddleRe - im[oddIndex] * twiddleIm
-        let oddIm = re[oddIndex] * twiddleIm + im[oddIndex] * twiddleRe
-        re[blockStart + offset] = evenRe + oddRe
-        im[blockStart + offset] = evenIm + oddIm
-        re[oddIndex] = evenRe - oddRe
-        im[oddIndex] = evenIm - oddIm
+      for l in 0 ..< halfBlock:
+        let evenRe = re[j + l]
+        let evenIm = im[j + l]
+        let i = j + l + halfBlock
+        let oddRe = re[i] * twiddleRe - im[i] * twiddleIm
+        let oddIm = re[i] * twiddleIm + im[i] * twiddleRe
+        re[j + l] = evenRe + oddRe
+        im[j + l] = evenIm + oddIm
+        re[i] = evenRe - oddRe
+        im[i] = evenIm - oddIm
         let nextRe = twiddleRe * stepRe - twiddleIm * stepIm
         twiddleIm = twiddleRe * stepIm + twiddleIm * stepRe
         twiddleRe = nextRe
-      blockStart += blockSize
+      j += blockSize
     blockSize *= 2
   if inverse:
-    for index in 0 ..< size:
-      re[index] = re[index] / float(size)
-      im[index] = im[index] / float(size)
+    for k in 0 ..< size:
+      re[k] = re[k] / float(size)
+      im[k] = im[k] / float(size)
 ```
 
 The outer loop runs one pass per bit of size. Bit reversal puts each sample in butterfly order before those passes. This block costs O(size log size) arithmetic.
 
 ```nim
-  for position in 0 ..< textLength:
-    if plainText[position] == '*' or cipherText[position] == '*':
-      diffAt[position] = -1
+  for j in 0 ..< textLength:
+    if plainText[j] == '*' or cipherText[j] == '*':
+      diffAt[j] = -1
     else:
-      let diffValue = (int(cipherText[position]) - int(plainText[position]) + 26) mod 26
-      diffAt[position] = int8(diffValue)
-      valuePositions[diffValue].add position
+      let diffValue = (int(cipherText[j]) - int(plainText[j]) + 26) mod 26
+      diffAt[j] = int8(diffValue)
+      valuePositions[diffValue].add j
       knownCount.inc
 
   var conflictAt: seq[bool]
@@ -155,9 +155,9 @@ The outer loop runs one pass per bit of size. Bit reversal puts each sample in b
   if textLength <= bruteForceLimit:
     for distance in 1 ..< textLength:
       var hasConflict = false
-      for position in 0 ..< textLength - distance:
-        let leftDiff = diffAt[position]
-        let rightDiff = diffAt[position + distance]
+      for j in 0 ..< textLength - distance:
+        let leftDiff = diffAt[j]
+        let rightDiff = diffAt[j + distance]
         if leftDiff >= 0 and rightDiff >= 0 and leftDiff != rightDiff:
           hasConflict = true
           break
@@ -175,21 +175,21 @@ The outer loop runs one pass per bit of size. Bit reversal puts each sample in b
     imagSignal.setLen(transformSize)
     realKnown.setLen(transformSize)
     imagKnown.setLen(transformSize)
-    for position in 0 ..< textLength:
-      if diffAt[position] >= 0:
-        let diffValue = int(diffAt[position])
-        realSignal[position] = cosineTable[diffValue]
-        imagSignal[position] = sineTable[diffValue]
-        realKnown[position] = 1.0
+    for j in 0 ..< textLength:
+      if diffAt[j] >= 0:
+        let diffValue = int(diffAt[j])
+        realSignal[j] = cosineTable[diffValue]
+        imagSignal[j] = sineTable[diffValue]
+        realKnown[j] = 1.0
 
     fftTransform(realSignal, imagSignal, false)
     fftTransform(realKnown, imagKnown, false)
 
-    for index in 0 ..< transformSize:
-      realSignal[index] = realSignal[index] * realSignal[index] + imagSignal[index] * imagSignal[index]
-      imagSignal[index] = 0.0
-      realKnown[index] = realKnown[index] * realKnown[index] + imagKnown[index] * imagKnown[index]
-      imagKnown[index] = 0.0
+    for k in 0 ..< transformSize:
+      realSignal[k] = realSignal[k] * realSignal[k] + imagSignal[k] * imagSignal[k]
+      imagSignal[k] = 0.0
+      realKnown[k] = realKnown[k] * realKnown[k] + imagKnown[k] * imagKnown[k]
+      imagKnown[k] = 0.0
 
     fftTransform(realSignal, imagSignal, true)
     fftTransform(realKnown, imagKnown, true)
@@ -219,23 +219,23 @@ The short branch visits every distance below textLength, so its bound is the mes
 
   let validCount = validLengths.len
   if validCount == 0:
-    for position in 0 ..< textLength:
-      if plainText[position] == '*':
+    for j in 0 ..< textLength:
+      if plainText[j] == '*':
         emitChar('*')
       else:
-        emitChar(plainText[position])
+        emitChar(plainText[j])
     emitChar('\n')
     continue
   let largestValid = validLengths[validCount - 1]
   var forcedAtLargest: seq[int8]
   forcedAtLargest.setLen(largestValid)
-  for residue in 0 ..< largestValid:
-    forcedAtLargest[residue] = -1
-  for position in 0 ..< textLength:
-    if diffAt[position] >= 0:
-      let residue = position mod largestValid
-      if forcedAtLargest[residue] < 0:
-        forcedAtLargest[residue] = diffAt[position]
+  for l in 0 ..< largestValid:
+    forcedAtLargest[l] = -1
+  for j in 0 ..< textLength:
+    if diffAt[j] >= 0:
+      let l = j mod largestValid
+      if forcedAtLargest[l] < 0:
+        forcedAtLargest[l] = diffAt[j]
 ```
 
 The sieve walks multiples of a length up to textLength and stops at the first conflict. That walk costs about textLength times the harmonic sum of the bound. The last loop stores one forced shift per residue at the largest valid length.
@@ -262,8 +262,8 @@ The sieve walks multiples of a length up to textLength and stops at the first co
       groupStep[value] = textLength + 1
       continue
     var stepValue = positions[1] - positions[0]
-    for index in 2 ..< positions.len:
-      stepValue = greatestCommonDivisor(positions[index] - positions[index - 1], stepValue)
+    for k in 2 ..< positions.len:
+      stepValue = greatestCommonDivisor(positions[k] - positions[k - 1], stepValue)
     groupStep[value] = stepValue
     let lastSlot = (textLength - 1 - positions[0]) div stepValue + 1
     groupFull[value] = (positions.len == lastSlot)
@@ -283,49 +283,49 @@ The sieve walks multiples of a length up to textLength and stops at the first co
 ```
 
 ```nim
-  for position in 0 ..< textLength:
-    if plainText[position] != '*':
-      answerFor[position] = plainText[position]
-      pendingFor[position] = 0
+  for j in 0 ..< textLength:
+    if plainText[j] != '*':
+      answerFor[j] = plainText[j]
+      pendingFor[j] = 0
       continue
-    if cipherText[position] == '*':
-      answerFor[position] = '*'
-      pendingFor[position] = 0
+    if cipherText[j] == '*':
+      answerFor[j] = '*'
+      pendingFor[j] = 0
       continue
-    let forcedDiff = forcedAtLargest[position mod largestValid]
+    let forcedDiff = forcedAtLargest[j mod largestValid]
     if forcedDiff < 0:
-      answerFor[position] = '*'
-      pendingFor[position] = 0
+      answerFor[j] = '*'
+      pendingFor[j] = 0
       continue
     let diffValue = int(forcedDiff)
-    let plainValue = (int(cipherText[position]) - firstLetterValue - diffValue + 26) mod 26
-    answerFor[position] = char(firstLetterValue + plainValue)
+    let plainValue = (int(cipherText[j]) - firstLetterValue - diffValue + 26) mod 26
+    answerFor[j] = char(firstLetterValue + plainValue)
     if validCount == 1:
-      pendingFor[position] = 0
+      pendingFor[j] = 0
       continue
     if false:
-      let offset = position - groupFirst[diffValue]
+      let l = j - groupFirst[diffValue]
       let modulus = groupNeed[diffValue]
-      var coveredEverywhere = (modulus > 0 and offset mod modulus == 0)
+      var coveredEverywhere = (modulus > 0 and l mod modulus == 0)
       if coveredEverywhere:
         for lengthValue in groupCritical[diffValue]:
           let common = greatestCommonDivisor(groupStep[diffValue], lengthValue)
           let reduced = lengthValue div common
-          let aligned = offset div common
+          let aligned = l div common
           let wrapped = (aligned mod reduced + reduced) mod reduced
           if wrapped > groupTermCount[diffValue]:
             coveredEverywhere = false
             break
       if coveredEverywhere:
-        pendingFor[position] = 0
+        pendingFor[j] = 0
       else:
-        answerFor[position] = '*'
-        pendingFor[position] = 0
+        answerFor[j] = '*'
+        pendingFor[j] = 0
       continue
-    pendingFor[position] = 1
-    targetFor[position] = forcedDiff
-    checkedFor[position] = 1
-    alivePositions.add position
+    pendingFor[j] = 1
+    targetFor[j] = forcedDiff
+    checkedFor[j] = 1
+    alivePositions.add j
 ```
 
 This pass touches each position once. It keeps letters already known in x and letters with a lost y. It sets one target shift from the largest valid length.
@@ -333,65 +333,65 @@ This pass touches each position once. It keeps letters already known in x and le
 ```nim
   var residueValue: seq[int8]
   var nextAlive: seq[int] = @[]
-  var sweepIndex = validCount - 2
+  var i = validCount - 2
   var sweepWork = 0
   var staleSweepCount = 0
-  while sweepIndex >= 0 and sweepWork < sweepWorkBudget and staleSweepCount < staleSweepLimit:
-    let modulus = validLengths[sweepIndex]
+  while i >= 0 and sweepWork < sweepWorkBudget and staleSweepCount < staleSweepLimit:
+    let modulus = validLengths[i]
     residueValue.setLen(modulus)
-    for residue in 0 ..< modulus:
-      residueValue[residue] = -1
-    for position in 0 ..< textLength:
-      if diffAt[position] >= 0:
-        residueValue[position mod modulus] = diffAt[position]
+    for l in 0 ..< modulus:
+      residueValue[l] = -1
+    for j in 0 ..< textLength:
+      if diffAt[j] >= 0:
+        residueValue[j mod modulus] = diffAt[j]
     sweepWork += modulus + knownCount
     nextAlive.setLen 0
     var killedNow = 0
-    for index in 0 ..< alivePositions.len:
-      let position = alivePositions[index]
-      let residue = position mod modulus
-      if residueValue[residue] == targetFor[position]:
-        checkedFor[position].inc
-        nextAlive.add position
+    for k in 0 ..< alivePositions.len:
+      let j = alivePositions[k]
+      let l = j mod modulus
+      if residueValue[l] == targetFor[j]:
+        checkedFor[j].inc
+        nextAlive.add j
         sweepWork.inc
       else:
-        pendingFor[position] = 0
-        answerFor[position] = '*'
+        pendingFor[j] = 0
+        answerFor[j] = '*'
         killedNow.inc
     swap(alivePositions, nextAlive)
     if killedNow == 0:
       staleSweepCount.inc
     else:
       staleSweepCount = 0
-    sweepIndex.dec
+    i.dec
 
-  for index in 0 ..< alivePositions.len:
-    let position = alivePositions[index]
-    let diffValue = int(targetFor[position])
-    let firstUncheckedIndex = validCount - checkedFor[position]
+  for k in 0 ..< alivePositions.len:
+    let j = alivePositions[k]
+    let diffValue = int(targetFor[j])
+    let l = validCount - checkedFor[j]
     stampCounter.inc
     var coveredCount = 0
     let positions = valuePositions[diffValue]
-    for positionIndex in 0 ..< positions.len:
-      let other = positions[positionIndex]
-      let distance = if other > position: other - position else: position - other
+    for i in 0 ..< positions.len:
+      let other = positions[i]
+      let distance = if other > j: other - j else: j - other
       buildDivisors(distance)
-      for divisorIndex in 0 ..< divisorBuffer.len:
-        let lengthValue = divisorBuffer[divisorIndex]
+      for k in 0 ..< divisorBuffer.len:
+        let lengthValue = divisorBuffer[k]
         if lengthValue > cipherBound:
           continue
-        let lengthIndex = validIndexAt[lengthValue]
-        if lengthIndex < 0 or lengthIndex >= firstUncheckedIndex or coverStamp[lengthValue] == stampCounter:
+        let i = validIndexAt[lengthValue]
+        if i < 0 or i >= l or coverStamp[lengthValue] == stampCounter:
           continue
         coverStamp[lengthValue] = stampCounter
         coveredCount.inc
-        if coveredCount == firstUncheckedIndex:
+        if coveredCount == l:
           break
-      if coveredCount == firstUncheckedIndex:
+      if coveredCount == l:
         break
-    if coveredCount < firstUncheckedIndex:
-      answerFor[position] = '*'
-    pendingFor[position] = 0
+    if coveredCount < l:
+      answerFor[j] = '*'
+    pendingFor[j] = 0
 ```
 
 The sweep visits valid lengths from large to small and stops after staleSweepLimit quiet lengths. The divisor loop uses smallestFactor and buildDivisors for the remaining positions. Each surviving position pays one divisor scan.

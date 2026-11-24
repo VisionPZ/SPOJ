@@ -21,18 +21,18 @@ Cost per element: O(log n) for the forward pass and O(log n) for the backward pa
 
 ## Why It Works
 
-Take any longest increasing subsequence and a position inside it. The values before that position form an increasing subsequence ending there, so their count is at most `endingLength[index]`. The values after it form an increasing subsequence starting there, so their count is at most `startingLength[index]`. Those two parts share the position, so their combined length is `endingLength[index] + startingLength[index] - 1`. This combined sequence is increasing, so it cannot exceed `longestLength`.
+Take any longest increasing subsequence and a position inside it. The values before that position form an increasing subsequence ending there, so their count is at most `endingLength[j]`. The values after it form an increasing subsequence starting there, so their count is at most `startingLength[j]`. Those two parts share the position, so their combined length is `endingLength[j] + startingLength[j] - 1`. This combined sequence is increasing, so it cannot exceed `longestLength`.
 
 Now suppose the equality holds. The prefix subsequence ends at the position, and the suffix subsequence starts there. Every value in the first part is smaller than the value at the position, and every value in the second part is larger. Concatenating them gives an increasing subsequence of length `longestLength` that contains the position. Therefore the equality is both necessary and sufficient.
 
-The test for one position uses four terms.
+The position is `j`. The binary search returns the insertion slot `k` or `l`. The test for one position uses four terms.
 
 ```
-endingLength[index] + startingLength[index] - 1 == longestLength
+    if endingLength[j] + startingLength[j] - 1 == longestLength:
 ```
 
-- `endingLength[index]`: longest increasing subsequence ending at this position.
-- `startingLength[index]`: longest increasing subsequence starting at this position.
+- `endingLength[j]`: longest increasing subsequence ending at this position.
+- `startingLength[j]`: longest increasing subsequence starting at this position.
 - `- 1`: the value at this position appears in both lengths.
 - `longestLength`: length of the longest increasing subsequence of the case.
 
@@ -58,14 +58,14 @@ const flushBlockBytes = 1 shl 17
 The first constant fixes the largest legal array and the second sets the flush threshold. All work arrays are allocated once, so no case pays an allocation cost. The closed bound comes from the judge limit of 100000.
 
 ```
-proc nextInt(inputData: string, scanPos: var int): int =
+proc nextInt(inputData: string, i: var int): int =
   let dataLength = inputData.len
-  while scanPos < dataLength and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    scanPos = scanPos + 1
+  while i < dataLength and (inputData[i] < '0' or inputData[i] > '9'):
+    i = i + 1
   var value = 0
-  while scanPos < dataLength and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - 48
-    scanPos = scanPos + 1
+  while i < dataLength and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - 48
+    i = i + 1
   return value
 ```
 
@@ -73,15 +73,15 @@ The loop advances until a digit appears, so spaces and newlines need no special 
 
 ```
 proc lowerBound(tailValues: seq[int], tailCount: int, value: int): int =
-  var leftIndex = 0
-  var rightIndex = tailCount
-  while leftIndex < rightIndex:
-    let middleIndex = (leftIndex + rightIndex) div 2
-    if tailValues[middleIndex] < value:
-      leftIndex = middleIndex + 1
+  var i = 0
+  var j = tailCount
+  while i < j:
+    let k = (i + j) div 2
+    if tailValues[k] < value:
+      i = k + 1
     else:
-      rightIndex = middleIndex
-  return leftIndex
+      j = k
+  return i
 ```
 
 The search halves the live prefix on each step, so it takes O(log n) comparisons. Lower bound keeps the strictly increasing rule intact. The live prefix always has `tailCount` entries.
@@ -98,25 +98,25 @@ var line: string
 while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
-var scanPos = 0
+var i = 0
 var outputBuffer: string
-while scanPos < inputData.len:
-  let size = nextInt(inputData, scanPos)
+while i < inputData.len:
+  let size = nextInt(inputData, i)
   if size < 1: break
-  for index in 0 ..< size:
-    permutation[index] = nextInt(inputData, scanPos)
+  for j in 0 ..< size:
+    permutation[j] = nextInt(inputData, i)
 ```
 
 The five arrays are sized once from the maximum legal permutation, so no case allocates. The input loop gathers every line into one string before parsing starts. The guard stops the empty case created by the trailing newline. Filling one case costs O(n).
 
 ```
   var tailCount = 0
-  for index in 0 ..< size:
-    let value = permutation[index]
-    let insertPos = lowerBound(tailValues, tailCount, value)
-    endingLength[index] = insertPos + 1
-    tailValues[insertPos] = value
-    if insertPos == tailCount: tailCount = tailCount + 1
+  for j in 0 ..< size:
+    let value = permutation[j]
+    let k = lowerBound(tailValues, tailCount, value)
+    endingLength[j] = k + 1
+    tailValues[k] = value
+    if k == tailCount: tailCount = tailCount + 1
   let longestLength = tailCount
 ```
 
@@ -124,13 +124,13 @@ The loop visits positions from 0 to size-1 in index order. A smaller tail always
 
 ```
   tailCount = 0
-  for reverseIndex in 0 ..< size:
-    let originalIndex = size - 1 - reverseIndex
-    let value = -permutation[originalIndex]
-    let insertPos = lowerBound(tailValues, tailCount, value)
-    startingLength[originalIndex] = insertPos + 1
-    tailValues[insertPos] = value
-    if insertPos == tailCount: tailCount = tailCount + 1
+  for j in 0 ..< size:
+    let k = size - 1 - j
+    let value = -permutation[k]
+    let l = lowerBound(tailValues, tailCount, value)
+    startingLength[k] = l + 1
+    tailValues[l] = value
+    if l == tailCount: tailCount = tailCount + 1
 ```
 
 The loop visits positions from size-1 down to 0. Negating the value turns a decreasing run in reverse order into an increasing run for the same binary search. This avoids a second comparison routine. Cost is O(n log n).
@@ -139,9 +139,9 @@ The loop visits positions from size-1 down to 0. Negating the value turns a decr
   for value in 1 .. size:
     isSupernumber[value] = false
   var supernumberCount = 0
-  for index in 0 ..< size:
-    if endingLength[index] + startingLength[index] - 1 == longestLength:
-      isSupernumber[permutation[index]] = true
+  for j in 0 ..< size:
+    if endingLength[j] + startingLength[j] - 1 == longestLength:
+      isSupernumber[permutation[j]] = true
   for value in 1 .. size:
     if isSupernumber[value]: supernumberCount = supernumberCount + 1
   outputBuffer.add $supernumberCount

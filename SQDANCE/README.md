@@ -62,47 +62,47 @@ inputData.setLen(totalRead)
 The loop ends at the first empty read. The buffer doubles only when full, so one bulk copy holds the whole stream. `setLen` trims the string to the bytes read.
 
 ```nim
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 ```
 
 The scanner skips separators and reads digits into an integer. It allocates no token objects. It assumes non-negative input, which the statement guarantees.
 
 ```nim
-proc findRoot(parent: var seq[int], nodeIndex: int): int =
-  var rootIndex = nodeIndex
-  while parent[rootIndex] != rootIndex:
-    rootIndex = parent[rootIndex]
-  var walkIndex = nodeIndex
-  while parent[walkIndex] != walkIndex:
-    let nextIndex = parent[walkIndex]
-    parent[walkIndex] = rootIndex
-    walkIndex = nextIndex
-  return rootIndex
+proc findRoot(parent: var seq[int], i: int): int =
+  var j = i
+  while parent[j] != j:
+    j = parent[j]
+  var k = i
+  while parent[k] != k:
+    let l = parent[k]
+    parent[k] = j
+    k = l
+  return j
 ```
 
 The first walk finds the root. The second walk compresses the path in place. Both walks stop at a root, so the loop bound is the tree height, kept short by size merging.
 
 ```nim
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 0..<caseCount:
-  let primeCount = nextInt(inputData, scanPos)
-  let relationCount = nextInt(inputData, scanPos)
+let caseCount = nextInt(inputData, i)
+for j in 0..<caseCount:
+  let primeCount = nextInt(inputData, i)
+  let relationCount = nextInt(inputData, i)
   var parent = newSeq[int](primeCount + 1)
   var componentSize = newSeq[int](primeCount + 1)
-  for primeIndex in 0..primeCount:
-    parent[primeIndex] = primeIndex
-    componentSize[primeIndex] = 1
+  for j in 0..primeCount:
+    parent[j] = j
+    componentSize[j] = 1
   var squareCount = 0
-  for relationIndex in 0..<relationCount:
-    let leftPrime = nextInt(inputData, scanPos)
-    let rightPrime = nextInt(inputData, scanPos)
+  for j in 0..<relationCount:
+    let leftPrime = nextInt(inputData, i)
+    let rightPrime = nextInt(inputData, i)
     let leftRoot = findRoot(parent, leftPrime)
     let rightRoot = findRoot(parent, rightPrime)
     if leftRoot == rightRoot:

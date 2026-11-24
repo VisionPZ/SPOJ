@@ -8,32 +8,32 @@ const bucketTotal = int(guaranteedPathCost) + 2
 const wordTotal = (bucketTotal shr 6) + 1
 
 var lineBuffer: string
-var linePos = 0
+var i = 0
 var inputDone = false
 
 proc refillLine(): bool =
   while true:
-    if linePos < lineBuffer.len: return true
+    if i < lineBuffer.len: return true
     if inputDone: return false
     if not readLine(stdin, lineBuffer):
       inputDone = true
       lineBuffer.setLen 0
       return false
     lineBuffer.add "\n"
-    linePos = 0
+    i = 0
 
 proc skipSpace() =
   while true:
-    while linePos < lineBuffer.len and lineBuffer[linePos] <= ' ': linePos = linePos + 1
-    if linePos < lineBuffer.len: return
+    while i < lineBuffer.len and lineBuffer[i] <= ' ': i = i + 1
+    if i < lineBuffer.len: return
     if not refillLine(): return
 
 proc readInt32(): int32 =
   skipSpace()
   var value: int32 = 0
-  while linePos < lineBuffer.len and lineBuffer[linePos] >= '0' and lineBuffer[linePos] <= '9':
-    value = value * 10 + int32(int(lineBuffer[linePos]) - 48)
-    linePos = linePos + 1
+  while i < lineBuffer.len and lineBuffer[i] >= '0' and lineBuffer[i] <= '9':
+    value = value * 10 + int32(int(lineBuffer[i]) - 48)
+    i = i + 1
   return value
 
 var wordText: string
@@ -41,11 +41,11 @@ var lowBitPosition = newSeq[int](1 shl 16)
 var positionProbe = 1
 while positionProbe < (1 shl 16):
   var shiftedValue = positionProbe
-  var bitIndex = 0
+  var i = 0
   while (shiftedValue and 1) == 0:
     shiftedValue = shiftedValue shr 1
-    bitIndex = bitIndex + 1
-  lowBitPosition[positionProbe] = bitIndex
+    i = i + 1
+  lowBitPosition[positionProbe] = i
   positionProbe = positionProbe + 1
 lowBitPosition[0] = 16
 
@@ -74,24 +74,24 @@ var targetStamp: seq[int]
 var searchStamp = 0
 
 proc clearBuckets() =
-  for usedDistance in usedDistanceList:
-    bucketHead[usedDistance] = -1
-  for usedWord in usedWordList:
-    bucketWords[usedWord] = 0
+  for i in usedDistanceList:
+    bucketHead[i] = -1
+  for j in usedWordList:
+    bucketWords[j] = 0
 
 proc enqueueBucket(distance: int32, vertex: int32) =
-  var distanceIndex = int(distance)
-  if bucketHead[distanceIndex] == -1: usedDistanceList.add distanceIndex
-  var wordIndex = distanceIndex shr 6
-  if bucketWords[wordIndex] == 0: usedWordList.add wordIndex
-  bucketWords[wordIndex] = bucketWords[wordIndex] or (cast[uint64](1) shl (distanceIndex and 63))
-  nodeNext[nodeTotal] = bucketHead[distanceIndex]
-  bucketHead[distanceIndex] = nodeTotal
+  var i = int(distance)
+  if bucketHead[i] == -1: usedDistanceList.add i
+  var j = i shr 6
+  if bucketWords[j] == 0: usedWordList.add j
+  bucketWords[j] = bucketWords[j] or (cast[uint64](1) shl (i and 63))
+  nodeNext[nodeTotal] = bucketHead[i]
+  bucketHead[i] = nodeTotal
   nodeVertex[nodeTotal] = vertex
   nodeTotal = nodeTotal + 1
 
 proc shortestPathsFrom(source: int32, cityCount: int, targetsLeft: var int) =
-  for index in 0 .. cityCount - 1: distanceValue[index] = unreachableDistance
+  for i in 0 .. cityCount - 1: distanceValue[i] = unreachableDistance
   usedDistanceList.setLen 0
   usedWordList.setLen 0
   nodeTotal = 0
@@ -99,10 +99,10 @@ proc shortestPathsFrom(source: int32, cityCount: int, targetsLeft: var int) =
   enqueueBucket(0, source)
   var currentDistance = 0
   while true:
-    var nodeIndex = bucketHead[currentDistance]
-    while nodeIndex >= 0:
-      var settledVertex = int(nodeVertex[nodeIndex])
-      nodeIndex = nodeNext[nodeIndex]
+    var i = bucketHead[currentDistance]
+    while i >= 0:
+      var settledVertex = int(nodeVertex[i])
+      i = nodeNext[i]
       if distanceValue[settledVertex] != int32(currentDistance): continue
       if targetStamp[settledVertex] == searchStamp:
         targetStamp[settledVertex] = 0
@@ -110,38 +110,38 @@ proc shortestPathsFrom(source: int32, cityCount: int, targetsLeft: var int) =
         if targetsLeft == 0:
           currentDistance = int(guaranteedPathCost) + 1
           break
-      var walkPosition = edgeStart[settledVertex]
+      var i = edgeStart[settledVertex]
       let walkLimit = edgeStart[settledVertex + 1]
-      while walkPosition < walkLimit:
-        var neighbour = int(edgeTarget[walkPosition])
-        var candidateDistance = int32(currentDistance) + edgeCost[walkPosition]
+      while i < walkLimit:
+        var neighbour = int(edgeTarget[i])
+        var candidateDistance = int32(currentDistance) + edgeCost[i]
         if candidateDistance < distanceValue[neighbour] and candidateDistance <= guaranteedPathCost:
           distanceValue[neighbour] = candidateDistance
           enqueueBucket(candidateDistance, int32(neighbour))
-        walkPosition = walkPosition + 1
+        i = i + 1
     if targetsLeft == 0 or currentDistance >= int(guaranteedPathCost): break
     bucketHead[currentDistance] = -1
-    var wordIndex = (currentDistance + 1) shr 6
-    var bitMask = bucketWords[wordIndex] and
+    var j = (currentDistance + 1) shr 6
+    var bitMask = bucketWords[j] and
       not((cast[uint64](1) shl ((currentDistance + 1) and 63)) - 1)
     while true:
       if bitMask != 0: break
-      wordIndex = wordIndex + 1
-      if wordIndex >= wordTotal: break
-      bitMask = bucketWords[wordIndex]
+      j = j + 1
+      if j >= wordTotal: break
+      bitMask = bucketWords[j]
     if bitMask == 0:
       currentDistance = int(guaranteedPathCost) + 1
       break
-    currentDistance = (wordIndex shl 6) + lowestSetBitPosition(bitMask)
-    bucketWords[wordIndex] = bucketWords[wordIndex] and not(cast[uint64](1) shl (currentDistance and 63))
+    currentDistance = (j shl 6) + lowestSetBitPosition(bitMask)
+    bucketWords[j] = bucketWords[j] and not(cast[uint64](1) shl (currentDistance and 63))
   clearBuckets()
 
 proc readWord(): string =
   skipSpace()
   var collected: string
-  while linePos < lineBuffer.len and lineBuffer[linePos] > ' ':
-    collected.add lineBuffer[linePos]
-    linePos = linePos + 1
+  while i < lineBuffer.len and lineBuffer[i] > ' ':
+    collected.add lineBuffer[i]
+    i = i + 1
   return collected
 
 var testCount = int(readInt32())
@@ -152,10 +152,10 @@ for _ in 1 .. testCount:
   edgeStart = newSeq[int](cityCount + 1)
   edgeTarget = newSeq[int32]()
   edgeCost = newSeq[int32]()
-  for cityIndex in 0 .. cityCount - 1:
-    nameToIndex[readWord()] = cityIndex
+  for i in 0 .. cityCount - 1:
+    nameToIndex[readWord()] = i
     var neighbourCount = int(readInt32())
-    edgeStart[cityIndex] = edgeTarget.len
+    edgeStart[i] = edgeTarget.len
     for _ in 1 .. neighbourCount:
       edgeTarget.add readInt32() - 1
       edgeCost.add readInt32()
@@ -169,27 +169,27 @@ for _ in 1 .. testCount:
   var queryCount = int(readInt32())
   var querySource = newSeq[int32](queryCount)
   var queryTarget = newSeq[int32](queryCount)
-  for index in 0 .. queryCount - 1:
-    querySource[index] = int32(nameToIndex[readWord()])
-    queryTarget[index] = int32(nameToIndex[readWord()])
+  for i in 0 .. queryCount - 1:
+    querySource[i] = int32(nameToIndex[readWord()])
+    queryTarget[i] = int32(nameToIndex[readWord()])
   var answerValue = newSeq[int32](queryCount)
   var sourceUsed = repeat(false, cityCount)
-  for firstQuery in 0 .. queryCount - 1:
-    if sourceUsed[int(querySource[firstQuery])]: continue
-    sourceUsed[int(querySource[firstQuery])] = true
+  for i in 0 .. queryCount - 1:
+    if sourceUsed[int(querySource[i])]: continue
+    sourceUsed[int(querySource[i])] = true
     searchStamp = searchStamp + 1
     var targetsLeft = 0
-    for secondQuery in 0 .. queryCount - 1:
-      if querySource[secondQuery] == querySource[firstQuery]:
-        if targetStamp[int(queryTarget[secondQuery])] != searchStamp:
-          targetStamp[int(queryTarget[secondQuery])] = searchStamp
+    for j in 0 .. queryCount - 1:
+      if querySource[j] == querySource[i]:
+        if targetStamp[int(queryTarget[j])] != searchStamp:
+          targetStamp[int(queryTarget[j])] = searchStamp
           targetsLeft = targetsLeft + 1
-    shortestPathsFrom(querySource[firstQuery], cityCount, targetsLeft)
-    for secondQuery in 0 .. queryCount - 1:
-      if querySource[secondQuery] == querySource[firstQuery]:
-        answerValue[secondQuery] = distanceValue[int(queryTarget[secondQuery])]
-  for index in 0 .. queryCount - 1:
-    outputBuffer.add $answerValue[index]
+    shortestPathsFrom(querySource[i], cityCount, targetsLeft)
+    for j in 0 .. queryCount - 1:
+      if querySource[j] == querySource[i]:
+        answerValue[j] = distanceValue[int(queryTarget[j])]
+  for i in 0 .. queryCount - 1:
+    outputBuffer.add $answerValue[i]
     outputBuffer.add "\n"
     if outputBuffer.len >= flushBlockBytes:
       stdout.write outputBuffer

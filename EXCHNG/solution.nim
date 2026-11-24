@@ -1,11 +1,11 @@
 const flushBlockBytes = 1 shl 18
 
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] < '0': inc scanPos
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] < '0': inc i
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0':
-    value = value * 10 + (int(inputData[scanPos]) - 48)
-    inc scanPos
+  while i < inputData.len and inputData[i] >= '0':
+    value = value * 10 + (int(inputData[i]) - 48)
+    inc i
   return value
 
 var inputData = ""
@@ -14,50 +14,50 @@ while readLine(stdin, currentLine):
   inputData.add currentLine
   inputData.add '\n'
 
-var scanPos = 0
-let dataSets = nextInt(inputData, scanPos)
+var i = 0
+let dataSets = nextInt(inputData, i)
 var outputBuffer = ""
 
-for dataSetIndex in 0 ..< dataSets:
-  let registerCount = nextInt(inputData, scanPos)
-  let instructionCount = nextInt(inputData, scanPos)
+for j in 0 ..< dataSets:
+  let registerCount = nextInt(inputData, i)
+  let instructionCount = nextInt(inputData, i)
 
   var leftOperand = newSeq[int](instructionCount)
   var rightOperand = newSeq[int](instructionCount)
   var tokenBefore = newSeq[bool](instructionCount)
   var tokenCount = newSeq[int](registerCount + 1)
-  for registerIndex in 1 .. registerCount: tokenCount[registerIndex] = 1
+  for k in 1 .. registerCount: tokenCount[k] = 1
 
-  for instrIndex in 0 ..< instructionCount:
-    let lowerIndex = nextInt(inputData, scanPos)
-    let upperIndex = nextInt(inputData, scanPos)
-    leftOperand[instrIndex] = lowerIndex
-    rightOperand[instrIndex] = upperIndex
-    tokenBefore[instrIndex] = tokenCount[upperIndex] > 0
+  for l in 0 ..< instructionCount:
+    let lowerIndex = nextInt(inputData, i)
+    let upperIndex = nextInt(inputData, i)
+    leftOperand[l] = lowerIndex
+    rightOperand[l] = upperIndex
+    tokenBefore[l] = tokenCount[upperIndex] > 0
     tokenCount[lowerIndex] += tokenCount[upperIndex]
     tokenCount[upperIndex] = 0
 
   var finalStranded = 0
-  for registerIndex in 2 .. registerCount:
-    if tokenCount[registerIndex] > 0: inc finalStranded
+  for k in 2 .. registerCount:
+    if tokenCount[k] > 0: inc finalStranded
 
   var finalSlot = newSeq[int](registerCount + 1)
-  for registerIndex in 0 .. registerCount: finalSlot[registerIndex] = registerIndex
+  for k in 0 .. registerCount: finalSlot[k] = k
   var needsCleanup = newSeq[bool](registerCount + 1)
-  for registerIndex in 2 .. registerCount:
-    if tokenCount[registerIndex] > 0: needsCleanup[registerIndex] = true
+  for k in 2 .. registerCount:
+    if tokenCount[k] > 0: needsCleanup[k] = true
 
   var extraCleanup = 0
-  var instrIndex = instructionCount - 1
-  while instrIndex >= 0:
-    let lowerIndex = leftOperand[instrIndex]
-    let upperIndex = rightOperand[instrIndex]
+  var l = instructionCount - 1
+  while l >= 0:
+    let lowerIndex = leftOperand[l]
+    let upperIndex = rightOperand[l]
     let landingSlot = finalSlot[upperIndex]
-    if tokenBefore[instrIndex] and landingSlot > 1 and not needsCleanup[landingSlot]:
+    if tokenBefore[l] and landingSlot > 1 and not needsCleanup[landingSlot]:
       needsCleanup[landingSlot] = true
       inc extraCleanup
     finalSlot[upperIndex] = finalSlot[lowerIndex]
-    dec instrIndex
+    dec l
 
   let answer = 2 * finalStranded + extraCleanup
   outputBuffer.add $answer

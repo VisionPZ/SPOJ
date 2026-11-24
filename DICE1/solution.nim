@@ -58,29 +58,29 @@ var
   caseGeneration = 0
   inputData = ""
   outputBuffer = ""
-  scanPos = 0
+  i = 0
 
-proc nextInt(input: string, pos: var int): int =
-  while pos < input.len and (input[pos] < '0' or input[pos] > '9') and input[pos] != '-':
-    inc pos
+proc nextInt(input: string, i: var int): int =
+  while i < input.len and (input[i] < '0' or input[i] > '9') and input[i] != '-':
+    inc i
   var sign = 1
-  if pos < input.len and input[pos] == '-':
+  if i < input.len and input[i] == '-':
     sign = -1
-    inc pos
+    inc i
   var value = 0
-  while pos < input.len and input[pos] >= '0' and input[pos] <= '9':
-    value = value * 10 + (int(input[pos]) - 48)
-    inc pos
+  while i < input.len and input[i] >= '0' and input[i] <= '9':
+    value = value * 10 + (int(input[i]) - 48)
+    inc i
   result = sign * value
 
 proc heapPush(node: SearchNode) =
   searchHeap.add(node)
-  var childIndex = searchHeap.len - 1
-  while childIndex > 0:
-    let parentIndex = (childIndex - 1) div 2
-    if searchHeap[childIndex].distance < searchHeap[parentIndex].distance:
-      swap searchHeap[childIndex], searchHeap[parentIndex]
-      childIndex = parentIndex
+  var j = searchHeap.len - 1
+  while j > 0:
+    let k = (j - 1) div 2
+    if searchHeap[j].distance < searchHeap[k].distance:
+      swap searchHeap[j], searchHeap[k]
+      j = k
     else:
       break
 
@@ -90,51 +90,51 @@ proc heapPop(): SearchNode =
   searchHeap.setLen(searchHeap.len - 1)
   if searchHeap.len > 0:
     searchHeap[0] = lastNode
-    var parentIndex = 0
+    var k = 0
     while true:
-      let leftIndex = parentIndex * 2 + 1
-      if leftIndex >= searchHeap.len:
+      let i = k * 2 + 1
+      if i >= searchHeap.len:
         break
-      let rightIndex = leftIndex + 1
-      var smallerIndex = leftIndex
-      if rightIndex < searchHeap.len and searchHeap[rightIndex].distance < searchHeap[leftIndex].distance:
-        smallerIndex = rightIndex
-      if searchHeap[smallerIndex].distance < searchHeap[parentIndex].distance:
-        swap searchHeap[smallerIndex], searchHeap[parentIndex]
-        parentIndex = smallerIndex
+      let j = i + 1
+      var l = i
+      if j < searchHeap.len and searchHeap[j].distance < searchHeap[i].distance:
+        l = j
+      if searchHeap[l].distance < searchHeap[k].distance:
+        swap searchHeap[l], searchHeap[k]
+        k = l
       else:
         break
 
-proc ensureColumn(columnIndex: int) =
-  let pooledIndex = columnIndex + columnOffset
-  if pooledIndex + 1 > columnCount:
-    columnCount = pooledIndex + 1
-  if columnPool[pooledIndex].generation != caseGeneration:
-    for stateIndex in 0..<statesPerColumn:
-      columnPool[pooledIndex].distances[stateIndex] = infinite
-    columnPool[pooledIndex].remaining = reachablePerColumn
-    columnPool[pooledIndex].generation = caseGeneration
+proc ensureColumn(i: int) =
+  let j = i + columnOffset
+  if j + 1 > columnCount:
+    columnCount = j + 1
+  if columnPool[j].generation != caseGeneration:
+    for k in 0..<statesPerColumn:
+      columnPool[j].distances[k] = infinite
+    columnPool[j].remaining = reachablePerColumn
+    columnPool[j].generation = caseGeneration
 
 proc initializeOrientations() =
-  for topPosition in 0..<positionsCount:
-    for frontPosition in 0..<positionsCount:
-      let code = serializeGrid[topPosition][frontPosition]
+  for i in 0..<positionsCount:
+    for j in 0..<positionsCount:
+      let code = serializeGrid[i][j]
       if code < 0:
         continue
-      for move in 0..<moveCount:
-        let newTopPosition = rotationGrid[move][topPosition]
-        let newFrontPosition = rotationGrid[move][frontPosition]
-        orientationNext[code][move] = serializeGrid[newTopPosition][newFrontPosition]
-        orientationCostFace[code][move] = topFaceGrid[newTopPosition][newFrontPosition]
+      for k in 0..<moveCount:
+        let newTopPosition = rotationGrid[k][i]
+        let newFrontPosition = rotationGrid[k][j]
+        orientationNext[code][k] = serializeGrid[newTopPosition][newFrontPosition]
+        orientationCostFace[code][k] = topFaceGrid[newTopPosition][newFrontPosition]
   initialOrientation = serializeGrid[0][1]
 
 proc solveCase() =
-  for face in 0..<positionsCount:
-    faceCosts[face] = nextInt(inputData, scanPos)
-  let startX = nextInt(inputData, scanPos)
-  var startRow = nextInt(inputData, scanPos)
-  let targetX = nextInt(inputData, scanPos)
-  var targetRow = nextInt(inputData, scanPos)
+  for k in 0..<positionsCount:
+    faceCosts[k] = nextInt(inputData, i)
+  let startX = nextInt(inputData, i)
+  var startRow = nextInt(inputData, i)
+  let targetX = nextInt(inputData, i)
+  var targetRow = nextInt(inputData, i)
 
   var horizontalDistance: int
   if targetX < startX:
@@ -165,25 +165,25 @@ proc solveCase() =
       break
 
     ensureColumn(node.columnIndex)
-    let columnIndex = node.columnIndex + columnOffset
-    let stateIndex = orientationsCount * node.rowIndex + node.orientation
-    if columnPool[columnIndex].distances[stateIndex] != infinite:
+    let i = node.columnIndex + columnOffset
+    let j = orientationsCount * node.rowIndex + node.orientation
+    if columnPool[i].distances[j] != infinite:
       continue
-    columnPool[columnIndex].distances[stateIndex] = node.distance
-    dec columnPool[columnIndex].remaining
+    columnPool[i].distances[j] = node.distance
+    dec columnPool[i].remaining
 
-    if columnPool[columnIndex].remaining == 0:
+    if columnPool[i].remaining == 0:
       if periodLength < 0:
-        for earlierIndex in 0..<columnCount:
-          if earlierIndex == columnIndex or columnPool[earlierIndex].remaining != 0:
+        for j in 0..<columnCount:
+          if j == i or columnPool[j].remaining != 0:
             continue
           var delta = infinite
           var matches = true
-          for state in 0..<statesPerColumn:
-            let currentDistance = columnPool[columnIndex].distances[state]
+          for l in 0..<statesPerColumn:
+            let currentDistance = columnPool[i].distances[l]
             if currentDistance == infinite:
               continue
-            let earlierDistance = columnPool[earlierIndex].distances[state]
+            let earlierDistance = columnPool[j].distances[l]
             if earlierDistance == infinite:
               matches = false
               break
@@ -193,13 +193,13 @@ proc solveCase() =
               matches = false
               break
           if matches and delta > 0:
-            periodLength = abs(node.columnIndex - (earlierIndex - columnOffset))
-            leftEdge = min(node.columnIndex, earlierIndex - columnOffset)
-            rightEdge = max(node.columnIndex, earlierIndex - columnOffset)
+            periodLength = abs(node.columnIndex - (j - columnOffset))
+            leftEdge = min(node.columnIndex, j - columnOffset)
+            rightEdge = max(node.columnIndex, j - columnOffset)
             periodDelta = delta
-            for pendingIndex in leftEdge..rightEdge:
-              ensureColumn(pendingIndex)
-              if columnPool[pendingIndex + columnOffset].remaining > 0:
+            for k in leftEdge..rightEdge:
+              ensureColumn(k)
+              if columnPool[k + columnOffset].remaining > 0:
                 inc pendingColumns
             break
       elif node.columnIndex >= leftEdge and node.columnIndex <= rightEdge:
@@ -210,15 +210,15 @@ proc solveCase() =
         let offset = (horizontalDistance - leftEdge) mod periodLength
         let baseColumn = columnPool[leftEdge + offset + columnOffset]
         var baseCost = infinite
-        for orientation in 0..<orientationsCount:
-          baseCost = min(baseCost, baseColumn.distances[orientationsCount * targetRow + orientation])
+        for l in 0..<orientationsCount:
+          baseCost = min(baseCost, baseColumn.distances[orientationsCount * targetRow + l])
         answer = baseCost + blocks * periodDelta
         break
 
-    for move in 0..<moveCount:
+    for k in 0..<moveCount:
       var newColumn = node.columnIndex
       var newRow = node.rowIndex
-      case move
+      case k
       of 0:
         if node.rowIndex == 0:
           continue
@@ -233,8 +233,8 @@ proc solveCase() =
         dec newColumn
       else:
         inc newColumn
-      let newOrientation = orientationNext[node.orientation][move]
-      let moveCost = faceCosts[orientationCostFace[node.orientation][move]]
+      let newOrientation = orientationNext[node.orientation][k]
+      let moveCost = faceCosts[orientationCostFace[node.orientation][k]]
       heapPush(SearchNode(distance: node.distance + moveCost, columnIndex: newColumn, rowIndex: newRow, orientation: newOrientation))
 
   outputBuffer.add($answer)
@@ -250,7 +250,7 @@ while not stdin.endOfFile():
     inputData.add('\n')
 
 initializeOrientations()
-let testCount = nextInt(inputData, scanPos)
-for caseIndex in 0..<testCount:
+let testCount = nextInt(inputData, i)
+for j in 0..<testCount:
   solveCase()
 stdout.write outputBuffer

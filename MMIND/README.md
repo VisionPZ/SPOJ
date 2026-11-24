@@ -26,7 +26,7 @@ A hint comes from a matching between secret pins and guess pins with equal color
 
 A prefix fills d pins, so P - d pins remain. One more pin raises B or B + W by at most one. A hint stays reachable only while counted B is at least required B minus the remainder, and at most required B. The same holds for counted total. The search checks these bounds after each pin and undoes the counts on failure.
 
-The code reads a guess color at `guessIndex * pinCount + depth`. It reads that color's count at `guessIndex * colourStride + candidateColour`.
+The code reads a guess color at `j * pinCount + depth`. It reads that color's count at `j * colourStride + candidateColour`.
 
 This worked example uses P = 4, C = 3, and one guess. The hint is (0, 0), so the required total is 0.
 
@@ -48,7 +48,7 @@ const colourStride = maxColours + 1
 const flushBlockBytes = 1 shl 18
 
 var inputData = ""
-var scanPos = 0
+var i = 0
 var outputBuffer = ""
 var pinCount = 0
 var colourCount = 0
@@ -67,12 +67,12 @@ The arrays cover the largest legal case, so no case allocates memory. The stride
 
 ```nim
 proc readNextInt(): int =
-  while scanPos < inputData.len and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    inc scanPos
+  while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
+    inc i
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - 48
-    inc scanPos
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - 48
+    inc i
   value
 ```
 
@@ -103,12 +103,12 @@ proc searchSecret(depth: int): bool =
         break
     if feasible and searchSecret(depth + 1):
       return true
-    for guessIndex in 0 ..< checkedGuesses:
-      let guessAtPin = guessColour[guessIndex * pinCount + depth]
+    for j in 0 ..< checkedGuesses:
+      let guessAtPin = guessColour[j * pinCount + depth]
       if guessAtPin == candidateColour:
-        dec blackSoFar[guessIndex]
-      if secretCount[candidateColour] <= needCount[guessIndex * colourStride + candidateColour]:
-        dec totalSoFar[guessIndex]
+        dec blackSoFar[j]
+      if secretCount[candidateColour] <= needCount[j * colourStride + candidateColour]:
+        dec totalSoFar[j]
     dec secretCount[candidateColour]
   false
 ```
@@ -122,34 +122,34 @@ while readLine(stdin, lineBuffer):
   inputData.add '\n'
 
 let testCount = readNextInt()
-for caseIndex in 0 ..< testCount:
+for j in 0 ..< testCount:
   pinCount = readNextInt()
   colourCount = readNextInt()
   guessCount = readNextInt()
-  for colourIndex in 0 .. colourCount:
-    secretCount[colourIndex] = 0
-  for guessIndex in 0 ..< guessCount:
-    let needBase = guessIndex * colourStride
-    let colourBase = guessIndex * pinCount
-    blackSoFar[guessIndex] = 0
-    totalSoFar[guessIndex] = 0
-    for entryIndex in 0 .. colourCount:
-      needCount[needBase + entryIndex] = 0
-    for pinIndex in 0 ..< pinCount:
+  for k in 0 .. colourCount:
+    secretCount[k] = 0
+  for j in 0 ..< guessCount:
+    let needBase = j * colourStride
+    let colourBase = j * pinCount
+    blackSoFar[j] = 0
+    totalSoFar[j] = 0
+    for l in 0 .. colourCount:
+      needCount[needBase + l] = 0
+    for l in 0 ..< pinCount:
       let guessAtPin = readNextInt()
-      guessColour[colourBase + pinIndex] = guessAtPin
+      guessColour[colourBase + l] = guessAtPin
       inc needCount[needBase + guessAtPin]
     let blackHint = readNextInt()
     let whiteHint = readNextInt()
-    requiredBlack[guessIndex] = blackHint
-    requiredTotal[guessIndex] = blackHint + whiteHint
+    requiredBlack[j] = blackHint
+    requiredTotal[j] = blackHint + whiteHint
   if not searchSecret(0):
     outputBuffer.add "You are cheating!"
   else:
-    for pinIndex in 0 ..< pinCount:
-      if pinIndex > 0:
+    for l in 0 ..< pinCount:
+      if l > 0:
         outputBuffer.add ' '
-      outputBuffer.add $secretColour[pinIndex]
+      outputBuffer.add $secretColour[l]
   outputBuffer.add '\n'
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer

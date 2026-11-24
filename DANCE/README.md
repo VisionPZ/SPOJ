@@ -143,21 +143,21 @@ proc main() =
     inputData.add line
     inputData.add '\n'
   let dataLength = inputData.len
-  var scanPos = 0
+  var i = 0
 ```
 
 The whole input goes into one buffer before any parsing. One read loop replaces per-number reads and keeps the scanner independent of line endings.
 
 ```
-  while scanPos < dataLength:
-    while scanPos < dataLength and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-      scanPos += 1
-    if scanPos >= dataLength:
+  while i < dataLength:
+    while i < dataLength and (inputData[i] < '0' or inputData[i] > '9'):
+      i += 1
+    if i >= dataLength:
       break
     var moveCount = 0
-    while scanPos < dataLength and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-      moveCount = moveCount * 10 + (ord(inputData[scanPos]) - firstDigitValue)
-      scanPos += 1
+    while i < dataLength and inputData[i] >= '0' and inputData[i] <= '9':
+      moveCount = moveCount * 10 + (ord(inputData[i]) - firstDigitValue)
+      i += 1
     var cfDigits: seq[int] = @[0]
     var isInfinite = false
     var isNegative = false
@@ -166,13 +166,13 @@ The whole input goes into one buffer before any parsing. One read loop replaces 
 A hand scanner reads `n` by walking digit by digit. Non-digit bytes are skipped, so an empty word for `n = 0` needs no special case.
 
 ```
-    for moveIndex in 0 ..< moveCount:
-      while scanPos < dataLength and inputData[scanPos] != 'S' and inputData[scanPos] != 'R':
-        scanPos += 1
-      if scanPos >= dataLength:
+    for j in 0 ..< moveCount:
+      while i < dataLength and inputData[i] != 'S' and inputData[i] != 'R':
+        i += 1
+      if i >= dataLength:
         break
-      let moveLetter = inputData[scanPos]
-      scanPos += 1
+      let moveLetter = inputData[i]
+      i += 1
       if moveLetter == 'R':
         rotateFraction(cfDigits, isInfinite, isNegative)
       elif not isInfinite:

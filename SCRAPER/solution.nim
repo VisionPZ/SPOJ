@@ -9,15 +9,15 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int64 =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int64 =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value: int64 = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int64(int(data[position]) - firstDigitValue)
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int64(int(data[i]) - firstDigitValue)
+    i += 1
   return value
 
 proc greatestCommonDivisor(firstValue: int64, secondValue: int64): int64 =
@@ -81,46 +81,46 @@ proc appendOutput(text: string) =
     stdout.write outputBuffer
     outputBuffer.setLen 0
 
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 1..caseCount:
-  let floorCount = nextInt(inputData, scanPos)
-  let elevatorCount = int(nextInt(inputData, scanPos))
-  let originFloor = nextInt(inputData, scanPos)
-  let targetFloor = nextInt(inputData, scanPos)
+let caseCount = nextInt(inputData, i)
+for j in 1..caseCount:
+  let floorCount = nextInt(inputData, i)
+  let elevatorCount = int(nextInt(inputData, i))
+  let originFloor = nextInt(inputData, i)
+  let targetFloor = nextInt(inputData, i)
   var elevatorStep = newSeq[int64](elevatorCount)
   var elevatorStart = newSeq[int64](elevatorCount)
-  for elevatorIndex in 0..<elevatorCount:
-    elevatorStep[elevatorIndex] = nextInt(inputData, scanPos)
-    elevatorStart[elevatorIndex] = nextInt(inputData, scanPos)
+  for k in 0..<elevatorCount:
+    elevatorStep[k] = nextInt(inputData, i)
+    elevatorStart[k] = nextInt(inputData, i)
   var reachable = newSeq[bool](elevatorCount)
   var queue = newSeq[int](elevatorCount)
   var queueHead = 0
   var queueTail = 0
-  for elevatorIndex in 0..<elevatorCount:
-    if elevatorServesFloor(elevatorStep[elevatorIndex],
-                           elevatorStart[elevatorIndex], originFloor):
-      reachable[elevatorIndex] = true
-      queue[queueTail] = elevatorIndex
+  for k in 0..<elevatorCount:
+    if elevatorServesFloor(elevatorStep[k],
+                           elevatorStart[k], originFloor):
+      reachable[k] = true
+      queue[queueTail] = k
       queueTail += 1
   var canMove = false
   if originFloor == targetFloor:
     canMove = true
   while not canMove and queueHead < queueTail:
-    let currentElevator = queue[queueHead]
+    let k = queue[queueHead]
     queueHead += 1
-    if elevatorServesFloor(elevatorStep[currentElevator],
-                           elevatorStart[currentElevator], targetFloor):
+    if elevatorServesFloor(elevatorStep[k],
+                           elevatorStart[k], targetFloor):
       canMove = true
       break
-    for otherElevator in 0..<elevatorCount:
-      if reachable[otherElevator]:
+    for l in 0..<elevatorCount:
+      if reachable[l]:
         continue
-      if elevatorsShareFloor(elevatorStep[currentElevator],
-                             elevatorStart[currentElevator],
-                             elevatorStep[otherElevator],
-                             elevatorStart[otherElevator], floorCount):
-        reachable[otherElevator] = true
-        queue[queueTail] = otherElevator
+      if elevatorsShareFloor(elevatorStep[k],
+                             elevatorStart[k],
+                             elevatorStep[l],
+                             elevatorStart[l], floorCount):
+        reachable[l] = true
+        queue[queueTail] = l
         queueTail += 1
   if canMove:
     appendOutput(possibleMessage)

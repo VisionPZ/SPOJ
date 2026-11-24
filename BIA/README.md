@@ -64,22 +64,22 @@ const flushBlockBytes = 1 shl 18
 const firstDigitValue = 48
 
 var inputData = readAll(stdin)
-var scanPos = 0
+var i = 0
 
 proc moreInput(): bool =
   let dataLength = inputData.len
-  while scanPos < dataLength and inputData[scanPos] <= ' ':
-    scanPos.inc
-  return scanPos < dataLength
+  while i < dataLength and inputData[i] <= ' ':
+    i.inc
+  return i < dataLength
 
 proc scanInt(): int =
   let dataLength = inputData.len
-  while scanPos < dataLength and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    scanPos.inc
+  while i < dataLength and (inputData[i] < '0' or inputData[i] > '9'):
+    i.inc
   result = 0
-  while scanPos < dataLength and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    result = result * 10 + int(inputData[scanPos]) - firstDigitValue
-    scanPos.inc
+  while i < dataLength and inputData[i] >= '0' and inputData[i] <= '9':
+    result = result * 10 + int(inputData[i]) - firstDigitValue
+    i.inc
 
 var outputBuffer = ""
 
@@ -104,19 +104,19 @@ var labelNumber: seq[int] = @[]
 var ancestorNumber: seq[int] = @[]
 var immediateDominator: seq[int] = @[]
 
-proc compressPath(vertexNumber: int) =
-  let parentNumber = ancestorNumber[vertexNumber]
+proc compressPath(k: int) =
+  let parentNumber = ancestorNumber[k]
   if ancestorNumber[parentNumber] != 0:
     compressPath(parentNumber)
-    if semiNumber[labelNumber[parentNumber]] < semiNumber[labelNumber[vertexNumber]]:
-      labelNumber[vertexNumber] = labelNumber[parentNumber]
-    ancestorNumber[vertexNumber] = ancestorNumber[parentNumber]
+    if semiNumber[labelNumber[parentNumber]] < semiNumber[labelNumber[k]]:
+      labelNumber[k] = labelNumber[parentNumber]
+    ancestorNumber[k] = ancestorNumber[parentNumber]
 
-proc evaluateVertex(vertexNumber: int): int =
-  if ancestorNumber[vertexNumber] == 0:
-    return vertexNumber
-  compressPath(vertexNumber)
-  return labelNumber[vertexNumber]
+proc evaluateVertex(k: int): int =
+  if ancestorNumber[k] == 0:
+    return k
+  compressPath(k)
+  return labelNumber[k]
 
 proc linkVertex(parentNumber: int, childNumber: int) =
   ancestorNumber[childNumber] = parentNumber
@@ -136,20 +136,20 @@ proc solveCase(vertexCount: int, edgeCount: int) =
   forwardNext.setLen(edgeCount + 1)
   edgeFrom.setLen(edgeCount)
   edgeTo.setLen(edgeCount)
-  for vertexId in 0 .. vertexCount:
-    forwardHead[vertexId] = 0
-  for edgeIndex in 0 ..< edgeCount:
+  for l in 0 .. vertexCount:
+    forwardHead[l] = 0
+  for i in 0 ..< edgeCount:
     let sourceVertex = scanInt()
     let targetVertex = scanInt()
-    let storeIndex = edgeIndex + 1
-    edgeFrom[edgeIndex] = sourceVertex
-    edgeTo[edgeIndex] = targetVertex
-    forwardTo[storeIndex] = targetVertex
-    forwardNext[storeIndex] = forwardHead[sourceVertex]
-    forwardHead[sourceVertex] = storeIndex
+    let j = i + 1
+    edgeFrom[i] = sourceVertex
+    edgeTo[i] = targetVertex
+    forwardTo[j] = targetVertex
+    forwardNext[j] = forwardHead[sourceVertex]
+    forwardHead[sourceVertex] = j
 ```
 
-The loop reads exactly edgeCount pairs. Storing at edgeIndex + 1 keeps zero free as the list end marker. Zero as an edge slot would silently drop the first channel. This block costs one scan and two array writes per channel.
+The loop reads exactly edgeCount pairs. Storing at `i + 1` keeps zero free as the list end marker. Zero as an edge slot would silently drop the first channel. This block costs one scan and two array writes per channel.
 
 ```nim
   var dfsNumber: seq[int] = @[]
@@ -162,8 +162,8 @@ The loop reads exactly edgeCount pairs. Storing at edgeIndex + 1 keeps zero free
   parentNumber.setLen(vertexCount + 1)
   stackVertex.setLen(vertexCount + 1)
   stackEdge.setLen(vertexCount + 1)
-  for vertexId in 0 .. vertexCount:
-    dfsNumber[vertexId] = 0
+  for l in 0 .. vertexCount:
+    dfsNumber[l] = 0
   var numberCount = 1
   dfsNumber[1] = numberCount
   vertexAtNumber[numberCount] = 1
@@ -173,14 +173,14 @@ The loop reads exactly edgeCount pairs. Storing at edgeIndex + 1 keeps zero free
   stackEdge[0] = forwardHead[1]
   while depth >= 0:
     let currentVertex = stackVertex[depth]
-    var edgeIndex = stackEdge[depth]
-    while edgeIndex != 0 and dfsNumber[forwardTo[edgeIndex]] != 0:
-      edgeIndex = forwardNext[edgeIndex]
-    if edgeIndex == 0:
+    var i = stackEdge[depth]
+    while i != 0 and dfsNumber[forwardTo[i]] != 0:
+      i = forwardNext[i]
+    if i == 0:
       depth.dec
     else:
-      stackEdge[depth] = forwardNext[edgeIndex]
-      let nextVertex = forwardTo[edgeIndex]
+      stackEdge[depth] = forwardNext[i]
+      let nextVertex = forwardTo[i]
       numberCount.inc
       dfsNumber[nextVertex] = numberCount
       vertexAtNumber[numberCount] = nextVertex
@@ -199,15 +199,15 @@ Each stack slot holds one vertex and its next edge, so the search never recurses
   predHead.setLen(numberCount + 1)
   predSource.setLen(edgeCount + 1)
   predNext.setLen(edgeCount + 1)
-  for vertexNumber in 0 .. numberCount:
-    predHead[vertexNumber] = 0
-  for edgeIndex in 0 ..< edgeCount:
-    let storeIndex = edgeIndex + 1
-    let fromNumber = dfsNumber[edgeFrom[edgeIndex]]
-    let toNumber = dfsNumber[edgeTo[edgeIndex]]
-    predSource[storeIndex] = fromNumber
-    predNext[storeIndex] = predHead[toNumber]
-    predHead[toNumber] = storeIndex
+  for k in 0 .. numberCount:
+    predHead[k] = 0
+  for i in 0 ..< edgeCount:
+    let j = i + 1
+    let fromNumber = dfsNumber[edgeFrom[i]]
+    let toNumber = dfsNumber[edgeTo[i]]
+    predSource[j] = fromNumber
+    predNext[j] = predHead[toNumber]
+    predHead[toNumber] = j
 ```
 
 This pass rewrites each channel end into a DFS number. The lists then live in number space, so the dominator arrays need no vertex-id translation. Rebuilding them per case keeps memory inside one test case.
@@ -221,25 +221,25 @@ This pass rewrites each channel end into a DFS number. The lists then live in nu
   var bucketNext: seq[int] = @[]
   bucketHead.setLen(numberCount + 1)
   bucketNext.setLen(numberCount + 1)
-  for vertexNumber in 0 .. numberCount:
-    semiNumber[vertexNumber] = vertexNumber
-    labelNumber[vertexNumber] = vertexNumber
-    ancestorNumber[vertexNumber] = 0
-    immediateDominator[vertexNumber] = 0
-    bucketHead[vertexNumber] = 0
-    bucketNext[vertexNumber] = 0
+  for k in 0 .. numberCount:
+    semiNumber[k] = k
+    labelNumber[k] = k
+    ancestorNumber[k] = 0
+    immediateDominator[k] = 0
+    bucketHead[k] = 0
+    bucketNext[k] = 0
 
-  for vertexNumber in countdown(numberCount, 2):
-    var edgeIndex = predHead[vertexNumber]
-    while edgeIndex != 0:
-      let candidate = evaluateVertex(predSource[edgeIndex])
-      if semiNumber[candidate] < semiNumber[vertexNumber]:
-        semiNumber[vertexNumber] = semiNumber[candidate]
-      edgeIndex = predNext[edgeIndex]
-    bucketNext[vertexNumber] = bucketHead[semiNumber[vertexNumber]]
-    bucketHead[semiNumber[vertexNumber]] = vertexNumber
-    let parent = parentNumber[vertexNumber]
-    linkVertex(parent, vertexNumber)
+  for k in countdown(numberCount, 2):
+    var i = predHead[k]
+    while i != 0:
+      let candidate = evaluateVertex(predSource[i])
+      if semiNumber[candidate] < semiNumber[k]:
+        semiNumber[k] = semiNumber[candidate]
+      i = predNext[i]
+    bucketNext[k] = bucketHead[semiNumber[k]]
+    bucketHead[semiNumber[k]] = k
+    let parent = parentNumber[k]
+    linkVertex(parent, k)
     var bucketVertex = bucketHead[parent]
     while bucketVertex != 0:
       let candidate = evaluateVertex(bucketVertex)
@@ -254,31 +254,31 @@ This pass rewrites each channel end into a DFS number. The lists then live in nu
 The countdown visits numberCount minus one vertices, from the last number down to two. Each vertex enters one bucket, and each bucket empties once. Path compression keeps the set work near linear. A self-loop gives a candidate with the same marker and changes nothing.
 
 ```nim
-  for vertexNumber in 2 .. numberCount:
-    if immediateDominator[vertexNumber] != semiNumber[vertexNumber]:
-      immediateDominator[vertexNumber] = immediateDominator[immediateDominator[vertexNumber]]
+  for k in 2 .. numberCount:
+    if immediateDominator[k] != semiNumber[k]:
+      immediateDominator[k] = immediateDominator[immediateDominator[k]]
 
   var childCount: seq[int] = @[]
   childCount.setLen(numberCount + 1)
-  for vertexNumber in 0 .. numberCount:
-    childCount[vertexNumber] = 0
-  for vertexNumber in 2 .. numberCount:
-    childCount[immediateDominator[vertexNumber]].inc
+  for k in 0 .. numberCount:
+    childCount[k] = 0
+  for k in 2 .. numberCount:
+    childCount[immediateDominator[k]].inc
 
   var criticalCount = 0
   var criticalList: seq[int] = @[]
   for originalVertex in 1 .. vertexCount:
-    let vertexNumber = dfsNumber[originalVertex]
-    if childCount[vertexNumber] >= 1:
+    let k = dfsNumber[originalVertex]
+    if childCount[k] >= 1:
       criticalCount.inc
       criticalList.add originalVertex
 
   emitInt(criticalCount)
   emitChar('\n')
-  for listIndex in 0 ..< criticalList.len:
-    if listIndex > 0:
+  for i in 0 ..< criticalList.len:
+    if i > 0:
       emitChar(' ')
-    emitInt(criticalList[listIndex])
+    emitInt(criticalList[i])
   emitChar('\n')
 
 while moreInput():

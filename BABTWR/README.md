@@ -26,8 +26,8 @@ Each formula below records one step of the scan.
 
 - `baseLarge[orientationCount] = max(givenWidth, givenDepth)` keeps the wider base side first.
 - `baseSmall[orientationCount] = min(givenWidth, givenDepth)` keeps the narrower base side second.
-- `baseLarge[belowIndex] > baseLarge[topIndex] and baseSmall[belowIndex] > baseSmall[topIndex]` tests both sides strictly.
-- `towerHeight[topIndex] = blockHeight[topIndex] + bestBelow` extends a whole lower tower by one block.
+- `baseLarge[j] > baseLarge[i] and baseSmall[j] > baseSmall[i]` tests both sides strictly.
+- `towerHeight[i] = blockHeight[i] + bestBelow` extends a whole lower tower by one block.
 
 The trace below uses the two block types 1 2 3 and 2 3 4.
 
@@ -55,7 +55,7 @@ const
 
 var
   inputData = ""
-  inputPosition = 0
+  i = 0
   outputBuffer = ""
   baseLarge: array[maxOrientations, int]
   baseSmall: array[maxOrientations, int]
@@ -73,15 +73,15 @@ proc loadInput() =
     inputData.add '\n'
 
 proc skipWhitespace() =
-  while inputPosition < inputData.len and ord(inputData[inputPosition]) <= spaceCode:
-    inc inputPosition
+  while i < inputData.len and ord(inputData[i]) <= spaceCode:
+    inc i
 
 proc readInteger(): int =
   skipWhitespace()
   result = 0
-  while inputPosition < inputData.len and inputData[inputPosition] >= '0' and inputData[inputPosition] <= '9':
-    result = result * 10 + (ord(inputData[inputPosition]) - firstDigitCode)
-    inc inputPosition
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    result = result * 10 + (ord(inputData[i]) - firstDigitCode)
+    inc i
 ```
 
 The read loop runs once per input line and stores all bytes in one buffer. The scanner walks that buffer by index and absorbs carriage returns as whitespace. This costs one pass over the input.
@@ -89,7 +89,7 @@ The read loop runs once per input line and stores all bytes in one buffer. The s
 ```
 proc buildOrientations(blockTypeCount: int) =
   var orientationCount = 0
-  for typeIndex in 0 ..< blockTypeCount:
+  for i in 0 ..< blockTypeCount:
     let givenHeight = readInteger()
     let givenWidth = readInteger()
     let givenDepth = readInteger()
@@ -111,23 +111,23 @@ The loop runs exactly blockTypeCount times and writes three orientations each ti
 
 ```
 proc sortOrientations(orientationCount: int) =
-  for sortIndex in 1 ..< orientationCount:
-    var cursor = sortIndex
-    while cursor > 0:
-      let previousIndex = cursor - 1
-      let outOfOrder = baseLarge[previousIndex] < baseLarge[cursor] or
-                       (baseLarge[previousIndex] == baseLarge[cursor] and baseSmall[previousIndex] < baseSmall[cursor])
+  for i in 1 ..< orientationCount:
+    var j = i
+    while j > 0:
+      let k = j - 1
+      let outOfOrder = baseLarge[k] < baseLarge[j] or
+                       (baseLarge[k] == baseLarge[j] and baseSmall[k] < baseSmall[j])
       if not outOfOrder: break
-      let largeValue = baseLarge[cursor]
-      let smallValue = baseSmall[cursor]
-      let heightValue = blockHeight[cursor]
-      baseLarge[cursor] = baseLarge[previousIndex]
-      baseSmall[cursor] = baseSmall[previousIndex]
-      blockHeight[cursor] = blockHeight[previousIndex]
-      baseLarge[previousIndex] = largeValue
-      baseSmall[previousIndex] = smallValue
-      blockHeight[previousIndex] = heightValue
-      dec cursor
+      let largeValue = baseLarge[j]
+      let smallValue = baseSmall[j]
+      let heightValue = blockHeight[j]
+      baseLarge[j] = baseLarge[k]
+      baseSmall[j] = baseSmall[k]
+      blockHeight[j] = blockHeight[k]
+      baseLarge[k] = largeValue
+      baseSmall[k] = smallValue
+      blockHeight[k] = heightValue
+      dec j
 ```
 
 The outer loop runs to orientationCount minus one, and the inner loop walks back to the start. Insertion sort is cheap for at most 90 items. This puts every possible lower block earlier in the array.
@@ -135,15 +135,15 @@ The outer loop runs to orientationCount minus one, and the inner loop walks back
 ```
 proc tallestTower(orientationCount: int): int =
   var bestTower = 0
-  for topIndex in 0 ..< orientationCount:
+  for i in 0 ..< orientationCount:
     var bestBelow = 0
-    for belowIndex in 0 ..< topIndex:
-      if baseLarge[belowIndex] > baseLarge[topIndex] and baseSmall[belowIndex] > baseSmall[topIndex]:
-        if towerHeight[belowIndex] > bestBelow:
-          bestBelow = towerHeight[belowIndex]
-    towerHeight[topIndex] = blockHeight[topIndex] + bestBelow
-    if towerHeight[topIndex] > bestTower:
-      bestTower = towerHeight[topIndex]
+    for j in 0 ..< i:
+      if baseLarge[j] > baseLarge[i] and baseSmall[j] > baseSmall[i]:
+        if towerHeight[j] > bestBelow:
+          bestBelow = towerHeight[j]
+    towerHeight[i] = blockHeight[i] + bestBelow
+    if towerHeight[i] > bestTower:
+      bestTower = towerHeight[i]
   result = bestTower
 ```
 
@@ -162,7 +162,7 @@ The buffer flushes at 256 KiB or at the end of input. No write happens per tower
 loadInput()
 while true:
   skipWhitespace()
-  if inputPosition >= inputData.len: break
+  if i >= inputData.len: break
   let blockTypeCount = readInteger()
   if blockTypeCount == 0: break
   let orientationCount = blockTypeCount * orientationsPerType

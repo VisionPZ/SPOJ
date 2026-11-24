@@ -46,22 +46,22 @@ The boundary stop at gap 4 joins the two template stops, so the answer is 4 bund
 ## Code
 
 ```nim
-proc nextInteger(inputData: string, scanPos: var int): int =
+proc nextInteger(inputData: string, i: var int): int =
   let dataLength = inputData.len
-  while scanPos < dataLength and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    scanPos += 1
+  while i < dataLength and (inputData[i] < '0' or inputData[i] > '9'):
+    i += 1
   var value = 0
-  while scanPos < dataLength and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + (ord(inputData[scanPos]) - firstDigitValue)
-    scanPos += 1
+  while i < dataLength and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + (ord(inputData[i]) - firstDigitValue)
+    i += 1
   return value
 
-proc nextType(inputData: string, scanPos: var int): int =
+proc nextType(inputData: string, i: var int): int =
   let dataLength = inputData.len
-  while scanPos < dataLength and (inputData[scanPos] < 'A' or inputData[scanPos] > 'J'):
-    scanPos += 1
-  let typeValue = ord(inputData[scanPos]) - firstLetterValue
-  scanPos += 1
+  while i < dataLength and (inputData[i] < 'A' or inputData[i] > 'J'):
+    i += 1
+  let typeValue = ord(inputData[i]) - firstLetterValue
+  i += 1
   return typeValue
 ```
 
@@ -75,87 +75,87 @@ proc pruneInPlace(states: var seq[BundleState]) =
   for stateValue in states:
     if stateValue.bundles < minBundles:
       minBundles = stateValue.bundles
-  var writePos = 0
+  var j = 0
   for stateValue in states:
     if stateValue.bundles == minBundles:
-      states[writePos] = stateValue
-      writePos += 1
-  states.setLen writePos
-  for indexValue in 1 .. states.len - 1:
-    let current = states[indexValue]
-    var leftIndex = indexValue - 1
-    while leftIndex >= 0 and (states[leftIndex].stops > current.stops or
-          (states[leftIndex].stops == current.stops and
-           states[leftIndex].lastStop < current.lastStop)):
-      states[leftIndex + 1] = states[leftIndex]
-      leftIndex -= 1
-    states[leftIndex + 1] = current
-  writePos = 0
+      states[j] = stateValue
+      j += 1
+  states.setLen j
+  for k in 1 .. states.len - 1:
+    let current = states[k]
+    var i = k - 1
+    while i >= 0 and (states[i].stops > current.stops or
+          (states[i].stops == current.stops and
+           states[i].lastStop < current.lastStop)):
+      states[i + 1] = states[i]
+      i -= 1
+    states[i + 1] = current
+  j = 0
   var bestLast = -2
   for stateValue in states:
     if stateValue.lastStop > bestLast:
-      states[writePos] = stateValue
-      writePos += 1
+      states[j] = stateValue
+      j += 1
       bestLast = stateValue.lastStop
-  states.setLen writePos
+  states.setLen j
 ```
 
 The first pass keeps the smallest bundle count. Insertion sort orders the few survivors without a comparator. The last pass keeps a state only when its last stop moves later. The sort and both passes reuse the same storage.
 
 ```nim
-  for bundleEnd in 0 .. instructionCount - 1:
+  for k in 0 .. instructionCount - 1:
     pruneInPlace stateLists[0]
-    let bundleStart = bundleEnd + 1
+    let bundleStart = k + 1
 
     var canSkipStop = [false, false, false, false]
     var canPlaceStop = [false, false, false, false, false, false, false, false,
                         false, false, false, false, false, false, false, false]
     for slotMask in 1 .. 7:
       var groupSize = 0
-      for slotIndex in 0 .. slotCount - 1:
-        if (slotMask and (1 shl slotIndex)) != 0:
+      for l in 0 .. slotCount - 1:
+        if (slotMask and (1 shl l)) != 0:
           groupSize += 1
       if bundleStart + groupSize - 1 > instructionCount:
         continue
       var slotLetters = [wildcardType, wildcardType, wildcardType]
       var filledCount = 0
-      for slotIndex in 0 .. slotCount - 1:
-        if (slotMask and (1 shl slotIndex)) != 0:
-          slotLetters[slotIndex] = instructionTypes[bundleStart + filledCount]
+      for l in 0 .. slotCount - 1:
+        if (slotMask and (1 shl l)) != 0:
+          slotLetters[l] = instructionTypes[bundleStart + filledCount]
           filledCount += 1
-      for stopPosition in 0 .. stopCount - 1:
-        let tableIndex = ((stopPosition * typeCount + slotLetters[0]) * typeCount +
+      for i in 0 .. stopCount - 1:
+        let tableIndex = ((i * typeCount + slotLetters[0]) * typeCount +
                           slotLetters[1]) * typeCount + slotLetters[2]
         if templateStamp[tableIndex] == currentStamp:
-          if stopPosition == 0:
+          if i == 0:
             canSkipStop[groupSize] = true
           else:
             var beforeCount = 0
-            for slotIndex in 0 .. stopPosition - 1:
-              if (slotMask and (1 shl slotIndex)) != 0:
+            for j in 0 .. i - 1:
+              if (slotMask and (1 shl j)) != 0:
                 beforeCount += 1
             canPlaceStop[groupSize * 4 + beforeCount] = true
 
     var relevantDep = [-1, -1, -1, -1]
-    for ahead in 0 .. 2:
-      let position = bundleStart + ahead
+    for l in 0 .. 2:
+      let position = bundleStart + l
       if position <= instructionCount and dependencyIndices[position] > 0:
-        relevantDep[ahead] = dependencyIndices[position]
+        relevantDep[l] = dependencyIndices[position]
 ```
 
 The mask loop visits all seven nonempty slot subsets, so group sizes 1 to 3 are covered. Wildcards in `slotLetters` let a template match a partially filled bundle. A stamp in `templateStamp` marks the current case, which avoids clearing the table. The cost is 21 lookups per prefix.
 
 ```nim
-    for stateIndex in 0 .. stateLists[0].len - 1:
-      let stateValue = stateLists[0][stateIndex]
+    for j in 0 .. stateLists[0].len - 1:
+      let stateValue = stateLists[0][j]
       for groupSize in 1 .. 3:
-        let nextEnd = bundleEnd + groupSize
+        let nextEnd = k + groupSize
         if nextEnd > instructionCount:
           continue
         var bundleMaxDep = -1
-        for ahead in 0 .. groupSize - 1:
-          if relevantDep[ahead] > bundleMaxDep:
-            bundleMaxDep = relevantDep[ahead]
+        for l in 0 .. groupSize - 1:
+          if relevantDep[l] > bundleMaxDep:
+            bundleMaxDep = relevantDep[l]
         if canSkipStop[groupSize] and bundleMaxDep <= stateValue.lastStop:
           stateLists[groupSize].add BundleState(bundles: stateValue.bundles + 1,
               stops: stateValue.stops, lastStop: stateValue.lastStop)
@@ -167,13 +167,13 @@ The mask loop visits all seven nonempty slot subsets, so group sizes 1 to 3 are 
             continue
           let templateStop = bundleStart + beforeCount - 1
           var beforeMaxDep = -1
-          for ahead in 0 .. beforeCount - 1:
-            if relevantDep[ahead] > beforeMaxDep:
-              beforeMaxDep = relevantDep[ahead]
+          for l in 0 .. beforeCount - 1:
+            if relevantDep[l] > beforeMaxDep:
+              beforeMaxDep = relevantDep[l]
           var afterMaxDep = -1
-          for ahead in beforeCount .. groupSize - 1:
-            if relevantDep[ahead] > afterMaxDep:
-              afterMaxDep = relevantDep[ahead]
+          for l in beforeCount .. groupSize - 1:
+            if relevantDep[l] > afterMaxDep:
+              afterMaxDep = relevantDep[l]
           if beforeMaxDep > stateValue.lastStop or afterMaxDep > templateStop:
             continue
           let extraStops = 1

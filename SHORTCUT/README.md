@@ -57,16 +57,16 @@ The scanner reads the whole input buffer once. It skips non-digits and consumes 
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    scanPos.inc
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
+    i.inc
   result = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    result = result * 10 + (ord(inputData[scanPos]) - firstDigitValue)
-    scanPos.inc
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    result = result * 10 + (ord(inputData[i]) - firstDigitValue)
+    i.inc
 ```
 
-Each loop advances `scanPos` past at most one token. The digit loop runs once per digit, so the cost is linear in the input size. The scanner skips letters, which lets the route scanner consume direction characters separately.
+Each loop advances `i` past at most one token. The digit loop runs once per digit, so the cost is linear in the input size. The scanner skips letters, which lets the route scanner consume direction characters separately.
 
 The comparison picks the winner and derives its direction from the two positions.
 
@@ -111,8 +111,8 @@ while readLine(stdin, lineBuffer):
   inputData.add '\n'
 
 var outputBuffer = ""
-var scanPos = 0
-let testCount = nextInt(inputData, scanPos)
+var i = 0
+let testCount = nextInt(inputData, i)
 ```
 
 The loop runs once per input line. It adds one newline per line, so the buffer keeps the original byte shape. A single bulk read avoids one system call per token.
@@ -120,15 +120,15 @@ The loop runs once per input line. It adds one newline per line, so the buffer k
 The walk scan writes the position of every break point.
 
 ```nim
-  while scanPos < inputData.len and inputData[scanPos] <= ' ':
-    scanPos.inc
+  while i < inputData.len and inputData[i] <= ' ':
+    i.inc
 
   var currentX = 0
   var currentY = 0
   xPositions[0] = 0
   yPositions[0] = 0
-  for sectionIndex in 1 .. sectionCount:
-    case inputData[scanPos]
+  for j in 1 .. sectionCount:
+    case inputData[i]
     of 'N':
       currentY.inc
     of 'S':
@@ -139,9 +139,9 @@ The walk scan writes the position of every break point.
       currentX.dec
     else:
       discard
-    scanPos.inc
-    xPositions[sectionIndex] = currentX
-    yPositions[sectionIndex] = currentY
+    i.inc
+    xPositions[j] = currentX
+    yPositions[j] = currentY
 ```
 
 The loop bound is `sectionCount`, the closed form for one position per section. The whitespace skip stops at the first direction character. The scan costs one step per section.
@@ -149,26 +149,26 @@ The loop bound is `sectionCount`, the closed form for one position per section. 
 Counting sort builds the two coordinate orders.
 
 ```nim
-  for breakIndex in 0 .. sectionCount:
-    xCounts[xPositions[breakIndex] + coordinateOffset].inc
-    yCounts[yPositions[breakIndex] + coordinateOffset].inc
+  for k in 0 .. sectionCount:
+    xCounts[xPositions[k] + coordinateOffset].inc
+    yCounts[yPositions[k] + coordinateOffset].inc
 
   var xRunning = 0
   var yRunning = 0
-  for bucketIndex in 0 .. bucketCount - 1:
-    let xBucketSize = xCounts[bucketIndex]
-    let yBucketSize = yCounts[bucketIndex]
-    xCounts[bucketIndex] = xRunning
-    yCounts[bucketIndex] = yRunning
+  for j in 0 .. bucketCount - 1:
+    let xBucketSize = xCounts[j]
+    let yBucketSize = yCounts[j]
+    xCounts[j] = xRunning
+    yCounts[j] = yRunning
     xRunning += xBucketSize
     yRunning += yBucketSize
 
-  for breakIndex in 0 .. sectionCount:
-    let xSlot = xPositions[breakIndex] + coordinateOffset
-    orderByX[xCounts[xSlot]] = breakIndex
+  for k in 0 .. sectionCount:
+    let xSlot = xPositions[k] + coordinateOffset
+    orderByX[xCounts[xSlot]] = k
     xCounts[xSlot].inc
-    let ySlot = yPositions[breakIndex] + coordinateOffset
-    orderByY[yCounts[ySlot]] = breakIndex
+    let ySlot = yPositions[k] + coordinateOffset
+    orderByY[yCounts[ySlot]] = k
     yCounts[ySlot].inc
 ```
 
@@ -177,16 +177,16 @@ The first and last loops run `sectionCount + 1` times. The middle loop runs `buc
 The row scan finds horizontal shortcuts.
 
 ```nim
-  for orderIndex in 0 .. sectionCount:
-    let breakIndex = orderByX[orderIndex]
-    let rowSlot = yPositions[breakIndex] + coordinateOffset
+  for j in 0 .. sectionCount:
+    let k = orderByX[j]
+    let rowSlot = yPositions[k] + coordinateOffset
     let previousBreak = lastOnRow[rowSlot]
     if previousBreak >= 0:
-      if abs(breakIndex - previousBreak) != 1:
-        let lengthValue = xPositions[breakIndex] - xPositions[previousBreak]
-        considerShortcut(lengthValue, previousBreak, breakIndex, true,
+      if abs(k - previousBreak) != 1:
+        let lengthValue = xPositions[k] - xPositions[previousBreak]
+        considerShortcut(lengthValue, previousBreak, k, true,
           xPositions, yPositions, bestLength, bestBegin, bestEnd, bestDirection)
-    lastOnRow[rowSlot] = breakIndex
+    lastOnRow[rowSlot] = k
 ```
 
 The loop visits every break point once in x order. The index test rejects pairs that the walk already joins on this row. The array update keeps the neighbour for the next point on the row. The scan costs one step per break point.
@@ -194,16 +194,16 @@ The loop visits every break point once in x order. The index test rejects pairs 
 The column scan applies the same rule to vertical shortcuts.
 
 ```nim
-  for orderIndex in 0 .. sectionCount:
-    let breakIndex = orderByY[orderIndex]
-    let columnSlot = xPositions[breakIndex] + coordinateOffset
+  for j in 0 .. sectionCount:
+    let k = orderByY[j]
+    let columnSlot = xPositions[k] + coordinateOffset
     let previousBreak = lastOnColumn[columnSlot]
     if previousBreak >= 0:
-      if abs(breakIndex - previousBreak) != 1:
-        let lengthValue = yPositions[breakIndex] - yPositions[previousBreak]
-        considerShortcut(lengthValue, previousBreak, breakIndex, false,
+      if abs(k - previousBreak) != 1:
+        let lengthValue = yPositions[k] - yPositions[previousBreak]
+        considerShortcut(lengthValue, previousBreak, k, false,
           xPositions, yPositions, bestLength, bestBegin, bestEnd, bestDirection)
-    lastOnColumn[columnSlot] = breakIndex
+    lastOnColumn[columnSlot] = k
 ```
 
 The loop bound matches the row scan. It uses y order and stores the neighbour per column. The direction flag is false, so the comparison derives a north or south direction.

@@ -19,36 +19,36 @@ const answerChaos = "Chaos will develop."
 proc isSpaceChar(ch: char): bool =
   return ch == ' ' or ch == '\n' or ch == '\r' or ch == '\t'
 
-proc nextIntValue(data: string, scanPos: var int): int =
-  while scanPos < data.len and (data[scanPos] < char(firstDigitValue) or data[scanPos] > '9'):
-    scanPos += 1
+proc nextIntValue(data: string, i: var int): int =
+  while i < data.len and (data[i] < char(firstDigitValue) or data[i] > '9'):
+    i += 1
   var value = 0
-  while scanPos < data.len and data[scanPos] >= char(firstDigitValue) and data[scanPos] <= '9':
-    value = value * 10 + (ord(data[scanPos]) - firstDigitValue)
-    scanPos += 1
+  while i < data.len and data[i] >= char(firstDigitValue) and data[i] <= '9':
+    value = value * 10 + (ord(data[i]) - firstDigitValue)
+    i += 1
   return value
 
-proc nextRealValue(data: string, scanPos: var int): float =
-  while scanPos < data.len and isSpaceChar(data[scanPos]):
-    scanPos += 1
+proc nextRealValue(data: string, i: var int): float =
+  while i < data.len and isSpaceChar(data[i]):
+    i += 1
   var signValue = 1.0
-  if scanPos < data.len and data[scanPos] == '-':
+  if i < data.len and data[i] == '-':
     signValue = -1.0
-    scanPos += 1
-  elif scanPos < data.len and data[scanPos] == '+':
-    scanPos += 1
+    i += 1
+  elif i < data.len and data[i] == '+':
+    i += 1
   var wholePart = 0.0
-  while scanPos < data.len and data[scanPos] >= char(firstDigitValue) and data[scanPos] <= '9':
-    wholePart = wholePart * 10.0 + float(ord(data[scanPos]) - firstDigitValue)
-    scanPos += 1
+  while i < data.len and data[i] >= char(firstDigitValue) and data[i] <= '9':
+    wholePart = wholePart * 10.0 + float(ord(data[i]) - firstDigitValue)
+    i += 1
   var fractionPart = 0.0
   var placeValue = 1.0
-  if scanPos < data.len and data[scanPos] == '.':
-    scanPos += 1
-    while scanPos < data.len and data[scanPos] >= char(firstDigitValue) and data[scanPos] <= '9':
+  if i < data.len and data[i] == '.':
+    i += 1
+    while i < data.len and data[i] >= char(firstDigitValue) and data[i] <= '9':
       placeValue *= 10.0
-      fractionPart += float(ord(data[scanPos]) - firstDigitValue) / placeValue
-      scanPos += 1
+      fractionPart += float(ord(data[i]) - firstDigitValue) / placeValue
+      i += 1
   return signValue * (wholePart + fractionPart)
 
 proc classifySequence(initialValue: float, nextValue: float, traceValue: float,
@@ -160,17 +160,17 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
-let caseCount = nextIntValue(inputData, scanPos)
+var i = 0
+let caseCount = nextIntValue(inputData, i)
 var outputBuffer = ""
 
-for caseIndex in 0 ..< caseCount:
-  let coeffA = nextRealValue(inputData, scanPos)
-  let coeffB = nextRealValue(inputData, scanPos)
-  let coeffC = nextRealValue(inputData, scanPos)
-  let coeffD = nextRealValue(inputData, scanPos)
-  let initialHares = nextRealValue(inputData, scanPos)
-  let initialFoxes = nextRealValue(inputData, scanPos)
+for j in 0 ..< caseCount:
+  let coeffA = nextRealValue(inputData, i)
+  let coeffB = nextRealValue(inputData, i)
+  let coeffC = nextRealValue(inputData, i)
+  let coeffD = nextRealValue(inputData, i)
+  let initialHares = nextRealValue(inputData, i)
+  let initialFoxes = nextRealValue(inputData, i)
   outputBuffer.add answerForCase(coeffA, coeffB, coeffC, coeffD, initialHares, initialFoxes)
   outputBuffer.add '\n'
   if outputBuffer.len >= flushBlockBytes:

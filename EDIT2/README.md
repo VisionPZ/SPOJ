@@ -22,11 +22,11 @@ The program fills one table of substring costs and one table of newline choices.
 
 The last key in any production sequence has one of two forms. A typed character shortens the target by one character. A `d` key ends the target only when the target splits into two equal halves.
 
-For a substring starting at `startPos` with even length 2 × `halfLength`:
+For a substring starting at `k` with even length 2 × `halfLength`:
 
-- the first half ends at `startPos + halfLength`;
-- the second half ends at `startPos + 2 × halfLength`;
-- the halves match when `lcpTable[startPos][startPos + halfLength] >= halfLength`.
+- the first half ends at `k + halfLength`;
+- the second half ends at `k + 2 × halfLength`;
+- the halves match when `lcpTable[k][k + halfLength] >= halfLength`.
 
 The program fills `lcpTable` from right to left, so each cell reuses the cell one step down and right.
 
@@ -48,29 +48,29 @@ The chosen keys rebuild the full text with five keystrokes.
 The first block builds the prefix table and the per-substring cost tables.
 
 ```
-  var leftPos = textLength - 1
-  while leftPos >= 0:
-    var rightPos = textLength - 1
-    while rightPos >= 0:
-      if targetText[leftPos] == targetText[rightPos]:
-        lcpTable[leftPos][rightPos] = lcpTable[leftPos + 1][rightPos + 1] + 1
-      rightPos -= 1
-    leftPos -= 1
+  var i = textLength - 1
+  while i >= 0:
+    var j = textLength - 1
+    while j >= 0:
+      if targetText[i] == targetText[j]:
+        lcpTable[i][j] = lcpTable[i + 1][j + 1] + 1
+      j -= 1
+    i -= 1
   for segmentLength in 1 .. textLength:
-    for startPos in 0 .. (textLength - segmentLength):
-      let endPosition = startPos + segmentLength
-      var bestCost = costTable[startPos][endPosition - 1] + 1
-      var bestDCount = dcountTable[startPos][endPosition - 1]
+    for k in 0 .. (textLength - segmentLength):
+      let j = k + segmentLength
+      var bestCost = costTable[k][j - 1] + 1
+      var bestDCount = dcountTable[k][j - 1]
       if segmentLength mod 2 == 0:
         let halfLength = segmentLength div 2
-        if lcpTable[startPos][startPos + halfLength] >= halfLength:
-          let doubleCost = costTable[startPos][startPos + halfLength] + 1
-          let doubleDCount = dcountTable[startPos][startPos + halfLength] + 1
+        if lcpTable[k][k + halfLength] >= halfLength:
+          let doubleCost = costTable[k][k + halfLength] + 1
+          let doubleDCount = dcountTable[k][k + halfLength] + 1
           if doubleCost < bestCost or (doubleCost == bestCost and doubleDCount < bestDCount):
             bestCost = doubleCost
             bestDCount = doubleDCount
-      costTable[startPos][endPosition] = bestCost
-      dcountTable[startPos][endPosition] = bestDCount
+      costTable[k][j] = bestCost
+      dcountTable[k][j] = bestDCount
 ```
 
 The length loop has `textLength` iterations, and the start loop covers every substring of that length. The prefix table replaces a scan over both halves, which would cost O(n³). This block visits O(n²) substrings in constant time each.
@@ -82,59 +82,59 @@ The second block chooses the newline positions.
   var dpLines = newSeq[int](textLength + 1)
   var dpPrevious = newSeq[int](textLength + 1)
   var dpCostSeqs = newSeq[seq[int]](textLength + 1)
-  for index in 0 .. textLength:
-    dpCost[index] = unreachableCost
+  for i in 0 .. textLength:
+    dpCost[i] = unreachableCost
   dpCost[0] = 0
-  for endPosition in 1 .. textLength:
-    for splitPos in 0 ..< endPosition:
-      let lineCost = costTable[splitPos][endPosition]
-      let candidateCost = dpCost[splitPos] + lineCost + 1
-      let candidateLines = dpLines[splitPos] + 1
-      var candidateSeq = newSeq[int](dpCostSeqs[splitPos].len + 1)
-      for index in 0 ..< dpCostSeqs[splitPos].len:
-        candidateSeq[index] = dpCostSeqs[splitPos][index]
+  for j in 1 .. textLength:
+    for k in 0 ..< j:
+      let lineCost = costTable[k][j]
+      let candidateCost = dpCost[k] + lineCost + 1
+      let candidateLines = dpLines[k] + 1
+      var candidateSeq = newSeq[int](dpCostSeqs[k].len + 1)
+      for i in 0 ..< dpCostSeqs[k].len:
+        candidateSeq[i] = dpCostSeqs[k][i]
       candidateSeq[candidateSeq.len - 1] = lineCost
       var isBetter = false
-      if candidateCost < dpCost[endPosition]:
+      if candidateCost < dpCost[j]:
         isBetter = true
-      elif candidateCost == dpCost[endPosition]:
-        if candidateLines < dpLines[endPosition]:
+      elif candidateCost == dpCost[j]:
+        if candidateLines < dpLines[j]:
           isBetter = true
-        elif candidateLines == dpLines[endPosition]:
-          if lessLex(candidateSeq, dpCostSeqs[endPosition]):
+        elif candidateLines == dpLines[j]:
+          if lessLex(candidateSeq, dpCostSeqs[j]):
             isBetter = true
       if isBetter:
-        dpCost[endPosition] = candidateCost
-        dpLines[endPosition] = candidateLines
-        dpPrevious[endPosition] = splitPos
-        dpCostSeqs[endPosition] = candidateSeq
+        dpCost[j] = candidateCost
+        dpLines[j] = candidateLines
+        dpPrevious[j] = k
+        dpCostSeqs[j] = candidateSeq
 ```
 
-The outer loop runs once per prefix endPosition, and the inner loop tries every splitPos before it. The comparison tests total cost first, line count second, and the cost list last. The block costs O(n²) time and O(n²) space for the cost lists.
+The outer loop runs once per prefix j, and the inner loop tries every k before it. The comparison tests total cost first, line count second, and the cost list last. The block costs O(n²) time and O(n²) space for the cost lists.
 
 The third block rebuilds the keys for one line.
 
 ```
 proc buildProgram(targetText: string, costTable, dcountTable: seq[seq[int]], startPos, endPos: int): string =
   var reversedKeys = newSeq[char]()
-  var leftEdge = startPos
-  var rightEdge = endPos
-  while leftEdge < rightEdge:
-    let appendKeepsCount = costTable[leftEdge][rightEdge] == costTable[leftEdge][rightEdge - 1] + 1
-    let appendKeepsDCount = dcountTable[leftEdge][rightEdge] == dcountTable[leftEdge][rightEdge - 1]
+  var i = startPos
+  var j = endPos
+  while i < j:
+    let appendKeepsCount = costTable[i][j] == costTable[i][j - 1] + 1
+    let appendKeepsDCount = dcountTable[i][j] == dcountTable[i][j - 1]
     if appendKeepsCount and appendKeepsDCount:
-      reversedKeys.add(targetText[rightEdge - 1])
-      rightEdge -= 1
+      reversedKeys.add(targetText[j - 1])
+      j -= 1
     else:
       reversedKeys.add('d')
-      rightEdge = leftEdge + (rightEdge - leftEdge) div 2
+      j = i + (j - i) div 2
   var programText = newString(reversedKeys.len)
-  for index in 0 ..< reversedKeys.len:
-    programText[index] = reversedKeys[reversedKeys.len - 1 - index]
+  for i in 0 ..< reversedKeys.len:
+    programText[i] = reversedKeys[reversedKeys.len - 1 - i]
   return programText
 ```
 
-The loop walks rightEdge down to startPos and emits one key per step. The append branch runs first, so a tied choice never adds a `d` key. The block costs O(n) time per line and O(n) time across all lines.
+The loop walks j down to startPos and emits one key per step. The append branch runs first, so a tied choice never adds a `d` key. The block costs O(n) time per line and O(n) time across all lines.
 
 The last blocks read the whole stream once and flush one output buffer.
 
@@ -153,17 +153,17 @@ proc appendOutput(outputBuffer: var string, text: string) =
     inputData.add(inputLine)
     inputData.add('\n')
   var outputBuffer = ""
-  var scanPos = 0
-  var caseIndex = 0
-  while scanPos < inputData.len and caseIndex < 10:
-    var lineEnd = scanPos
-    while lineEnd < inputData.len and inputData[lineEnd] != '\n':
-      lineEnd += 1
-    var targetText = inputData[scanPos ..< lineEnd]
+  var i = 0
+  var j = 0
+  while i < inputData.len and j < 10:
+    var k = i
+    while k < inputData.len and inputData[k] != '\n':
+      k += 1
+    var targetText = inputData[i ..< k]
     if targetText.len > 0 and targetText[targetText.len - 1] == '\r':
       targetText.setLen(targetText.len - 1)
-    scanPos = lineEnd + 1
-    caseIndex += 1
+    i = k + 1
+    j += 1
     solveCase(targetText, outputBuffer)
 ```
 

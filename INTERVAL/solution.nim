@@ -18,15 +18,15 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 
 var outputBuffer = ""
@@ -39,41 +39,41 @@ proc appendOutput(text: string) =
 
 var chosenBit = newSeq[int](treeSize + 1)
 var freeBit = newSeq[int](treeSize + 1)
-for index in 1..treeSize:
-  freeBit[index] += 1
-  let parent = index + (index and (-index))
-  if parent <= treeSize:
-    freeBit[parent] += freeBit[index]
+for j in 1..treeSize:
+  freeBit[j] += 1
+  let k = j + (j and (-j))
+  if k <= treeSize:
+    freeBit[k] += freeBit[j]
 
 var startStep = 1
 while startStep shl 1 <= treeSize:
   startStep = startStep shl 1
 
-proc bitAdd(bit: var seq[int], index: int, delta: int) =
-  var position = index
-  while position <= treeSize:
-    bit[position] += delta
-    position += position and (-position)
+proc bitAdd(bit: var seq[int], i: int, delta: int) =
+  var j = i
+  while j <= treeSize:
+    bit[j] += delta
+    j += j and (-j)
 
-proc bitPrefix(bit: seq[int], index: int): int =
-  var position = index
+proc bitPrefix(bit: seq[int], i: int): int =
+  var j = i
   var total = 0
-  while position > 0:
-    total += bit[position]
-    position -= position and (-position)
+  while j > 0:
+    total += bit[j]
+    j -= j and (-j)
   return total
 
 proc findKthFree(rank: int): int =
-  var index = 0
+  var i = 0
   var step = startStep
   var remaining = rank
   while step != 0:
-    let nextIndex = index + step
-    if nextIndex <= treeSize and freeBit[nextIndex] < remaining:
-      index = nextIndex
-      remaining -= freeBit[nextIndex]
+    let j = i + step
+    if j <= treeSize and freeBit[j] < remaining:
+      i = j
+      remaining -= freeBit[j]
     step = step shr 1
-  return index + 1
+  return i + 1
 
 proc compareIntervals(x, y: Interval): int =
   if x.right != y.right:
@@ -84,16 +84,16 @@ proc solveCase(intervals: var seq[Interval], touched: var seq[int]): int =
   intervals.sort(compareIntervals)
   var totalChosen = 0
   for interval in intervals:
-    let leftIndex = interval.left + 1
-    let rightIndex = interval.right + 1
-    let already = bitPrefix(chosenBit, rightIndex) - bitPrefix(chosenBit, leftIndex - 1)
+    let i = interval.left + 1
+    let j = interval.right + 1
+    let already = bitPrefix(chosenBit, j) - bitPrefix(chosenBit, i - 1)
     var missing = interval.demand - already
-    var freeRank = rightIndex - bitPrefix(chosenBit, rightIndex)
+    var freeRank = j - bitPrefix(chosenBit, j)
     while missing > 0:
-      let freeIndex = findKthFree(freeRank)
-      bitAdd(chosenBit, freeIndex, 1)
-      bitAdd(freeBit, freeIndex, -1)
-      touched.add freeIndex
+      let k = findKthFree(freeRank)
+      bitAdd(chosenBit, k, 1)
+      bitAdd(freeBit, k, -1)
+      touched.add k
       freeRank -= 1
       totalChosen += 1
       missing -= 1
@@ -101,20 +101,20 @@ proc solveCase(intervals: var seq[Interval], touched: var seq[int]): int =
 
 var touched = newSeq[int]()
 
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 0..<caseCount:
-  let intervalCount = nextInt(inputData, scanPos)
+let caseCount = nextInt(inputData, i)
+for j in 0..<caseCount:
+  let intervalCount = nextInt(inputData, i)
   var intervals = newSeq[Interval](intervalCount)
-  for intervalIndex in 0..<intervalCount:
-    intervals[intervalIndex].left = nextInt(inputData, scanPos)
-    intervals[intervalIndex].right = nextInt(inputData, scanPos)
-    intervals[intervalIndex].demand = nextInt(inputData, scanPos)
+  for k in 0..<intervalCount:
+    intervals[k].left = nextInt(inputData, i)
+    intervals[k].right = nextInt(inputData, i)
+    intervals[k].demand = nextInt(inputData, i)
   let answer = solveCase(intervals, touched)
   appendOutput($answer)
   outputBuffer.add '\n'
-  for position in touched:
-    bitAdd(chosenBit, position, -1)
-    bitAdd(freeBit, position, 1)
+  for k in touched:
+    bitAdd(chosenBit, k, -1)
+    bitAdd(freeBit, k, 1)
   touched.setLen 0
 
 stdout.write outputBuffer

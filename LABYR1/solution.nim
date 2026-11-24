@@ -15,21 +15,21 @@ proc appendTokensFromLine(): int =
   var line = readLineText()
   while line.len == 0:
     line = readLineText()
-  var index = 0
-  while index < line.len:
-    while index < line.len and (line[index] == ' ' or line[index] == '\r' or line[index] == '\t'):
-      index += 1
-    let start = index
-    while index < line.len and line[index] != ' ' and line[index] != '\r' and line[index] != '\t':
-      index += 1
-    if index > start:
-      tokens.add(line[start ..< index])
+  var i = 0
+  while i < line.len:
+    while i < line.len and (line[i] == ' ' or line[i] == '\r' or line[i] == '\t'):
+      i += 1
+    let start = i
+    while i < line.len and line[i] != ' ' and line[i] != '\r' and line[i] != '\t':
+      i += 1
+    if i > start:
+      tokens.add(line[start ..< i])
   return tokens.len
 proc textToInt(text: string): int =
   var value = 0
-  for index in 0 ..< text.len:
-    if text[index] in {'0' .. '9'}:
-      value = value * 10 + (text[index].ord - '0'.ord)
+  for i in 0 ..< text.len:
+    if text[i] in {'0' .. '9'}:
+      value = value * 10 + (text[i].ord - '0'.ord)
   return value
 
 proc appendNumber(buffer: var string, value: int) =
@@ -41,14 +41,14 @@ proc appendNumber(buffer: var string, value: int) =
     while rest > 0:
       digits.add(cast[uint8]('0'.ord + (rest mod 10)))
       rest = rest div 10
-  var index = digits.len - 1
-  while index >= 0:
-    buffer.add(cast[char](digits[index]))
-    index -= 1
+  var i = digits.len - 1
+  while i >= 0:
+    buffer.add(cast[char](digits[i]))
+    i -= 1
 
 proc bfs(start: int): int =
-  for index in 0 ..< cellCount:
-    distance[index] = -1
+  for i in 0 ..< cellCount:
+    distance[i] = -1
   var head = 0
   var tail = 1
   distance[start] = 0

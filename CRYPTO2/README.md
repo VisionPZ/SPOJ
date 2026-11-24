@@ -68,21 +68,21 @@ proc readAllInput(): string =
 The constant holds the digit value of zero. The loop runs once per input line and stops at end of file. Reading once avoids a stream call per value.
 
 ```
-proc nextInteger(inputData: string, scanPos: var int, value: var int): bool =
-  var position = scanPos
+proc nextInteger(inputData: string, i: var int, value: var int): bool =
+  var j = i
   var accumulator = 0
   var foundDigit = false
-  while position < inputData.len:
-    let charValue = int(inputData[position]) - firstDigitValue
+  while j < inputData.len:
+    let charValue = int(inputData[j]) - firstDigitValue
     if charValue >= 0 and charValue <= 9:
       accumulator = accumulator * 10 + charValue
       foundDigit = true
-      position += 1
+      j += 1
     elif foundDigit:
       break
     else:
-      position += 1
-  scanPos = position
+      j += 1
+  i = j
   value = accumulator
   return foundDigit
 ```
@@ -107,11 +107,11 @@ The branch handles the four-digit result first. Two comparisons add the missing 
 
 ```
 var inputData = readAllInput()
-var scanPos = 0
+var i = 0
 var outputBuffer = ""
 while true:
   var encryptedValue = 0
-  if not nextInteger(inputData, scanPos, encryptedValue):
+  if not nextInteger(inputData, i, encryptedValue):
     break
   appendDecrypted(outputBuffer, encryptedValue)
 stdout.write outputBuffer

@@ -70,39 +70,39 @@ const digitZeroValue = 48
 ```
 
 `nextInt` skips separators and reads an optional minus sign. It builds the value
-from digit bytes and moves `scanPos` forward.
+from digit bytes and moves `i` forward.
 
 ```nim
-proc nextInt(inputData: string, scanPos: var int): int =
+proc nextInt(inputData: string, i: var int): int =
   var byteCount = inputData.len
-  while scanPos < byteCount and (inputData[scanPos] < '0' or inputData[scanPos] > '9') and inputData[scanPos] != '-':
-    scanPos = scanPos + 1
+  while i < byteCount and (inputData[i] < '0' or inputData[i] > '9') and inputData[i] != '-':
+    i = i + 1
   var signValue = 1
-  if scanPos < byteCount and inputData[scanPos] == '-':
+  if i < byteCount and inputData[i] == '-':
     signValue = -1
-    scanPos = scanPos + 1
+    i = i + 1
   var value = 0
-  while scanPos < byteCount and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - digitZeroValue
-    scanPos = scanPos + 1
+  while i < byteCount and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - digitZeroValue
+    i = i + 1
   return signValue * value
 ```
 
-`scanPos` is a `var` parameter, so its position survives across calls. No token
+`i` is a `var` parameter, so its position survives across calls. No token
 string is created.
 
 `findRoot` walks to the group root and shortens the path on the way back.
 
 ```nim
-proc findRoot(parent: var seq[int], vertex: int): int =
-  var root = vertex
+proc findRoot(parent: var seq[int], i: int): int =
+  var root = i
   while parent[root] != root:
     root = parent[root]
-  var walk = vertex
-  while parent[walk] != root:
-    var nextVertex = parent[walk]
-    parent[walk] = root
-    walk = nextVertex
+  var j = i
+  while parent[j] != root:
+    var nextVertex = parent[j]
+    parent[j] = root
+    j = nextVertex
   return root
 ```
 
@@ -118,13 +118,13 @@ while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
 
-var scanPos = 0
-var caseCount = nextInt(inputData, scanPos)
+var i = 0
+var caseCount = nextInt(inputData, i)
 var outputBuffer: string
 
-for caseIndex in 1 .. caseCount:
-  var vertexCount = nextInt(inputData, scanPos)
-  var edgeCount = nextInt(inputData, scanPos)
+for j in 1 .. caseCount:
+  var vertexCount = nextInt(inputData, i)
+  var edgeCount = nextInt(inputData, i)
 ```
 
 Equality edges merge their endpoints. Strict edges are stored as source and
@@ -132,15 +132,15 @@ target, and a `>` label swaps the pair.
 
 ```nim
   var parent = newSeq[int](vertexCount + 1)
-  for vertex in 1 .. vertexCount:
-    parent[vertex] = vertex
+  for k in 1 .. vertexCount:
+    parent[k] = k
   var strictFrom = newSeq[int](edgeCount)
   var strictTo = newSeq[int](edgeCount)
   var strictCount = 0
-  for edgeIndex in 0 ..< edgeCount:
-    var fromVertex = nextInt(inputData, scanPos)
-    var toVertex = nextInt(inputData, scanPos)
-    var edgeLabel = nextInt(inputData, scanPos)
+  for k in 0 ..< edgeCount:
+    var fromVertex = nextInt(inputData, i)
+    var toVertex = nextInt(inputData, i)
+    var edgeLabel = nextInt(inputData, i)
     if edgeLabel == 0:
       var fromRoot = findRoot(parent, fromVertex)
       var toRoot = findRoot(parent, toVertex)
@@ -162,18 +162,18 @@ between groups.
 ```nim
   var componentOf = newSeq[int](vertexCount + 1)
   var componentCount = 0
-  for vertex in 1 .. vertexCount:
-    var componentRoot = findRoot(parent, vertex)
+  for k in 1 .. vertexCount:
+    var componentRoot = findRoot(parent, k)
     if componentOf[componentRoot] == 0:
       componentCount = componentCount + 1
       componentOf[componentRoot] = componentCount
-    componentOf[vertex] = componentOf[componentRoot]
+    componentOf[k] = componentOf[componentRoot]
 
   var adjacency = newSeq[seq[int]](componentCount + 1)
   var inDegree = newSeq[int](componentCount + 1)
-  for edgeIndex in 0 ..< strictCount:
-    var sourceComponent = componentOf[strictFrom[edgeIndex]]
-    var targetComponent = componentOf[strictTo[edgeIndex]]
+  for k in 0 ..< strictCount:
+    var sourceComponent = componentOf[strictFrom[k]]
+    var targetComponent = componentOf[strictTo[k]]
     adjacency[sourceComponent].add targetComponent
     inDegree[targetComponent] = inDegree[targetComponent] + 1
 ```
@@ -188,9 +188,9 @@ group's longest path and enqueues groups whose indegree reaches zero.
   var queue = newSeq[int](componentCount + 1)
   var queueHead = 0
   var queueTail = 0
-  for component in 1 .. componentCount:
-    if inDegree[component] == 0:
-      queue[queueTail] = component
+  for k in 1 .. componentCount:
+    if inDegree[k] == 0:
+      queue[queueTail] = k
       queueTail = queueTail + 1
 
   var longestPath = newSeq[int](componentCount + 1)

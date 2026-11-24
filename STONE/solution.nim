@@ -11,14 +11,14 @@ proc readAllInput(): string =
     inputData.add "\n"
   return inputData
 
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
-  var negativeValue = inputData[scanPos] == '-'
-  if negativeValue: scanPos = scanPos + 1
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
+  var negativeValue = inputData[i] == '-'
+  if negativeValue: i = i + 1
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - 48
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - 48
+    i = i + 1
   return if negativeValue: -value else: value
 
 proc fixedString(value: float, places: int): string =
@@ -38,21 +38,21 @@ proc fixedString(value: float, places: int): string =
   return result
 
 var inputData = readAllInput()
-var scanPos = 0
-var caseCount = nextInt(inputData, scanPos)
+var i = 0
+var caseCount = nextInt(inputData, i)
 var outputBuffer: string
 for _ in 1 .. caseCount:
-  var pointCount = nextInt(inputData, scanPos)
-  var firstX = nextInt(inputData, scanPos)
-  var firstY = nextInt(inputData, scanPos)
+  var pointCount = nextInt(inputData, i)
+  var firstX = nextInt(inputData, i)
+  var firstY = nextInt(inputData, i)
   var previousX = firstX
   var previousY = firstY
   var crossSum = 0.0
   var weightedXSum = 0.0
   var weightedYSum = 0.0
   for _ in 1 .. pointCount - 1:
-    var currentX = nextInt(inputData, scanPos)
-    var currentY = nextInt(inputData, scanPos)
+    var currentX = nextInt(inputData, i)
+    var currentY = nextInt(inputData, i)
     var crossValue = float(previousX * currentY - currentX * previousY)
     crossSum = crossSum + crossValue
     weightedXSum = weightedXSum + crossValue * float(previousX + currentX)

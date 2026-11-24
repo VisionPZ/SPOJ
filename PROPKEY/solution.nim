@@ -1,59 +1,59 @@
 const flushBlockBytes = 1 shl 18
 const firstDigitValue = 48
 
-proc skipWhitespace(inputData: string, scanPos: var int) =
-  while scanPos < inputData.len and ord(inputData[scanPos]) <= 32:
-    scanPos += 1
+proc skipWhitespace(inputData: string, i: var int) =
+  while i < inputData.len and ord(inputData[i]) <= 32:
+    i += 1
 
-proc nextInteger(inputData: string, scanPos: var int): int =
-  skipWhitespace(inputData, scanPos)
+proc nextInteger(inputData: string, i: var int): int =
+  skipWhitespace(inputData, i)
   result = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    result = result * 10 + (ord(inputData[scanPos]) - firstDigitValue)
-    scanPos += 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    result = result * 10 + (ord(inputData[i]) - firstDigitValue)
+    i += 1
 
-proc readGridRow(inputData: string, scanPos: var int, cells: var string, cellOffset: int, rowWidth: int) =
-  skipWhitespace(inputData, scanPos)
-  for col in 0 ..< rowWidth:
-    cells[cellOffset + col] = inputData[scanPos + col]
-  scanPos += rowWidth
+proc readGridRow(inputData: string, i: var int, cells: var string, cellOffset: int, rowWidth: int) =
+  skipWhitespace(inputData, i)
+  for j in 0 ..< rowWidth:
+    cells[cellOffset + j] = inputData[i + j]
+  i += rowWidth
 
-proc bitIsSet(bits: seq[uint64], bitIndex: int): bool =
-  (bits[bitIndex shr 6] and (1'u64 shl (bitIndex and 63))) != 0'u64
+proc bitIsSet(bits: seq[uint64], i: int): bool =
+  (bits[i shr 6] and (1'u64 shl (i and 63))) != 0'u64
 
-proc setBit(bits: var seq[uint64], bitIndex: int) =
-  bits[bitIndex shr 6] = bits[bitIndex shr 6] or (1'u64 shl (bitIndex and 63))
+proc setBit(bits: var seq[uint64], i: int) =
+  bits[i shr 6] = bits[i shr 6] or (1'u64 shl (i and 63))
 
 proc clearBits(bits: var seq[uint64]) =
-  for wordIndex in 0 ..< bits.len:
-    bits[wordIndex] = 0'u64
+  for i in 0 ..< bits.len:
+    bits[i] = 0'u64
 
 proc copyBits(dest: var seq[uint64], src: seq[uint64]) =
-  for wordIndex in 0 ..< dest.len:
-    dest[wordIndex] = src[wordIndex]
+  for i in 0 ..< dest.len:
+    dest[i] = src[i]
 
 proc intersectBits(dest: var seq[uint64], src: seq[uint64]) =
-  for wordIndex in 0 ..< dest.len:
-    dest[wordIndex] = dest[wordIndex] and src[wordIndex]
+  for i in 0 ..< dest.len:
+    dest[i] = dest[i] and src[i]
 
 proc orWordsAt(dest: var seq[uint64], destBase: int, src: seq[uint64], srcBase: int, count: int) =
-  for wordIndex in 0 ..< count:
-    dest[destBase + wordIndex] = dest[destBase + wordIndex] or src[srcBase + wordIndex]
+  for i in 0 ..< count:
+    dest[destBase + i] = dest[destBase + i] or src[srcBase + i]
 
 proc orShiftedAt(dest: var seq[uint64], destBase: int, src: seq[uint64], srcBase: int,
                  count: int, wordShift: int, bitShift: int) =
   if bitShift == 0:
-    for wordIndex in 0 ..< count:
-      dest[destBase + wordIndex + wordShift] =
-        dest[destBase + wordIndex + wordShift] or src[srcBase + wordIndex]
+    for i in 0 ..< count:
+      dest[destBase + i + wordShift] =
+        dest[destBase + i + wordShift] or src[srcBase + i]
   else:
-    for wordIndex in 0 ..< count:
-      let value = src[srcBase + wordIndex]
-      dest[destBase + wordIndex + wordShift] =
-        dest[destBase + wordIndex + wordShift] or (value shl bitShift)
-      if destBase + wordIndex + wordShift + 1 < dest.len:
-        dest[destBase + wordIndex + wordShift + 1] =
-          dest[destBase + wordIndex + wordShift + 1] or (value shr (64 - bitShift))
+    for i in 0 ..< count:
+      let value = src[srcBase + i]
+      dest[destBase + i + wordShift] =
+        dest[destBase + i + wordShift] or (value shl bitShift)
+      if destBase + i + wordShift + 1 < dest.len:
+        dest[destBase + i + wordShift + 1] =
+          dest[destBase + i + wordShift + 1] or (value shr (64 - bitShift))
 
 var inputData = ""
 var inputLine = ""
@@ -61,23 +61,23 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
-let caseCount = nextInteger(inputData, scanPos)
+var i = 0
+let caseCount = nextInteger(inputData, i)
 var keyCells = ""
 var lockCells = ""
 var outputBuffer = ""
 
-for caseIndex in 0 ..< caseCount:
-  let keyRows = nextInteger(inputData, scanPos)
-  let keyCols = nextInteger(inputData, scanPos)
+for j in 0 ..< caseCount:
+  let keyRows = nextInteger(inputData, i)
+  let keyCols = nextInteger(inputData, i)
   keyCells.setLen(keyRows * keyCols)
-  for rowIndex in 0 ..< keyRows:
-    readGridRow(inputData, scanPos, keyCells, rowIndex * keyCols, keyCols)
-  let lockDepth = nextInteger(inputData, scanPos)
-  let lockWidth = nextInteger(inputData, scanPos)
+  for k in 0 ..< keyRows:
+    readGridRow(inputData, i, keyCells, k * keyCols, keyCols)
+  let lockDepth = nextInteger(inputData, i)
+  let lockWidth = nextInteger(inputData, i)
   lockCells.setLen(lockDepth * lockWidth)
-  for rowIndex in 0 ..< lockDepth:
-    readGridRow(inputData, scanPos, lockCells, rowIndex * lockWidth, lockWidth)
+  for k in 0 ..< lockDepth:
+    readGridRow(inputData, i, lockCells, k * lockWidth, lockWidth)
 
   var answerDepth = 0
   var fellThrough = false
@@ -89,34 +89,34 @@ for caseIndex in 0 ..< caseCount:
     let diagonalWords = rowWords + ((keyRows + 63) div 64) + 1
 
     var blockedCol = newSeq[uint64](lockWidth * rowWords)
-    for col in 0 ..< lockWidth:
-      let columnBase = col * rowWords
-      for rowIndex in 0 ..< lockDepth:
-        if lockCells[rowIndex * lockWidth + col] == '#':
-          blockedCol[columnBase + (rowIndex shr 6)] =
-            blockedCol[columnBase + (rowIndex shr 6)] or (1'u64 shl (rowIndex and 63))
+    for k in 0 ..< lockWidth:
+      let columnBase = k * rowWords
+      for l in 0 ..< lockDepth:
+        if lockCells[l * lockWidth + k] == '#':
+          blockedCol[columnBase + (l shr 6)] =
+            blockedCol[columnBase + (l shr 6)] or (1'u64 shl (l and 63))
 
     var diagonalFail = newSeq[uint64](offsetCount * diagonalWords)
     var failRows = newSeq[uint64](rowWords)
     var woodStart = newSeq[int](keyRows + 1)
     var woodCols = newSeq[int](0)
-    for rowIndex in 0 ..< keyRows:
-      woodStart[rowIndex] = woodCols.len
-      for col in 0 ..< keyCols:
-        if keyCells[rowIndex * keyCols + col] == '#':
-          woodCols.add col
+    for k in 0 ..< keyRows:
+      woodStart[k] = woodCols.len
+      for l in 0 ..< keyCols:
+        if keyCells[k * keyCols + l] == '#':
+          woodCols.add l
     woodStart[keyRows] = woodCols.len
 
-    for rowIndex in 0 ..< keyRows:
-      let shiftAmount = diagonalBase - rowIndex
+    for k in 0 ..< keyRows:
+      let shiftAmount = diagonalBase - k
       let wordShift = shiftAmount shr 6
       let bitShift = shiftAmount and 63
-      for offset in 0 ..< offsetCount:
+      for l in 0 ..< offsetCount:
         clearBits(failRows)
-        for colIndex in woodStart[rowIndex] ..< woodStart[rowIndex + 1]:
-          let columnBase = (offset + woodCols[colIndex]) * rowWords
+        for i in woodStart[k] ..< woodStart[k + 1]:
+          let columnBase = (l + woodCols[i]) * rowWords
           orWordsAt(failRows, 0, blockedCol, columnBase, rowWords)
-        let diagonalBaseIndex = offset * diagonalWords
+        let diagonalBaseIndex = l * diagonalWords
         orShiftedAt(diagonalFail, diagonalBaseIndex, failRows, 0,
                     rowWords, wordShift, bitShift)
 
@@ -125,45 +125,45 @@ for caseIndex in 0 ..< caseCount:
     var currentValid = newSeq[uint64](wordCount)
     var candidates = newSeq[uint64](wordCount)
     var nextReach = newSeq[uint64](wordCount)
-    for offset in 0 ..< offsetCount:
-      setBit(previousReach, offset)
+    for k in 0 ..< offsetCount:
+      setBit(previousReach, k)
 
     let finalDepth = lockDepth + keyRows
     var stopped = false
-    for depth in 1 .. finalDepth:
-      let topPosition = depth - keyRows
+    for k in 1 .. finalDepth:
+      let topPosition = k - keyRows
       let diagonalIndex = topPosition + diagonalBase
       clearBits(currentValid)
-      for offset in 0 ..< offsetCount:
-        if not bitIsSet(diagonalFail, offset * diagonalWords * 64 + diagonalIndex):
-          setBit(currentValid, offset)
+      for l in 0 ..< offsetCount:
+        if not bitIsSet(diagonalFail, l * diagonalWords * 64 + diagonalIndex):
+          setBit(currentValid, l)
 
       copyBits(candidates, previousReach)
       intersectBits(candidates, currentValid)
       clearBits(nextReach)
-      var scanOffset = 0
-      while scanOffset < offsetCount:
-        if not bitIsSet(currentValid, scanOffset):
-          scanOffset += 1
+      var l = 0
+      while l < offsetCount:
+        if not bitIsSet(currentValid, l):
+          l += 1
         else:
-          let runStart = scanOffset
-          var runHasCandidate = bitIsSet(candidates, scanOffset)
-          scanOffset += 1
-          while scanOffset < offsetCount and bitIsSet(currentValid, scanOffset):
-            if bitIsSet(candidates, scanOffset):
+          let runStart = l
+          var runHasCandidate = bitIsSet(candidates, l)
+          l += 1
+          while l < offsetCount and bitIsSet(currentValid, l):
+            if bitIsSet(candidates, l):
               runHasCandidate = true
-            scanOffset += 1
+            l += 1
           if runHasCandidate:
-            for bitIndex in runStart ..< scanOffset:
-              setBit(nextReach, bitIndex)
+            for i in runStart ..< l:
+              setBit(nextReach, i)
 
       var hasReach = false
-      for wordIndex in 0 ..< wordCount:
-        if nextReach[wordIndex] != 0'u64:
+      for i in 0 ..< wordCount:
+        if nextReach[i] != 0'u64:
           hasReach = true
           break
       if not hasReach:
-        answerDepth = depth - 1
+        answerDepth = k - 1
         stopped = true
         break
       copyBits(previousReach, nextReach)

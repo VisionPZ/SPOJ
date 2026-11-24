@@ -30,24 +30,24 @@ In the third sample case the holes are (1200,85), (63,2500), and (2700,2650). Th
 The scanner reads the whole input once. It skips whitespace and builds each integer from digits.
 
 ```nim
-proc nextInt(inputData: string, scanPos: var int): int =
+proc nextInt(inputData: string, i: var int): int =
   let inputLength = inputData.len
-  while scanPos < inputLength:
-    let currentChar = inputData[scanPos]
+  while i < inputLength:
+    let currentChar = inputData[i]
     if currentChar >= '0' and currentChar <= '9':
       break
-    inc scanPos
+    inc i
   var parsedValue = 0
-  while scanPos < inputLength:
-    let currentChar = inputData[scanPos]
+  while i < inputLength:
+    let currentChar = inputData[i]
     if currentChar < '0' or currentChar > '9':
       break
     parsedValue = parsedValue * 10 + (ord(currentChar) - firstDigitValue)
-    inc scanPos
+    inc i
   return parsedValue
 ```
 
-The scan ends when `scanPos` passes the last digit. Every input number is nonnegative, so no sign branch is needed. One pass over the buffer costs O(total input bytes).
+The scan ends when `i` passes the last digit. Every input number is nonnegative, so no sign branch is needed. One pass over the buffer costs O(total input bytes).
 
 Scoring clamps a candidate into the rectangle, finds the nearest hole, and applies a fixed tie break.
 
@@ -107,10 +107,10 @@ proc envelopeBreakpoints(lines: seq[EnvelopeLine], lowBound, highBound: float): 
   var reduced: seq[EnvelopeLine] = @[]
   for line in lines:
     var matching = false
-    for lineIndex in 0 ..< reduced.len:
-      if abs(reduced[lineIndex].slope - line.slope) < degenerateEpsilon:
-        if line.intercept < reduced[lineIndex].intercept:
-          reduced[lineIndex].intercept = line.intercept
+    for i in 0 ..< reduced.len:
+      if abs(reduced[i].slope - line.slope) < degenerateEpsilon:
+        if line.intercept < reduced[i].intercept:
+          reduced[i].intercept = line.intercept
         matching = true
         break
     if not matching:
@@ -142,8 +142,8 @@ proc envelopeBreakpoints(lines: seq[EnvelopeLine], lowBound, highBound: float): 
       else:
         let crossing = (lastLine.intercept - line.intercept) / slopeGap
         stack.add(EnvelopeLine(slope: line.slope, intercept: line.intercept, startAt: crossing))
-  for lineIndex in 1 ..< stack.len:
-    let crossing = stack[lineIndex].startAt
+  for i in 1 ..< stack.len:
+    let crossing = stack[i].startAt
     if crossing > lowBound and crossing < highBound:
       crossings.add(crossing)
   return crossings
@@ -154,14 +154,14 @@ Equal slopes keep the smallest intercept, which removes holes that never win on 
 The main loop deduplicates holes, tests every candidate, and writes buffered output.
 
 ```nim
-for testIndex in 0 ..< testCount:
-  roomWidth = float(nextInt(inputData, scanPos))
-  roomHeight = float(nextInt(inputData, scanPos))
-  let holeCount = nextInt(inputData, scanPos)
+for j in 0 ..< testCount:
+  roomWidth = float(nextInt(inputData, i))
+  roomHeight = float(nextInt(inputData, i))
+  let holeCount = nextInt(inputData, i)
   var inputHoles: seq[HolePoint] = @[]
-  for holeIndex in 0 ..< holeCount:
-    let holeX = float(nextInt(inputData, scanPos))
-    let holeY = float(nextInt(inputData, scanPos))
+  for k in 0 ..< holeCount:
+    let holeX = float(nextInt(inputData, i))
+    let holeY = float(nextInt(inputData, i))
     inputHoles.add(HolePoint(x: holeX, y: holeY))
   inputHoles.sort(compareHoles)
   var holes: seq[HolePoint] = @[]
@@ -210,7 +210,7 @@ for testIndex in 0 ..< testCount:
 stdout.write outputBuffer
 ```
 
-Sorting before the duplicate check makes repeats adjacent. A triangle center outside the rectangle is skipped before scoring. Rounding happens once, on the chosen point, and `flushBlockBytes` bounds the output buffer. The case loop runs once per `testIndex`.
+Sorting before the duplicate check makes repeats adjacent. A triangle center outside the rectangle is skipped before scoring. Rounding happens once, on the chosen point, and `flushBlockBytes` bounds the output buffer. The case loop runs once per `j`.
 
 ## Complexity
 

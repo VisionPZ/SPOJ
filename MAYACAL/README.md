@@ -81,9 +81,9 @@ proc modNorm(value, modulus: int): int =
 
 proc findNameIndex(names: openArray[string], word: string): int =
   result = -1
-  for index in 0 .. names.len - 1:
-    if names[index] == word:
-      result = index
+  for i in 0 .. names.len - 1:
+    if names[i] == word:
+      result = i
       return
 ```
 
@@ -92,27 +92,27 @@ proc findNameIndex(names: openArray[string], word: string): int =
 **Byte readers.**
 
 ```nim
-proc skipSeparators(inputData: string, scanPos: var int) =
+proc skipSeparators(inputData: string, i: var int) =
   let dataLength = inputData.len
-  while scanPos < dataLength and (inputData[scanPos] == ' ' or inputData[scanPos] == '\n' or inputData[scanPos] == '\r' or inputData[scanPos] == '\t'):
-    inc scanPos
+  while i < dataLength and (inputData[i] == ' ' or inputData[i] == '\n' or inputData[i] == '\r' or inputData[i] == '\t'):
+    inc i
 
-proc scanNumber(inputData: string, scanPos: var int): int =
-  skipSeparators(inputData, scanPos)
+proc scanNumber(inputData: string, i: var int): int =
+  skipSeparators(inputData, i)
   var value = 0
   let dataLength = inputData.len
-  while scanPos < dataLength and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + (int(inputData[scanPos]) - firstDigitValue)
-    inc scanPos
+  while i < dataLength and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + (int(inputData[i]) - firstDigitValue)
+    inc i
   result = value
 
-proc scanWord(inputData: string, scanPos: var int, wordBuffer: var string) =
+proc scanWord(inputData: string, i: var int, wordBuffer: var string) =
   wordBuffer.setLen(0)
-  skipSeparators(inputData, scanPos)
+  skipSeparators(inputData, i)
   let dataLength = inputData.len
-  while scanPos < dataLength and ((inputData[scanPos] >= 'A' and inputData[scanPos] <= 'Z') or (inputData[scanPos] >= 'a' and inputData[scanPos] <= 'z')):
-    wordBuffer.add inputData[scanPos]
-    inc scanPos
+  while i < dataLength and ((inputData[i] >= 'A' and inputData[i] <= 'Z') or (inputData[i] >= 'a' and inputData[i] <= 'z')):
+    wordBuffer.add inputData[i]
+    inc i
 ```
 
 Each reader stops at the first byte outside its class. The word reader reuses its buffer, so it allocates no token strings. Cost: one pass over the bytes each call skips.
@@ -138,10 +138,10 @@ Five divisions split the absolute day into place values. The writer builds one l
 **One query.**
 
 ```nim
-  let tzolkinNumber = scanNumber(inputData, scanPos)
-  scanWord(inputData, scanPos, tzolkinWord)
-  let haabNumber = scanNumber(inputData, scanPos)
-  scanWord(inputData, scanPos, haabWord)
+  let tzolkinNumber = scanNumber(inputData, i)
+  scanWord(inputData, i, tzolkinWord)
+  let haabNumber = scanNumber(inputData, i)
+  scanWord(inputData, i, haabWord)
   let tzolkinNameIndex = findNameIndex(tzolkinNames, tzolkinWord)
   let haabMonthIndex = findNameIndex(haabNames, haabWord)
   var occurrenceCount = 0
@@ -175,12 +175,12 @@ while readLine(stdin, inputLine):
   inputData.add '\n'
 
 var outputBuffer = ""
-var scanPos = 0
+var i = 0
 var tzolkinWord = ""
 var haabWord = ""
-let caseCount = scanNumber(inputData, scanPos)
-var caseIndex = 0
-while caseIndex < caseCount:
+let caseCount = scanNumber(inputData, i)
+var j = 0
+while j < caseCount:
 ```
 
 The read loop reaches the end of input, so one pass loads all bytes. The buffer keeps at most one block before a write.
@@ -188,14 +188,14 @@ The read loop reaches the end of input, so one pass loads all bytes. The buffer 
 ```nim
   outputBuffer.add $occurrenceCount
   outputBuffer.add '\n'
-  var occurrenceIndex = 0
-  while occurrenceIndex < occurrenceCount:
-    appendLongCountDate(outputBuffer, firstDay + cycleCalendarRound * occurrenceIndex)
-    inc occurrenceIndex
+  var k = 0
+  while k < occurrenceCount:
+    appendLongCountDate(outputBuffer, firstDay + cycleCalendarRound * k)
+    inc k
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
-  inc caseIndex
+  inc j
 if outputBuffer.len > 0:
   stdout.write outputBuffer
 ```

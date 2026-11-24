@@ -24,8 +24,8 @@ proc appendNumber(value: int) =
     while rest > 0:
       digits.add(rest mod 10)
       rest = rest div 10
-    for index in countdown(digits.len - 1, 0):
-      outputBuffer.add((digits[index] + '0'.ord).chr)
+    for i in countdown(digits.len - 1, 0):
+      outputBuffer.add((digits[i] + '0'.ord).chr)
 
 while stdin.readLine(line):
   let caseCount = parseCount(line)

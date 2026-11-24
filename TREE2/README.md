@@ -35,9 +35,9 @@ A valid bitstring starts with 1, ends with 0, and keeps one rule. Read bits from
 
 The scan of `nextIdentifier` uses three facts.
 
-- `slotHeights[flipPosition + 1] + 1` is the slot count after a flipped zero becomes one.
-- `flipPosition >= currentHeight` leaves enough low bits to remove every open slot.
-- An even value of `flipPosition - currentHeight` lets the last bit remove the final slot.
+- `slotHeights[j + 1] + 1` is the slot count after a flipped zero becomes one.
+- `j >= currentHeight` leaves enough low bits to remove every open slot.
+- An even value of `j - currentHeight` lets the last bit remove the final slot.
 
 When no bit works, `smallestCode` writes ones at even positions 2, 4, ..., m-1. That bitstring is 1010...100, the smallest valid tree of size m.
 
@@ -71,26 +71,26 @@ proc nextIdentifier(identifier: int64): int64 =
     probe = probe shr 1
   var slotHeights: array[0 .. maxBitPosition, int]
   var slots = 1
-  for bitPosition in countdown(nodeCount - 1, 0):
-    if ((identifier shr bitPosition) and 1) == 1:
+  for i in countdown(nodeCount - 1, 0):
+    if ((identifier shr i) and 1) == 1:
       slots = slots + 1
     else:
       slots = slots - 1
-    slotHeights[bitPosition] = slots
-  for flipPosition in 0 .. nodeCount - 2:
-    if ((identifier shr flipPosition) and 1) == 0:
-      let currentHeight = slotHeights[flipPosition + 1] + 1
-      if flipPosition >= currentHeight and (flipPosition - currentHeight) mod 2 == 0:
-        var resultCode = (identifier shr (flipPosition + 1)) shl (flipPosition + 1)
-        resultCode = resultCode or (int64(1) shl flipPosition)
+    slotHeights[i] = slots
+  for j in 0 .. nodeCount - 2:
+    if ((identifier shr j) and 1) == 0:
+      let currentHeight = slotHeights[j + 1] + 1
+      if j >= currentHeight and (j - currentHeight) mod 2 == 0:
+        var resultCode = (identifier shr (j + 1)) shl (j + 1)
+        resultCode = resultCode or (int64(1) shl j)
         var height = currentHeight
-        var remainingDownSteps = (flipPosition + currentHeight - 2) div 2
-        for bitPosition in countdown(flipPosition - 1, 1):
+        var remainingDownSteps = (j + currentHeight - 2) div 2
+        for i in countdown(j - 1, 1):
           if height >= 2 and remainingDownSteps > 0:
             height = height - 1
             remainingDownSteps = remainingDownSteps - 1
           else:
-            resultCode = resultCode or (int64(1) shl bitPosition)
+            resultCode = resultCode or (int64(1) shl i)
             height = height + 1
         return resultCode
   var smallestCode: int64 = 0
@@ -108,17 +108,17 @@ The first loop reads exactly m bits, because m is the position of the highest on
 The scanner turns the single input buffer into integers.
 
 ```nim
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ':
-    scanPos = scanPos + 1
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ':
+    i = i + 1
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - 48
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - 48
+    i = i + 1
   return value
 ```
 
-The loop stops at the first non-digit, so it never reads past one number. Character arithmetic with 48 converts a digit without a parsing library. Each call advances `scanPos` once and costs O(digits).
+The loop stops at the first non-digit, so it never reads past one number. Character arithmetic with 48 converts a digit without a parsing library. Each call advances `i` once and costs O(digits).
 
 The driver reads all input at once and flushes output in blocks.
 
@@ -129,11 +129,11 @@ while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
 
-var scanPos = 0
-let caseCount = nextInt(inputData, scanPos)
+var i = 0
+let caseCount = nextInt(inputData, i)
 var outputBuffer: string
 for _ in 1 .. caseCount:
-  let identifier = int64(nextInt(inputData, scanPos))
+  let identifier = int64(nextInt(inputData, i))
   let successorCode = nextIdentifier(identifier)
   outputBuffer.add $successorCode
   outputBuffer.add "\n"

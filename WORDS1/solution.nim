@@ -5,35 +5,35 @@ const letterCount = 26
 const possibleMessage = "Ordering is possible.\n"
 const impossibleMessage = "The door cannot be opened.\n"
 
-proc skipWhitespace(data: string, scanPos: var int) =
-  while scanPos < data.len and data[scanPos] <= ' ':
-    scanPos += 1
+proc skipWhitespace(data: string, i: var int) =
+  while i < data.len and data[i] <= ' ':
+    i += 1
 
-proc nextInt(data: string, scanPos: var int): int =
-  skipWhitespace(data, scanPos)
+proc nextInt(data: string, i: var int): int =
+  skipWhitespace(data, i)
   result = 0
-  while scanPos < data.len and data[scanPos] >= '0' and data[scanPos] <= '9':
-    result = result * 10 + (int(data[scanPos]) - digitBase)
-    scanPos += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    result = result * 10 + (int(data[i]) - digitBase)
+    i += 1
 
-proc nextWordEnds(data: string, scanPos: var int): tuple[first: char, last: char] =
-  skipWhitespace(data, scanPos)
-  let wordStart = scanPos
-  while scanPos < data.len and data[scanPos] > ' ':
-    scanPos += 1
-  result.first = data[wordStart]
-  result.last = data[scanPos - 1]
+proc nextWordEnds(data: string, i: var int): tuple[first: char, last: char] =
+  skipWhitespace(data, i)
+  let j = i
+  while i < data.len and data[i] > ' ':
+    i += 1
+  result.first = data[j]
+  result.last = data[i - 1]
 
-proc findRoot(parent: var array[letterCount, int], node: int): int =
-  var current = node
-  while parent[current] != current:
-    parent[current] = parent[parent[current]]
-    current = parent[current]
-  result = current
+proc findRoot(parent: var array[letterCount, int], i: int): int =
+  var j = i
+  while parent[j] != j:
+    parent[j] = parent[parent[j]]
+    j = parent[j]
+  result = j
 
-proc unionLetters(parent: var array[letterCount, int], left: int, right: int) =
-  let leftRoot = findRoot(parent, left)
-  let rightRoot = findRoot(parent, right)
+proc unionLetters(parent: var array[letterCount, int], i: int, j: int) =
+  let leftRoot = findRoot(parent, i)
+  let rightRoot = findRoot(parent, j)
   if leftRoot != rightRoot:
     parent[leftRoot] = rightRoot
 
@@ -43,24 +43,24 @@ while readLine(stdin, currentLine):
   inputData.add currentLine
   inputData.add '\n'
 
-var scanPos = 0
-let testCount = nextInt(inputData, scanPos)
+var i = 0
+let testCount = nextInt(inputData, i)
 var outputBuffer = ""
 
 var parent: array[letterCount, int]
 var outDegree: array[letterCount, int]
 var inDegree: array[letterCount, int]
 
-for caseIndex in 0 ..< testCount:
-  for letter in 0 ..< letterCount:
-    parent[letter] = letter
-    outDegree[letter] = 0
-    inDegree[letter] = 0
+for j in 0 ..< testCount:
+  for k in 0 ..< letterCount:
+    parent[k] = k
+    outDegree[k] = 0
+    inDegree[k] = 0
 
-  let wordCount = nextInt(inputData, scanPos)
+  let wordCount = nextInt(inputData, i)
   var referenceVertex = -1
-  for wordIndex in 0 ..< wordCount:
-    let wordEnds = nextWordEnds(inputData, scanPos)
+  for l in 0 ..< wordCount:
+    let wordEnds = nextWordEnds(inputData, i)
     let firstLetter = int(wordEnds.first) - letterBase
     let lastLetter = int(wordEnds.last) - letterBase
     outDegree[firstLetter] += 1
@@ -71,16 +71,16 @@ for caseIndex in 0 ..< testCount:
 
   var orderingPossible = true
   if wordCount > 0:
-    for letter in 0 ..< letterCount:
-      if inDegree[letter] + outDegree[letter] > 0:
-        if findRoot(parent, letter) != findRoot(parent, referenceVertex):
+    for k in 0 ..< letterCount:
+      if inDegree[k] + outDegree[k] > 0:
+        if findRoot(parent, k) != findRoot(parent, referenceVertex):
           orderingPossible = false
 
     if orderingPossible:
       var startSurplusCount = 0
       var endSurplusCount = 0
-      for letter in 0 ..< letterCount:
-        let difference = outDegree[letter] - inDegree[letter]
+      for k in 0 ..< letterCount:
+        let difference = outDegree[k] - inDegree[k]
         if difference == 1:
           startSurplusCount += 1
         elif difference == -1:

@@ -25,7 +25,7 @@ Each line costs at most six windows times five byte comparisons, so the work per
 
 A substring of length 5 inside A of length 10 must start at an offset from 0 through 5. That bound is `textLen - patternLen`, taken inclusive. Comparing each window byte by byte decides equality exactly. A first match proves B occurs, and no match proves it does not.
 
-The index formula uses `startOffset` from 0 up to `textLen - patternLen`. Window bytes are `data[textStart + startOffset + patternIndex]`. Pattern bytes are `data[patternStart + patternIndex]`.
+The index formula uses `i` from 0 up to `textLen - patternLen`. Window bytes are `data[textStart + i + j]`. Pattern bytes are `data[patternStart + j]`.
 
 Here are the six windows for A = 1010110010 and B = 10110.
 
@@ -45,38 +45,38 @@ Offset 2 matches, so the answer is 1. This is the first line of the sample.
 ```
 const flushBlockBytes = 1 shl 16
 
-proc nextToken(data: string, scanPos: var int): tuple[first: int, length: int] =
-  while scanPos < data.len and data[scanPos] <= ' ':
-    scanPos += 1
-  let tokenStart = scanPos
-  while scanPos < data.len and data[scanPos] > ' ':
-    scanPos += 1
+proc nextToken(data: string, i: var int): tuple[first: int, length: int] =
+  while i < data.len and data[i] <= ' ':
+    i += 1
+  let tokenStart = i
+  while i < data.len and data[i] > ' ':
+    i += 1
   result.first = tokenStart
-  result.length = scanPos - tokenStart
+  result.length = i - tokenStart
 ```
 
-The scanner skips every byte at or below a space, so spaces and newlines need no special case. `length` is `scanPos` minus `tokenStart`, so the token is never copied. Cost is one pass over the token bytes.
+The scanner skips every byte at or below a space, so spaces and newlines need no special case. `length` is `i` minus `tokenStart`, so the token is never copied. Cost is one pass over the token bytes.
 
 ```
 proc containsPattern(data: string, textStart, textLen, patternStart, patternLen: int): bool =
   if patternLen > textLen:
     return false
-  var startOffset = 0
-  while startOffset + patternLen <= textLen:
+  var i = 0
+  while i + patternLen <= textLen:
     var matched = true
-    var patternIndex = 0
-    while patternIndex < patternLen:
-      if data[textStart + startOffset + patternIndex] != data[patternStart + patternIndex]:
+    var j = 0
+    while j < patternLen:
+      if data[textStart + i + j] != data[patternStart + j]:
         matched = false
         break
-      patternIndex += 1
+      j += 1
     if matched:
       return true
-    startOffset += 1
+    i += 1
   return false
 ```
 
-The bound `startOffset + patternLen <= textLen` gives textLen minus patternLen plus one windows. Direct byte comparison avoids a fresh string per window. Cost is at most `patternLen` comparisons per window.
+The bound `i + patternLen <= textLen` gives textLen minus patternLen plus one windows. Direct byte comparison avoids a fresh string per window. Cost is at most `patternLen` comparisons per window.
 
 ```
 var inputData = ""
@@ -85,7 +85,7 @@ while readLine(stdin, lineBuffer):
   inputData.add(lineBuffer)
   inputData.add('\n')
 
-var scanPos = 0
+var i = 0
 var outputBuffer = ""
 ```
 
@@ -93,10 +93,10 @@ Reading by line appends into one buffer, so the whole input is scanned once. The
 
 ```
 while true:
-  let textToken = nextToken(inputData, scanPos)
+  let textToken = nextToken(inputData, i)
   if textToken.length == 0:
     break
-  let patternToken = nextToken(inputData, scanPos)
+  let patternToken = nextToken(inputData, i)
   if patternToken.length == 0:
     break
   if containsPattern(inputData, textToken.first, textToken.length, patternToken.first, patternToken.length):

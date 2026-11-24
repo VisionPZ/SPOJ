@@ -24,7 +24,7 @@ Each digit costs one symbol count and one multiply-add, so one number costs O(n)
 
 A dash stands for five and a dot stands for one, so a count of each symbol gives the digit value. The letter S marks zero. The third position jumps from 20 to 360, which is 18 times 20. Every later position multiplies by 20, so the place values are 1, 20, 360, 7200, 144000, 2880000, and 57600000.
 
-The input lists digits from the highest position down. Digit number digitIndex of a number with digitCount digits uses placeValues[digitCount - 1 - digitIndex]. The total is the sum of each symbolValue times that weight.
+The input lists digits from the highest position down. For a number with `digitCount` digits, the digit at position `j` uses place value `placeValues[digitCount - 1 - j]`. The total is the sum of each symbol's value times that weight.
 
 A script-generated example uses the five-digit sample number:
 
@@ -55,46 +55,46 @@ const
 The scanner reads the digit count and stops at `dataLength`, the buffer length. It skips blank separator lines, so an empty line cannot shift the digits. The scan costs O(input bytes).
 
 ```nim
-proc nextDigitCount(inputData: string, scanPos: var int): int =
+proc nextDigitCount(inputData: string, i: var int): int =
   let dataLength = inputData.len
-  while scanPos < dataLength and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    inc scanPos
+  while i < dataLength and (inputData[i] < '0' or inputData[i] > '9'):
+    inc i
   result = 0
-  while scanPos < dataLength and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    result = result * 10 + (int(inputData[scanPos]) - firstDigitValue)
-    inc scanPos
+  while i < dataLength and inputData[i] >= '0' and inputData[i] <= '9':
+    result = result * 10 + (int(inputData[i]) - firstDigitValue)
+    inc i
 ```
 
 This step stops at the newline that ends the digit-count line. It leaves the scanner at the first symbol line. The step costs one line length.
 
 ```nim
-proc advanceToNextLine(inputData: string, scanPos: var int) =
+proc advanceToNextLine(inputData: string, i: var int) =
   let dataLength = inputData.len
-  while scanPos < dataLength and inputData[scanPos] != '\n':
-    inc scanPos
-  if scanPos < dataLength:
-    inc scanPos
+  while i < dataLength and inputData[i] != '\n':
+    inc i
+  if i < dataLength:
+    inc i
 ```
 
 The loop reads exactly one digit line, whose length is at most about 14 symbols. Counting characters ignores the spaces between symbols. The shell test returns zero before any dot or dash is used.
 
 ```nim
-proc readSymbolValue(inputData: string, scanPos: var int): int =
+proc readSymbolValue(inputData: string, i: var int): int =
   let dataLength = inputData.len
   var dotCount = 0
   var dashCount = 0
   var shellFound = false
-  while scanPos < dataLength and inputData[scanPos] != '\n':
-    let currentSymbol = inputData[scanPos]
+  while i < dataLength and inputData[i] != '\n':
+    let currentSymbol = inputData[i]
     if currentSymbol == dotSymbol:
       inc dotCount
     elif currentSymbol == dashSymbol:
       inc dashCount
     elif currentSymbol == zeroSymbol:
       shellFound = true
-    inc scanPos
-  if scanPos < dataLength:
-    inc scanPos
+    inc i
+  if i < dataLength:
+    inc i
   if shellFound:
     return 0
   result = dotCount + dashCount * dashValue
@@ -115,19 +115,19 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 var outputBuffer = ""
 while true:
-  let digitCount = nextDigitCount(inputData, scanPos)
+  let digitCount = nextDigitCount(inputData, i)
   if digitCount == 0:
     break
-  advanceToNextLine(inputData, scanPos)
+  advanceToNextLine(inputData, i)
   var decimalValue = 0'i64
-  var digitIndex = 0
-  while digitIndex < digitCount:
-    let symbolValue = readSymbolValue(inputData, scanPos)
-    decimalValue += int64(symbolValue) * placeValues[digitCount - 1 - digitIndex]
-    inc digitIndex
+  var j = 0
+  while j < digitCount:
+    let symbolValue = readSymbolValue(inputData, i)
+    decimalValue += int64(symbolValue) * placeValues[digitCount - 1 - j]
+    inc j
   outputBuffer.add $decimalValue
   outputBuffer.add '\n'
   if outputBuffer.len >= flushBlockBytes:

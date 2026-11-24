@@ -66,12 +66,12 @@ The scanner walks one input buffer. It skips separators and builds each integer 
 
 ```nim
 proc nextInt(): int =
-  while scanPos < inputData.len and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    scanPos += 1
+  while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
+    i += 1
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + (int(inputData[scanPos]) - firstDigitValue)
-    scanPos += 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + (int(inputData[i]) - firstDigitValue)
+    i += 1
   return value
 ```
 
@@ -93,10 +93,10 @@ The block size is 256 KiB. No write happens per segment. Output costs one pass o
 Heights use integer cross products, so no fraction is built.
 
 ```nim
-proc yNumerator(segIndex: int): int64 =
-  let span = int64(rightX[segIndex] - leftX[segIndex])
-  let slope = int64(rightY[segIndex] - leftY[segIndex])
-  result = int64(leftY[segIndex]) * span + slope * int64(currentX - leftX[segIndex])
+proc yNumerator(i: int): int64 =
+  let span = int64(rightX[i] - leftX[i])
+  let slope = int64(rightY[i] - leftY[i])
+  result = int64(leftY[i]) * span + slope * int64(currentX - leftX[i])
 
 proc higherAtX(firstSeg: int, secondSeg: int): bool =
   let firstSpan = int64(rightX[firstSeg] - leftX[firstSeg])
@@ -109,32 +109,32 @@ The product stays inside 64 bits for the given bounds. The comparison reads the 
 The sweep handles one endpoint coordinate per iteration.
 
 ```nim
-  for coordIndex in 0 ..< coordinateCount:
-    currentX = coordinateList[coordIndex]
+  for j in 0 ..< coordinateCount:
+    currentX = coordinateList[j]
     var coverCount = 0
     for segIndex in activeList:
       coverList[coverCount] = segIndex
       coverCount += 1
-    var startSeg = startHead[coordIndex]
+    var startSeg = startHead[j]
     while startSeg != -1:
       coverList[coverCount] = startSeg
       coverCount += 1
       startSeg = startNext[startSeg]
 
-    for sortIndex in 1 ..< coverCount:
-      let keySeg = coverList[sortIndex]
-      var posIndex = sortIndex - 1
-      while posIndex >= 0 and higherAtX(keySeg, coverList[posIndex]):
-        coverList[posIndex + 1] = coverList[posIndex]
-        posIndex -= 1
-      coverList[posIndex + 1] = keySeg
+    for k in 1 ..< coverCount:
+      let keySeg = coverList[k]
+      var l = k - 1
+      while l >= 0 and higherAtX(keySeg, coverList[l]):
+        coverList[l + 1] = coverList[l]
+        l -= 1
+      coverList[l + 1] = keySeg
 
-    var streamSeg = streamHead[coordIndex]
+    var streamSeg = streamHead[j]
     while streamSeg != -1:
       var receiverSeg = -1
       let sourceHeight = int64(lowerEndY[streamSeg])
-      for coverIndex in 0 ..< coverCount:
-        let candidateSeg = coverList[coverIndex]
+      for k in 0 ..< coverCount:
+        let candidateSeg = coverList[k]
         let span = int64(rightX[candidateSeg] - leftX[candidateSeg])
         if yNumerator(candidateSeg) < sourceHeight * span:
           receiverSeg = candidateSeg
@@ -142,17 +142,17 @@ The sweep handles one endpoint coordinate per iteration.
       receiverIndex[streamSeg] = receiverSeg
       streamSeg = streamNext[streamSeg]
 
-    if coordIndex < coordinateCount - 1:
-      for coverIndex in 0 ..< coverCount:
-        let candidateSeg = coverList[coverIndex]
-        if endCoordIndex[candidateSeg] != coordIndex:
-          directWater[candidateSeg] += int64(coordinateList[coordIndex + 1] - currentX)
+    if j < coordinateCount - 1:
+      for k in 0 ..< coverCount:
+        let candidateSeg = coverList[k]
+        if endCoordIndex[candidateSeg] != j:
+          directWater[candidateSeg] += int64(coordinateList[j + 1] - currentX)
           break
 
     nextActiveList.setLen(0)
-    for coverIndex in 0 ..< coverCount:
-      let candidateSeg = coverList[coverIndex]
-      if endCoordIndex[candidateSeg] != coordIndex:
+    for k in 0 ..< coverCount:
+      let candidateSeg = coverList[k]
+      if endCoordIndex[candidateSeg] != j:
         nextActiveList.add candidateSeg
     swap activeList, nextActiveList
 ```
@@ -163,9 +163,9 @@ The queue adds child water into each parent.
 
 ```nim
   queueList = @[]
-  for segIndex in 0 ..< segmentCount:
-    if pendingChildren[segIndex] == 0:
-      queueList.add segIndex
+  for j in 0 ..< segmentCount:
+    if pendingChildren[j] == 0:
+      queueList.add j
   var queueHead = 0
   while queueHead < queueList.len:
     let currentSeg = queueList[queueHead]

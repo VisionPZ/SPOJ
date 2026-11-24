@@ -27,10 +27,10 @@ These terms drive one step of the scan.
 
 | term | meaning |
 |---|---|
-| `doubled[leftIndex + matchCount]` | next bead of the left candidate |
-| `doubled[rightIndex + matchCount]` | next bead of the right candidate |
-| `leftIndex = leftIndex + matchCount + 1` | skip the left run after a loss |
-| `min(leftIndex, rightIndex)` | winning start, counted from zero |
+| `doubled[i + matchCount]` | next bead of the left candidate |
+| `doubled[j + matchCount]` | next bead of the right candidate |
+| `i = i + matchCount + 1` | skip the left run after a loss |
+| `min(i, j)` | winning start, counted from zero |
 
 Each step removes at least one bead from the race, so the scan stays linear.
 
@@ -68,25 +68,25 @@ var inputLine = ""
 while stdin.readLine(inputLine):
   inputData.add(inputLine)
   inputData.add('\n')
-var scanPos = 0
+var i = 0
 ```
 
-The read loop runs to EOF, so one pass loads all input. `scanPos` begins at zero and survives every reader call. Cost: one pass over the input bytes.
+The read loop runs to EOF, so one pass loads all input. `i` begins at zero and survives every reader call. Cost: one pass over the input bytes.
 
 **Byte readers.**
 
 ```nim
 proc skipToLowercase() =
-  while scanPos < inputData.len and (inputData[scanPos] < 'a' or inputData[scanPos] > 'z'):
-    inc scanPos
+  while i < inputData.len and (inputData[i] < 'a' or inputData[i] > 'z'):
+    inc i
 
 proc readCaseCount(): int =
   var value = 0
-  while scanPos < inputData.len and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    inc scanPos
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + (ord(inputData[scanPos]) - 48)
-    inc scanPos
+  while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
+    inc i
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + (ord(inputData[i]) - 48)
+    inc i
   return value
 ```
 
@@ -97,13 +97,13 @@ Both scanners stop at the first byte outside their class. `skipToLowercase` skip
 ```nim
 proc readNecklace(): string =
   skipToLowercase()
-  var start = scanPos
-  while scanPos < inputData.len and inputData[scanPos] >= 'a' and inputData[scanPos] <= 'z':
-    inc scanPos
-  return inputData[start .. scanPos - 1]
+  var j = i
+  while i < inputData.len and inputData[i] >= 'a' and inputData[i] <= 'z':
+    inc i
+  return inputData[j .. i - 1]
 ```
 
-The slice ends at `scanPos - 1`, the last bead byte. Reading by byte keeps stray spacing out of the necklace. Cost: one slice of n bytes per case.
+The slice ends at `i - 1`, the last bead byte. Reading by byte keeps stray spacing out of the necklace. Cost: one slice of n bytes per case.
 
 **Smallest rotation.**
 
@@ -113,23 +113,23 @@ proc worstDisjoinStart(beads: string): int =
   if beadCount < 2:
     return 0
   let doubled = beads & beads
-  var leftIndex = 0
-  var rightIndex = 1
-  while leftIndex < beadCount and rightIndex < beadCount:
+  var i = 0
+  var j = 1
+  while i < beadCount and j < beadCount:
     var matchCount = 0
-    while matchCount < beadCount and doubled[leftIndex + matchCount] == doubled[rightIndex + matchCount]:
+    while matchCount < beadCount and doubled[i + matchCount] == doubled[j + matchCount]:
       inc matchCount
     if matchCount >= beadCount:
       break
-    if doubled[leftIndex + matchCount] > doubled[rightIndex + matchCount]:
-      leftIndex = leftIndex + matchCount + 1
-      if leftIndex == rightIndex:
-        inc leftIndex
+    if doubled[i + matchCount] > doubled[j + matchCount]:
+      i = i + matchCount + 1
+      if i == j:
+        inc i
     else:
-      rightIndex = rightIndex + matchCount + 1
-      if leftIndex == rightIndex:
-        inc rightIndex
-  return min(leftIndex, rightIndex)
+      j = j + matchCount + 1
+      if i == j:
+        inc j
+  return min(i, j)
 ```
 
 The outer loop stops when either start reaches `beadCount`. The inner loop counts equal beads, so one step skips a whole run. `doubled` holds every rotation, so no rotation string is built. Cost: O(n) comparisons per necklace.
@@ -152,7 +152,7 @@ proc flushOutput() =
 
 ```nim
 let caseCount = readCaseCount()
-for caseIndex in 0 ..< caseCount:
+for i in 0 ..< caseCount:
   let beads = readNecklace()
   outputBuffer.add($(worstDisjoinStart(beads) + 1))
   outputBuffer.add('\n')
@@ -161,7 +161,7 @@ for caseIndex in 0 ..< caseCount:
 stdout.write(outputBuffer)
 ```
 
-`caseIndex` runs once per necklace. Adding 1 converts the zero-based start into the printed bead number. The final write covers the tail. Cost: one answer per necklace.
+`i` runs once per necklace. Adding 1 converts the zero-based start into the printed bead number. The final write covers the tail. Cost: one answer per necklace.
 
 ## Complexity
 

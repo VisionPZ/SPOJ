@@ -3,10 +3,10 @@ const unreachableCost = 1000000000
 
 proc lessLex(leftSeq, rightSeq: seq[int]): bool =
   let commonLength = min(leftSeq.len, rightSeq.len)
-  for index in 0 ..< commonLength:
-    if leftSeq[index] < rightSeq[index]:
+  for i in 0 ..< commonLength:
+    if leftSeq[i] < rightSeq[i]:
       return true
-    if leftSeq[index] > rightSeq[index]:
+    if leftSeq[i] > rightSeq[i]:
       return false
   return leftSeq.len < rightSeq.len
 
@@ -18,20 +18,20 @@ proc appendOutput(outputBuffer: var string, text: string) =
 
 proc buildProgram(targetText: string, costTable, dcountTable: seq[seq[int]], startPos, endPos: int): string =
   var reversedKeys = newSeq[char]()
-  var leftEdge = startPos
-  var rightEdge = endPos
-  while leftEdge < rightEdge:
-    let appendKeepsCount = costTable[leftEdge][rightEdge] == costTable[leftEdge][rightEdge - 1] + 1
-    let appendKeepsDCount = dcountTable[leftEdge][rightEdge] == dcountTable[leftEdge][rightEdge - 1]
+  var i = startPos
+  var j = endPos
+  while i < j:
+    let appendKeepsCount = costTable[i][j] == costTable[i][j - 1] + 1
+    let appendKeepsDCount = dcountTable[i][j] == dcountTable[i][j - 1]
     if appendKeepsCount and appendKeepsDCount:
-      reversedKeys.add(targetText[rightEdge - 1])
-      rightEdge -= 1
+      reversedKeys.add(targetText[j - 1])
+      j -= 1
     else:
       reversedKeys.add('d')
-      rightEdge = leftEdge + (rightEdge - leftEdge) div 2
+      j = i + (j - i) div 2
   var programText = newString(reversedKeys.len)
-  for index in 0 ..< reversedKeys.len:
-    programText[index] = reversedKeys[reversedKeys.len - 1 - index]
+  for i in 0 ..< reversedKeys.len:
+    programText[i] = reversedKeys[reversedKeys.len - 1 - i]
   return programText
 
 proc solveCase(targetText: string, outputBuffer: var string) =
@@ -39,77 +39,77 @@ proc solveCase(targetText: string, outputBuffer: var string) =
   var costTable = newSeq[seq[int]](textLength + 1)
   var dcountTable = newSeq[seq[int]](textLength + 1)
   var lcpTable = newSeq[seq[int]](textLength + 1)
-  for rowIndex in 0 .. textLength:
-    costTable[rowIndex] = newSeq[int](textLength + 1)
-    dcountTable[rowIndex] = newSeq[int](textLength + 1)
-    lcpTable[rowIndex] = newSeq[int](textLength + 1)
-  var leftPos = textLength - 1
-  while leftPos >= 0:
-    var rightPos = textLength - 1
-    while rightPos >= 0:
-      if targetText[leftPos] == targetText[rightPos]:
-        lcpTable[leftPos][rightPos] = lcpTable[leftPos + 1][rightPos + 1] + 1
-      rightPos -= 1
-    leftPos -= 1
+  for i in 0 .. textLength:
+    costTable[i] = newSeq[int](textLength + 1)
+    dcountTable[i] = newSeq[int](textLength + 1)
+    lcpTable[i] = newSeq[int](textLength + 1)
+  var i = textLength - 1
+  while i >= 0:
+    var j = textLength - 1
+    while j >= 0:
+      if targetText[i] == targetText[j]:
+        lcpTable[i][j] = lcpTable[i + 1][j + 1] + 1
+      j -= 1
+    i -= 1
   for segmentLength in 1 .. textLength:
-    for startPos in 0 .. (textLength - segmentLength):
-      let endPosition = startPos + segmentLength
-      var bestCost = costTable[startPos][endPosition - 1] + 1
-      var bestDCount = dcountTable[startPos][endPosition - 1]
+    for k in 0 .. (textLength - segmentLength):
+      let j = k + segmentLength
+      var bestCost = costTable[k][j - 1] + 1
+      var bestDCount = dcountTable[k][j - 1]
       if segmentLength mod 2 == 0:
         let halfLength = segmentLength div 2
-        if lcpTable[startPos][startPos + halfLength] >= halfLength:
-          let doubleCost = costTable[startPos][startPos + halfLength] + 1
-          let doubleDCount = dcountTable[startPos][startPos + halfLength] + 1
+        if lcpTable[k][k + halfLength] >= halfLength:
+          let doubleCost = costTable[k][k + halfLength] + 1
+          let doubleDCount = dcountTable[k][k + halfLength] + 1
           if doubleCost < bestCost or (doubleCost == bestCost and doubleDCount < bestDCount):
             bestCost = doubleCost
             bestDCount = doubleDCount
-      costTable[startPos][endPosition] = bestCost
-      dcountTable[startPos][endPosition] = bestDCount
+      costTable[k][j] = bestCost
+      dcountTable[k][j] = bestDCount
   var dpCost = newSeq[int](textLength + 1)
   var dpLines = newSeq[int](textLength + 1)
   var dpPrevious = newSeq[int](textLength + 1)
   var dpCostSeqs = newSeq[seq[int]](textLength + 1)
-  for index in 0 .. textLength:
-    dpCost[index] = unreachableCost
+  for i in 0 .. textLength:
+    dpCost[i] = unreachableCost
   dpCost[0] = 0
-  for endPosition in 1 .. textLength:
-    for splitPos in 0 ..< endPosition:
-      let lineCost = costTable[splitPos][endPosition]
-      let candidateCost = dpCost[splitPos] + lineCost + 1
-      let candidateLines = dpLines[splitPos] + 1
-      var candidateSeq = newSeq[int](dpCostSeqs[splitPos].len + 1)
-      for index in 0 ..< dpCostSeqs[splitPos].len:
-        candidateSeq[index] = dpCostSeqs[splitPos][index]
+  for j in 1 .. textLength:
+    for k in 0 ..< j:
+      let lineCost = costTable[k][j]
+      let candidateCost = dpCost[k] + lineCost + 1
+      let candidateLines = dpLines[k] + 1
+      var candidateSeq = newSeq[int](dpCostSeqs[k].len + 1)
+      for i in 0 ..< dpCostSeqs[k].len:
+        candidateSeq[i] = dpCostSeqs[k][i]
       candidateSeq[candidateSeq.len - 1] = lineCost
       var isBetter = false
-      if candidateCost < dpCost[endPosition]:
+      if candidateCost < dpCost[j]:
         isBetter = true
-      elif candidateCost == dpCost[endPosition]:
-        if candidateLines < dpLines[endPosition]:
+      elif candidateCost == dpCost[j]:
+        if candidateLines < dpLines[j]:
           isBetter = true
-        elif candidateLines == dpLines[endPosition]:
-          if lessLex(candidateSeq, dpCostSeqs[endPosition]):
+        elif candidateLines == dpLines[j]:
+          if lessLex(candidateSeq, dpCostSeqs[j]):
             isBetter = true
       if isBetter:
-        dpCost[endPosition] = candidateCost
-        dpLines[endPosition] = candidateLines
-        dpPrevious[endPosition] = splitPos
-        dpCostSeqs[endPosition] = candidateSeq
+        dpCost[j] = candidateCost
+        dpLines[j] = candidateLines
+        dpPrevious[j] = k
+        dpCostSeqs[j] = candidateSeq
   let totalKeystrokes = dpCost[textLength] + 1
   var boundaryList = newSeq[int]()
-  var boundaryPos = textLength
-  while boundaryPos > 0:
-    boundaryList.add(boundaryPos)
-    boundaryPos = dpPrevious[boundaryPos]
+  var l = textLength
+  while l > 0:
+    boundaryList.add(l)
+    l = dpPrevious[l]
   boundaryList.add(0)
   var forwardBoundaries = newSeq[int]()
-  for index in 0 ..< boundaryList.len:
-    forwardBoundaries.add(boundaryList[boundaryList.len - 1 - index])
+  for i in 0 ..< boundaryList.len:
+    forwardBoundaries.add(boundaryList[boundaryList.len - 1 - i])
   appendOutput(outputBuffer, $totalKeystrokes)
   appendOutput(outputBuffer, "\n")
-  for boundaryIndex in 0 ..< (forwardBoundaries.len - 1):
-    let programText = buildProgram(targetText, costTable, dcountTable, forwardBoundaries[boundaryIndex], forwardBoundaries[boundaryIndex + 1])
+  for j in 0 ..< (forwardBoundaries.len - 1):
+    let programText = buildProgram(targetText, costTable, dcountTable, forwardBoundaries[j], forwardBoundaries[j + 1])
     appendOutput(outputBuffer, programText)
     appendOutput(outputBuffer, "\n")
   appendOutput(outputBuffer, "\n")
@@ -121,17 +121,17 @@ proc main() =
     inputData.add(inputLine)
     inputData.add('\n')
   var outputBuffer = ""
-  var scanPos = 0
-  var caseIndex = 0
-  while scanPos < inputData.len and caseIndex < 10:
-    var lineEnd = scanPos
-    while lineEnd < inputData.len and inputData[lineEnd] != '\n':
-      lineEnd += 1
-    var targetText = inputData[scanPos ..< lineEnd]
+  var i = 0
+  var j = 0
+  while i < inputData.len and j < 10:
+    var k = i
+    while k < inputData.len and inputData[k] != '\n':
+      k += 1
+    var targetText = inputData[i ..< k]
     if targetText.len > 0 and targetText[targetText.len - 1] == '\r':
       targetText.setLen(targetText.len - 1)
-    scanPos = lineEnd + 1
-    caseIndex += 1
+    i = k + 1
+    j += 1
     solveCase(targetText, outputBuffer)
   if outputBuffer.len > 0:
     stdout.write(outputBuffer)

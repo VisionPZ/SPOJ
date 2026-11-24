@@ -31,7 +31,7 @@ The tree stores the maximum free space in each range of ship indices. These line
 - `leftmostFitting` descends to the lowest leaf with free space at least the threshold, and returns -1 when the root maximum is smaller.
 - `leftChild` holds the maximum of the left half of the current range. A left maximum of at least the threshold puts the answer in the left half.
 - `updateCapacity` writes one leaf and recomputes each parent as the larger of its two children.
-- `fitCount = remainingCapacity[shipIndex] div blockVolume` counts the containers that fit in one ship.
+- `fitCount = remainingCapacity[i] div blockVolume` counts the containers that fit in one ship.
 - `take` is the smaller of the remaining block count and fitCount.
 - Opening a ship stores `capacity - take * blockVolume` as its free space.
 
@@ -62,20 +62,20 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 
-proc skipSpaces(data: string, position: var int) =
-  while position < data.len and data[position] <= ' ':
-    position += 1
+proc skipSpaces(data: string, i: var int) =
+  while i < data.len and data[i] <= ' ':
+    i += 1
 
 var outputBuffer = ""
 
@@ -94,8 +94,8 @@ var remainingCapacity: array[maxShips + 4, int]
 var shipCount = 0
 var capacity = 0
 
-proc updateCapacity(shipIndex: int, value: int) =
-  var node = treeSize + shipIndex
+proc updateCapacity(i: int, value: int) =
+  var node = treeSize + i
   tree[node] = value
   while node > 1:
     node = node shr 1
@@ -124,8 +124,8 @@ The outer loop runs while the block still has containers. The first branch opens
 proc placeContainers(repeatCount: int, blockVolume: int) =
   var remaining = repeatCount
   while remaining > 0:
-    var shipIndex = leftmostFitting(blockVolume)
-    if shipIndex < 0:
+    var i = leftmostFitting(blockVolume)
+    if i < 0:
       let perShip = capacity div blockVolume
       while remaining > 0:
         let take = if remaining < perShip: remaining else: perShip
@@ -134,45 +134,45 @@ proc placeContainers(repeatCount: int, blockVolume: int) =
         shipCount += 1
         remaining -= take
       return
-    while remaining > 0 and shipIndex < shipCount:
-      let fitCount = remainingCapacity[shipIndex] div blockVolume
+    while remaining > 0 and i < shipCount:
+      let fitCount = remainingCapacity[i] div blockVolume
       if fitCount == 0:
-        shipIndex += 1
+        i += 1
       else:
         let take = if remaining < fitCount: remaining else: fitCount
-        remainingCapacity[shipIndex] -= take * blockVolume
-        updateCapacity(shipIndex, remainingCapacity[shipIndex])
+        remainingCapacity[i] -= take * blockVolume
+        updateCapacity(i, remainingCapacity[i])
         remaining -= take
         if remaining > 0:
-          shipIndex += 1
+          i += 1
 ```
 
 The case loop reads the capacity and the container count, then clears the tree and the ship count. Each token either starts a block or gives one volume. The waste sums the free space of the used ships, and one final write flushes the buffer.
 
 ```nim
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 0..<caseCount:
-  capacity = nextInt(inputData, scanPos)
-  let containerCount = nextInt(inputData, scanPos)
-  for index in 0..<tree.len:
-    tree[index] = 0
+let caseCount = nextInt(inputData, i)
+for j in 0..<caseCount:
+  capacity = nextInt(inputData, i)
+  let containerCount = nextInt(inputData, i)
+  for k in 0..<tree.len:
+    tree[k] = 0
   shipCount = 0
   var processed = 0
   while processed < containerCount:
-    skipSpaces(inputData, scanPos)
-    if scanPos < inputData.len and (inputData[scanPos] == 'b' or inputData[scanPos] == 'B'):
-      scanPos += 1
-      let repeatCount = nextInt(inputData, scanPos)
-      let blockVolume = nextInt(inputData, scanPos)
+    skipSpaces(inputData, i)
+    if i < inputData.len and (inputData[i] == 'b' or inputData[i] == 'B'):
+      i += 1
+      let repeatCount = nextInt(inputData, i)
+      let blockVolume = nextInt(inputData, i)
       placeContainers(repeatCount, blockVolume)
       processed += repeatCount
     else:
-      let singleVolume = nextInt(inputData, scanPos)
+      let singleVolume = nextInt(inputData, i)
       placeContainers(1, singleVolume)
       processed += 1
   var totalWaste: int64 = 0
-  for index in 0..<shipCount:
-    totalWaste += int64(remainingCapacity[index])
+  for k in 0..<shipCount:
+    totalWaste += int64(remainingCapacity[k])
   appendOutput($shipCount & " " & $totalWaste)
   outputBuffer.add '\n'
 

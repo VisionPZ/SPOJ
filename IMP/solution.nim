@@ -3,19 +3,19 @@ import math
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 17
 
-proc nextSigned(inputData: string, scanPos: var int): int64 =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ':
-    scanPos = scanPos + 1
+proc nextSigned(inputData: string, i: var int): int64 =
+  while i < inputData.len and inputData[i] <= ' ':
+    i = i + 1
   var signValue = 1'i64
-  if scanPos < inputData.len and inputData[scanPos] == '-':
+  if i < inputData.len and inputData[i] == '-':
     signValue = -1'i64
-    scanPos = scanPos + 1
-  elif scanPos < inputData.len and inputData[scanPos] == '+':
-    scanPos = scanPos + 1
+    i = i + 1
+  elif i < inputData.len and inputData[i] == '+':
+    i = i + 1
   var value = 0'i64
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int64(int(inputData[scanPos]) - firstDigitValue)
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int64(int(inputData[i]) - firstDigitValue)
+    i = i + 1
   return signValue * value
 
 proc bezoutCoefficients(firstValue, secondValue: int64): tuple[gcdValue, firstCoef, secondCoef: int64] =
@@ -61,21 +61,21 @@ proc shortestDistance(firstX, firstY, secondX, secondY: int64): int64 =
   if stepSize > 0:
     bestValue = min(bestValue, stepSize)
   let maxIndex = searchRadius div gcdX
-  var index = -maxIndex
-  while index <= maxIndex:
-    if index != 0:
+  var i = -maxIndex
+  while i <= maxIndex:
+    if i != 0:
       var distance: int64
       if stepSize == 0:
-        distance = abs(index * stepY)
+        distance = abs(i * stepY)
       else:
-        var residue = (index * stepY) mod stepSize
+        var residue = (i * stepY) mod stepSize
         if residue < 0:
           residue = residue + stepSize
         distance = min(residue, stepSize - residue)
-      let candidate = abs(gcdX * index) + distance
+      let candidate = abs(gcdX * i) + distance
       if candidate < bestValue:
         bestValue = candidate
-    index = index + 1
+    i = i + 1
   return bestValue
 
 var inputData: string
@@ -83,17 +83,17 @@ var line: string
 while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
-var scanPos = 0
+var i = 0
 var outputBuffer: string
 while true:
-  while scanPos < inputData.len and inputData[scanPos] <= ' ':
-    scanPos = scanPos + 1
-  if scanPos >= inputData.len:
+  while i < inputData.len and inputData[i] <= ' ':
+    i = i + 1
+  if i >= inputData.len:
     break
-  let firstX = nextSigned(inputData, scanPos)
-  let firstY = nextSigned(inputData, scanPos)
-  let secondX = nextSigned(inputData, scanPos)
-  let secondY = nextSigned(inputData, scanPos)
+  let firstX = nextSigned(inputData, i)
+  let firstY = nextSigned(inputData, i)
+  let secondX = nextSigned(inputData, i)
+  let secondY = nextSigned(inputData, i)
   outputBuffer.add $shortestDistance(firstX, firstY, secondX, secondY)
   outputBuffer.add "\n"
   if outputBuffer.len >= flushBlockBytes:

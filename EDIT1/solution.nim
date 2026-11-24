@@ -7,8 +7,8 @@ proc doubleLine(line: var string) =
   let originalLength = line.len
   let doubledLength = originalLength * 2
   line.setLen(doubledLength)
-  for idx in 0 ..< originalLength:
-    line[originalLength + idx] = line[idx]
+  for i in 0 ..< originalLength:
+    line[originalLength + i] = line[i]
 
 var inputData = newString(readChunkBytes)
 var bytesRead = 0
@@ -23,12 +23,12 @@ inputData.setLen(bytesRead)
 
 var currentLine = ""
 var outputBuffer = ""
-var scanPos = 0
+var i = 0
 
-while scanPos < inputData.len:
-  let keyByte = inputData[scanPos]
+while i < inputData.len:
+  let keyByte = inputData[i]
   if keyByte == newlineKey:
-    scanPos += 1
+    i += 1
     if currentLine.len == 0:
       break
     outputBuffer.add currentLine
@@ -38,11 +38,11 @@ while scanPos < inputData.len:
       stdout.write outputBuffer
       outputBuffer.setLen(0)
   elif keyByte == duplicateKey:
-    scanPos += 1
+    i += 1
     doubleLine(currentLine)
   else:
     currentLine.add keyByte
-    scanPos += 1
+    i += 1
 
 if currentLine.len > 0:
   outputBuffer.add currentLine

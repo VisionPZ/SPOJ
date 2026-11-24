@@ -84,39 +84,39 @@ type
     firstCuts: int
 ```
 
-The first loop ends at the first non-digit or at the buffer end. `scanPos` is a `var` parameter, so the position survives the call. A digit byte minus 48 gives its value. The cost is one pass over the digits.
+The first loop ends at the first non-digit or at the buffer end. `i` is a `var` parameter, so the position survives the call. A digit byte minus 48 gives its value. The cost is one pass over the digits.
 
 ```nim
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - 48
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - 48
+    i = i + 1
   return value
 ```
 
-`scanPos` ends at the first symbol outside the word. The word is a slice of `inputData`, so no copy is made. The cost is one pass over the word.
+`i` ends at the first symbol outside the word. The word is a slice of `inputData`, so no copy is made. The cost is one pass over the word.
 
 ```nim
-proc nextBitWordStart(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
-  let wordStart = scanPos
-  while scanPos < inputData.len and (inputData[scanPos] == '0' or inputData[scanPos] == '1'):
-    scanPos = scanPos + 1
+proc nextBitWordStart(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
+  let wordStart = i
+  while i < inputData.len and (inputData[i] == '0' or inputData[i] == '1'):
+    i = i + 1
   return wordStart
 ```
 
 The `>=` sends a tie to the left child, which is cut first. `wordEnd` keeps a missing child from reading the next case. One node costs one call plus two child reports.
 
 ```nim
-proc parseSubtree(inputData: string, wordEnd: int, scanPos: var int): TreeInfo =
-  if scanPos >= wordEnd or inputData[scanPos] == '0':
-    if scanPos < wordEnd: scanPos = scanPos + 1
+proc parseSubtree(inputData: string, wordEnd: int, i: var int): TreeInfo =
+  if i >= wordEnd or inputData[i] == '0':
+    if i < wordEnd: i = i + 1
     return TreeInfo(totalCuts: 0, maxDepth: 0, firstCuts: 0)
-  scanPos = scanPos + 1
-  let leftInfo = parseSubtree(inputData, wordEnd, scanPos)
-  let rightInfo = parseSubtree(inputData, wordEnd, scanPos)
+  i = i + 1
+  let leftInfo = parseSubtree(inputData, wordEnd, i)
+  let rightInfo = parseSubtree(inputData, wordEnd, i)
   result.totalCuts = 1 + leftInfo.totalCuts + rightInfo.totalCuts
   result.maxDepth = 1 + max(leftInfo.maxDepth, rightInfo.maxDepth)
   if leftInfo.maxDepth >= rightInfo.maxDepth:
@@ -134,15 +134,15 @@ while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
 
-var scanPos = 0
+var i = 0
 var outputBuffer: string
 while true:
-  let declaredLength = nextInt(inputData, scanPos)
+  let declaredLength = nextInt(inputData, i)
   if declaredLength == 0: break
-  let wordStart = nextBitWordStart(inputData, scanPos)
-  var wordPos = wordStart
-  let wordEnd = scanPos
-  let subtreeInfo = parseSubtree(inputData, wordEnd, wordPos)
+  let wordStart = nextBitWordStart(inputData, i)
+  var j = wordStart
+  let wordEnd = i
+  let subtreeInfo = parseSubtree(inputData, wordEnd, j)
   outputBuffer.add $subtreeInfo.firstCuts
   outputBuffer.add "\n"
   if outputBuffer.len >= flushBlockBytes:

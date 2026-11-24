@@ -7,52 +7,52 @@ const flushBlockBytes = 1 shl 16
 var startArea: array[0..levelLimit, int64]
 var endArea: array[0..levelLimit, int64]
 
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': inc scanPos
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ': inc i
   result = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0':
-    result = result * 10 + (int(inputData[scanPos]) - firstDigitValue)
-    inc scanPos
+  while i < inputData.len and inputData[i] >= '0':
+    result = result * 10 + (int(inputData[i]) - firstDigitValue)
+    inc i
 
 proc solve() =
   let inputData = stdin.readAll()
-  var scanPos = 0
-  let dataSetCount = nextInt(inputData, scanPos)
+  var i = 0
+  let dataSetCount = nextInt(inputData, i)
   var outputBuffer = ""
   var clearedThrough = 0
-  for dataSetIndex in 0 ..< dataSetCount:
-    for levelIndex in 0 .. clearedThrough:
-      startArea[levelIndex] = 0
-      endArea[levelIndex] = 0
-    let cisternCount = nextInt(inputData, scanPos)
+  for j in 0 ..< dataSetCount:
+    for k in 0 .. clearedThrough:
+      startArea[k] = 0
+      endArea[k] = 0
+    let cisternCount = nextInt(inputData, i)
     var highestLevel = 0
-    for cisternIndex in 0 ..< cisternCount:
-      let baseLevel = nextInt(inputData, scanPos)
-      let cisternHeight = nextInt(inputData, scanPos)
-      let cisternWidth = nextInt(inputData, scanPos)
-      let cisternDepth = nextInt(inputData, scanPos)
+    for k in 0 ..< cisternCount:
+      let baseLevel = nextInt(inputData, i)
+      let cisternHeight = nextInt(inputData, i)
+      let cisternWidth = nextInt(inputData, i)
+      let cisternDepth = nextInt(inputData, i)
       let crossArea = int64(cisternWidth * cisternDepth)
       let topLevel = baseLevel + cisternHeight
       startArea[baseLevel] += crossArea
       endArea[topLevel] += crossArea
       if topLevel > highestLevel: highestLevel = topLevel
     clearedThrough = highestLevel
-    let waterVolume = int64(nextInt(inputData, scanPos))
+    let waterVolume = int64(nextInt(inputData, i))
     var activeArea: int64 = 0
     var filledVolume: int64 = 0
     var reachedLevel = 0.0
     var answerFound = false
-    var levelIndex = 0
-    while levelIndex <= highestLevel:
-      activeArea += startArea[levelIndex] - endArea[levelIndex]
+    var k = 0
+    while k <= highestLevel:
+      activeArea += startArea[k] - endArea[k]
       if activeArea > 0:
         let neededVolume = waterVolume - filledVolume
         if neededVolume <= activeArea:
-          reachedLevel = float(levelIndex * activeArea + neededVolume) / float(activeArea)
+          reachedLevel = float(k * activeArea + neededVolume) / float(activeArea)
           answerFound = true
           break
         filledVolume += activeArea
-      inc levelIndex
+      inc k
     if answerFound:
       outputBuffer.add(formatFloat(reachedLevel, ffDecimal, 2))
     else:

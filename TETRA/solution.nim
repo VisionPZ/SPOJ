@@ -43,12 +43,12 @@ proc fixedString(value: float, places: int): string =
   result.add fractionText
   return result
 
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - 48
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - 48
+    i = i + 1
   return value
 
 var inputData: string
@@ -56,16 +56,16 @@ var line: string
 while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
-var scanPos = 0
-var caseCount = nextInt(inputData, scanPos)
+var i = 0
+var caseCount = nextInt(inputData, i)
 var outputBuffer: string
 for _ in 1 .. caseCount:
-  var edgeWX = float(nextInt(inputData, scanPos))
-  var edgeWY = float(nextInt(inputData, scanPos))
-  var edgeWZ = float(nextInt(inputData, scanPos))
-  var edgeXY = float(nextInt(inputData, scanPos))
-  var edgeXZ = float(nextInt(inputData, scanPos))
-  var edgeYZ = float(nextInt(inputData, scanPos))
+  var edgeWX = float(nextInt(inputData, i))
+  var edgeWY = float(nextInt(inputData, i))
+  var edgeWZ = float(nextInt(inputData, i))
+  var edgeXY = float(nextInt(inputData, i))
+  var edgeXZ = float(nextInt(inputData, i))
+  var edgeYZ = float(nextInt(inputData, i))
   var surface = triangleArea(edgeWX, edgeWY, edgeXY) +
                 triangleArea(edgeWX, edgeWZ, edgeXZ) +
                 triangleArea(edgeWY, edgeWZ, edgeYZ) +

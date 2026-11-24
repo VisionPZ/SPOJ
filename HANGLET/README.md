@@ -66,17 +66,17 @@ The loop bound is the fixed register count of 32. Storing nodes by index avoids 
 Negation reuses a cached answer per node. The recursion follows at most 32 levels, one per variable.
 
 ```
-proc negateNode(nodeIndex: int): int =
-  if nodeIndex == falseNode:
+proc negateNode(i: int): int =
+  if i == falseNode:
     return trueNode
-  if nodeIndex == trueNode:
+  if i == trueNode:
     return falseNode
-  if nodeIndex < negatedNodes.len and negatedNodes[nodeIndex] >= 0:
-    return negatedNodes[nodeIndex]
-  while negatedNodes.len <= nodeIndex:
+  if i < negatedNodes.len and negatedNodes[i] >= 0:
+    return negatedNodes[i]
+  while negatedNodes.len <= i:
     negatedNodes.add -1
-  result = makeNode(nodeVars[nodeIndex], negateNode(nodeLows[nodeIndex]), negateNode(nodeHighs[nodeIndex]))
-  negatedNodes[nodeIndex] = result
+  result = makeNode(nodeVars[i], negateNode(nodeLows[i]), negateNode(nodeHighs[i]))
+  negatedNodes[i] = result
 ```
 
 The cache lookup prevents repeated work on shared subformulas. A missing entry costs one node per level.
@@ -117,11 +117,11 @@ when isMainModule:
     inputData.add '\n'
   nodeKeys = initTable[int64, int]()
   applyKeys = initTable[int64, int]()
-  var scanPos = 0
-  let testCount = scanInt(inputData, scanPos)
+  var i = 0
+  let testCount = scanInt(inputData, i)
   var outputBuffer = ""
-  for caseIndex in 0 ..< testCount:
-    let program = readProgram(inputData, scanPos)
+  for j in 0 ..< testCount:
+    let program = readProgram(inputData, i)
     let answer = shortestRunningTime(program)
     outputBuffer.add answer
     outputBuffer.add '\n'

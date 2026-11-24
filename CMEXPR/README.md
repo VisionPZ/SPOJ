@@ -55,7 +55,7 @@ const
 
 var
   inputData = ""
-  scanPos = 0
+  i = 0
   outputBuffer = ""
   nodeOp: array[0 .. maxNodeCount - 1, char]
   nodeLeft: array[0 .. maxNodeCount - 1, int]
@@ -72,23 +72,23 @@ The arrays hold 512 nodes, which covers the 250-character limit. The buffers and
 
 ```
 proc nextInt(): int =
-  while scanPos < inputData.len and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    inc scanPos
+  while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
+    inc i
   result = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    result = result * 10 + (int(inputData[scanPos]) - firstDigitValue)
-    inc scanPos
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    result = result * 10 + (int(inputData[i]) - firstDigitValue)
+    inc i
 
 proc readExpressionToken(token: var string) =
   token.setLen 0
-  while scanPos < inputData.len and inputData[scanPos] <= ' ':
-    inc scanPos
-  while scanPos < inputData.len and inputData[scanPos] > ' ':
-    token.add inputData[scanPos]
-    inc scanPos
+  while i < inputData.len and inputData[i] <= ' ':
+    inc i
+  while i < inputData.len and inputData[i] > ' ':
+    token.add inputData[i]
+    inc i
 ```
 
-nextInt skips whitespace and stops at the first non-digit. readExpressionToken stops at whitespace, so a newline ends an expression. Both scans advance scanPos once per character and cost O(L).
+nextInt skips whitespace and stops at the first non-digit. readExpressionToken stops at whitespace, so a newline ends an expression. Both scans advance i once per character and cost O(L).
 
 ```
 proc operatorPrecedence(op: char): int =
@@ -99,14 +99,14 @@ proc operatorPrecedence(op: char): int =
 
 proc applyOperator() =
   dec valueCount
-  let rightIndex = valueStack[valueCount]
+  let j = valueStack[valueCount]
   dec valueCount
-  let leftIndex = valueStack[valueCount]
+  let i = valueStack[valueCount]
   dec operatorCount
   nodeOp[nodeCount] = operatorStack[operatorCount]
   nodeIsLeaf[nodeCount] = false
-  nodeLeft[nodeCount] = leftIndex
-  nodeRight[nodeCount] = rightIndex
+  nodeLeft[nodeCount] = i
+  nodeRight[nodeCount] = j
   valueStack[valueCount] = nodeCount
   inc valueCount
   inc nodeCount
@@ -178,7 +178,7 @@ while readLine(stdin, inputLine):
 
 let expressionCount = nextInt()
 var expressionToken = ""
-for expressionIndex in 0 .. expressionCount - 1:
+for j in 0 .. expressionCount - 1:
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0

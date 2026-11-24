@@ -65,15 +65,15 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 ```
 
@@ -92,17 +92,17 @@ proc appendOutput(text: string) =
 One buffer collects all answers, and a write happens only after 256 KiB collects. Reusing the buffer with `setLen 0` avoids a new allocation at each flush. The cost is one string add per case.
 
 ```nim
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 0..<caseCount:
-  let sideCount = nextInt(inputData, scanPos)
+let caseCount = nextInt(inputData, i)
+for j in 0..<caseCount:
+  let sideCount = nextInt(inputData, i)
   var latticeX: int64 = 0
   var latticeY: int64 = 0
   var doubleArea: int64 = 0
   var totalRhombsA: int64 = 0
   var totalRhombsC: int64 = 0
-  for sideIndex in 0..<sideCount:
-    let direction = nextInt(inputData, scanPos)
-    let sideLength = int64(nextInt(inputData, scanPos))
+  for k in 0..<sideCount:
+    let direction = nextInt(inputData, i)
+    let sideLength = int64(nextInt(inputData, i))
     var nextX = latticeX
     var nextY = latticeY
     case direction

@@ -46,14 +46,14 @@ The first case shares a 1-bit and prints 0. The second case shares none and prin
 This scanner reads one integer from the input buffer.
 
 ```
-proc nextInt(inputData: string, scanPos: var int): int =
+proc nextInt(inputData: string, i: var int): int =
   const firstDigitValue = 48
-  while scanPos < inputData.len and ord(inputData[scanPos]) < firstDigitValue:
-    inc scanPos
+  while i < inputData.len and ord(inputData[i]) < firstDigitValue:
+    inc i
   result = 0
-  while scanPos < inputData.len and ord(inputData[scanPos]) >= firstDigitValue:
-    result = result * 10 + ord(inputData[scanPos]) - firstDigitValue
-    inc scanPos
+  while i < inputData.len and ord(inputData[i]) >= firstDigitValue:
+    result = result * 10 + ord(inputData[i]) - firstDigitValue
+    inc i
 ```
 
 Every byte below the digit zero is a space or a line break. The scanner skips those bytes and builds a number from its digits. It walks the buffer once, so parsing costs O(input bytes).
@@ -76,11 +76,11 @@ The main loop reads both values, applies the bit test, and buffers the answer.
 
 ```
 var outputBuffer = newStringOfCap(flushBlockBytes)
-var scanPos = 0
-let dataSetCount = nextInt(inputData, scanPos)
-for caseIndex in 0 ..< dataSetCount:
-  let totalItems = nextInt(inputData, scanPos)
-  let subsetCount = nextInt(inputData, scanPos)
+var i = 0
+let dataSetCount = nextInt(inputData, i)
+for j in 0 ..< dataSetCount:
+  let totalItems = nextInt(inputData, i)
+  let subsetCount = nextInt(inputData, i)
   let extraItems = totalItems - subsetCount
   let maskBits = (subsetCount - 1) div 2
   if (extraItems and maskBits) == 0:

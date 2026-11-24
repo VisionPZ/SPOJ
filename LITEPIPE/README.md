@@ -68,13 +68,13 @@ proc feasibleAt(limitX: float, count: int): bool =
     pointY[pointCount] = upperY[k]
     pointCount += 1
   if pointCount < count and pointCount > 0:
-    let leftIndex = pointCount - 1
-    let rightIndex = pointCount
-    let span = upperX[rightIndex] - upperX[leftIndex]
-    let weight = (limitX - upperX[leftIndex]) / span
+    let i = pointCount - 1
+    let j = pointCount
+    let span = upperX[j] - upperX[i]
+    let weight = (limitX - upperX[i]) / span
     pointX[pointCount] = limitX
-    pointY[pointCount] = upperY[leftIndex] +
-        weight * (upperY[rightIndex] - upperY[leftIndex])
+    pointY[pointCount] = upperY[i] +
+        weight * (upperY[j] - upperY[i])
     pointCount += 1
   var slopeLow = -1e100
   var slopeHigh = 1e100
@@ -147,10 +147,10 @@ proc appendFixedTwo(buf: var string, value: float) =
     buf.add '-'
   if digitCount == 2:
     buf.add '0'
-  var index = digitCount - 1
-  while index >= 2:
-    buf.add digitStore[index]
-    index -= 1
+  var i = digitCount - 1
+  while i >= 2:
+    buf.add digitStore[i]
+    i -= 1
   buf.add '.'
   buf.add digitStore[1]
   buf.add digitStore[0]
@@ -160,13 +160,13 @@ proc appendFixedTwo(buf: var string, value: float) =
 The digit loop runs while the scaled value stays positive. It writes two fractional digits even for small values. The cost is O(digits) per case, a constant here.
 
 ```
-while scanPos < inputData.len:
-  let count = nextInt(inputData, scanPos)
+while i < inputData.len:
+  let count = nextInt(inputData, i)
   if count == 0:
     break
   for k in 0 .. count - 1:
-    upperX[k] = nextReal(inputData, scanPos)
-    upperY[k] = nextReal(inputData, scanPos)
+    upperX[k] = nextReal(inputData, i)
+    upperY[k] = nextReal(inputData, i)
   let answer = furthestReach(count)
   appendFixedTwo(outputBuffer, answer)
   if outputBuffer.len >= flushBlockBytes:

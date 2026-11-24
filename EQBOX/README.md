@@ -54,14 +54,14 @@ import math
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 17
 
-proc nextInt(inputData: string, scanPos: var int): int =
+proc nextInt(inputData: string, i: var int): int =
   let dataLength = inputData.len
-  while scanPos < dataLength and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    scanPos += 1
+  while i < dataLength and (inputData[i] < '0' or inputData[i] > '9'):
+    i += 1
   var value = 0
-  while scanPos < dataLength and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - firstDigitValue
-    scanPos += 1
+  while i < dataLength and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - firstDigitValue
+    i += 1
   return value
 ```
 
@@ -74,20 +74,20 @@ while readLine(stdin, lineBuffer):
   inputData.add lineBuffer
   inputData.add '\n'
 
-var scanPos = 0
-let caseCount = nextInt(inputData, scanPos)
+var i = 0
+let caseCount = nextInt(inputData, i)
 var outputBuffer = ""
 ```
 
 The loop runs once per input line, so the whole stream stays in memory. Adding a newline keeps two adjacent numbers from merging. Reading costs one pass over the input.
 
 ```
-var caseIndex = 0
-while caseIndex < caseCount:
-  let tileFirst = nextInt(inputData, scanPos)
-  let tileSecond = nextInt(inputData, scanPos)
-  let boxFirst = nextInt(inputData, scanPos)
-  let boxSecond = nextInt(inputData, scanPos)
+var j = 0
+while j < caseCount:
+  let tileFirst = nextInt(inputData, i)
+  let tileSecond = nextInt(inputData, i)
+  let boxFirst = nextInt(inputData, i)
+  let boxSecond = nextInt(inputData, i)
 
   var tileShort = tileFirst
   var tileLong = tileSecond
@@ -122,7 +122,7 @@ The loop runs exactly `caseCount` times, once per case. Sorting each pair first 
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
-  caseIndex += 1
+  j += 1
 
 stdout.write outputBuffer
 ```

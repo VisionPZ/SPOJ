@@ -53,15 +53,15 @@ while readLine(stdin, lineBuffer):
   inputData.add lineBuffer
   inputData.add '\n'
 
-var scanPosition = 0
+var i = 0
 
-proc nextInteger(sourceData: string, scanPos: var int): int64 =
-  while scanPos < sourceData.len and sourceData[scanPos] < '0':
-    scanPos += 1
+proc nextInteger(sourceData: string, i: var int): int64 =
+  while i < sourceData.len and sourceData[i] < '0':
+    i += 1
   var parsedValue: int64 = 0
-  while scanPos < sourceData.len and sourceData[scanPos] >= '0':
-    parsedValue = parsedValue * 10 + int64(int(sourceData[scanPos]) - zeroDigitValue)
-    scanPos += 1
+  while i < sourceData.len and sourceData[i] >= '0':
+    parsedValue = parsedValue * 10 + int64(int(sourceData[i]) - zeroDigitValue)
+    i += 1
   return parsedValue
 ```
 
@@ -83,13 +83,13 @@ Euclid's loop ends when the remainder reaches zero. It uses 64-bit values so the
 ```nim
 var outputBuffer = ""
 
-let dataSetCount = nextInteger(inputData, scanPosition)
-var caseIndex: int64 = 0
-while caseIndex < dataSetCount:
-  var boardWidth = nextInteger(inputData, scanPosition) - 1
-  var boardHeight = nextInteger(inputData, scanPosition) - 1
-  var startColumn = nextInteger(inputData, scanPosition) - 1
-  var startRow = nextInteger(inputData, scanPosition) - 1
+let dataSetCount = nextInteger(inputData, i)
+var j: int64 = 0
+while j < dataSetCount:
+  var boardWidth = nextInteger(inputData, i) - 1
+  var boardHeight = nextInteger(inputData, i) - 1
+  var startColumn = nextInteger(inputData, i) - 1
+  var startRow = nextInteger(inputData, i) - 1
   if startRow != 0 and startRow != boardHeight:
     swap(boardWidth, boardHeight)
     swap(startColumn, startRow)
@@ -108,7 +108,7 @@ while caseIndex < dataSetCount:
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
-  caseIndex += 1
+  j += 1
 
 if outputBuffer.len > 0:
   stdout.write outputBuffer

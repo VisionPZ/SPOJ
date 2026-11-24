@@ -12,15 +12,15 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int {.inline.} =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int {.inline.} =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 
 var outputBuffer = ""
@@ -39,17 +39,17 @@ proc pushHeap(distanceValue: int, vertex: int) {.inline.} =
   if heapSize == heapDistance.len:
     heapDistance.setLen(heapSize * 2)
     heapVertex.setLen(heapSize * 2)
-  var holeIndex = heapSize
+  var i = heapSize
   heapSize += 1
-  while holeIndex > 0:
-    let parentIndex = (holeIndex - 1) div 2
-    if heapDistance[parentIndex] <= distanceValue:
+  while i > 0:
+    let j = (i - 1) div 2
+    if heapDistance[j] <= distanceValue:
       break
-    heapDistance[holeIndex] = heapDistance[parentIndex]
-    heapVertex[holeIndex] = heapVertex[parentIndex]
-    holeIndex = parentIndex
-  heapDistance[holeIndex] = distanceValue
-  heapVertex[holeIndex] = vertex
+    heapDistance[i] = heapDistance[j]
+    heapVertex[i] = heapVertex[j]
+    i = j
+  heapDistance[i] = distanceValue
+  heapVertex[i] = vertex
 
 var poppedDistance = 0
 var poppedVertex = 0
@@ -61,61 +61,61 @@ proc popHeap() {.inline.} =
   if heapSize > 0:
     let lastDistance = heapDistance[heapSize]
     let lastVertex = heapVertex[heapSize]
-    var holeIndex = 0
+    var i = 0
     while true:
-      let leftChild = holeIndex * 2 + 1
-      if leftChild >= heapSize:
+      let j = i * 2 + 1
+      if j >= heapSize:
         break
-      let rightChild = leftChild + 1
-      var smallerChild = leftChild
-      if rightChild < heapSize and heapDistance[rightChild] < heapDistance[leftChild]:
-        smallerChild = rightChild
-      if heapDistance[smallerChild] >= lastDistance:
+      let k = j + 1
+      var l = j
+      if k < heapSize and heapDistance[k] < heapDistance[j]:
+        l = k
+      if heapDistance[l] >= lastDistance:
         break
-      heapDistance[holeIndex] = heapDistance[smallerChild]
-      heapVertex[holeIndex] = heapVertex[smallerChild]
-      holeIndex = smallerChild
-    heapDistance[holeIndex] = lastDistance
-    heapVertex[holeIndex] = lastVertex
+      heapDistance[i] = heapDistance[l]
+      heapVertex[i] = heapVertex[l]
+      i = l
+    heapDistance[i] = lastDistance
+    heapVertex[i] = lastVertex
 
 var sourcesByRank: array[11, seq[int]]
 
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 0..<caseCount:
-  let serverCount = nextInt(inputData, scanPos)
-  let wireCount = nextInt(inputData, scanPos)
+let caseCount = nextInt(inputData, i)
+for j in 0..<caseCount:
+  let serverCount = nextInt(inputData, i)
+  let wireCount = nextInt(inputData, i)
 
-  for rankValue in 1..10:
-    sourcesByRank[rankValue].setLen 0
-  for serverIndex in 1..serverCount:
-    let rankValue = nextInt(inputData, scanPos)
-    sourcesByRank[rankValue].add serverIndex
+  for k in 1..10:
+    sourcesByRank[k].setLen 0
+  for l in 1..serverCount:
+    let k = nextInt(inputData, i)
+    sourcesByRank[k].add l
 
   var edgeHead = newSeq[int](serverCount + 1)
   var edgeTarget = newSeq[int](2 * wireCount + 1)
   var edgeWeight = newSeq[int](2 * wireCount + 1)
   var nextEdge = newSeq[int](2 * wireCount + 1)
-  var edgeCursor = 0
-  for wireIndex in 0..<wireCount:
-    let endpointA = nextInt(inputData, scanPos)
-    let endpointB = nextInt(inputData, scanPos)
-    let transmissionTime = nextInt(inputData, scanPos)
-    edgeCursor += 1
-    edgeTarget[edgeCursor] = endpointB
-    edgeWeight[edgeCursor] = transmissionTime
-    nextEdge[edgeCursor] = edgeHead[endpointA]
-    edgeHead[endpointA] = edgeCursor
-    edgeCursor += 1
-    edgeTarget[edgeCursor] = endpointA
-    edgeWeight[edgeCursor] = transmissionTime
-    nextEdge[edgeCursor] = edgeHead[endpointB]
-    edgeHead[endpointB] = edgeCursor
+  var l = 0
+  for k in 0..<wireCount:
+    let endpointA = nextInt(inputData, i)
+    let endpointB = nextInt(inputData, i)
+    let transmissionTime = nextInt(inputData, i)
+    l += 1
+    edgeTarget[l] = endpointB
+    edgeWeight[l] = transmissionTime
+    nextEdge[l] = edgeHead[endpointA]
+    edgeHead[endpointA] = l
+    l += 1
+    edgeTarget[l] = endpointA
+    edgeWeight[l] = transmissionTime
+    nextEdge[l] = edgeHead[endpointB]
+    edgeHead[endpointB] = l
 
   var bestDistance = newSeq[int](serverCount + 1)
   var nextBestDistance = newSeq[int](serverCount + 1)
   var visitGeneration = newSeq[int](serverCount + 1)
-  for serverIndex in 1..serverCount:
-    bestDistance[serverIndex] = infiniteDistance
+  for l in 1..serverCount:
+    bestDistance[l] = infiniteDistance
 
   var topRank = 1
   var rankScan = 10
@@ -126,29 +126,29 @@ for caseIndex in 0..<caseCount:
     rankScan -= 1
 
   heapSize = 0
-  for sourceIndex in 0..<sourcesByRank[topRank].len:
-    pushHeap(0, sourcesByRank[topRank][sourceIndex])
+  for l in 0..<sourcesByRank[topRank].len:
+    pushHeap(0, sourcesByRank[topRank][l])
   while heapSize > 0:
     popHeap()
     if poppedDistance > bestDistance[poppedVertex]:
       continue
     bestDistance[poppedVertex] = poppedDistance
-    var edgeIndex = edgeHead[poppedVertex]
-    while edgeIndex != 0:
-      let candidateDistance = poppedDistance + edgeWeight[edgeIndex]
-      if candidateDistance < bestDistance[edgeTarget[edgeIndex]]:
-        pushHeap(candidateDistance, edgeTarget[edgeIndex])
-      edgeIndex = nextEdge[edgeIndex]
+    var k = edgeHead[poppedVertex]
+    while k != 0:
+      let candidateDistance = poppedDistance + edgeWeight[k]
+      if candidateDistance < bestDistance[edgeTarget[k]]:
+        pushHeap(candidateDistance, edgeTarget[k])
+      k = nextEdge[k]
 
   var totalInteresting: int64 = int64(sourcesByRank[topRank].len * serverCount)
   var generationStamp = 0
-  var rankValue = topRank - 1
-  while rankValue >= 1:
-    if sourcesByRank[rankValue].len > 0:
-      for serverIndex in 1..serverCount:
-        nextBestDistance[serverIndex] = infiniteDistance
-      for sourceIndex in 0..<sourcesByRank[rankValue].len:
-        let sourceVertex = sourcesByRank[rankValue][sourceIndex]
+  var k = topRank - 1
+  while k >= 1:
+    if sourcesByRank[k].len > 0:
+      for l in 1..serverCount:
+        nextBestDistance[l] = infiniteDistance
+      for l in 0..<sourcesByRank[k].len:
+        let sourceVertex = sourcesByRank[k][l]
         generationStamp += 1
         heapSize = 0
         pushHeap(0, sourceVertex)
@@ -164,17 +164,17 @@ for caseIndex in 0..<caseCount:
           totalInteresting += 1
           if waveDistance < nextBestDistance[currentVertex]:
             nextBestDistance[currentVertex] = waveDistance
-          var edgeIndex = edgeHead[currentVertex]
-          while edgeIndex != 0:
-            let neighborVertex = edgeTarget[edgeIndex]
-            let candidateDistance = waveDistance + edgeWeight[edgeIndex]
+          var k = edgeHead[currentVertex]
+          while k != 0:
+            let neighborVertex = edgeTarget[k]
+            let candidateDistance = waveDistance + edgeWeight[k]
             if candidateDistance < bestDistance[neighborVertex] and visitGeneration[neighborVertex] != generationStamp:
               pushHeap(candidateDistance, neighborVertex)
-            edgeIndex = nextEdge[edgeIndex]
-      for serverIndex in 1..serverCount:
-        if nextBestDistance[serverIndex] < bestDistance[serverIndex]:
-          bestDistance[serverIndex] = nextBestDistance[serverIndex]
-    rankValue -= 1
+            k = nextEdge[k]
+      for l in 1..serverCount:
+        if nextBestDistance[l] < bestDistance[l]:
+          bestDistance[l] = nextBestDistance[l]
+    k -= 1
 
   appendOutput($totalInteresting)
   outputBuffer.add '\n'

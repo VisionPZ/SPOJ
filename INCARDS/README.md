@@ -54,15 +54,15 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 ```
 
@@ -72,18 +72,18 @@ The heap holds `(distance, stop)` pairs. Deleting a stale pair is cheaper than d
 
 ```nim
 proc heapPush(heapNode: var seq[int], heapKey: var seq[int64], heapSize: var int,
-              nodeIndex: int, nodeKey: int64) =
-  var childPos = heapSize
+              i: int, nodeKey: int64) =
+  var j = heapSize
   heapSize += 1
-  while childPos > 0:
-    let parentPos = (childPos - 1) div 2
-    if heapKey[parentPos] <= nodeKey:
+  while j > 0:
+    let k = (j - 1) div 2
+    if heapKey[k] <= nodeKey:
       break
-    heapNode[childPos] = heapNode[parentPos]
-    heapKey[childPos] = heapKey[parentPos]
-    childPos = parentPos
-  heapNode[childPos] = nodeIndex
-  heapKey[childPos] = nodeKey
+    heapNode[j] = heapNode[k]
+    heapKey[j] = heapKey[k]
+    j = k
+  heapNode[j] = i
+  heapKey[j] = nodeKey
 
 proc heapPop(heapNode: var seq[int], heapKey: var seq[int64], heapSize: var int): tuple[nodeIndex: int, nodeKey: int64] =
   let rootNode = heapNode[0]
@@ -92,22 +92,22 @@ proc heapPop(heapNode: var seq[int], heapKey: var seq[int64], heapSize: var int)
   if heapSize > 0:
     let lastNode = heapNode[heapSize]
     let lastKey = heapKey[heapSize]
-    var parentPos = 0
+    var i = 0
     while true:
-      let leftPos = parentPos * 2 + 1
-      if leftPos >= heapSize:
+      let j = i * 2 + 1
+      if j >= heapSize:
         break
-      let rightPos = leftPos + 1
-      var childPos = leftPos
-      if rightPos < heapSize and heapKey[rightPos] < heapKey[leftPos]:
-        childPos = rightPos
-      if heapKey[childPos] >= lastKey:
+      let k = j + 1
+      var l = j
+      if k < heapSize and heapKey[k] < heapKey[j]:
+        l = k
+      if heapKey[l] >= lastKey:
         break
-      heapNode[parentPos] = heapNode[childPos]
-      heapKey[parentPos] = heapKey[childPos]
-      parentPos = childPos
-    heapNode[parentPos] = lastNode
-    heapKey[parentPos] = lastKey
+      heapNode[i] = heapNode[l]
+      heapKey[i] = heapKey[l]
+      i = l
+    heapNode[i] = lastNode
+    heapKey[i] = lastKey
   return (rootNode, rootKey)
 ```
 
@@ -121,8 +121,8 @@ proc totalShortestDistance(nodeCount: int, edgeHead: seq[int], edgeTo: seq[int],
                            sourceNode: int, heapNode: var seq[int],
                            heapKey: var seq[int64]): int64 =
   var distance = newSeq[int64](nodeCount + 1)
-  for nodeIndex in 1..nodeCount:
-    distance[nodeIndex] = unreachableDistance
+  for i in 1..nodeCount:
+    distance[i] = unreachableDistance
   var heapSize = 0
   distance[sourceNode] = 0
   heapPush(heapNode, heapKey, heapSize, sourceNode, 0)
@@ -132,17 +132,17 @@ proc totalShortestDistance(nodeCount: int, edgeHead: seq[int], edgeTo: seq[int],
     let currentDistance = entry.nodeKey
     if currentDistance != distance[currentNode]:
       continue
-    var edgeIndex = edgeHead[currentNode]
-    while edgeIndex != nullEdgeIndex:
-      let neighborNode = edgeTo[edgeIndex]
-      let candidateDistance = currentDistance + int64(edgeWeight[edgeIndex])
+    var j = edgeHead[currentNode]
+    while j != nullEdgeIndex:
+      let neighborNode = edgeTo[j]
+      let candidateDistance = currentDistance + int64(edgeWeight[j])
       if candidateDistance < distance[neighborNode]:
         distance[neighborNode] = candidateDistance
         heapPush(heapNode, heapKey, heapSize, neighborNode, candidateDistance)
-      edgeIndex = edgeNext[edgeIndex]
+      j = edgeNext[j]
   var total: int64 = 0
-  for nodeIndex in 1..nodeCount:
-    total += distance[nodeIndex]
+  for i in 1..nodeCount:
+    total += distance[i]
   return total
 ```
 
@@ -151,32 +151,32 @@ The stale-pair check skips heap entries that no longer match the distance table.
 The driver stores both directions of every line in one flat pair of arrays, then runs the two searches.
 
 ```nim
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 1..caseCount:
-  let nodeCount = nextInt(inputData, scanPos)
-  let edgeCount = nextInt(inputData, scanPos)
+let caseCount = nextInt(inputData, i)
+for j in 1..caseCount:
+  let nodeCount = nextInt(inputData, i)
+  let edgeCount = nextInt(inputData, i)
   var forwardHead = newSeq[int](nodeCount + 1)
   var reverseHead = newSeq[int](nodeCount + 1)
-  for nodeIndex in 0..nodeCount:
-    forwardHead[nodeIndex] = nullEdgeIndex
-    reverseHead[nodeIndex] = nullEdgeIndex
+  for k in 0..nodeCount:
+    forwardHead[k] = nullEdgeIndex
+    reverseHead[k] = nullEdgeIndex
   var edgeTo = newSeq[int](edgeCount * 2 + 5)
   var edgeWeight = newSeq[int](edgeCount * 2 + 5)
   var edgeNext = newSeq[int](edgeCount * 2 + 5)
-  for edgeIndex in 0..<edgeCount:
-    let originNode = nextInt(inputData, scanPos)
-    let targetNode = nextInt(inputData, scanPos)
-    let ticketPrice = nextInt(inputData, scanPos)
-    let forwardIndex = edgeIndex * 2
-    edgeTo[forwardIndex] = targetNode
-    edgeWeight[forwardIndex] = ticketPrice
-    edgeNext[forwardIndex] = forwardHead[originNode]
-    forwardHead[originNode] = forwardIndex
-    let reverseIndex = forwardIndex + 1
-    edgeTo[reverseIndex] = originNode
-    edgeWeight[reverseIndex] = ticketPrice
-    edgeNext[reverseIndex] = reverseHead[targetNode]
-    reverseHead[targetNode] = reverseIndex
+  for k in 0..<edgeCount:
+    let originNode = nextInt(inputData, i)
+    let targetNode = nextInt(inputData, i)
+    let ticketPrice = nextInt(inputData, i)
+    let l = k * 2
+    edgeTo[l] = targetNode
+    edgeWeight[l] = ticketPrice
+    edgeNext[l] = forwardHead[originNode]
+    forwardHead[originNode] = l
+    let i = l + 1
+    edgeTo[i] = originNode
+    edgeWeight[i] = ticketPrice
+    edgeNext[i] = reverseHead[targetNode]
+    reverseHead[targetNode] = i
   var heapNode = newSeq[int](edgeCount + 5)
   var heapKey = newSeq[int64](edgeCount + 5)
   let outbound = totalShortestDistance(nodeCount, forwardHead, edgeTo, edgeWeight,

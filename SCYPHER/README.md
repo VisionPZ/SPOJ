@@ -37,7 +37,7 @@ The program stores one boolean per ordered pair of letters.
 |---|---|
 | `leftLetter` | encrypted letter at the first difference in the earlier word |
 | `rightLetter` | encrypted letter at the first difference in the later word |
-| `reach[fromLetter * alphabetSize + toLetter]` | `fromLetter` ranks before `toLetter` |
+| `reach[k * alphabetSize + l]` | `k` ranks before `l` |
 | `predecessorCount` | count of letters ranked before one letter |
 | `chr(baseLetterValue + rankTable[int(symbol) - baseLetterValue])` | plain letter that decrypts this encrypted letter |
 
@@ -80,29 +80,29 @@ The block holds 128 KiB and one write flushes it. The two offsets name byte valu
 **Integer reader.** Digits are scanned by index, so no token object is built.
 
 ```nim
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - firstDigitValue
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - firstDigitValue
+    i = i + 1
   return value
 ```
 
-`scanPos` is a `var` parameter, so the position survives each call. A digit byte becomes `int(inputData[scanPos]) - firstDigitValue`. Input values stay positive, so no sign branch is needed.
+`i` is a `var` parameter, so the position survives each call. A digit byte becomes `int(inputData[i]) - firstDigitValue`. Input values stay positive, so no sign branch is needed.
 
 **Line readers.** The message keeps its spaces, and words keep their line ends.
 
 ```nim
-proc skipToNextLine(inputData: string, scanPos: var int) =
-  while scanPos < inputData.len and inputData[scanPos] != '\n': scanPos = scanPos + 1
-  if scanPos < inputData.len: scanPos = scanPos + 1
+proc skipToNextLine(inputData: string, i: var int) =
+  while i < inputData.len and inputData[i] != '\n': i = i + 1
+  if i < inputData.len: i = i + 1
 
-proc readWord(inputData: string, scanPos: var int, wordBegin: var int, wordEnd: var int) =
-  while scanPos < inputData.len and (inputData[scanPos] == '\n' or inputData[scanPos] == '\r' or inputData[scanPos] == ' '): scanPos = scanPos + 1
-  wordBegin = scanPos
-  while scanPos < inputData.len and inputData[scanPos] != '\n' and inputData[scanPos] != '\r' and inputData[scanPos] != ' ': scanPos = scanPos + 1
-  wordEnd = scanPos
+proc readWord(inputData: string, i: var int, wordBegin: var int, wordEnd: var int) =
+  while i < inputData.len and (inputData[i] == '\n' or inputData[i] == '\r' or inputData[i] == ' '): i = i + 1
+  wordBegin = i
+  while i < inputData.len and inputData[i] != '\n' and inputData[i] != '\r' and inputData[i] != ' ': i = i + 1
+  wordEnd = i
 ```
 
 `skipToNextLine` consumes one line end and stops at the next line start. `readWord` records a word by index, so no substring is built. Both loops stop at the buffer end, so short input cannot overrun.
@@ -110,18 +110,18 @@ proc readWord(inputData: string, scanPos: var int, wordBegin: var int, wordEnd: 
 **Case solver.** One call handles one case and appends one output line.
 
 ```nim
-proc solveCase(inputData: string, scanPos: var int, outputBuffer: var string) =
-  let alphabetSize = nextInt(inputData, scanPos)
-  let wordCount = nextInt(inputData, scanPos)
-  skipToNextLine(inputData, scanPos)
+proc solveCase(inputData: string, i: var int, outputBuffer: var string) =
+  let alphabetSize = nextInt(inputData, i)
+  let wordCount = nextInt(inputData, i)
+  skipToNextLine(inputData, i)
   var reach = repeat(false, alphabetSize * alphabetSize)
   var havePrevious = false
   var previousBegin = 0
   var previousEnd = 0
-  for wordIndex in 1 .. wordCount:
+  for j in 1 .. wordCount:
     var currentBegin = 0
     var currentEnd = 0
-    readWord(inputData, scanPos, currentBegin, currentEnd)
+    readWord(inputData, i, currentBegin, currentEnd)
     if havePrevious:
       let sharedLength = min(previousEnd - previousBegin, currentEnd - currentBegin)
       var diffPos = 0
@@ -134,39 +134,39 @@ proc solveCase(inputData: string, scanPos: var int, outputBuffer: var string) =
     previousBegin = currentBegin
     previousEnd = currentEnd
     havePrevious = true
-  skipToNextLine(inputData, scanPos)
-  let messageBegin = scanPos
-  while scanPos < inputData.len and inputData[scanPos] != '\n': scanPos = scanPos + 1
-  let messageEnd = scanPos
-  skipToNextLine(inputData, scanPos)
-  for midLetter in 0 .. alphabetSize - 1:
-    for fromLetter in 0 .. alphabetSize - 1:
-      if reach[fromLetter * alphabetSize + midLetter]:
-        for toLetter in 0 .. alphabetSize - 1:
-          if reach[midLetter * alphabetSize + toLetter]:
-            reach[fromLetter * alphabetSize + toLetter] = true
+  skipToNextLine(inputData, i)
+  let messageBegin = i
+  while i < inputData.len and inputData[i] != '\n': i = i + 1
+  let messageEnd = i
+  skipToNextLine(inputData, i)
+  for j in 0 .. alphabetSize - 1:
+    for k in 0 .. alphabetSize - 1:
+      if reach[k * alphabetSize + j]:
+        for l in 0 .. alphabetSize - 1:
+          if reach[j * alphabetSize + l]:
+            reach[k * alphabetSize + l] = true
   var decryptable = true
-  for letterIndex in 0 .. alphabetSize - 1:
-    if reach[letterIndex * alphabetSize + letterIndex]: decryptable = false
+  for j in 0 .. alphabetSize - 1:
+    if reach[j * alphabetSize + j]: decryptable = false
   if decryptable:
-    for fromLetter in 0 .. alphabetSize - 1:
-      if fromLetter + 1 < alphabetSize:
-        for toLetter in fromLetter + 1 .. alphabetSize - 1:
-          if not reach[fromLetter * alphabetSize + toLetter] and not reach[toLetter * alphabetSize + fromLetter]:
+    for k in 0 .. alphabetSize - 1:
+      if k + 1 < alphabetSize:
+        for l in k + 1 .. alphabetSize - 1:
+          if not reach[k * alphabetSize + l] and not reach[l * alphabetSize + k]:
             decryptable = false
   if not decryptable:
     outputBuffer.add "Message cannot be decrypted.\n"
   else:
     var rankTable = newSeq[int](alphabetSize)
-    for toLetter in 0 .. alphabetSize - 1:
+    for l in 0 .. alphabetSize - 1:
       var predecessorCount = 0
-      for fromLetter in 0 .. alphabetSize - 1:
-        if fromLetter != toLetter and reach[fromLetter * alphabetSize + toLetter]:
+      for k in 0 .. alphabetSize - 1:
+        if k != l and reach[k * alphabetSize + l]:
           predecessorCount = predecessorCount + 1
-      rankTable[toLetter] = predecessorCount
+      rankTable[l] = predecessorCount
     if messageEnd > messageBegin:
-      for messagePos in messageBegin .. messageEnd - 1:
-        let symbol = inputData[messagePos]
+      for j in messageBegin .. messageEnd - 1:
+        let symbol = inputData[j]
         if symbol >= 'a' and symbol <= chr(baseLetterValue + alphabetSize - 1):
           outputBuffer.add chr(baseLetterValue + rankTable[int(symbol) - baseLetterValue])
         else:
@@ -187,11 +187,11 @@ var line: string
 while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
-var scanPos = 0
-let caseCount = nextInt(inputData, scanPos)
+var i = 0
+let caseCount = nextInt(inputData, i)
 var outputBuffer: string
-for caseIndex in 1 .. caseCount:
-  solveCase(inputData, scanPos, outputBuffer)
+for j in 1 .. caseCount:
+  solveCase(inputData, i, outputBuffer)
 stdout.write outputBuffer
 ```
 

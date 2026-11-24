@@ -78,20 +78,20 @@ var line: string
 while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
-var scanPos = 0
+var i = 0
 ```
 
-The read loop runs to EOF, so all values land in one string. `scanPos` tracks the current byte. Cost: one pass over the input.
+The read loop runs to EOF, so all values land in one string. `i` tracks the current byte. Cost: one pass over the input.
 
 **Digit scanner.**
 
 ```nim
 proc nextInt(): int64 =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
   var value: int64 = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(int(inputData[scanPos]) - 48)
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(int(inputData[i]) - 48)
+    i = i + 1
   return value
 ```
 
@@ -140,9 +140,9 @@ proc leapFlag(year: int64): int64 =
 proc daysInYearOf(year: int64): int64 =
   return 365 + leapFlag(year)
 
-proc daysInMonthOf(year: int64, monthIndex: int): int64 =
-  var baseLength = int64(monthLength[monthIndex])
-  if monthIndex == 1 and leapFlag(year) == 1: baseLength = 29
+proc daysInMonthOf(year: int64, j: int): int64 =
+  var baseLength = int64(monthLength[j])
+  if j == 1 and leapFlag(year) == 1: baseLength = 29
   return baseLength
 
 proc isLeapYear(year: int64): bool =
@@ -179,17 +179,17 @@ proc clockLine(timeStamp: int64): string =
       year = year + 1
     else:
       break
-  var monthIndex = 0
-  var daysInMonth = daysInMonthOf(year, monthIndex)
+  var j = 0
+  var daysInMonth = daysInMonthOf(year, j)
   while remainingDays >= daysInMonth:
     remainingDays = remainingDays - daysInMonth
-    monthIndex = monthIndex + 1
-    daysInMonth = daysInMonthOf(year, monthIndex)
+    j = j + 1
+    daysInMonth = daysInMonthOf(year, j)
   var dayOfMonth = remainingDays + 1
   var result: string
   result.add weekdayName[int(dayCount mod 7)]
   result.add " "
-  result.add monthName[monthIndex]
+  result.add monthName[j]
   result.add " "
   if dayOfMonth < 10:
     result.add " "
@@ -214,8 +214,8 @@ The year loop walks forward from 1970, then the month loop walks within that yea
 ```nim
 var outputBuffer: string
 while true:
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
-  if scanPos >= inputData.len: break
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
+  if i >= inputData.len: break
   var encryptedValue = nextInt()
   var rootValue = powerMod(encryptedValue)
   var timeStamp = rootValue

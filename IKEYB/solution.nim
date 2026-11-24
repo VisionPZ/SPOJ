@@ -5,7 +5,7 @@ const firstDigitValue = 48
 const infiniteCost = high(int64) div 4
 
 var inputData = ""
-var scanPosition = 0
+var i = 0
 var outputBuffer = ""
 
 var minimumCost: array[0..maxKeyCount + 1, array[0..maxLetterCount + 1, int64]]
@@ -35,28 +35,28 @@ proc appendCharacter(characterValue: char) =
 
 proc nextInteger(): int =
   let dataLength = inputData.len
-  while scanPosition < dataLength and inputData[scanPosition] != '-' and
-      (inputData[scanPosition] < '0' or inputData[scanPosition] > '9'):
-    inc scanPosition
+  while i < dataLength and inputData[i] != '-' and
+      (inputData[i] < '0' or inputData[i] > '9'):
+    inc i
   var isNegative = false
-  if scanPosition < dataLength and inputData[scanPosition] == '-':
+  if i < dataLength and inputData[i] == '-':
     isNegative = true
-    inc scanPosition
+    inc i
   var numberValue = 0
-  while scanPosition < dataLength and inputData[scanPosition] >= '0' and
-      inputData[scanPosition] <= '9':
-    numberValue = numberValue * 10 + (ord(inputData[scanPosition]) - firstDigitValue)
-    inc scanPosition
+  while i < dataLength and inputData[i] >= '0' and
+      inputData[i] <= '9':
+    numberValue = numberValue * 10 + (ord(inputData[i]) - firstDigitValue)
+    inc i
   if isNegative:
     return -numberValue
   return numberValue
 
 proc nextCharacter(): char =
   let dataLength = inputData.len
-  while scanPosition < dataLength and inputData[scanPosition] <= ' ':
-    inc scanPosition
-  result = inputData[scanPosition]
-  inc scanPosition
+  while i < dataLength and inputData[i] <= ' ':
+    inc i
+  result = inputData[i]
+  inc i
 
 proc main() =
   var lineBuffer = ""
@@ -65,68 +65,68 @@ proc main() =
     inputData.add '\n'
 
   let testCount = nextInteger()
-  for caseIndex in 1..testCount:
+  for j in 1..testCount:
     let keyCount = nextInteger()
     let letterCount = nextInteger()
 
-    for keyIndex in 1..keyCount:
-      keyCharacters[keyIndex] = nextCharacter()
-    for letterIndex in 1..letterCount:
-      letterCharacters[letterIndex] = nextCharacter()
+    for k in 1..keyCount:
+      keyCharacters[k] = nextCharacter()
+    for l in 1..letterCount:
+      letterCharacters[l] = nextCharacter()
 
     prefixFrequency[0] = 0
     prefixWeighted[0] = 0
-    for letterIndex in 1..letterCount:
-      frequencyValues[letterIndex] = int64(nextInteger())
-      prefixFrequency[letterIndex] = prefixFrequency[letterIndex - 1] + frequencyValues[letterIndex]
-      prefixWeighted[letterIndex] = prefixWeighted[letterIndex - 1] +
-          frequencyValues[letterIndex] * int64(letterIndex)
+    for l in 1..letterCount:
+      frequencyValues[l] = int64(nextInteger())
+      prefixFrequency[l] = prefixFrequency[l - 1] + frequencyValues[l]
+      prefixWeighted[l] = prefixWeighted[l - 1] +
+          frequencyValues[l] * int64(l)
 
-    for leftIndex in 1..letterCount:
-      for rightIndex in leftIndex..letterCount:
-        let frequencySum = prefixFrequency[rightIndex] - prefixFrequency[leftIndex - 1]
-        let weightedSum = prefixWeighted[rightIndex] - prefixWeighted[leftIndex - 1]
-        segmentCost[leftIndex][rightIndex] = weightedSum - int64(leftIndex - 1) * frequencySum
+    for k in 1..letterCount:
+      for l in k..letterCount:
+        let frequencySum = prefixFrequency[l] - prefixFrequency[k - 1]
+        let weightedSum = prefixWeighted[l] - prefixWeighted[k - 1]
+        segmentCost[k][l] = weightedSum - int64(k - 1) * frequencySum
 
-    for keyIndex in 0..keyCount:
-      for letterIndex in 0..letterCount:
-        minimumCost[keyIndex][letterIndex] = infiniteCost
-        bestSplitAt[keyIndex][letterIndex] = -1
+    for k in 0..keyCount:
+      for l in 0..letterCount:
+        minimumCost[k][l] = infiniteCost
+        bestSplitAt[k][l] = -1
     minimumCost[0][0] = 0
-    for keyIndex in 1..keyCount:
-      for letterIndex in keyIndex..letterCount:
+    for k in 1..keyCount:
+      for l in k..letterCount:
         var chosenCost = infiniteCost
         var chosenSplit = -1
-        for splitIndex in (keyIndex - 1)..(letterIndex - 1):
-          if minimumCost[keyIndex - 1][splitIndex] >= infiniteCost:
+        for i in (k - 1)..(l - 1):
+          if minimumCost[k - 1][i] >= infiniteCost:
             continue
-          let candidateCost = minimumCost[keyIndex - 1][splitIndex] +
-              segmentCost[splitIndex + 1][letterIndex]
+          let candidateCost = minimumCost[k - 1][i] +
+              segmentCost[i + 1][l]
           if candidateCost < chosenCost:
             chosenCost = candidateCost
-            chosenSplit = splitIndex
-        minimumCost[keyIndex][letterIndex] = chosenCost
-        bestSplitAt[keyIndex][letterIndex] = chosenSplit
+            chosenSplit = i
+        minimumCost[k][l] = chosenCost
+        bestSplitAt[k][l] = chosenSplit
 
     appendText("Keypad #")
-    appendText($caseIndex)
+    appendText($j)
     appendText(":\n")
 
     var remainingLetters = letterCount
-    var keyIndex = keyCount
-    while keyIndex >= 1:
-      let splitIndex = bestSplitAt[keyIndex][remainingLetters]
-      groupStart[keyIndex] = splitIndex + 1
-      groupEnd[keyIndex] = remainingLetters
-      remainingLetters = splitIndex
-      dec keyIndex
+    var k = keyCount
+    while k >= 1:
+      let i = bestSplitAt[k][remainingLetters]
+      groupStart[k] = i + 1
+      groupEnd[k] = remainingLetters
+      remainingLetters = i
+      dec k
 
-    for outputKeyIndex in 1..keyCount:
-      appendCharacter(keyCharacters[outputKeyIndex])
+    for l in 1..keyCount:
+      appendCharacter(keyCharacters[l])
       appendText(": ")
-      if groupStart[outputKeyIndex] <= groupEnd[outputKeyIndex]:
-        for letterIndex in groupStart[outputKeyIndex]..groupEnd[outputKeyIndex]:
-          appendCharacter(letterCharacters[letterIndex])
+      if groupStart[l] <= groupEnd[l]:
+        for k in groupStart[l]..groupEnd[l]:
+          appendCharacter(letterCharacters[k])
       appendText("\n")
     appendText("\n")
 

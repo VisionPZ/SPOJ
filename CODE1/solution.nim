@@ -2,16 +2,16 @@ const flushBlockBytes = 1 shl 17
 const firstDigitValue = 48
 const maxDigitCount = 101
 
-proc nextInt(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ': scanPos = scanPos + 1
+proc nextInt(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ': i = i + 1
   var negative = false
-  if scanPos < inputData.len and inputData[scanPos] == '-':
+  if i < inputData.len and inputData[i] == '-':
     negative = true
-    scanPos = scanPos + 1
+    i = i + 1
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - firstDigitValue
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - firstDigitValue
+    i = i + 1
   if negative: return -value
   return value
 
@@ -20,15 +20,15 @@ var line: string
 while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
-var scanPos = 0
-var caseCount = nextInt(inputData, scanPos)
+var i = 0
+var caseCount = nextInt(inputData, i)
 var outputBuffer: string
 var digits: array[maxDigitCount + 1, int]
-for caseIndex in 1 .. caseCount:
-  var currentReal = nextInt(inputData, scanPos)
-  var currentImag = nextInt(inputData, scanPos)
-  var baseReal = nextInt(inputData, scanPos)
-  var baseImag = nextInt(inputData, scanPos)
+for j in 1 .. caseCount:
+  var currentReal = nextInt(inputData, i)
+  var currentImag = nextInt(inputData, i)
+  var baseReal = nextInt(inputData, i)
+  var baseImag = nextInt(inputData, i)
   var baseNorm = baseReal * baseReal + baseImag * baseImag
   var largestDigit = 0
   while (largestDigit + 1) * (largestDigit + 1) < baseNorm: largestDigit = largestDigit + 1
@@ -64,11 +64,11 @@ for caseIndex in 1 .. caseCount:
   if failed:
     outputBuffer.add "The code cannot be decrypted.\n"
   else:
-    var digitIndex = digitCount - 1
-    while digitIndex >= 0:
-      if digitIndex < digitCount - 1: outputBuffer.add ','
-      outputBuffer.add $digits[digitIndex]
-      digitIndex = digitIndex - 1
+    var k = digitCount - 1
+    while k >= 0:
+      if k < digitCount - 1: outputBuffer.add ','
+      outputBuffer.add $digits[k]
+      k = k - 1
     outputBuffer.add '\n'
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer

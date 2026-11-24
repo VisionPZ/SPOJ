@@ -79,7 +79,7 @@ while readLine(stdin, lineReadBuffer):
   inputData.add lineReadBuffer
   inputData.add '\n'
 
-var scanPosition = 0
+var i = 0
 ```
 
 `flushBlockBytes` is 128 KiB. The read loop runs to EOF and appends each line. Cost: one pass over the input bytes.
@@ -88,12 +88,12 @@ var scanPosition = 0
 
 ```nim
 proc nextInt(): int64 =
-  while scanPosition < inputData.len and (inputData[scanPosition] < '0' or inputData[scanPosition] > '9'):
-    scanPosition = scanPosition + 1
+  while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
+    i = i + 1
   var scannedValue: int64 = 0
-  while scanPosition < inputData.len and inputData[scanPosition] >= '0' and inputData[scanPosition] <= '9':
-    scannedValue = scannedValue * 10 + int64(int(inputData[scanPosition]) - 48)
-    scanPosition = scanPosition + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    scannedValue = scannedValue * 10 + int64(int(inputData[i]) - 48)
+    i = i + 1
   return scannedValue
 ```
 
@@ -118,13 +118,13 @@ for _ in 1 .. caseCount:
 **Page read.**
 
 ```nim
-  for bookIndex in 0 .. bookCount - 1:
-    bookPages[bookIndex] = nextInt()
-    if bookPages[bookIndex] > heaviestBook: heaviestBook = bookPages[bookIndex]
-    totalPages = totalPages + bookPages[bookIndex]
+  for j in 0 .. bookCount - 1:
+    bookPages[j] = nextInt()
+    if bookPages[j] > heaviestBook: heaviestBook = bookPages[j]
+    totalPages = totalPages + bookPages[j]
 ```
 
-`bookIndex` runs from 0 to `bookCount - 1`. `heaviestBook` and `totalPages` set the two search bounds. Cost: one read per book.
+`j` runs from 0 to `bookCount - 1`. `heaviestBook` and `totalPages` set the two search bounds. Cost: one read per book.
 
 **Load search.**
 
@@ -135,12 +135,12 @@ for _ in 1 .. caseCount:
     var loadGuess = (loadLow + loadHigh) div 2
     var scribesUsed = 1
     var runningSum: int64 = 0
-    for bookIndex in 0 .. bookCount - 1:
-      if runningSum + bookPages[bookIndex] > loadGuess:
+    for j in 0 .. bookCount - 1:
+      if runningSum + bookPages[j] > loadGuess:
         scribesUsed = scribesUsed + 1
-        runningSum = bookPages[bookIndex]
+        runningSum = bookPages[j]
       else:
-        runningSum = runningSum + bookPages[bookIndex]
+        runningSum = runningSum + bookPages[j]
     if scribesUsed <= scribeCount:
       loadHigh = loadGuess
     else:
@@ -148,22 +148,22 @@ for _ in 1 .. caseCount:
   var optimalLoad = loadLow
 ```
 
-The loop runs while `loadLow < loadHigh`. The test `runningSum + bookPages[bookIndex] > loadGuess` starts a new scriber. `scribesUsed <= scribeCount` picks the lower half of the range. Cost: O(m) page tests per guess.
+The loop runs while `loadLow < loadHigh`. The test `runningSum + bookPages[j] > loadGuess` starts a new scriber. `scribesUsed <= scribeCount` picks the lower half of the range. Cost: O(m) page tests per guess.
 
 **Slash placement.**
 
 ```nim
   var partFirstBook = newSeq[int](scribeCount)
   var booksRemaining = bookCount
-  for scriberIndex in countdown(scribeCount - 1, 0):
+  for j in countdown(scribeCount - 1, 0):
     var takenCount = 1
     var takenSum = bookPages[booksRemaining - 1]
-    while booksRemaining - takenCount > scriberIndex and
+    while booksRemaining - takenCount > j and
         takenSum + bookPages[booksRemaining - takenCount - 1] <= optimalLoad:
       takenSum = takenSum + bookPages[booksRemaining - takenCount - 1]
       takenCount = takenCount + 1
-    partFirstBook[scriberIndex] = booksRemaining - takenCount
-    booksRemaining = partFirstBook[scriberIndex]
+    partFirstBook[j] = booksRemaining - takenCount
+    booksRemaining = partFirstBook[j]
 ```
 
 `countdown(scribeCount - 1, 0)` fills scribes from the last one back. `partFirstBook` records the first book of each part. The while loop stops before it would leave a scriber empty. Cost: O(m) over all scribes.
@@ -172,14 +172,14 @@ The loop runs while `loadLow < loadHigh`. The test `runningSum + bookPages[bookI
 
 ```nim
   var currentPart = 0
-  for bookIndex in 0 .. bookCount - 1:
-    if bookIndex > 0:
-      if currentPart + 1 < scribeCount and bookIndex == partFirstBook[currentPart + 1]:
+  for j in 0 .. bookCount - 1:
+    if j > 0:
+      if currentPart + 1 < scribeCount and j == partFirstBook[currentPart + 1]:
         outputBuffer.add " / "
         currentPart = currentPart + 1
       else:
         outputBuffer.add ' '
-    outputBuffer.add $bookPages[bookIndex]
+    outputBuffer.add $bookPages[j]
   outputBuffer.add '\n'
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
@@ -187,7 +187,7 @@ The loop runs while `loadLow < loadHigh`. The test `runningSum + bookPages[bookI
 stdout.write outputBuffer
 ```
 
-`bookIndex` runs over every book. The test `currentPart + 1 < scribeCount` avoids reading past the last part. The buffer flushes every 128 KiB. Cost: one line per case.
+`j` runs over every book. The test `currentPart + 1 < scribeCount` avoids reading past the last part. The buffer flushes every 128 KiB. Cost: one line per case.
 
 ## Complexity
 

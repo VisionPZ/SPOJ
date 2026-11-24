@@ -81,32 +81,32 @@ const flushBlockBytes = 1 shl 17
 The reader has two bounds: the buffer length and the end of the digits. The sign branch keeps negative input safe.
 
 ```nim
-proc skipSpaces(inputData: string, scanPos: var int) =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ':
-    scanPos = scanPos + 1
+proc skipSpaces(inputData: string, i: var int) =
+  while i < inputData.len and inputData[i] <= ' ':
+    i = i + 1
 
-proc hasToken(inputData: string, scanPos: int): bool =
-  var pos = scanPos
-  while pos < inputData.len and inputData[pos] <= ' ':
-    pos = pos + 1
-  return pos < inputData.len
+proc hasToken(inputData: string, i: int): bool =
+  var j = i
+  while j < inputData.len and inputData[j] <= ' ':
+    j = j + 1
+  return j < inputData.len
 
-proc nextInt(inputData: string, scanPos: var int): int =
-  skipSpaces(inputData, scanPos)
+proc nextInt(inputData: string, i: var int): int =
+  skipSpaces(inputData, i)
   var negative = false
-  if scanPos < inputData.len and inputData[scanPos] == '-':
+  if i < inputData.len and inputData[i] == '-':
     negative = true
-    scanPos = scanPos + 1
+    i = i + 1
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + int(inputData[scanPos]) - digitBase
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + int(inputData[i]) - digitBase
+    i = i + 1
   if negative:
     return -value
   return value
 ```
 
-`hasToken` checks the rest of the buffer, so the program stops at end of input instead of expecting ten cases. `nextInt` advances `scanPos` by index and builds no token string. The digit loop runs once per digit.
+`hasToken` checks the rest of the buffer, so the program stops at end of input instead of expecting ten cases. `nextInt` advances `i` by index and builds no token string. The digit loop runs once per digit.
 
 **Input and reusable arrays.** One loop collects every line into `inputData`.
 
@@ -117,7 +117,7 @@ while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
 
-var scanPos = 0
+var i = 0
 var outputBuffer: string
 var arrivalTimes: seq[int] = @[]
 var departureTimes: seq[int] = @[]
@@ -129,22 +129,22 @@ The read loop ends when `readLine` returns false. The three sequences are reused
 **Case reader and sort.** The outer loop runs once per case while tokens remain.
 
 ```nim
-while hasToken(inputData, scanPos):
-  var crimeStart = nextInt(inputData, scanPos)
-  var crimeEnd = nextInt(inputData, scanPos)
-  var peopleCount = nextInt(inputData, scanPos)
+while hasToken(inputData, i):
+  var crimeStart = nextInt(inputData, i)
+  var crimeEnd = nextInt(inputData, i)
+  var peopleCount = nextInt(inputData, i)
 
   arrivalTimes.setLen(peopleCount)
   departureTimes.setLen(peopleCount)
   criticalTimes.setLen(2 * peopleCount + 2)
 
-  for personIndex in 0 ..< peopleCount:
-    var arrival = nextInt(inputData, scanPos)
-    var departure = nextInt(inputData, scanPos)
-    arrivalTimes[personIndex] = arrival
-    departureTimes[personIndex] = departure
-    criticalTimes[2 * personIndex] = arrival
-    criticalTimes[2 * personIndex + 1] = departure
+  for j in 0 ..< peopleCount:
+    var arrival = nextInt(inputData, i)
+    var departure = nextInt(inputData, i)
+    arrivalTimes[j] = arrival
+    departureTimes[j] = departure
+    criticalTimes[2 * j] = arrival
+    criticalTimes[2 * j + 1] = departure
 
   criticalTimes[2 * peopleCount] = crimeStart
   criticalTimes[2 * peopleCount + 1] = crimeEnd
@@ -160,9 +160,9 @@ The closed form of the moment count is 2n + 2. The `for` loop bound is `peopleCo
 
 ```nim
   var uniqueCount = 0
-  for timeIndex in 0 ..< criticalTimes.len:
-    if timeIndex == 0 or criticalTimes[timeIndex] != criticalTimes[timeIndex - 1]:
-      criticalTimes[uniqueCount] = criticalTimes[timeIndex]
+  for j in 0 ..< criticalTimes.len:
+    if j == 0 or criticalTimes[j] != criticalTimes[j - 1]:
+      criticalTimes[uniqueCount] = criticalTimes[j]
       uniqueCount = uniqueCount + 1
   criticalTimes.setLen(uniqueCount)
 ```
@@ -173,23 +173,23 @@ The write goes into the same sequence, so no second array is built. This step re
 
 ```nim
   var presentCount = 0
-  var arrivalIndex = 0
-  var departureIndex = 0
+  var k = 0
+  var l = 0
   var minPresent = high(int)
   var maxPresent = -1
 
-  for timeIndex in 0 ..< criticalTimes.len:
-    var moment = criticalTimes[timeIndex]
-    while arrivalIndex < peopleCount and arrivalTimes[arrivalIndex] <= moment:
+  for j in 0 ..< criticalTimes.len:
+    var moment = criticalTimes[j]
+    while k < peopleCount and arrivalTimes[k] <= moment:
       presentCount = presentCount + 1
-      arrivalIndex = arrivalIndex + 1
+      k = k + 1
     if crimeStart <= moment and moment <= crimeEnd:
       if presentCount < minPresent: minPresent = presentCount
       if presentCount > maxPresent: maxPresent = presentCount
-    while departureIndex < peopleCount and departureTimes[departureIndex] <= moment:
+    while l < peopleCount and departureTimes[l] <= moment:
       presentCount = presentCount - 1
-      departureIndex = departureIndex + 1
-    if timeIndex + 1 < criticalTimes.len and moment < crimeEnd and criticalTimes[timeIndex + 1] > crimeStart:
+      l = l + 1
+    if j + 1 < criticalTimes.len and moment < crimeEnd and criticalTimes[j + 1] > crimeStart:
       if presentCount < minPresent: minPresent = presentCount
       if presentCount > maxPresent: maxPresent = presentCount
 ```

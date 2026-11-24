@@ -3,50 +3,50 @@ var inputLine = ""
 while stdin.readLine(inputLine):
   inputData.add(inputLine)
   inputData.add('\n')
-var scanPos = 0
+var i = 0
 
 proc skipToLowercase() =
-  while scanPos < inputData.len and (inputData[scanPos] < 'a' or inputData[scanPos] > 'z'):
-    inc scanPos
+  while i < inputData.len and (inputData[i] < 'a' or inputData[i] > 'z'):
+    inc i
 
 proc readCaseCount(): int =
   var value = 0
-  while scanPos < inputData.len and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    inc scanPos
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + (ord(inputData[scanPos]) - 48)
-    inc scanPos
+  while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
+    inc i
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + (ord(inputData[i]) - 48)
+    inc i
   return value
 
 proc readNecklace(): string =
   skipToLowercase()
-  var start = scanPos
-  while scanPos < inputData.len and inputData[scanPos] >= 'a' and inputData[scanPos] <= 'z':
-    inc scanPos
-  return inputData[start .. scanPos - 1]
+  var j = i
+  while i < inputData.len and inputData[i] >= 'a' and inputData[i] <= 'z':
+    inc i
+  return inputData[j .. i - 1]
 
 proc worstDisjoinStart(beads: string): int =
   let beadCount = beads.len
   if beadCount < 2:
     return 0
   let doubled = beads & beads
-  var leftIndex = 0
-  var rightIndex = 1
-  while leftIndex < beadCount and rightIndex < beadCount:
+  var i = 0
+  var j = 1
+  while i < beadCount and j < beadCount:
     var matchCount = 0
-    while matchCount < beadCount and doubled[leftIndex + matchCount] == doubled[rightIndex + matchCount]:
+    while matchCount < beadCount and doubled[i + matchCount] == doubled[j + matchCount]:
       inc matchCount
     if matchCount >= beadCount:
       break
-    if doubled[leftIndex + matchCount] > doubled[rightIndex + matchCount]:
-      leftIndex = leftIndex + matchCount + 1
-      if leftIndex == rightIndex:
-        inc leftIndex
+    if doubled[i + matchCount] > doubled[j + matchCount]:
+      i = i + matchCount + 1
+      if i == j:
+        inc i
     else:
-      rightIndex = rightIndex + matchCount + 1
-      if leftIndex == rightIndex:
-        inc rightIndex
-  return min(leftIndex, rightIndex)
+      j = j + matchCount + 1
+      if i == j:
+        inc j
+  return min(i, j)
 
 var outputBuffer = ""
 const flushBlockBytes = 1 shl 18
@@ -57,7 +57,7 @@ proc flushOutput() =
     outputBuffer.setLen(0)
 
 let caseCount = readCaseCount()
-for caseIndex in 0 ..< caseCount:
+for i in 0 ..< caseCount:
   let beads = readNecklace()
   outputBuffer.add($(worstDisjoinStart(beads) + 1))
   outputBuffer.add('\n')

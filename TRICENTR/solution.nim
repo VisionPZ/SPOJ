@@ -8,58 +8,58 @@ proc readAllInput(): string =
     result.add currentLine
     result.add '\n'
 
-proc nextInteger(inputData: string, scanPos: var int): int =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ':
-    inc scanPos
+proc nextInteger(inputData: string, i: var int): int =
+  while i < inputData.len and inputData[i] <= ' ':
+    inc i
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + (ord(inputData[scanPos]) - 48)
-    inc scanPos
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + (ord(inputData[i]) - 48)
+    inc i
   return value
 
-proc nextDecimal(inputData: string, scanPos: var int): float =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ':
-    inc scanPos
+proc nextDecimal(inputData: string, i: var int): float =
+  while i < inputData.len and inputData[i] <= ' ':
+    inc i
   var sign = 1.0
-  if scanPos < inputData.len and inputData[scanPos] == '-':
+  if i < inputData.len and inputData[i] == '-':
     sign = -1.0
-    inc scanPos
-  elif scanPos < inputData.len and inputData[scanPos] == '+':
-    inc scanPos
+    inc i
+  elif i < inputData.len and inputData[i] == '+':
+    inc i
   var significand = 0.0
   var decimalDigits = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    significand = significand * 10.0 + float(ord(inputData[scanPos]) - 48)
-    inc scanPos
-  if scanPos < inputData.len and inputData[scanPos] == '.':
-    inc scanPos
-    while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-      significand = significand * 10.0 + float(ord(inputData[scanPos]) - 48)
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    significand = significand * 10.0 + float(ord(inputData[i]) - 48)
+    inc i
+  if i < inputData.len and inputData[i] == '.':
+    inc i
+    while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+      significand = significand * 10.0 + float(ord(inputData[i]) - 48)
       inc decimalDigits
-      inc scanPos
+      inc i
   var scale = 1.0
-  var digitIndex = 0
-  while digitIndex < decimalDigits:
+  var j = 0
+  while j < decimalDigits:
     scale = scale * 10.0
-    inc digitIndex
+    inc j
   result = sign * (significand / scale)
-  if scanPos < inputData.len and (inputData[scanPos] == 'e' or inputData[scanPos] == 'E'):
-    inc scanPos
+  if i < inputData.len and (inputData[i] == 'e' or inputData[i] == 'E'):
+    inc i
     var exponentSign = 1
-    if scanPos < inputData.len and inputData[scanPos] == '-':
+    if i < inputData.len and inputData[i] == '-':
       exponentSign = -1
-      inc scanPos
-    elif scanPos < inputData.len and inputData[scanPos] == '+':
-      inc scanPos
+      inc i
+    elif i < inputData.len and inputData[i] == '+':
+      inc i
     var exponentValue = 0
-    while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-      exponentValue = exponentValue * 10 + (ord(inputData[scanPos]) - 48)
-      inc scanPos
+    while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+      exponentValue = exponentValue * 10 + (ord(inputData[i]) - 48)
+      inc i
     var exponentScale = 1.0
-    digitIndex = 0
-    while digitIndex < exponentValue:
+    j = 0
+    while j < exponentValue:
       exponentScale = exponentScale * 10.0
-      inc digitIndex
+      inc j
     if exponentSign > 0:
       result = result * exponentScale
     else:
@@ -67,15 +67,15 @@ proc nextDecimal(inputData: string, scanPos: var int): float =
 
 proc main() =
   let inputData = readAllInput()
-  var scanPos = 0
-  let caseCount = nextInteger(inputData, scanPos)
+  var i = 0
+  let caseCount = nextInteger(inputData, i)
   var outputBuffer = ""
-  var caseIndex = 0
-  while caseIndex < caseCount:
-    let sideLength = nextDecimal(inputData, scanPos)
-    let distToSideA = nextDecimal(inputData, scanPos)
-    let distToSideB = nextDecimal(inputData, scanPos)
-    let distToSideC = nextDecimal(inputData, scanPos)
+  var j = 0
+  while j < caseCount:
+    let sideLength = nextDecimal(inputData, i)
+    let distToSideA = nextDecimal(inputData, i)
+    let distToSideB = nextDecimal(inputData, i)
+    let distToSideC = nextDecimal(inputData, i)
     let triangleArea = 1.5 * sideLength * distToSideA
     let otherSideB = sideLength * distToSideA / distToSideB
     let otherSideC = sideLength * distToSideA / distToSideC
@@ -91,7 +91,7 @@ proc main() =
     if outputBuffer.len >= flushBlockBytes:
       stdout.write outputBuffer
       outputBuffer.setLen 0
-    inc caseIndex
+    inc j
   stdout.write outputBuffer
 
 main()

@@ -73,7 +73,7 @@ const
 
 var
   inputData = ""
-  scanPosition = 0
+  i = 0
   outputBuffer = ""
   segmentLow: seq[int]
   segmentHigh: seq[int]
@@ -102,11 +102,11 @@ The loop reads the whole stream once into one buffer, so scanning never calls th
 ```nim
 proc nextInteger(): int =
   var numberValue = 0
-  while scanPosition < inputData.len and inputData[scanPosition] < zeroCharacter:
-    inc scanPosition
-  while scanPosition < inputData.len and inputData[scanPosition] >= zeroCharacter:
-    numberValue = numberValue * 10 + int(inputData[scanPosition]) - digitBase
-    inc scanPosition
+  while i < inputData.len and inputData[i] < zeroCharacter:
+    inc i
+  while i < inputData.len and inputData[i] >= zeroCharacter:
+    numberValue = numberValue * 10 + int(inputData[i]) - digitBase
+    inc i
   result = numberValue
 ```
 
@@ -124,34 +124,34 @@ proc appendResult(answerValue: int64) =
 The buffer holds at most one block plus one answer. A large answer needs 64 bits.
 
 ```nim
-proc assignCover(nodeIndex: int, leftBound: int, rightBound: int,
+proc assignCover(i: int, leftBound: int, rightBound: int,
                  queryLeft: int, queryRight: int, coverValue: int) =
   if queryLeft <= leftBound and rightBound <= queryRight:
-    coverTree[nodeIndex] = coverValue
+    coverTree[i] = coverValue
     return
-  if coverTree[nodeIndex] >= 0:
-    coverTree[nodeIndex * 2] = coverTree[nodeIndex]
-    coverTree[nodeIndex * 2 + 1] = coverTree[nodeIndex]
-    coverTree[nodeIndex] = -1
+  if coverTree[i] >= 0:
+    coverTree[i * 2] = coverTree[i]
+    coverTree[i * 2 + 1] = coverTree[i]
+    coverTree[i] = -1
   let middle = (leftBound + rightBound) div 2
   if queryLeft <= middle:
-    assignCover(nodeIndex * 2, leftBound, middle, queryLeft, queryRight, coverValue)
+    assignCover(i * 2, leftBound, middle, queryLeft, queryRight, coverValue)
   if queryRight > middle:
-    assignCover(nodeIndex * 2 + 1, middle + 1, rightBound, queryLeft, queryRight, coverValue)
-  if coverTree[nodeIndex * 2] == coverTree[nodeIndex * 2 + 1]:
-    coverTree[nodeIndex] = coverTree[nodeIndex * 2]
+    assignCover(i * 2 + 1, middle + 1, rightBound, queryLeft, queryRight, coverValue)
+  if coverTree[i * 2] == coverTree[i * 2 + 1]:
+    coverTree[i] = coverTree[i * 2]
   else:
-    coverTree[nodeIndex] = -1
+    coverTree[i] = -1
 ```
 
 A full node takes one assignment. A partial node pushes its uniform value to both children before the recursion, which avoids stale children. The work per segment is O(log 16001).
 
 ```nim
-proc collectCovers(nodeIndex: int, leftBound: int, rightBound: int,
+proc collectCovers(i: int, leftBound: int, rightBound: int,
                    queryLeft: int, queryRight: int, collected: var seq[int]) =
   if rightBound < queryLeft or leftBound > queryRight:
     return
-  let nodeCover = coverTree[nodeIndex]
+  let nodeCover = coverTree[i]
   if nodeCover >= 0:
     if nodeCover > 0:
       collected.add nodeCover
@@ -159,8 +159,8 @@ proc collectCovers(nodeIndex: int, leftBound: int, rightBound: int,
   if leftBound == rightBound:
     return
   let middle = (leftBound + rightBound) div 2
-  collectCovers(nodeIndex * 2, leftBound, middle, queryLeft, queryRight, collected)
-  collectCovers(nodeIndex * 2 + 1, middle + 1, rightBound, queryLeft, queryRight, collected)
+  collectCovers(i * 2, leftBound, middle, queryLeft, queryRight, collected)
+  collectCovers(i * 2 + 1, middle + 1, rightBound, queryLeft, queryRight, collected)
 ```
 
 A uniform node adds one id and stops. A mixed node splits until uniform pieces appear. Each visible pair appears at least once in the list.
@@ -169,27 +169,27 @@ A uniform node adds one id and stops. A mixed node splits until uniform pieces a
 proc solveDataset(segmentCount: int): int64 =
   wordCount = (segmentCount + wordMask) div bitsPerWord
   adjacency = newSeq[uint64](segmentCount * wordCount)
-  for xPosition in 0..maxCoordinate:
-    xCounts[xPosition] = 0
+  for i in 0..maxCoordinate:
+    xCounts[i] = 0
   for segmentId in 0..<segmentCount:
     inc xCounts[segmentX[segmentId]]
-  var runningIndex = 0
-  for xPosition in 0..maxCoordinate:
-    let bucketSize = xCounts[xPosition]
-    xCounts[xPosition] = runningIndex
-    runningIndex += bucketSize
+  var j = 0
+  for i in 0..maxCoordinate:
+    let bucketSize = xCounts[i]
+    xCounts[i] = j
+    j += bucketSize
   for segmentId in 0..<segmentCount:
-    let xPosition = segmentX[segmentId]
-    visitOrder[xCounts[xPosition]] = segmentId
-    inc xCounts[xPosition]
-  for treeIndex in 0..<treeEntryCount:
-    coverTree[treeIndex] = 0
+    let i = segmentX[segmentId]
+    visitOrder[xCounts[i]] = segmentId
+    inc xCounts[i]
+  for i in 0..<treeEntryCount:
+    coverTree[i] = 0
   for segmentId in 0..<segmentCount:
     seenStamp[segmentId] = 0
   currentStamp = 0
   var collected: seq[int] = @[]
-  for orderIndex in 0..<segmentCount:
-    let currentId = visitOrder[orderIndex]
+  for i in 0..<segmentCount:
+    let currentId = visitOrder[i]
     inc currentStamp
     collected.setLen 0
     let lowPosition = 2 * segmentLow[currentId]
@@ -210,18 +210,18 @@ Counting by x replaces sorting with one pass over 8001 buckets. The stamp array 
   var triangleSum = 0'i64
   for fromId in 0..<segmentCount:
     let fromBase = fromId * wordCount
-    for wordIndex in 0..<wordCount:
-      var remainingBits = adjacency[fromBase + wordIndex]
+    for i in 0..<wordCount:
+      var remainingBits = adjacency[fromBase + i]
       while remainingBits != 0'u64:
         let lowestBit = remainingBits and (0'u64 - remainingBits)
-        let toId = wordIndex * bitsPerWord + countTrailingZeros(lowestBit)
+        let toId = i * bitsPerWord + countTrailingZeros(lowestBit)
         remainingBits = remainingBits xor lowestBit
         if toId > fromId:
           let toBase = toId * wordCount
           var sharedCount = 0
-          for innerWord in 0..<wordCount:
-            sharedCount += countSetBits(adjacency[fromBase + innerWord] and
-                                        adjacency[toBase + innerWord])
+          for j in 0..<wordCount:
+            sharedCount += countSetBits(adjacency[fromBase + j] and
+                                        adjacency[toBase + j])
           triangleSum += int64(sharedCount)
   result = triangleSum div 3'i64
 ```
@@ -238,7 +238,7 @@ proc main() =
   visitOrder = newSeq[int](maxCoordinate)
   seenStamp = newSeq[int](maxCoordinate)
   coverTree = newSeq[int](treeEntryCount)
-  for datasetIndex in 0..<datasetCount:
+  for j in 0..<datasetCount:
     let segmentCount = nextInteger()
     for segmentId in 0..<segmentCount:
       segmentLow[segmentId] = nextInteger()

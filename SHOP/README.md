@@ -26,7 +26,7 @@ The grid is stored row by row in one array.
 
 | term | meaning |
 |---|---|
-| `rowStart + col` | flat index of a cell in the current row |
+| `rowStart + k` | flat index of a cell in the current row |
 | `settledCell div width` | row of a settled cell |
 | `settledCell mod width` | column of a settled cell |
 | `currentDistance + stepCost` | candidate distance of a neighbour |
@@ -89,22 +89,22 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
 proc skipWhitespace() =
-  while scanPos < inputData.len and inputData[scanPos] <= ' ':
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] <= ' ':
+    i = i + 1
 
 proc readInteger(): int =
   skipWhitespace()
   var value = 0
-  while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + (int(inputData[scanPos]) - firstDigitValue)
-    scanPos = scanPos + 1
+  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + (int(inputData[i]) - firstDigitValue)
+    i = i + 1
   return value
 ```
 
-`inputData` holds the whole input, and `scanPos` walks it by index. The read loop ends when `readLine` returns false. `readInteger` skips blank lines between cases and costs one pass over the digits.
+`inputData` holds the whole input, and `i` walks it by index. The read loop ends when `readLine` returns false. `readInteger` skips blank lines between cases and costs one pass over the digits.
 
 **Shared arrays and enqueue.**
 
@@ -117,19 +117,19 @@ var bucketNext = newSeq[int](nodeCapacity)
 var touchedBuckets: seq[int]
 var nodeTotal = 0
 
-proc enqueueNode(distanceIndex: int, cellIndex: int) =
-  if distanceIndex >= bucketTotal or nodeTotal >= nodeCapacity:
+proc enqueueNode(i: int, j: int) =
+  if i >= bucketTotal or nodeTotal >= nodeCapacity:
     return
-  if bucketHead[distanceIndex] == -1:
-    touchedBuckets.add distanceIndex
-  bucketNext[nodeTotal] = bucketHead[distanceIndex]
-  bucketHead[distanceIndex] = nodeTotal
-  bucketVertex[nodeTotal] = cellIndex
+  if bucketHead[i] == -1:
+    touchedBuckets.add i
+  bucketNext[nodeTotal] = bucketHead[i]
+  bucketHead[i] = nodeTotal
+  bucketVertex[nodeTotal] = j
   nodeTotal = nodeTotal + 1
 
 proc resetBuckets() =
-  for distanceIndex in touchedBuckets:
-    bucketHead[distanceIndex] = -1
+  for i in touchedBuckets:
+    bucketHead[i] = -1
   touchedBuckets.setLen 0
 
 proc tryRelax(neighborCell: int, currentDistance: int) =
@@ -153,8 +153,8 @@ proc tryRelax(neighborCell: int, currentDistance: int) =
 proc shortestPathCost(width: int, height: int, startCell: int, targetCell: int): int =
   let cellCount = width * height
   distanceValue.setLen(cellCount)
-  for cellIndex in 0 .. cellCount - 1:
-    distanceValue[cellIndex] = unreachableCost
+  for j in 0 .. cellCount - 1:
+    distanceValue[j] = unreachableCost
   nodeTotal = 0
   resetBuckets()
   distanceValue[startCell] = 0
@@ -162,24 +162,24 @@ proc shortestPathCost(width: int, height: int, startCell: int, targetCell: int):
   var currentDistance = 0
   while true:
     while true:
-      let nodeIndex = bucketHead[currentDistance]
-      if nodeIndex < 0:
+      let i = bucketHead[currentDistance]
+      if i < 0:
         break
-      bucketHead[currentDistance] = bucketNext[nodeIndex]
-      let settledCell = bucketVertex[nodeIndex]
+      bucketHead[currentDistance] = bucketNext[i]
+      let settledCell = bucketVertex[i]
       if distanceValue[settledCell] != currentDistance:
         continue
       if settledCell == targetCell:
         return currentDistance
-      let row = settledCell div width
-      let col = settledCell mod width
-      if row > 0:
+      let j = settledCell div width
+      let k = settledCell mod width
+      if j > 0:
         tryRelax(settledCell - width, currentDistance)
-      if row < height - 1:
+      if j < height - 1:
         tryRelax(settledCell + width, currentDistance)
-      if col > 0:
+      if k > 0:
         tryRelax(settledCell - 1, currentDistance)
-      if col < width - 1:
+      if k < width - 1:
         tryRelax(settledCell + 1, currentDistance)
     currentDistance = currentDistance + 1
     while currentDistance < bucketTotal and bucketHead[currentDistance] == -1:
@@ -201,17 +201,17 @@ while width != 0 or height != 0:
   gridCells.setLen(cellCount)
   var startCell = -1
   var targetCell = -1
-  for row in 0 .. height - 1:
-    let rowStart = row * width
+  for j in 0 .. height - 1:
+    let rowStart = j * width
     skipWhitespace()
-    for col in 0 .. width - 1:
-      let cellChar = inputData[scanPos]
-      scanPos = scanPos + 1
-      gridCells[rowStart + col] = cellChar
+    for k in 0 .. width - 1:
+      let cellChar = inputData[i]
+      i = i + 1
+      gridCells[rowStart + k] = cellChar
       if cellChar == 'S':
-        startCell = rowStart + col
+        startCell = rowStart + k
       if cellChar == 'D':
-        targetCell = rowStart + col
+        targetCell = rowStart + k
   let answer = shortestPathCost(width, height, startCell, targetCell)
   outputBuffer.add $answer
   outputBuffer.add "\n"

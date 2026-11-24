@@ -44,7 +44,7 @@ These terms drive the update.
 | `arrivalTime` | time the current train reaches its destination |
 | `currentDeparture` | departure of the group now being processed |
 
-`foundIndex` is the largest stored index whose departure is at least `arrivalTime`. `suffixArrival` is that pair's arrival, the earliest trip end the train can still reach. A pair enters the frontier when `candidateArrival` is smaller than the last stored arrival.
+`l` is the largest stored index whose departure is at least `arrivalTime`. `suffixArrival` is that pair's arrival, the earliest trip end the train can still reach. A pair enters the frontier when `candidateArrival` is smaller than the last stored arrival.
 
 This trace uses the sample input, which gen.py checks.
 
@@ -71,7 +71,7 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 ```
 
 The read loop runs to EOF, so all input lands in one string. `minuteCount` bounds every time index. Cost: one pass over the input bytes.
@@ -79,17 +79,17 @@ The read loop runs to EOF, so all input lands in one string. `minuteCount` bound
 **Digit scanner.**
 
 ```nim
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 ```
 
-The scanner skips colons and spaces, since every number is non-negative. `position` advances by index and builds no token object. Cost: one pass over each number's digits.
+The scanner skips colons and spaces, since every number is non-negative. `i` advances by index and builds no token object. Cost: one pass over each number's digits.
 
 **Output helpers.**
 
@@ -121,18 +121,18 @@ type JourneyFrontier = seq[tuple[departure: int; arrival: int]]
 
 proc earliestSuffixArrival(frontier: JourneyFrontier, earliestDeparture: int): int =
   if frontier.len == 0: return high(int)
-  var lowIndex = 0
-  var highIndex = frontier.len - 1
-  var foundIndex = -1
-  while lowIndex <= highIndex:
-    let middleIndex = (lowIndex + highIndex) div 2
-    if frontier[middleIndex].departure >= earliestDeparture:
-      foundIndex = middleIndex
-      lowIndex = middleIndex + 1
+  var i = 0
+  var j = frontier.len - 1
+  var l = -1
+  while i <= j:
+    let k = (i + j) div 2
+    if frontier[k].departure >= earliestDeparture:
+      l = k
+      i = k + 1
     else:
-      highIndex = middleIndex - 1
-  if foundIndex < 0: return high(int)
-  return frontier[foundIndex].arrival
+      j = k - 1
+  if l < 0: return high(int)
+  return frontier[l].arrival
 ```
 
 The search finds the rightmost pair whose departure is at least `earliestDeparture`. That pair has the smallest arrival among feasible suffixes. `high(int)` marks an unreachable destination. Cost: at most 11 comparisons.
@@ -159,24 +159,24 @@ The program reuses these arrays across cases. `setLen 0` clears a sequence witho
 **Input for one case.**
 
 ```nim
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 0..<caseCount:
-  let cityCount = nextInt(inputData, scanPos)
+let caseCount = nextInt(inputData, i)
+for j in 0..<caseCount:
+  let cityCount = nextInt(inputData, i)
   departureTimes.setLen 0
   arrivalTimes.setLen 0
   sourceCities.setLen 0
   destinationCities.setLen 0
-  for cityNumber in 1..cityCount:
-    let positionCount = nextInt(inputData, scanPos)
-    for positionIndex in 0..<positionCount:
-      let departHour = nextInt(inputData, scanPos)
-      let departMinute = nextInt(inputData, scanPos)
-      let arriveHour = nextInt(inputData, scanPos)
-      let arriveMinute = nextInt(inputData, scanPos)
-      let targetCity = nextInt(inputData, scanPos)
+  for k in 1..cityCount:
+    let positionCount = nextInt(inputData, i)
+    for l in 0..<positionCount:
+      let departHour = nextInt(inputData, i)
+      let departMinute = nextInt(inputData, i)
+      let arriveHour = nextInt(inputData, i)
+      let arriveMinute = nextInt(inputData, i)
+      let targetCity = nextInt(inputData, i)
       departureTimes.add departHour * 60 + departMinute
       arrivalTimes.add arriveHour * 60 + arriveMinute
-      sourceCities.add cityNumber
+      sourceCities.add k
       destinationCities.add targetCity
   let trainCount = departureTimes.len
 ```
@@ -186,19 +186,19 @@ Two digit reads build each clock time, so colons need no special handling. Each 
 **Counting sort by departure.**
 
 ```nim
-  for minuteIndex in 0..<minuteCount: departureCounts[minuteIndex] = 0
-  for trainIndex in 0..<trainCount:
-    departureCounts[departureTimes[trainIndex]] += 1
+  for k in 0..<minuteCount: departureCounts[k] = 0
+  for k in 0..<trainCount:
+    departureCounts[departureTimes[k]] += 1
   var runningSlot = 0
-  var minuteIndex = minuteCount - 1
-  while minuteIndex >= 0:
-    nextSlot[minuteIndex] = runningSlot
-    runningSlot += departureCounts[minuteIndex]
-    minuteIndex -= 1
+  var k = minuteCount - 1
+  while k >= 0:
+    nextSlot[k] = runningSlot
+    runningSlot += departureCounts[k]
+    k -= 1
   trainOrder.setLen trainCount
-  for trainIndex in 0..<trainCount:
-    let departTime = departureTimes[trainIndex]
-    trainOrder[nextSlot[departTime]] = trainIndex
+  for k in 0..<trainCount:
+    let departTime = departureTimes[k]
+    trainOrder[nextSlot[departTime]] = k
     nextSlot[departTime] += 1
 ```
 
@@ -208,24 +208,24 @@ The minute scan runs from 1439 down to 0, so `trainOrder` starts at the latest d
 
 ```nim
   cityFrontiers.setLen cityCount + 1
-  for cityNumber in 0..cityCount: cityFrontiers[cityNumber].setLen 0
+  for k in 0..cityCount: cityFrontiers[k].setLen 0
   bestArrivalByCity.setLen cityCount + 1
   cityStamp.setLen cityCount + 1
 
-  var orderIndex = 0
-  while orderIndex < trainCount:
-    let currentDeparture = departureTimes[trainOrder[orderIndex]]
-    var groupEnd = orderIndex
-    while groupEnd < trainCount and departureTimes[trainOrder[groupEnd]] == currentDeparture:
-      groupEnd += 1
+  var l = 0
+  while l < trainCount:
+    let currentDeparture = departureTimes[trainOrder[l]]
+    var k = l
+    while k < trainCount and departureTimes[trainOrder[k]] == currentDeparture:
+      k += 1
     stampValue += 1
     touchedCities.setLen 0
-    for scanIndex in orderIndex..<groupEnd:
-      let trainIndex = trainOrder[scanIndex]
-      let sourceCity = sourceCities[trainIndex]
+    for i in l..<k:
+      let k = trainOrder[i]
+      let sourceCity = sourceCities[k]
       if sourceCity == cityCount: continue
-      let targetCity = destinationCities[trainIndex]
-      let arrivalTime = arrivalTimes[trainIndex]
+      let targetCity = destinationCities[k]
+      let arrivalTime = arrivalTimes[k]
       var suffixArrival: int
       if targetCity == cityCount:
         suffixArrival = arrivalTime
@@ -243,7 +243,7 @@ The minute scan runs from 1439 down to 0, so `trainOrder` starts at the latest d
       let frontierSize = cityFrontiers[sourceCity].len
       if frontierSize > 0 and candidateArrival >= cityFrontiers[sourceCity][frontierSize - 1].arrival: continue
       cityFrontiers[sourceCity].add (currentDeparture, candidateArrival)
-    orderIndex = groupEnd
+    l = k
 ```
 
 The outer loop visits each departure group once. Trains that share a departure collapse to the smallest arrival per source city. The last-entry test drops dominated pairs. Cost: O(trainCount log 1440).
@@ -257,11 +257,11 @@ The outer loop visits each departure group once. Trains that share a departure c
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
-  for frontierIndex in 0..<answerFrontier.len:
-    let storedIndex = answerFrontier.len - 1 - frontierIndex
-    appendClockTime(answerFrontier[storedIndex].departure)
+  for k in 0..<answerFrontier.len:
+    let l = answerFrontier.len - 1 - k
+    appendClockTime(answerFrontier[l].departure)
     outputBuffer.add ' '
-    appendClockTime(answerFrontier[storedIndex].arrival)
+    appendClockTime(answerFrontier[l].arrival)
     outputBuffer.add '\n'
     if outputBuffer.len >= flushBlockBytes:
       stdout.write outputBuffer

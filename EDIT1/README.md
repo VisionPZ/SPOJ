@@ -28,12 +28,12 @@ Cost per key press: one byte append, or L copies when `d` doubles a line of leng
 
 Only the current line changes during editing, so one string holds the whole editable state. Doubling writes each source byte once into the second half, and the destination index always exceeds the source index. A newline on an empty current line is the stop signal, so that empty line is never printed. Block flushing keeps the buffer at 128 KiB and produces one write per block.
 
-The doubling step uses this index rule for each `idx` below `originalLength`:
+The doubling step uses this index rule for each `i` below `originalLength`:
 
 - `originalLength` is the line length before doubling.
 - `doubledLength` is twice that length and becomes the new length.
-- `idx` walks the first half from its first byte to its last byte.
-- `originalLength + idx` is the target slot in the second half.
+- `i` walks the first half from its first byte to its last byte.
+- `originalLength + i` is the target slot in the second half.
 
 The sample input produces three lines. This table comes from a script that applies the rules above.
 
@@ -60,8 +60,8 @@ proc doubleLine(line: var string) =
   let originalLength = line.len
   let doubledLength = originalLength * 2
   line.setLen(doubledLength)
-  for idx in 0 ..< originalLength:
-    line[originalLength + idx] = line[idx]
+  for i in 0 ..< originalLength:
+    line[originalLength + i] = line[i]
 ```
 
 The copy loop runs `originalLength` times, once per byte in the first half. The forward order keeps each source byte intact until after it is copied. Doubling a line of length L costs L byte copies.
@@ -88,12 +88,12 @@ The editor loop walks the buffer once:
 ```nim
 var currentLine = ""
 var outputBuffer = ""
-var scanPos = 0
+var i = 0
 
-while scanPos < inputData.len:
-  let keyByte = inputData[scanPos]
+while i < inputData.len:
+  let keyByte = inputData[i]
   if keyByte == newlineKey:
-    scanPos += 1
+    i += 1
     if currentLine.len == 0:
       break
     outputBuffer.add currentLine
@@ -103,14 +103,14 @@ while scanPos < inputData.len:
       stdout.write outputBuffer
       outputBuffer.setLen(0)
   elif keyByte == duplicateKey:
-    scanPos += 1
+    i += 1
     doubleLine(currentLine)
   else:
     currentLine.add keyByte
-    scanPos += 1
+    i += 1
 ```
 
-The scan runs while `scanPos` is below `inputData.len`, the exact input size. Breaking on an empty current line drops the stop signal from the output. Each finished line costs one append into `outputBuffer`.
+The scan runs while `i` is below `inputData.len`, the exact input size. Breaking on an empty current line drops the stop signal from the output. Each finished line costs one append into `outputBuffer`.
 
 The final flush:
 

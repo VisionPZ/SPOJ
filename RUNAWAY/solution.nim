@@ -30,20 +30,20 @@ var bestDistanceSquared = -1.0
 var bestX = 0.0
 var bestY = 0.0
 
-proc nextInt(inputData: string, scanPos: var int): int =
+proc nextInt(inputData: string, i: var int): int =
   let inputLength = inputData.len
-  while scanPos < inputLength:
-    let currentChar = inputData[scanPos]
+  while i < inputLength:
+    let currentChar = inputData[i]
     if currentChar >= '0' and currentChar <= '9':
       break
-    inc scanPos
+    inc i
   var parsedValue = 0
-  while scanPos < inputLength:
-    let currentChar = inputData[scanPos]
+  while i < inputLength:
+    let currentChar = inputData[i]
     if currentChar < '0' or currentChar > '9':
       break
     parsedValue = parsedValue * 10 + (ord(currentChar) - firstDigitValue)
-    inc scanPos
+    inc i
   return parsedValue
 
 proc compareHoles(left, right: HolePoint): int =
@@ -123,9 +123,9 @@ proc insideCircumcircle(first, second, third, probe: HolePoint): bool =
 proc addMeshEdge(meshEdges: var seq[MeshEdge], endpointA, endpointB: int) =
   let edgeStart = min(endpointA, endpointB)
   let edgeEnd = max(endpointA, endpointB)
-  for edgeIndex in 0 ..< meshEdges.len:
-    if meshEdges[edgeIndex].first == edgeStart and meshEdges[edgeIndex].second == edgeEnd:
-      meshEdges.delete(edgeIndex)
+  for i in 0 ..< meshEdges.len:
+    if meshEdges[i].first == edgeStart and meshEdges[i].second == edgeEnd:
+      meshEdges.delete(i)
       return
   meshEdges.add(MeshEdge(first: edgeStart, second: edgeEnd))
 
@@ -147,8 +147,8 @@ proc buildTriangulation(holes: seq[HolePoint]): (seq[Triangle], seq[HolePoint]) 
   allPoints.add(HolePoint(x: middleX, y: middleY + 20.0 * span))
   var triangles: seq[Triangle] = @[]
   triangles.add(Triangle(first: pointCount, second: pointCount + 1, third: pointCount + 2))
-  for pointIndex in 0 ..< pointCount:
-    let probe = allPoints[pointIndex]
+  for i in 0 ..< pointCount:
+    let probe = allPoints[i]
     var meshEdges: seq[MeshEdge] = @[]
     var retained: seq[Triangle] = @[]
     for triangle in triangles:
@@ -160,7 +160,7 @@ proc buildTriangulation(holes: seq[HolePoint]): (seq[Triangle], seq[HolePoint]) 
         retained.add(triangle)
     triangles = retained
     for meshEdge in meshEdges:
-      triangles.add(Triangle(first: meshEdge.first, second: meshEdge.second, third: pointIndex))
+      triangles.add(Triangle(first: meshEdge.first, second: meshEdge.second, third: i))
   var realTriangles: seq[Triangle] = @[]
   for triangle in triangles:
     if triangle.first < pointCount and triangle.second < pointCount and triangle.third < pointCount:
@@ -176,10 +176,10 @@ proc envelopeBreakpoints(lines: seq[EnvelopeLine], lowBound, highBound: float): 
   var reduced: seq[EnvelopeLine] = @[]
   for line in lines:
     var matching = false
-    for lineIndex in 0 ..< reduced.len:
-      if abs(reduced[lineIndex].slope - line.slope) < degenerateEpsilon:
-        if line.intercept < reduced[lineIndex].intercept:
-          reduced[lineIndex].intercept = line.intercept
+    for i in 0 ..< reduced.len:
+      if abs(reduced[i].slope - line.slope) < degenerateEpsilon:
+        if line.intercept < reduced[i].intercept:
+          reduced[i].intercept = line.intercept
         matching = true
         break
     if not matching:
@@ -211,8 +211,8 @@ proc envelopeBreakpoints(lines: seq[EnvelopeLine], lowBound, highBound: float): 
       else:
         let crossing = (lastLine.intercept - line.intercept) / slopeGap
         stack.add(EnvelopeLine(slope: line.slope, intercept: line.intercept, startAt: crossing))
-  for lineIndex in 1 ..< stack.len:
-    let crossing = stack[lineIndex].startAt
+  for i in 1 ..< stack.len:
+    let crossing = stack[i].startAt
     if crossing > lowBound and crossing < highBound:
       crossings.add(crossing)
   return crossings
@@ -251,18 +251,18 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
-let testCount = nextInt(inputData, scanPos)
+var i = 0
+let testCount = nextInt(inputData, i)
 var outputBuffer = ""
 
-for testIndex in 0 ..< testCount:
-  roomWidth = float(nextInt(inputData, scanPos))
-  roomHeight = float(nextInt(inputData, scanPos))
-  let holeCount = nextInt(inputData, scanPos)
+for j in 0 ..< testCount:
+  roomWidth = float(nextInt(inputData, i))
+  roomHeight = float(nextInt(inputData, i))
+  let holeCount = nextInt(inputData, i)
   var inputHoles: seq[HolePoint] = @[]
-  for holeIndex in 0 ..< holeCount:
-    let holeX = float(nextInt(inputData, scanPos))
-    let holeY = float(nextInt(inputData, scanPos))
+  for k in 0 ..< holeCount:
+    let holeX = float(nextInt(inputData, i))
+    let holeY = float(nextInt(inputData, i))
     inputHoles.add(HolePoint(x: holeX, y: holeY))
   inputHoles.sort(compareHoles)
   var holes: seq[HolePoint] = @[]

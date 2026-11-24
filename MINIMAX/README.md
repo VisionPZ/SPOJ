@@ -27,9 +27,9 @@ The update formula is bestCosts[rightEdge] = min(bestCosts[x]) + 1 over every po
 
 Three tree rules make the query and the update fast:
 
-- tree[baseSize + position] stores the cost for `position`.
+- `tree[baseSize + k]` stores the cost for position `k`.
 - `baseSize` is the smallest power of two larger than `n`.
-- The parent of `nodeIndex` stores the smaller of its two children.
+- Each parent stores the smaller value of its two children.
 
 The following trace uses six inputs and five sorters.
 
@@ -52,14 +52,14 @@ const firstDigitValue = 48
 const largeSentinel = 1000000000
 const flushBlockBytes = 1 shl 18
 
-proc nextInt(inputData: string, scanPos: var int): int =
+proc nextInt(inputData: string, i: var int): int =
   let inputLength = inputData.len
-  while scanPos < inputLength and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    scanPos += 1
+  while i < inputLength and (inputData[i] < '0' or inputData[i] > '9'):
+    i += 1
   var numberValue = 0
-  while scanPos < inputLength and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    numberValue = numberValue * 10 + (int(inputData[scanPos]) - firstDigitValue)
-    scanPos += 1
+  while i < inputLength and inputData[i] >= '0' and inputData[i] <= '9':
+    numberValue = numberValue * 10 + (int(inputData[i]) - firstDigitValue)
+    i += 1
   return numberValue
 ```
 
@@ -67,37 +67,37 @@ The scanner skips every non-digit byte, so spaces and line breaks need no specia
 
 ```
 let inputData = readAll(stdin)
-var scanPos = 0
-let caseCount = nextInt(inputData, scanPos)
+var i = 0
+let caseCount = nextInt(inputData, i)
 var outputBuffer = ""
 
-for caseIndex in 0 ..< caseCount:
-  let inputCount = nextInt(inputData, scanPos)
-  let sorterCount = nextInt(inputData, scanPos)
+for j in 0 ..< caseCount:
+  let inputCount = nextInt(inputData, i)
+  let sorterCount = nextInt(inputData, i)
   var baseSize = 1
   while baseSize <= inputCount:
     baseSize = baseSize shl 1
   var tree = newSeq[int](baseSize shl 1)
-  for nodeIndex in 0 ..< tree.len:
-    tree[nodeIndex] = largeSentinel
+  for k in 0 ..< tree.len:
+    tree[k] = largeSentinel
   tree[baseSize + 1] = 0
-  var walkIndex = baseSize + 1
-  walkIndex = walkIndex shr 1
-  while walkIndex >= 1:
-    tree[walkIndex] = 0
-    walkIndex = walkIndex shr 1
+  var l = baseSize + 1
+  l = l shr 1
+  while l >= 1:
+    tree[l] = 0
+    l = l shr 1
   var bestCosts = newSeq[int](inputCount + 1)
-  for position in 0 .. inputCount:
-    bestCosts[position] = largeSentinel
+  for k in 0 .. inputCount:
+    bestCosts[k] = largeSentinel
   bestCosts[1] = 0
 ```
 
 `baseSize` is the first power of two above `inputCount`, so every leaf fits inside the tree. The initial zero at `tree[baseSize + 1]` gives position one zero sorters.
 
 ```
-  for sorterIndex in 0 ..< sorterCount:
-    let leftEdge = nextInt(inputData, scanPos)
-    let rightEdge = nextInt(inputData, scanPos)
+  for l in 0 ..< sorterCount:
+    let leftEdge = nextInt(inputData, i)
+    let rightEdge = nextInt(inputData, i)
     var lowNode = leftEdge + baseSize
     var highNode = rightEdge + baseSize
     var bestEarlier = largeSentinel
@@ -115,19 +115,19 @@ for caseIndex in 0 ..< caseCount:
     let trialCost = bestEarlier + 1
     if trialCost < bestCosts[rightEdge]:
       bestCosts[rightEdge] = trialCost
-      var nodeIndex = rightEdge + baseSize
-      tree[nodeIndex] = trialCost
-      nodeIndex = nodeIndex shr 1
-      while nodeIndex >= 1:
-        let leftChild = tree[nodeIndex shl 1]
-        let rightChild = tree[(nodeIndex shl 1) + 1]
+      var k = rightEdge + baseSize
+      tree[k] = trialCost
+      k = k shr 1
+      while k >= 1:
+        let leftChild = tree[k shl 1]
+        let rightChild = tree[(k shl 1) + 1]
         var childMinimum = leftChild
         if rightChild < childMinimum:
           childMinimum = rightChild
-        if childMinimum == tree[nodeIndex]:
+        if childMinimum == tree[k]:
           break
-        tree[nodeIndex] = childMinimum
-        nodeIndex = nodeIndex shr 1
+        tree[k] = childMinimum
+        k = k shr 1
 ```
 
 The query visits at most two nodes per level, so its bound is `2 log baseSize`. The update stops when a parent keeps its value and touches one root-to-leaf path. The sentinel leaves `bestCosts[rightEdge]` unchanged while the range is unreachable.

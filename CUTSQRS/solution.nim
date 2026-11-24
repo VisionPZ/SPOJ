@@ -7,14 +7,14 @@ const
   logTenTwoHigh = 0.30102999566398119521373889472449302677
   logTenTwoLow = -2.8037281277851704e-18
 
-proc nextInt(inputData: string, scanPos: var int): int =
+proc nextInt(inputData: string, i: var int): int =
   let dataLength = inputData.len
-  while scanPos < dataLength and inputData[scanPos] < '0':
-    inc scanPos
+  while i < dataLength and inputData[i] < '0':
+    inc i
   result = 0
-  while scanPos < dataLength and inputData[scanPos] >= '0':
-    result = result * 10 + (int(inputData[scanPos]) - firstDigitValue)
-    inc scanPos
+  while i < dataLength and inputData[i] >= '0':
+    result = result * 10 + (int(inputData[i]) - firstDigitValue)
+    inc i
 
 proc splitDouble(value: float): tuple[highPart, lowPart: float] =
   let scaled = splitFactor * value
@@ -68,18 +68,18 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
-let caseCount = nextInt(inputData, scanPos)
+var i = 0
+let caseCount = nextInt(inputData, i)
 var outputBuffer = ""
-var caseIndex = 0
-while caseIndex < caseCount:
-  let sideLeft = nextInt(inputData, scanPos)
-  let sideRight = nextInt(inputData, scanPos)
+var j = 0
+while j < caseCount:
+  let sideLeft = nextInt(inputData, i)
+  let sideRight = nextInt(inputData, i)
   outputBuffer.add $solveCase(sideLeft, sideRight)
   outputBuffer.add '\n'
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
-  inc caseIndex
+  inc j
 if outputBuffer.len > 0:
   stdout.write outputBuffer

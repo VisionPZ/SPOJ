@@ -53,29 +53,29 @@ proc wrappingMix(value: int64): int64 =
   mixed = mixed *% 0xbf58476d1ce4e5b9'i64
   mixed xor (mixed shr 32)
 
-proc makeNode(varIndex, lowNode, highNode: int): int =
+proc makeNode(i, lowNode, highNode: int): int =
   if lowNode == highNode:
     return lowNode
-  let key = (int64(varIndex) shl 42) or (int64(lowNode) shl 21) or int64(highNode)
+  let key = (int64(i) shl 42) or (int64(lowNode) shl 21) or int64(highNode)
   if nodeKeys.hasKey(key):
     return nodeKeys[key]
   result = nodeVars.len
-  nodeVars.add varIndex
+  nodeVars.add i
   nodeLows.add lowNode
   nodeHighs.add highNode
   nodeKeys[key] = result
 
-proc negateNode(nodeIndex: int): int =
-  if nodeIndex == falseNode:
+proc negateNode(i: int): int =
+  if i == falseNode:
     return trueNode
-  if nodeIndex == trueNode:
+  if i == trueNode:
     return falseNode
-  if nodeIndex < negatedNodes.len and negatedNodes[nodeIndex] >= 0:
-    return negatedNodes[nodeIndex]
-  while negatedNodes.len <= nodeIndex:
+  if i < negatedNodes.len and negatedNodes[i] >= 0:
+    return negatedNodes[i]
+  while negatedNodes.len <= i:
     negatedNodes.add -1
-  result = makeNode(nodeVars[nodeIndex], negateNode(nodeLows[nodeIndex]), negateNode(nodeHighs[nodeIndex]))
-  negatedNodes[nodeIndex] = result
+  result = makeNode(nodeVars[i], negateNode(nodeLows[i]), negateNode(nodeHighs[i]))
+  negatedNodes[i] = result
 
 proc applyOp(operation, leftNode, rightNode: int): int =
   if operation == opAnd:
@@ -133,10 +133,10 @@ proc orNodes(leftNode, rightNode: int): int =
 proc xorNodes(leftNode, rightNode: int): int =
   applyOp(opXor, leftNode, rightNode)
 
-proc variableNode(index: int): int =
-  while variableNodes.len <= index:
+proc variableNode(i: int): int =
+  while variableNodes.len <= i:
     variableNodes.add makeNode(variableNodes.len, falseNode, trueNode)
-  variableNodes[index]
+  variableNodes[i]
 
 proc resetSolver() =
   inc currentEpoch
@@ -168,8 +168,8 @@ proc hashState(state: SearchState): int64 =
 proc statesEqual(left, right: SearchState): bool =
   if left.pc != right.pc or left.pathCond != right.pathCond:
     return false
-  for index in 0 ..< registerCount:
-    if left.regs[index] != right.regs[index]:
+  for i in 0 ..< registerCount:
+    if left.regs[i] != right.regs[i]:
       return false
   return true
 
@@ -197,23 +197,23 @@ proc pushState(states: var seq[SearchState], nextPc, nextCond, nextDepth: int, n
   if not rememberState(states, candidate):
     states.add candidate
 
-proc scanToken(inputData: string, scanPos: var int): string =
+proc scanToken(inputData: string, i: var int): string =
   let inputLength = inputData.len
-  while scanPos < inputLength and inputData[scanPos] <= ' ':
-    inc scanPos
-  let tokenStart = scanPos
-  while scanPos < inputLength and inputData[scanPos] > ' ':
-    inc scanPos
-  inputData.substr(tokenStart, scanPos - 1)
+  while i < inputLength and inputData[i] <= ' ':
+    inc i
+  let j = i
+  while i < inputLength and inputData[i] > ' ':
+    inc i
+  inputData.substr(j, i - 1)
 
-proc scanInt(inputData: string, scanPos: var int): int =
+proc scanInt(inputData: string, i: var int): int =
   let inputLength = inputData.len
-  while scanPos < inputLength and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    inc scanPos
+  while i < inputLength and (inputData[i] < '0' or inputData[i] > '9'):
+    inc i
   var value = 0
-  while scanPos < inputLength and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    value = value * 10 + (int(inputData[scanPos]) - firstDigitValue)
-    inc scanPos
+  while i < inputLength and inputData[i] >= '0' and inputData[i] <= '9':
+    value = value * 10 + (int(inputData[i]) - firstDigitValue)
+    inc i
   value
 
 proc opcodeOf(token: string): int =
@@ -237,27 +237,27 @@ proc opcodeOf(token: string): int =
   else:
     opStop
 
-proc readProgram(inputData: string, scanPos: var int): Program =
-  let instructionCount = scanInt(inputData, scanPos)
+proc readProgram(inputData: string, i: var int): Program =
+  let instructionCount = scanInt(inputData, i)
   result.opCodes = newSeq[int](instructionCount)
   result.firstArgs = newSeq[int](instructionCount)
   result.secondArgs = newSeq[int](instructionCount)
-  for index in 0 ..< instructionCount:
-    let mnemonic = scanToken(inputData, scanPos)
-    result.opCodes[index] = opcodeOf(mnemonic)
-    case result.opCodes[index]
+  for j in 0 ..< instructionCount:
+    let mnemonic = scanToken(inputData, i)
+    result.opCodes[j] = opcodeOf(mnemonic)
+    case result.opCodes[j]
     of opAnd, opOr, opXor, opMov:
-      result.firstArgs[index] = scanInt(inputData, scanPos)
-      result.secondArgs[index] = scanInt(inputData, scanPos)
+      result.firstArgs[j] = scanInt(inputData, i)
+      result.secondArgs[j] = scanInt(inputData, i)
     of opNot, opRandom, opSet:
-      result.firstArgs[index] = scanInt(inputData, scanPos)
-      if result.opCodes[index] == opSet:
-        result.secondArgs[index] = scanInt(inputData, scanPos)
+      result.firstArgs[j] = scanInt(inputData, i)
+      if result.opCodes[j] == opSet:
+        result.secondArgs[j] = scanInt(inputData, i)
     of opJmp:
-      result.firstArgs[index] = scanInt(inputData, scanPos)
+      result.firstArgs[j] = scanInt(inputData, i)
     of opJz:
-      result.firstArgs[index] = scanInt(inputData, scanPos)
-      result.secondArgs[index] = scanInt(inputData, scanPos)
+      result.firstArgs[j] = scanInt(inputData, i)
+      result.secondArgs[j] = scanInt(inputData, i)
     else:
       discard
 
@@ -268,13 +268,13 @@ proc shortestRunningTime(program: Program): string =
   startState.pc = 0
   startState.pathCond = trueNode
   startState.depth = 0
-  for index in 0 ..< registerCount:
-    startState.regs[index] = variableNode(index)
+  for i in 0 ..< registerCount:
+    startState.regs[i] = variableNode(i)
   discard rememberState(states, startState)
   states.add startState
-  var stateIndex = 0
-  while stateIndex < states.len:
-    let current = states[stateIndex]
+  var j = 0
+  while j < states.len:
+    let current = states[j]
     let opcode = program.opCodes[current.pc]
     if opcode == opStop:
       return $(current.depth + 1)
@@ -313,7 +313,7 @@ proc shortestRunningTime(program: Program): string =
       else:
         discard
       pushState(states, current.pc + 1, current.pathCond, nextDepth, nextRegs)
-    inc stateIndex
+    inc j
   "HANGS"
 
 when isMainModule:
@@ -324,11 +324,11 @@ when isMainModule:
     inputData.add '\n'
   nodeKeys = initTable[int64, int]()
   applyKeys = initTable[int64, int]()
-  var scanPos = 0
-  let testCount = scanInt(inputData, scanPos)
+  var i = 0
+  let testCount = scanInt(inputData, i)
   var outputBuffer = ""
-  for caseIndex in 0 ..< testCount:
-    let program = readProgram(inputData, scanPos)
+  for j in 0 ..< testCount:
+    let program = readProgram(inputData, i)
     let answer = shortestRunningTime(program)
     outputBuffer.add answer
     outputBuffer.add '\n'

@@ -45,19 +45,19 @@ At the market, state 3, the least toll is 6 and it first appears at time 6. The 
 The scanner reads the whole input buffer once and walks it by index. It accepts an optional minus sign, although the problem uses non-negative values.
 
 ```nim
-proc nextInt(inputData: string, scanPos: var int): int =
+proc nextInt(inputData: string, i: var int): int =
   let dataLength = inputData.len
-  while scanPos < dataLength and inputData[scanPos] != '-' and
-      (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    scanPos += 1
+  while i < dataLength and inputData[i] != '-' and
+      (inputData[i] < '0' or inputData[i] > '9'):
+    i += 1
   var signValue = 1
-  if scanPos < dataLength and inputData[scanPos] == '-':
+  if i < dataLength and inputData[i] == '-':
     signValue = -1
-    scanPos += 1
+    i += 1
   var numberValue = 0
-  while scanPos < dataLength and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
-    numberValue = numberValue * 10 + (int(inputData[scanPos]) - 48)
-    scanPos += 1
+  while i < dataLength and inputData[i] >= '0' and inputData[i] <= '9':
+    numberValue = numberValue * 10 + (int(inputData[i]) - 48)
+    i += 1
   return signValue * numberValue
 ```
 
@@ -73,11 +73,11 @@ while readLine(stdin, inputLine):
   inputData.add '\n'
 
 var outputBuffer = ""
-var scanPos = 0
+var i = 0
 
 while true:
-  let stateCount = nextInt(inputData, scanPos)
-  let timeLimit = nextInt(inputData, scanPos)
+  let stateCount = nextInt(inputData, i)
+  let timeLimit = nextInt(inputData, i)
   if stateCount == 0 and timeLimit == 0:
     break
 ```
@@ -90,10 +90,10 @@ Each case reads two flat tables of `stateCount * stateCount` cells and prepares 
   let tableSize = stateCount * stateCount
   var travelTimes = newSeq[int](tableSize)
   var tollAmounts = newSeq[int](tableSize)
-  for cellIndex in 0 .. tableSize - 1:
-    travelTimes[cellIndex] = nextInt(inputData, scanPos)
-  for cellIndex in 0 .. tableSize - 1:
-    tollAmounts[cellIndex] = nextInt(inputData, scanPos)
+  for j in 0 .. tableSize - 1:
+    travelTimes[j] = nextInt(inputData, i)
+  for j in 0 .. tableSize - 1:
+    tollAmounts[j] = nextInt(inputData, i)
 
   let timeStride = timeLimit + 1
   let totalStates = stateCount * timeStride
@@ -101,9 +101,9 @@ Each case reads two flat tables of `stateCount * stateCount` cells and prepares 
   var minTolls = newSeq[int](totalStates)
   var queuePresent = newSeq[bool](totalStates)
   var stateQueue = newSeq[int](queueCapacity)
-  for stateIndex in 0 .. totalStates - 1:
-    minTolls[stateIndex] = infiniteToll
-    queuePresent[stateIndex] = false
+  for j in 0 .. totalStates - 1:
+    minTolls[j] = infiniteToll
+    queuePresent[j] = false
 ```
 
 The two table loops have `tableSize` iterations each. The queue capacity is `totalStates + 1` because the presence flag allows at most one queued entry per expanded node.

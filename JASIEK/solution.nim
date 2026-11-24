@@ -7,16 +7,16 @@ while readLine(stdin, lineBuffer):
 
 var outputBuffer = ""
 
-var scanPos = 0
+var i = 0
 var centerX: int64 = 0
 var centerY: int64 = 0
 var doubledArea: int64 = 0
 var moveCount: int64 = 0
 var insideDescription = false
 
-while scanPos < inputData.len:
-  let currentChar = inputData[scanPos]
-  scanPos += 1
+while i < inputData.len:
+  let currentChar = inputData[i]
+  i += 1
   if currentChar == 'P':
     insideDescription = true
     centerX = 0

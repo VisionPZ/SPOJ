@@ -12,8 +12,8 @@ proc appendNumber(value: int) =
     while rest > 0:
       digits.add(rest mod 10)
       rest = rest div 10
-    for index in countdown(digits.len - 1, 0):
-      outputBuffer.add((digits[index] + '0'.ord).chr)
+    for i in countdown(digits.len - 1, 0):
+      outputBuffer.add((digits[i] + '0'.ord).chr)
 
 proc appendLimb(limb: int, width: int) =
   var digits: seq[int]
@@ -21,14 +21,14 @@ proc appendLimb(limb: int, width: int) =
   for _ in 0 ..< width:
     digits.add(rest mod 10)
     rest = rest div 10
-  for index in countdown(digits.len - 1, 0):
-    outputBuffer.add((digits[index] + '0'.ord).chr)
+  for i in countdown(digits.len - 1, 0):
+    outputBuffer.add((digits[i] + '0'.ord).chr)
 
 proc multiplyLimbList(limbs: seq[int], factor: int): seq[int] =
   var answer: seq[int]
   var carry = 0
-  for index in 0 ..< limbs.len:
-    let product = limbs[index] * factor + carry
+  for i in 0 ..< limbs.len:
+    let product = limbs[i] * factor + carry
     answer.add(product mod baseValue)
     carry = product div baseValue
   while carry > 0:
@@ -45,8 +45,8 @@ for value in 1 .. 100:
 
 proc appendBigNumber(limbs: seq[int]) =
   appendNumber(limbs[^1])
-  for index in countdown(limbs.len - 2, 0):
-    appendLimb(limbs[index], limbWidth)
+  for i in countdown(limbs.len - 2, 0):
+    appendLimb(limbs[i], limbWidth)
 
 proc parseCount(text: string): int =
   var value = 0
