@@ -10,68 +10,68 @@ const morseCodes = [
 
 var outputBuffer = ""
 
-proc readToken(inputData: string, scanPos: var int, dataLength: int,
-               tokenStart: var int, tokenLength: var int) =
-  while scanPos < dataLength and inputData[scanPos] <= ' ':
-    scanPos += 1
-  tokenStart = scanPos
-  while scanPos < dataLength and inputData[scanPos] > ' ':
-    scanPos += 1
-  tokenLength = scanPos - tokenStart
+proc readToken(inputData: string, i: var int, dataLength: int,
+               j: var int, tokenLength: var int) =
+  while i < dataLength and inputData[i] <= ' ':
+    i += 1
+  j = i
+  while i < dataLength and inputData[i] > ' ':
+    i += 1
+  tokenLength = i - j
 
-proc parseCount(inputData: string, tokenStart: int, tokenLength: int): int =
+proc parseCount(inputData: string, i: int, tokenLength: int): int =
   result = 0
-  for offset in 0 ..< tokenLength:
-    result = result * 10 + (int(inputData[tokenStart + offset]) - firstDigitValue)
+  for j in 0 ..< tokenLength:
+    result = result * 10 + (int(inputData[i + j]) - firstDigitValue)
 
-proc addWordToTrie(inputData: string, wordStart: int, wordLength: int,
+proc addWordToTrie(inputData: string, i: int, wordLength: int,
                    trieDotChild: var seq[int], trieDashChild: var seq[int],
                    trieWordCount: var seq[int]) =
-  var nodeIndex = 0
-  for letterOffset in 0 ..< wordLength:
-    let code = morseCodes[int(inputData[wordStart + letterOffset]) - firstUpperValue]
-    for pulseOffset in 0 ..< code.len:
-      if code[pulseOffset] == dashCharacter:
-        if trieDashChild[nodeIndex] == 0:
+  var j = 0
+  for k in 0 ..< wordLength:
+    let code = morseCodes[int(inputData[i + k]) - firstUpperValue]
+    for l in 0 ..< code.len:
+      if code[l] == dashCharacter:
+        if trieDashChild[j] == 0:
           trieDashChild.add 0
           trieDotChild.add 0
           trieWordCount.add 0
-          trieDashChild[nodeIndex] = trieWordCount.len - 1
-        nodeIndex = trieDashChild[nodeIndex]
+          trieDashChild[j] = trieWordCount.len - 1
+        j = trieDashChild[j]
       else:
-        if trieDotChild[nodeIndex] == 0:
+        if trieDotChild[j] == 0:
           trieDashChild.add 0
           trieDotChild.add 0
           trieWordCount.add 0
-          trieDotChild[nodeIndex] = trieWordCount.len - 1
-        nodeIndex = trieDotChild[nodeIndex]
-  trieWordCount[nodeIndex] += 1
+          trieDotChild[j] = trieWordCount.len - 1
+        j = trieDotChild[j]
+  trieWordCount[j] += 1
 
-proc countDecodings(inputData: string, morseStart: int, morseLength: int,
+proc countDecodings(inputData: string, i: int, morseLength: int,
                     ways: var seq[int], trieDotChild: seq[int],
                     trieDashChild: seq[int], trieWordCount: seq[int]): int =
-  for position in 0 .. morseLength:
-    ways[position] = 0
+  for j in 0 .. morseLength:
+    ways[j] = 0
   ways[0] = 1
-  for startPos in 0 ..< morseLength:
-    let waysHere = ways[startPos]
+  for j in 0 ..< morseLength:
+    let waysHere = ways[j]
     if waysHere == 0:
       continue
-    var nodeIndex = 0
-    var endPos = startPos
-    while endPos < morseLength:
+    var l = 0
+    var k = j
+    while k < morseLength:
       var nextNode: int
-      if inputData[morseStart + endPos] == dashCharacter:
-        nextNode = trieDashChild[nodeIndex]
+      if inputData[i + k] == dashCharacter:
+        nextNode = trieDashChild[l]
       else:
-        nextNode = trieDotChild[nodeIndex]
+        nextNode = trieDotChild[l]
       if nextNode == 0:
         break
-      nodeIndex = nextNode
-      endPos += 1
-      let wordCount = trieWordCount[nodeIndex]
+      l = nextNode
+      k += 1
+      let wordCount = trieWordCount[l]
       if wordCount != 0:
-        ways[endPos] += waysHere * wordCount
+        ways[k] += waysHere * wordCount
   return ways[morseLength]
 
 proc main() =
@@ -81,28 +81,28 @@ proc main() =
     inputData.add line
     inputData.add '\n'
   let dataLength = inputData.len
-  var scanPos = 0
-  var tokenStart = 0
+  var i = 0
+  var j = 0
   var tokenLength = 0
-  readToken(inputData, scanPos, dataLength, tokenStart, tokenLength)
-  let dataSetCount = parseCount(inputData, tokenStart, tokenLength)
+  readToken(inputData, i, dataLength, j, tokenLength)
+  let dataSetCount = parseCount(inputData, j, tokenLength)
   var ways: seq[int] = @[1]
-  for dataIndex in 0 ..< dataSetCount:
-    readToken(inputData, scanPos, dataLength, tokenStart, tokenLength)
-    let morseStart = tokenStart
+  for k in 0 ..< dataSetCount:
+    readToken(inputData, i, dataLength, j, tokenLength)
+    let l = j
     let morseLength = tokenLength
-    readToken(inputData, scanPos, dataLength, tokenStart, tokenLength)
-    let wordCount = parseCount(inputData, tokenStart, tokenLength)
+    readToken(inputData, i, dataLength, j, tokenLength)
+    let wordCount = parseCount(inputData, j, tokenLength)
     var trieDotChild: seq[int] = @[0]
     var trieDashChild: seq[int] = @[0]
     var trieWordCount: seq[int] = @[0]
-    for wordIndex in 0 ..< wordCount:
-      readToken(inputData, scanPos, dataLength, tokenStart, tokenLength)
-      addWordToTrie(inputData, tokenStart, tokenLength, trieDotChild,
+    for k in 0 ..< wordCount:
+      readToken(inputData, i, dataLength, j, tokenLength)
+      addWordToTrie(inputData, j, tokenLength, trieDotChild,
                     trieDashChild, trieWordCount)
     if ways.len <= morseLength:
       ways.setLen(morseLength + 1)
-    let answer = countDecodings(inputData, morseStart, morseLength, ways,
+    let answer = countDecodings(inputData, l, morseLength, ways,
                                 trieDotChild, trieDashChild, trieWordCount)
     outputBuffer.add $answer
     outputBuffer.add '\n'

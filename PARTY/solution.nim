@@ -8,15 +8,15 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 
 var outputBuffer = ""
@@ -28,26 +28,26 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 
 while true:
-  let budget = nextInt(inputData, scanPos)
-  let partyCount = nextInt(inputData, scanPos)
+  let budget = nextInt(inputData, i)
+  let partyCount = nextInt(inputData, i)
   if budget == 0 and partyCount == 0:
     break
   var bestFun = newSeq[int](budget + 1)
-  for partyIndex in 0..<partyCount:
-    let fee = nextInt(inputData, scanPos)
-    let fun = nextInt(inputData, scanPos)
-    for spent in countdown(budget, fee):
-      let candidate = bestFun[spent - fee] + fun
-      if candidate > bestFun[spent]:
-        bestFun[spent] = candidate
+  for j in 0..<partyCount:
+    let fee = nextInt(inputData, i)
+    let fun = nextInt(inputData, i)
+    for k in countdown(budget, fee):
+      let candidate = bestFun[k - fee] + fun
+      if candidate > bestFun[k]:
+        bestFun[k] = candidate
   var topFun = 0
-  for spent in 0..budget:
-    if bestFun[spent] > topFun:
-      topFun = bestFun[spent]
+  for k in 0..budget:
+    if bestFun[k] > topFun:
+      topFun = bestFun[k]
   var cheapest = budget
-  for spent in 0..budget:
-    if bestFun[spent] == topFun and spent < cheapest:
-      cheapest = spent
+  for k in 0..budget:
+    if bestFun[k] == topFun and k < cheapest:
+      cheapest = k
   appendOutput($cheapest)
   outputBuffer.add ' '
   appendOutput($topFun)

@@ -22,15 +22,15 @@ Cost per start position: at most 80 steps, one per Morse pulse of the longest wo
 
 ## Why It Works
 
-A Morse conversion maps each letter to one fixed string of dots and dashes. A phrase matches when the Morse strings of its words join into the whole sequence. `ways[position]` holds the number of decodings of the prefix ending at that position. `ways[0]` starts at 1 because the empty prefix has one decoding.
+A Morse conversion maps each letter to one fixed string of dots and dashes. A phrase matches when the Morse strings of its words join into the whole sequence. `ways[j]` holds the number of decodings of the prefix ending at that position. `ways[0]` starts at 1 because the empty prefix has one decoding.
 
-The update `ways[endPos] += waysHere * wordCount` has three terms.
+The update `ways[k] += waysHere * wordCount` has three terms.
 
 | Term | Meaning |
 | --- | --- |
 | `waysHere` | Decodings of the prefix before the word. |
 | `wordCount` | Dictionary entries whose Morse code equals the consumed slice. |
-| `ways[endPos]` | Decodings of the prefix after the word. |
+| `ways[k]` | Decodings of the prefix after the word. |
 
 Each match adds one phrase per earlier decoding and per matching entry.
 
@@ -54,19 +54,19 @@ The final counts are 1, 1, 2, 4 and the answer is 4.
 The scanner walks one input buffer by index. It allocates no token strings.
 
 ```nim
-proc readToken(inputData: string, scanPos: var int, dataLength: int,
-               tokenStart: var int, tokenLength: var int) =
-  while scanPos < dataLength and inputData[scanPos] <= ' ':
-    scanPos += 1
-  tokenStart = scanPos
-  while scanPos < dataLength and inputData[scanPos] > ' ':
-    scanPos += 1
-  tokenLength = scanPos - tokenStart
+proc readToken(inputData: string, i: var int, dataLength: int,
+               j: var int, tokenLength: var int) =
+  while i < dataLength and inputData[i] <= ' ':
+    i += 1
+  j = i
+  while i < dataLength and inputData[i] > ' ':
+    i += 1
+  tokenLength = i - j
 
-proc parseCount(inputData: string, tokenStart: int, tokenLength: int): int =
+proc parseCount(inputData: string, i: int, tokenLength: int): int =
   result = 0
-  for offset in 0 ..< tokenLength:
-    result = result * 10 + (int(inputData[tokenStart + offset]) - firstDigitValue)
+  for j in 0 ..< tokenLength:
+    result = result * 10 + (int(inputData[i + j]) - firstDigitValue)
 ```
 
 `parseCount` handles the two counts in the input. Both loops stop at `dataLength`. The cost is one pass over the buffer.
@@ -74,28 +74,28 @@ proc parseCount(inputData: string, tokenStart: int, tokenLength: int): int =
 Insertion turns each word into one path through the trie.
 
 ```nim
-proc addWordToTrie(inputData: string, wordStart: int, wordLength: int,
+proc addWordToTrie(inputData: string, i: int, wordLength: int,
                    trieDotChild: var seq[int], trieDashChild: var seq[int],
                    trieWordCount: var seq[int]) =
-  var nodeIndex = 0
-  for letterOffset in 0 ..< wordLength:
-    let code = morseCodes[int(inputData[wordStart + letterOffset]) - firstUpperValue]
-    for pulseOffset in 0 ..< code.len:
-      if code[pulseOffset] == dashCharacter:
-        if trieDashChild[nodeIndex] == 0:
+  var j = 0
+  for k in 0 ..< wordLength:
+    let code = morseCodes[int(inputData[i + k]) - firstUpperValue]
+    for l in 0 ..< code.len:
+      if code[l] == dashCharacter:
+        if trieDashChild[j] == 0:
           trieDashChild.add 0
           trieDotChild.add 0
           trieWordCount.add 0
-          trieDashChild[nodeIndex] = trieWordCount.len - 1
-        nodeIndex = trieDashChild[nodeIndex]
+          trieDashChild[j] = trieWordCount.len - 1
+        j = trieDashChild[j]
       else:
-        if trieDotChild[nodeIndex] == 0:
+        if trieDotChild[j] == 0:
           trieDashChild.add 0
           trieDotChild.add 0
           trieWordCount.add 0
-          trieDotChild[nodeIndex] = trieWordCount.len - 1
-        nodeIndex = trieDotChild[nodeIndex]
-  trieWordCount[nodeIndex] += 1
+          trieDotChild[j] = trieWordCount.len - 1
+        j = trieDotChild[j]
+  trieWordCount[j] += 1
 ```
 
 The letter loop runs at most 20 times and the pulse loop at most 80 times. A new node takes index `trieWordCount.len - 1`; index zero means no child. The build costs one node per distinct Morse prefix.
@@ -103,31 +103,31 @@ The letter loop runs at most 20 times and the pulse loop at most 80 times. A new
 Counting walks the trie from every reachable position.
 
 ```nim
-proc countDecodings(inputData: string, morseStart: int, morseLength: int,
+proc countDecodings(inputData: string, i: int, morseLength: int,
                     ways: var seq[int], trieDotChild: seq[int],
                     trieDashChild: seq[int], trieWordCount: seq[int]): int =
-  for position in 0 .. morseLength:
-    ways[position] = 0
+  for j in 0 .. morseLength:
+    ways[j] = 0
   ways[0] = 1
-  for startPos in 0 ..< morseLength:
-    let waysHere = ways[startPos]
+  for j in 0 ..< morseLength:
+    let waysHere = ways[j]
     if waysHere == 0:
       continue
-    var nodeIndex = 0
-    var endPos = startPos
-    while endPos < morseLength:
+    var l = 0
+    var k = j
+    while k < morseLength:
       var nextNode: int
-      if inputData[morseStart + endPos] == dashCharacter:
-        nextNode = trieDashChild[nodeIndex]
+      if inputData[i + k] == dashCharacter:
+        nextNode = trieDashChild[l]
       else:
-        nextNode = trieDotChild[nodeIndex]
+        nextNode = trieDotChild[l]
       if nextNode == 0:
         break
-      nodeIndex = nextNode
-      endPos += 1
-      let wordCount = trieWordCount[nodeIndex]
+      l = nextNode
+      k += 1
+      let wordCount = trieWordCount[l]
       if wordCount != 0:
-        ways[endPos] += waysHere * wordCount
+        ways[k] += waysHere * wordCount
   return ways[morseLength]
 ```
 
@@ -136,22 +136,22 @@ The outer loop starts at every position below `morseLength`. The inner walk stop
 The driver builds one trie per data set and buffers the printed lines.
 
 ```nim
-  for dataIndex in 0 ..< dataSetCount:
-    readToken(inputData, scanPos, dataLength, tokenStart, tokenLength)
-    let morseStart = tokenStart
+  for k in 0 ..< dataSetCount:
+    readToken(inputData, i, dataLength, j, tokenLength)
+    let l = j
     let morseLength = tokenLength
-    readToken(inputData, scanPos, dataLength, tokenStart, tokenLength)
-    let wordCount = parseCount(inputData, tokenStart, tokenLength)
+    readToken(inputData, i, dataLength, j, tokenLength)
+    let wordCount = parseCount(inputData, j, tokenLength)
     var trieDotChild: seq[int] = @[0]
     var trieDashChild: seq[int] = @[0]
     var trieWordCount: seq[int] = @[0]
-    for wordIndex in 0 ..< wordCount:
-      readToken(inputData, scanPos, dataLength, tokenStart, tokenLength)
-      addWordToTrie(inputData, tokenStart, tokenLength, trieDotChild,
+    for k in 0 ..< wordCount:
+      readToken(inputData, i, dataLength, j, tokenLength)
+      addWordToTrie(inputData, j, tokenLength, trieDotChild,
                     trieDashChild, trieWordCount)
     if ways.len <= morseLength:
       ways.setLen(morseLength + 1)
-    let answer = countDecodings(inputData, morseStart, morseLength, ways,
+    let answer = countDecodings(inputData, l, morseLength, ways,
                                 trieDotChild, trieDashChild, trieWordCount)
     outputBuffer.add $answer
     outputBuffer.add '\n'

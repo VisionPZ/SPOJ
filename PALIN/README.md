@@ -61,7 +61,7 @@ Left halves order the same way their mirrors do, so the next left half gives the
 
 ## Code
 
-Whole input in one buffer (`inputData`), output flushed every `flushBlockBytes` (256 KiB). `cursor` walks the buffer and never goes backwards.
+Whole input in one buffer (`inputData`), output flushed every `flushBlockBytes` (256 KiB). `i` walks the buffer and never goes backwards.
 
 Reading, then the test case count:
 
@@ -75,24 +75,24 @@ while readLine(stdin, line):
 
 ```nim
 var inputLength = inputData.len
-var cursor = 0
+var i = 0
 var caseCount = 0
-while cursor < inputLength and (inputData[cursor] < '0' or inputData[cursor] > '9'):
-  cursor = cursor + 1
-while cursor < inputLength and inputData[cursor] >= '0' and inputData[cursor] <= '9':
-  caseCount = caseCount * 10 + (ord(inputData[cursor]) - 48)
-  cursor = cursor + 1
+while i < inputLength and (inputData[i] < '0' or inputData[i] > '9'):
+  i = i + 1
+while i < inputLength and inputData[i] >= '0' and inputData[i] <= '9':
+  caseCount = caseCount * 10 + (ord(inputData[i]) - 48)
+  i = i + 1
 ```
 
 Per test case: take the next run of digits in place, dropping leading zeros. `numberStart` is the first kept digit, `numberEnd` is one past the last. `numberLength` is the digit count with zeros dropped.
 
 ```nim
-  while cursor < inputLength and (inputData[cursor] < '0' or inputData[cursor] > '9'):
-    cursor = cursor + 1
-  var numberStart = cursor
-  while cursor < inputLength and inputData[cursor] >= '0' and inputData[cursor] <= '9':
-    cursor = cursor + 1
-  var numberEnd = cursor
+  while i < inputLength and (inputData[i] < '0' or inputData[i] > '9'):
+    i = i + 1
+  var numberStart = i
+  while i < inputLength and inputData[i] >= '0' and inputData[i] <= '9':
+    i = i + 1
+  var numberEnd = i
   if numberStart == numberEnd:
     break
   while numberStart < numberEnd - 1 and inputData[numberStart] == '0':
@@ -100,44 +100,44 @@ Per test case: take the next run of digits in place, dropping leading zeros. `nu
   var numberLength = numberEnd - numberStart
 ```
 
-`leftOffset` and `rightOffset` are the two middle positions, counted from `numberStart`. The loop walks them outwards to the first mismatched pair. `leftOffset < 0` means every pair matched, which means `K` is a palindrome.
+`k` and `l` are the two middle positions, counted from `numberStart`. The loop walks them outwards to the first mismatched pair. `k < 0` means every pair matched, which means `K` is a palindrome.
 
 ```nim
-  var leftOffset = numberLength div 2 - 1
-  var rightOffset = numberLength - numberLength div 2
-  while leftOffset >= 0 and inputData[numberStart + leftOffset] == inputData[numberStart + rightOffset]:
-    leftOffset = leftOffset - 1
-    rightOffset = rightOffset + 1
+  var k = numberLength div 2 - 1
+  var l = numberLength - numberLength div 2
+  while k >= 0 and inputData[numberStart + k] == inputData[numberStart + l]:
+    k = k - 1
+    l = l + 1
   var carried = false
-  if leftOffset < 0 or inputData[numberStart + leftOffset] < inputData[numberStart + rightOffset]:
+  if k < 0 or inputData[numberStart + k] < inputData[numberStart + l]:
 ```
 
-Bump the innermost left digit, carrying leftwards from `carryPos`. A carry off the left edge means every digit was `9`; the answer is then `1`, n-1 zeros, `1`, written straight to `outputBuffer`.
+Bump the innermost left digit, carrying leftwards from `i`. A carry off the left edge means every digit was `9`; the answer is then `1`, n-1 zeros, `1`, written straight to `outputBuffer`.
 
 ```nim
-    var carryPos = numberStart + (numberLength - 1 - numberLength div 2)
-    while carryPos >= numberStart:
-      if inputData[carryPos] < '9':
-        inputData[carryPos] = chr(ord(inputData[carryPos]) + 1)
+    var i = numberStart + (numberLength - 1 - numberLength div 2)
+    while i >= numberStart:
+      if inputData[i] < '9':
+        inputData[i] = chr(ord(inputData[i]) + 1)
         break
-      inputData[carryPos] = '0'
-      carryPos = carryPos - 1
-    if carryPos < numberStart:
+      inputData[i] = '0'
+      i = i - 1
+    if i < numberStart:
       outputBuffer.add '1'
-      for zeroCount in 1 .. numberLength - 1:
+      for i in 1 .. numberLength - 1:
         outputBuffer.add '0'
       outputBuffer.add "1\n"
       carried = true
 ```
 
-Otherwise copy the left half onto the right half with `mirrorStep`, then write the run.
+Otherwise copy the left half onto the right half with `i`, then write the run.
 
 ```nim
   if not carried:
-    var mirrorStep = 0
-    while mirrorStep < numberLength div 2:
-      inputData[numberEnd - 1 - mirrorStep] = inputData[numberStart + mirrorStep]
-      mirrorStep = mirrorStep + 1
+    var i = 0
+    while i < numberLength div 2:
+      inputData[numberEnd - 1 - i] = inputData[numberStart + i]
+      i = i + 1
     outputBuffer.add inputData.substr(numberStart, numberEnd - 1)
     outputBuffer.add '\n'
 ```

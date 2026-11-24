@@ -15,13 +15,13 @@ Input ends with a line containing `0 0`. The budget need not be spent exactly.
 
 ## Idea
 
-Use a one-dimensional knapsack table. `bestFun[spent]` is the largest fun reachable with exactly that much spent. Visit parties one by one and walk spent values downwards so each party is used once. After all parties, take the largest table value and the smallest spent amount that reaches it.
+Use a one-dimensional knapsack table. `bestFun[k]` is the largest fun reachable with exactly that much spent. Visit parties one by one and walk k downwards so each party is used once. After all parties, take the largest table value and the smallest spent amount that reaches it.
 
 Each party updates at most `budget` entries, so the cost per case is O(n · budget). Enumerating all subsets would cost O(2ⁿ).
 
 ## Why It Works
 
-When a party with fee `fee` and fun `fun` is considered, any solution spending `spent` either skips it, keeping `bestFun[spent]`, or uses it, gaining `bestFun[spent − fee] + fun`. Walking downwards guarantees the new value cannot be reused within the same party.
+When a party with fee `fee` and fun `fun` is considered, any solution spending `k` either skips it, keeping `bestFun[k]`, or uses it, gaining `bestFun[k − fee] + fun`. Walking downwards guarantees the new value cannot be reused within the same party.
 
 The maximum table entry is the best achievable fun. Several amounts may reach it, so the final scan picks the least expensive one. The sample budget 50 and ten parties give best fun 26 at cost 49.
 
@@ -40,15 +40,15 @@ while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
+var i = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(data: string, i: var int): int =
+  while i < data.len and (data[i] < '0' or data[i] > '9'):
+    i += 1
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + int(data[i]) - firstDigitValue
+    i += 1
   return value
 ```
 
@@ -66,26 +66,26 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 
 while true:
-  let budget = nextInt(inputData, scanPos)
-  let partyCount = nextInt(inputData, scanPos)
+  let budget = nextInt(inputData, i)
+  let partyCount = nextInt(inputData, i)
   if budget == 0 and partyCount == 0:
     break
   var bestFun = newSeq[int](budget + 1)
-  for partyIndex in 0..<partyCount:
-    let fee = nextInt(inputData, scanPos)
-    let fun = nextInt(inputData, scanPos)
-    for spent in countdown(budget, fee):
-      let candidate = bestFun[spent - fee] + fun
-      if candidate > bestFun[spent]:
-        bestFun[spent] = candidate
+  for j in 0..<partyCount:
+    let fee = nextInt(inputData, i)
+    let fun = nextInt(inputData, i)
+    for k in countdown(budget, fee):
+      let candidate = bestFun[k - fee] + fun
+      if candidate > bestFun[k]:
+        bestFun[k] = candidate
   var topFun = 0
-  for spent in 0..budget:
-    if bestFun[spent] > topFun:
-      topFun = bestFun[spent]
+  for k in 0..budget:
+    if bestFun[k] > topFun:
+      topFun = bestFun[k]
   var cheapest = budget
-  for spent in 0..budget:
-    if bestFun[spent] == topFun and spent < cheapest:
-      cheapest = spent
+  for k in 0..budget:
+    if bestFun[k] == topFun and k < cheapest:
+      cheapest = k
   appendOutput($cheapest)
   outputBuffer.add ' '
   appendOutput($topFun)

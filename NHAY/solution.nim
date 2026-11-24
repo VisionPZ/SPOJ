@@ -16,9 +16,9 @@ proc readLineText(): string =
 
 proc readCount(text: string): int =
   var value = 0
-  for index in 0 ..< text.len:
-    if text[index] in {'0' .. '9'}:
-      value = value * 10 + (text[index].ord - '0'.ord)
+  for i in 0 ..< text.len:
+    if text[i] in {'0' .. '9'}:
+      value = value * 10 + (text[i].ord - '0'.ord)
   return value
 
 proc buildPrefix(needle: string): seq[int] =
@@ -27,23 +27,23 @@ proc buildPrefix(needle: string): seq[int] =
   if needle.len > 0:
     border[0] = 0
   var fallback = 0
-  for index in 1 ..< needle.len:
-    while fallback > 0 and needle[index] != needle[fallback]:
+  for i in 1 ..< needle.len:
+    while fallback > 0 and needle[i] != needle[fallback]:
       fallback = border[fallback - 1]
-    if needle[index] == needle[fallback]:
+    if needle[i] == needle[fallback]:
       fallback += 1
-    border[index] = fallback
+    border[i] = fallback
   return border
 
 proc appendPositions(needle: string, border: seq[int], haystack: string) =
   var matched = 0
-  for index in 0 ..< haystack.len:
-    while matched > 0 and haystack[index] != needle[matched]:
+  for i in 0 ..< haystack.len:
+    while matched > 0 and haystack[i] != needle[matched]:
       matched = border[matched - 1]
-    if haystack[index] == needle[matched]:
+    if haystack[i] == needle[matched]:
       matched += 1
     if matched == needle.len:
-      positions.add($(index - needle.len + 1))
+      positions.add($(i - needle.len + 1))
       positions.add('\n')
       if positions.len >= 1 shl 19:
         flushOut()

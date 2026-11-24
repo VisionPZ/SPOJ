@@ -52,9 +52,9 @@ proc parseLimbs(token: string): seq[int] =
   var value = 0
   var width = 0
   var place = 1
-  for index in countdown(token.len - 1, 0):
-    if token[index] in {'0' .. '9'}:
-      value = value + (token[index].ord - '0'.ord) * place
+  for i in countdown(token.len - 1, 0):
+    if token[i] in {'0' .. '9'}:
+      value = value + (token[i].ord - '0'.ord) * place
       place = place * 10
       width = width + 1
       if width == limbWidth:
@@ -72,37 +72,37 @@ proc parseLimbs(token: string): seq[int] =
 
 proc copyRange(source: seq[int], start: int, count: int): seq[int] =
   var result: seq[int]
-  for index in 0 ..< count:
-    result.add(source[start + index])
+  for i in 0 ..< count:
+    result.add(source[start + i])
   return result
 
 proc multiplyNaive(first: seq[int], second: seq[int]): seq[int] =
   var answer: seq[int]
   setLen(answer, first.len + second.len + 2)
-  for outer in 0 ..< first.len:
+  for i in 0 ..< first.len:
     var carry = 0
-    for inner in 0 ..< second.len:
-      let current = answer[outer + inner] + first[outer] * second[inner] + carry
-      answer[outer + inner] = current mod limbBase
+    for j in 0 ..< second.len:
+      let current = answer[i + j] + first[i] * second[j] + carry
+      answer[i + j] = current mod limbBase
       carry = current div limbBase
-    var position = outer + second.len
+    var k = i + second.len
     while carry > 0:
-      let current = answer[position] + carry
-      answer[position] = current mod limbBase
+      let current = answer[k] + carry
+      answer[k] = current mod limbBase
       carry = current div limbBase
-      position = position + 1
+      k = k + 1
   return answer
 
 proc normalizeLimbs(limbs: seq[int]): seq[int] =
   var answer = limbs
   var carry = 0
-  for index in 0 ..< answer.len:
-    let value = answer[index] + carry
+  for i in 0 ..< answer.len:
+    let value = answer[i] + carry
     var digit = value mod limbBase
     if digit < 0:
       digit = digit + limbBase
     carry = (value - digit) div limbBase
-    answer[index] = digit
+    answer[i] = digit
   while carry != 0:
     var digit = carry mod limbBase
     if digit < 0:
@@ -122,47 +122,47 @@ proc combineLimbs(first: seq[int], second: seq[int]): seq[int] =
   var firstHigh: seq[int]
   var secondLow: seq[int]
   var secondHigh: seq[int]
-  for index in 0 ..< first.len:
-    if index < half:
-      firstLow.add(first[index])
+  for i in 0 ..< first.len:
+    if i < half:
+      firstLow.add(first[i])
     else:
-      firstHigh.add(first[index])
-  for index in 0 ..< second.len:
-    if index < half:
-      secondLow.add(second[index])
+      firstHigh.add(first[i])
+  for i in 0 ..< second.len:
+    if i < half:
+      secondLow.add(second[i])
     else:
-      secondHigh.add(second[index])
+      secondHigh.add(second[i])
   var lowProduct = combineLimbs(firstLow, secondLow)
   var highProduct = combineLimbs(firstHigh, secondHigh)
   var firstSum: seq[int]
   var secondSum: seq[int]
-  for index in 0 ..< firstLow.len:
-    firstSum.add(firstLow[index])
-  for index in 0 ..< firstHigh.len:
-    if index < firstSum.len:
-      firstSum[index] = firstSum[index] + firstHigh[index]
+  for i in 0 ..< firstLow.len:
+    firstSum.add(firstLow[i])
+  for i in 0 ..< firstHigh.len:
+    if i < firstSum.len:
+      firstSum[i] = firstSum[i] + firstHigh[i]
     else:
-      firstSum.add(firstHigh[index])
-  for index in 0 ..< secondLow.len:
-    secondSum.add(secondLow[index])
-  for index in 0 ..< secondHigh.len:
-    if index < secondSum.len:
-      secondSum[index] = secondSum[index] + secondHigh[index]
+      firstSum.add(firstHigh[i])
+  for i in 0 ..< secondLow.len:
+    secondSum.add(secondLow[i])
+  for i in 0 ..< secondHigh.len:
+    if i < secondSum.len:
+      secondSum[i] = secondSum[i] + secondHigh[i]
     else:
-      secondSum.add(secondHigh[index])
+      secondSum.add(secondHigh[i])
   var firstSumNorm = normalizeLimbs(firstSum)
   var secondSumNorm = normalizeLimbs(secondSum)
   var middleProduct = combineLimbs(firstSumNorm, secondSumNorm)
   var answer: seq[int]
   setLen(answer, first.len + second.len + 4)
-  for index in 0 ..< lowProduct.len:
-    answer[index] = answer[index] + lowProduct[index]
-    answer[index + half] = answer[index + half] - lowProduct[index]
-  for index in 0 ..< middleProduct.len:
-    answer[index + half] = answer[index + half] + middleProduct[index]
-  for index in 0 ..< highProduct.len:
-    answer[index + half] = answer[index + half] - highProduct[index]
-    answer[index + half + half] = answer[index + half + half] + highProduct[index]
+  for i in 0 ..< lowProduct.len:
+    answer[i] = answer[i] + lowProduct[i]
+    answer[i + half] = answer[i + half] - lowProduct[i]
+  for i in 0 ..< middleProduct.len:
+    answer[i + half] = answer[i + half] + middleProduct[i]
+  for i in 0 ..< highProduct.len:
+    answer[i + half] = answer[i + half] - highProduct[i]
+    answer[i + half + half] = answer[i + half + half] + highProduct[i]
   return normalizeLimbs(answer)
 
 proc appendBigNumber(limbs: seq[int]) =
@@ -174,12 +174,12 @@ proc appendBigNumber(limbs: seq[int]) =
   while rest > 0:
     digits.add(rest mod 10)
     rest = rest div 10
-  for index in countdown(digits.len - 1, 0):
-    outputBuffer.add((digits[index] + '0'.ord).chr)
-  for index in countdown(limbs.len - 2, 0):
+  for i in countdown(digits.len - 1, 0):
+    outputBuffer.add((digits[i] + '0'.ord).chr)
+  for i in countdown(limbs.len - 2, 0):
     var place = limbBase div 10
     while place > 0:
-      outputBuffer.add(((limbs[index] div place) mod 10 + '0'.ord).chr)
+      outputBuffer.add(((limbs[i] div place) mod 10 + '0'.ord).chr)
       place = place div 10
 
 proc appendTokenLimbs(firstToken: string, secondToken: string) =
