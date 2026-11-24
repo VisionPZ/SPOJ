@@ -10,7 +10,7 @@ command -v timeout >/dev/null || { echo 'timeout command missing, refusing to ru
 guard() { timeout -k 1 "${TL}s" "$@"; }
 rm -rf build .nimcache got_*.txt
 "$NIM" c --version 2>&1 | head -1
-timeout 600s "$NIM" c -d:release --out:build/solution solution.nim || exit 1
+timeout 600s "$NIM" c -d:release --nimcache:.nimcache --out:build/solution solution.nim || exit 1
 [ -f gen.py ] || { echo 'gen.py missing'; exit 1; }
 timeout 300s python3 gen.py >/dev/null || { echo 'gen.py failed or ran over 300 s'; exit 1; }
 fail=0

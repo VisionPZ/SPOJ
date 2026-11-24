@@ -30,12 +30,12 @@ proc fixedString(value: float, places: int): string =
   var fractionPart = rounded mod int64(scale)
   var fractionText = $fractionPart
   while fractionText.len < places: fractionText = "0" & fractionText
-  var result: string
-  if value < 0.0 and rounded > 0: result.add "-"
-  result.add $wholePart
-  result.add "."
-  result.add fractionText
-  return result
+  var text: string
+  if value < 0.0 and rounded > 0: text.add "-"
+  text.add $wholePart
+  text.add "."
+  text.add fractionText
+  return text
 
 var inputData = readAllInput()
 var i = 0
