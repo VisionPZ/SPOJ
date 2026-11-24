@@ -4,7 +4,7 @@ Read the number of test cases, then read each case as a list of posters. Each po
 
 | Quantity | Bound |
 | --- | --- |
-| Test cases | no stated bound |
+| Test cases | not bounded in the statement |
 | Posters per case | 1 to 40,000 |
 | Section numbers | 1 to 10,000,000 |
 | Time limit | 7,000 ms |
