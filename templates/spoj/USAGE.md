@@ -54,4 +54,4 @@ If a shared Vivaldi tab is occupied, set `SPOJ_PROFILE` and `SPOJ_PORT` to fresh
 
 ## Git convention
 
-One commit per solved challenge, named `Solve CODE in Nim`. Commit only source, generator, harness, README and ignore rules. Never commit build output, generated `in/`/`out/` data, stress files or browser profiles.
+One commit per solved challenge, named `Solve CODE in Nim`. Use the configured identity `Ping Zhao <ping.zhao@nidvue.com>` and do not pass `-c user.name` or `-c user.email` overrides. Commit only source, generator, harness, README and ignore rules. Never commit build output, generated `in/`/`out/` data, stress files or browser profiles.
