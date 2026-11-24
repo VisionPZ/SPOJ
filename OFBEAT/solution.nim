@@ -1,3 +1,11 @@
+{.passC: "-O3".}
+{.optimization: speed.}
+{.push checks: off.}
+{.push overflowChecks: off.}
+{.push rangeChecks: off.}
+{.push boundChecks: off.}
+{.push stackTrace: off.}
+
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 
