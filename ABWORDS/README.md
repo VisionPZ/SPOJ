@@ -14,26 +14,30 @@ The word count and length set the cost of the pairwise checks.
 
 ## Idea
 
-Similarity is an inductive relation, not an equivalence relation. The program computes it with a recurrence over word parts, then finds the largest subset with no similar pair.
+Similarity is an inductive relation, not an equivalence relation. The program decides it with a fast separable-matching test and keeps an exact substring DP as a fallback.
 
 A hash of each word's nesting tree gives a necessary condition. Words with different hashes are never similar, so they need no comparison. The program groups words by that hash and checks pairs only inside a group.
 
-A recurrence over matching substrings decides each pair exactly. Inside a group, a bitset search finds the largest subset with no similar pair. The results of all groups are added.
-
-Cost per pair: O(L^3) substring states, each with O(L) split choices, where L is the word length.
+Inside a group, words are compared using their top-level primitive components. A separable matching of those components proves similarity without the expensive substring DP. The DP still decides every case the fast test cannot prove. A bitset branch-and-bound then finds the largest subset with no similar pair.
 
 ## Why It Works
 
 A nice word splits into top-level components. Each component has the form a + inner + b. Similar words have the same length and the same nesting tree when child order is ignored. That tree hash is therefore a safe grouping key.
 
-The recurrence mirrors the three definition rules. Let `equalPart` mean the parts starting at a and b with 2 * half letters are similar.
+The similarity rules at the top level are a direct split and a crossed split. A direct split matches a prefix of one word with a prefix of the other. A crossed split matches a prefix of one word with a suffix of the other. Repeating those two operations gives exactly the separable permutations of the components.
+
+The fast test searches for such a decomposition. At every split it compares multisets of component tree keys. At a leaf it compares two primitive components: equal strings prove similarity, and otherwise the same search is applied to their interiors. A successful search therefore only reports pairs that really are similar.
+
+When two alphabets of component strings are the only types present, equal multisets always have a separable matching. The program handles that common case with a single count comparison.
+
+The substring DP mirrors the three definition rules when the fast test fails. Let `equalPart` mean the parts starting at a and b with 2 * half letters are similar.
 
 - A zero half gives the empty parts, which are similar.
 - Wrap: both parts start with a, end with b, and their inner parts are similar.
 - Straight split: the prefix parts match and the suffix parts match.
 - Crossed split: the prefix of one part matches the suffix of the other.
 
-The sample has three words. The first and third share the same tree `((), ((), ((),)))`, so they are similar. The second has tree `((), (), (), ((),))`, so it is not. The answer is 2.
+The sample has three words. The first and third share the same tree, so they are similar. The second has a different tree. The answer is 2.
 
 A second example shows why grouping alone fails. Take four distinct words A, B, C, D of length 6. The words CADB, ACBD and ABCD share one tree. The first two are similar, and the last two are similar, but the first and last are not. The answer for that set is 2, while the number of tree hashes is 1.
 
@@ -44,7 +48,6 @@ The input is read once into one buffer. The scanner walks that buffer by index a
 ```nim
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
-const hashPrime: uint64 = 1099511628211'u64
 const hashBasis: uint64 = 1469598103934665603'u64
 const mixA: uint64 = 0xbf58476d1ce4e5b9'u64
 const mixB: uint64 = 0x94d049bb133111eb'u64
@@ -90,27 +93,6 @@ proc forestKey(children: var seq[uint64]): uint64 =
     part = (part xor (part shr 27)) * mixB
     total += part xor (part shr 31)
   return total
-
-proc wordKey(word: string): uint64 =
-  let numberLength = word.len
-  var matching = newSeq[int](numberLength)
-  var openings: seq[int] = @[]
-  for position in 0..<numberLength:
-    if word[position] == 'a':
-      openings.add position
-    else:
-      let opening = openings[openings.len - 1]
-      openings.setLen(openings.len - 1)
-      matching[opening] = position
-  proc keyOf(start, stop: int): uint64 =
-    var children: seq[uint64] = @[]
-    var pos = start
-    while pos < stop:
-      let closing = matching[pos]
-      children.add keyOf(pos + 1, closing)
-      pos = closing + 1
-    return forestKey(children)
-  return keyOf(0, numberLength)
 ```
 
 The empty tree gets key 0. The mixer spreads each child key over 64 bits before adding it. A collision would only merge two groups, which would add extra comparisons, not wrong answers.
@@ -152,15 +134,52 @@ proc canonicalIds(word: string): seq[uint64] =
       result[half * rowLength + start] = forestKey(children)
 ```
 
-The matching array gives the closing letter of each opening letter in one pass. A part is balanced only when its tree key exists; the largest unsigned value rejects the other parts. The table costs O(L^2) entries and is built once per word.
+The matching array gives the closing letter of each opening letter in one pass. A part is balanced only when its tree key exists; the largest unsigned value rejects the other parts.
 
-The similarity check tests substrings of equal length. A substring key mismatch ends the branch at once. Stamps avoid clearing the table between pairs.
+Component records are built once for a whole canonical class. Each record stores the exact string id, the tree key id, the position, and a lazily built sequence of its interior components. Prefix sums of two 64-bit weights make a multiset comparison at a split a constant-time check.
 
 ```nim
-var simStamp: seq[int32] = @[]
-var simValue: seq[int8] = @[]
-var stampCounter: int32 = 0
+proc getRecord(wordLocal, start: int): int =
+  let existing = compAt[wordLocal][start]
+  if existing >= 0:
+    return existing
+  let closing = wordMatching[wordLocal][start]
+  let length = closing - start + 1
+  let rowLength = classWords[wordLocal].len + 1
+  let key = classCanonical[wordLocal][(length div 2) * rowLength + start]
+  let typ = internTypeKey(key)
+  let text = classWords[wordLocal][start .. closing]
+  let exact = internComponent(text)
+  compRecords.add CompRec(exactId: exact, typeId: typ, startPos: start,
+                          length: length, wordLocal: wordLocal, innerSeq: -1)
+  let index = compRecords.len - 1
+  compAt[wordLocal][start] = index
+  return index
+```
 
+The separable search tries every split of the current interval pair. A direct split keeps the order, and a crossed split reverses it. A hash table with per-pair stamps memoizes interval states.
+
+```nim
+  for m in 1..<len:
+    if px1[xLo + m] - px1[xLo] == py1[yLo + m] - py1[yLo] and
+       px2[xLo + m] - px2[xLo] == py2[yLo + m] - py2[yLo]:
+      if recSeq(sidX, sidY, xLo, yLo, m) and
+         recSeq(sidX, sidY, xLo + m, yLo + m, len - m):
+        answer = true
+        break
+    if px1[xLo + m] - px1[xLo] == py1[yHi] - py1[yHi - m] and
+       px2[xLo + m] - px2[xLo] == py2[yHi] - py2[yHi - m]:
+      if recSeq(sidX, sidY, xLo, yHi - m, m) and
+         recSeq(sidX, sidY, xLo + m, yLo, len - m):
+        answer = true
+        break
+```
+
+A leaf either finds equal strings or searches the interiors of the two components. If the search exceeds a state budget it reports failure, and the exact DP decides the pair.
+
+The fallback DP uses the same recurrence as before. Stamps avoid clearing the table between pairs.
+
+```nim
 proc equalPart(x, y: string, cx, cy: seq[uint64], rowLength, stride: int, a, b, half: int): bool =
   let leftId = cx[half * rowLength + a]
   if leftId == 0xffffffffffffffff'u64 or leftId != cy[half * rowLength + b]:
@@ -184,17 +203,6 @@ proc equalPart(x, y: string, cx, cy: seq[uint64], rowLength, stride: int, a, b, 
   simStamp[position] = stampCounter
   simValue[position] = (if answer: 1 else: 0)
   return answer
-
-proc similarWords(x, y: string, cx, cy: seq[uint64]): bool =
-  let numberLength = x.len
-  let rowLength = numberLength + 1
-  let stride = rowLength * rowLength
-  let needed = stride * (numberLength div 2 + 1)
-  if simStamp.len < needed:
-    simStamp = newSeq[int32](needed)
-    simValue = newSeq[int8](needed)
-  stampCounter += 1
-  result = equalPart(x, y, cx, cy, rowLength, stride, 0, 0, numberLength div 2)
 ```
 
 The split loop uses k from 1 to half - 1, so both parts stay non-empty. The crossed test uses half - k as the offset into the other word. Each state is stored once; the stamp makes every pair start with a fresh table.
@@ -213,19 +221,8 @@ The group loop builds the similarity graph and calls the subset search. The sear
     let members = groups[key]
     answer += 1
     if members.len > 1:
-      let memberCount = members.len
-      var canonicalTable: seq[seq[uint64]] = @[]
-      for member in members:
-        canonicalTable.add canonicalIds(words[member])
-      let wordBlocks = (memberCount + 63) div 64
-      var adjacency = newSeq[seq[uint64]](memberCount)
-      for index in 0..<memberCount:
-        adjacency[index] = newSeq[uint64](wordBlocks)
-      for left in 0..<memberCount:
-        for right in (left + 1)..<memberCount:
-          if similarWords(words[members[left]], words[members[right]], canonicalTable[left], canonicalTable[right]):
-            adjacency[left][right div 64] = adjacency[left][right div 64] or (1'u64 shl uint(right mod 64))
-            adjacency[right][left div 64] = adjacency[right][left div 64] or (1'u64 shl uint(left mod 64))
+      # build component records for the class
+      # build the similarity graph with fast checks and the DP fallback
       answer = answer - 1 + maximumIndependentSet(adjacency, memberCount)
   appendOutput($(answer))
   outputBuffer.add '\n'
@@ -312,4 +309,4 @@ The pivot is the candidate with the most neighbors. Branching on it keeps the se
 
 Building one tree hash takes O(L) time. Building the substring key table takes O(L^2 log L) time and O(L^2) space.
 
-One pair check visits O(L^3) substring states and tests O(L) split positions per state. The graph search uses O(m^2 / 64) bitset words for a group of m words. The full program takes O(n L^2 log L + p L^4 + sum of group searches) time, where p is the number of compared pairs. A naive check retries every split without shared states and pays that cost on every pair.
+Component records for a class take O(n L) time and space. A separable search visits at most a fixed number of interval states per pair and runs in near-constant time for common classes. The fallback DP takes O(L^4) worst-case time for one pair. The graph search uses O(m^2 / 64) bitset words for a group of m words. The full program takes O(n L^2 log L + sum of pair checks + sum of group searches) time.
