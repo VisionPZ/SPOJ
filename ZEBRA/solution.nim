@@ -1,3 +1,5 @@
+{.passC: "-O3".}
+{.optimization: speed.}
 {.push checks: off.}
 {.push overflowChecks: off.}
 {.push rangeChecks: off.}
@@ -10,14 +12,13 @@ import math
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 const infinityValue = 1e100
-const boundaryEpsilon = 1e-7
-const topMergeEpsilon = 1e-6
+const equalFarSideEpsilon = 1e-11
 const radiansPerMinute = 3.14159265358979323846 / 10800.0
 const missingValue = -1000000000
 const maximumCrossingTime = 10000
 
 type RawPedestrian = tuple[bottom: int, angle: int]
-type PlacedPedestrian = tuple[bottom: int, top: float, topRank: int]
+type PlacedPedestrian = tuple[bottom: int, farSide: float]
 
 var inputData = ""
 var inputLine = ""
@@ -56,7 +57,7 @@ proc compareFloat(left, right: float): int =
 proc comparePedestrian(left, right: PlacedPedestrian): int =
   if left.bottom < right.bottom: return -1
   if left.bottom > right.bottom: return 1
-  return compareFloat(left.top, right.top)
+  return compareFloat(left.farSide, right.farSide)
 
 proc lowerBound(values: seq[float], target: float): int =
   var lo = 0
@@ -128,43 +129,49 @@ proc solveGroup(width, maxSpeed, crossingTime: int, raws: seq[RawPedestrian]): i
   let displacement = sqrt(float(speedTime * speedTime - widthSquared))
   var items: seq[PlacedPedestrian] = @[]
   for raw in raws:
-    let top = float(raw.bottom) + tan(float(raw.angle) * radiansPerMinute) * float(width)
-    items.add (raw.bottom, top, 0)
+    let farSide = float(raw.bottom) + tan(float(raw.angle) * radiansPerMinute) * float(width)
+    items.add (raw.bottom, farSide)
   items.sort(comparePedestrian)
-  var tops: seq[float] = @[]
-  for item in items: tops.add item.top
-  tops.sort(compareFloat)
-  var distinctTops: seq[float] = @[]
-  var ranksOfTops = newSeq[int](tops.len)
+  var farSides: seq[float] = @[]
+  for item in items: farSides.add item.farSide
+  farSides.sort(compareFloat)
+
+  # One point cell and one open interval cell per distinct far-side value.
+  # Equal mathematical angles can differ by a few dozen ulps (e.g. tan(45deg)),
+  # while genuinely different angles are at least 4e-10 apart, so a narrow
+  # epsilon separates the two cases unambiguously.
+  var distinctFars: seq[float] = @[]
+  var ranks = newSeq[int](farSides.len)
   var rankCounter = -1
-  for i in 0 ..< tops.len:
-    if i == 0 or tops[i] > tops[i - 1] + topMergeEpsilon:
+  for i in 0 ..< farSides.len:
+    if i == 0 or farSides[i] > farSides[i - 1] + equalFarSideEpsilon:
       rankCounter += 1
-      distinctTops.add tops[i]
-    ranksOfTops[i] = rankCounter
-  for i in 0 ..< items.len:
-    items[i].topRank = ranksOfTops[lowerBound(tops, items[i].top)]
-  let atomCount = distinctTops.len * 2 + 1
-  var rankCounts = newSeq[int](distinctTops.len)
-  for item in items: rankCounts[item.topRank] += 1
+      distinctFars.add farSides[i]
+    ranks[i] = rankCounter
+  let atomCount = distinctFars.len * 2 + 1
+  var rankCounts = newSeq[int](distinctFars.len)
+  for i in 0 ..< farSides.len:
+    rankCounts[ranks[i]] += 1
+
   var atomLow = newSeq[float](atomCount)
   var atomHigh = newSeq[float](atomCount)
   var initial = newSeq[int](atomCount)
   atomLow[0] = -infinityValue
-  atomHigh[0] = distinctTops[0]
+  atomHigh[0] = distinctFars[0]
   var running = 0
-  for rank in 0 ..< distinctTops.len:
+  for rank in 0 ..< distinctFars.len:
     running += rankCounts[rank]
     let pointIndex = rank * 2 + 1
-    atomLow[pointIndex] = distinctTops[rank]
-    atomHigh[pointIndex] = distinctTops[rank]
+    atomLow[pointIndex] = distinctFars[rank]
+    atomHigh[pointIndex] = distinctFars[rank]
     initial[pointIndex] = running
     let intervalIndex = rank * 2 + 2
-    atomLow[intervalIndex] = distinctTops[rank]
-    if rank + 1 < distinctTops.len: atomHigh[intervalIndex] = distinctTops[rank + 1]
+    atomLow[intervalIndex] = distinctFars[rank]
+    if rank + 1 < distinctFars.len: atomHigh[intervalIndex] = distinctFars[rank + 1]
     else: atomHigh[intervalIndex] = infinityValue
     initial[intervalIndex] = running
   buildTree(initial, atomCount)
+
   var best = 0
   for k in 0 .. items.len:
     let gapLow = if k == 0: -infinityValue else: float(items[k - 1].bottom)
@@ -174,14 +181,14 @@ proc solveGroup(width, maxSpeed, crossingTime: int, raws: seq[RawPedestrian]): i
     else:
       let lowBound = if k == 0: -infinityValue else: gapLow - displacement
       let highBound = if k == items.len: infinityValue else: gapHigh + displacement
-      let firstIndex = upperBound(atomHigh, lowBound + boundaryEpsilon)
-      var lastIndex = lowerBound(atomLow, highBound - boundaryEpsilon) - 1
+      let firstIndex = upperBound(atomHigh, lowBound)
+      var lastIndex = lowerBound(atomLow, highBound) - 1
       if lastIndex >= atomCount: lastIndex = atomCount - 1
       if firstIndex <= lastIndex:
         let value = queryTree(1, 0, treeSize - 1, firstIndex, lastIndex)
         if value > best: best = value
     if k < items.len:
-      let rank = items[k].topRank
+      let rank = ranks[lowerBound(farSides, items[k].farSide)]
       addTree(1, 0, treeSize - 1, 0, rank * 2, 1)
       addTree(1, 0, treeSize - 1, rank * 2 + 2, atomCount - 1, -1)
   return best

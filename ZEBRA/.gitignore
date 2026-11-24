@@ -4,3 +4,4 @@ out/
 got_*.txt
 .nimcache/
 __pycache__/
+.nimcache_norelease/
