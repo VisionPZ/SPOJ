@@ -1,0 +1,8 @@
+build/
+in/
+out/
+got_*.txt
+.nimcache/
+.gcc_tmp/
+.spoj-profile/
+__pycache__/
