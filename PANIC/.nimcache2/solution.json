@@ -1,0 +1,9 @@
+{"compile":[
+]
+],
+"link":[
+"/home/pingz/Storage/Projects/SPOJ/PANIC/.nimcache2/solution.c.o",
+"/home/pingz/Storage/Projects/SPOJ/PANIC/.nimcache2/stdlib_system.c.o"
+],
+"linkcmd": "gcc   -o /home/pingz/Storage/Projects/SPOJ/PANIC/build/solution_debug  /home/pingz/Storage/Projects/SPOJ/PANIC/.nimcache2/solution.c.o /home/pingz/Storage/Projects/SPOJ/PANIC/.nimcache2/stdlib_system.c.o    -ldl"
+}
