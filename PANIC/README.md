@@ -49,8 +49,6 @@ The input is read in large blocks into one buffer, and the inline hand scanner w
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 const readChunkBytes = 1 shl 20
-const maxNodeCount = 50000
-const maxArcCount = 500000
 const unreachable = 1 shl 60
 
 {.push checks: off.}
@@ -77,11 +75,38 @@ while true:
   let startPos = inputData.len
   inputData.setLen(startPos + bytesRead)
   copyMem(inputData[startPos].addr, readChunk[0].addr, bytesRead)
-
-var scanPos = 0
 ```
 
-The scanner skips every non-digit, so blank lines between cases need no special handling. One output buffer flushes in large blocks, which keeps the write path cheap.
+The scanner skips every non-digit, so blank lines between cases need no special handling. A probe pass over the buffered input finds the largest case, so each array is allocated once at the exact size it needs.
+
+```nim
+var scanAt = 0
+let caseCount = nextInt(inputData, scanAt)
+var scanProbe = scanAt
+var largestNodeCount = 0
+var largestStreetCount = 0
+for caseIndex in 0..<caseCount:
+  let nodeCount = nextInt(inputData, scanProbe)
+  let streetCount = nextInt(inputData, scanProbe)
+  let bagCount = nextInt(inputData, scanProbe)
+  if nodeCount > largestNodeCount:
+    largestNodeCount = nodeCount
+  if streetCount > largestStreetCount:
+    largestStreetCount = streetCount
+  for streetIndex in 0..<streetCount:
+    discard nextInt(inputData, scanProbe)
+    discard nextInt(inputData, scanProbe)
+    discard nextInt(inputData, scanProbe)
+    discard nextInt(inputData, scanProbe)
+  for bagIndex in 0..<bagCount:
+    discard nextInt(inputData, scanProbe)
+
+let maxNodeCount = largestNodeCount + 2
+let maxArcCount = 2 * largestStreetCount + 5
+let maxStreetCount = largestStreetCount + 2
+```
+
+One output buffer flushes in large blocks, which keeps the write path cheap.
 
 ```nim
 var outputBuffer = ""
@@ -145,12 +170,24 @@ An outgoing arc is closed when its neighbor reaches this plaza at the shortest d
         isParentArc[arcIndex] = true
 ```
 
-An in-place quicksort visits plazas from largest arrival time to smallest. A child always has a larger time, so its answer is ready before the parent needs it.
+An iterative heapsort visits plazas from largest arrival time to smallest. A child always has a larger time, so its answer is ready before the parent needs it. The heap uses no recursion.
 
 ```nim
-  for nodeIndex in 1..nodeCount:
+proc sortByDistance(values: var seq[int], count: int) =
+  var startIndex = count div 2 - 1
+  while startIndex >= 0:
+    siftDown(values, startIndex, count - 1)
+    startIndex -= 1
+  var finish = count - 1
+  while finish > 0:
+    swap(values[0], values[finish])
+    siftDown(values, 0, finish - 1)
+    finish -= 1
+```
+
+```nim
     ordered[nodeIndex - 1] = nodeIndex
-  quickSortRange(ordered, 0, nodeCount - 1)
+  sortByDistance(ordered, nodeCount)
 ```
 
 For each open street the code either inherits the child's answer, computes the collision as a fraction, or uses the plain arrival time. Keeping numerator and denominator separate gives exact comparisons with 64-bit products.
