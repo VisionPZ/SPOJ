@@ -1,10 +1,10 @@
-# SPOJ — 1129 problems, one method
+# SPOJ — 1135 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1129 problems](https://img.shields.io/badge/problems-1129-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1135 problems](https://img.shields.io/badge/problems-1135-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1129 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1135 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1129 problems
+## The 1135 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -501,7 +501,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NR1](NR1/README.md) | Applying a difference k times and then reading the constant is like taking a snapshot of how the polynomial changes at zero; no full basis conversion is needed. | O(25 squared + t times 25 times k) |
 | [SUFFIX](SUFFIX/README.md) | A suffix fixes the last digits, and those digits are the remainder modulo a power of the base, like reading only the last digits of a receipt. Convert each suffix to its remainder and modulus, then merge the congruences with the Chinese remainder theorem. | O(total suffix length times log of the modulus) |
 
-### Greedy, search & enumeration (635)
+### Greedy, search & enumeration (640)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1142,8 +1142,13 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [INS14A](INS14A/README.md) | Treat the chosen ones like people filling M adjacent seats, like a row of friends sliding to the middle. Each person walks to a reserved seat, and the best reserved seats center on the median position. | O(1) |
 | [INS14B](INS14B/README.md) | Hypotenuses can only meet other hypotenuses, like puzzle tabs that only fit matching sockets. This forces an even number of triangles. Every even divisor of N² then works by slicing the square into equal horizontal strips and cutting each strip diagonally. | O(1) |
 | [PIHEX2](PIHEX2/README.md) | Extract one digit from pi without computing all earlier digits, like reading a single page number from a book by formula instead of turning every page. The BBP series expresses pi as a sum of powers of 1/16 with small rational coefficients. | O(1) |
+| [BLSUMSEQ](BLSUMSEQ/README.md) | Filling a piggy bank with one more coin doubles the ways to reach old totals and shifts copies to new totals, while the gaps between filled totals reveal missing sums. | O(n^2 * S + q * S) |
+| [COLORCAT](COLORCAT/README.md) | Think of three-way switches that snap to the missing setting: when two differ, both take the third setting, and when they match nothing moves. Number the colors 0, 1 and 2, and the missing color is the negative sum modulo 3. | O(n * k) |
+| [KIT](KIT/README.md) | Treat the pad as a deck of shift cards dealt once per letter, like dealing cards from a shuffled deck until none remain. Read the first N numbers into the deck, then walk the remaining tokens and shift each letter by the next card. | O(N + total letters) |
+| [MSCHED](MSCHED/README.md) | Treat time slots as parking spaces and send the highest-paying cow to the latest space before its deadline, like valet parking the biggest clients closest to the exit. | O(N log N) |
+| [VACATION](VACATION/README.md) | Every valid route connects through a hub, like a flight that must touch a hub airport before reaching its destination. Precompute shortest paths from each hub to every farm and from every farm to each hub. | O(K * N^2 + Q * K) |
 
-### Data structures, bits & simulation (45)
+### Data structures, bits & simulation (46)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -1194,6 +1199,7 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [INVENT](INVENT/README.md) | Treat each tree edge like a gate that opens between two crowds, and charge every new cross-crowd pair as it passes. Union-find processes tree edges from light to heavy and counts pairs that become connected. | O(1) |
 | [HAYBALE](HAYBALE/README.md) | A range add is like marking the start and end of a fence segment, then walking the fence once to count planks. The algorithm uses a difference array. | O(N + K) |
 | [FOXLINGS](FOXLINGS/README.md) | One cracker spreads through a friendship group like ink through connected pipes, so the answer is the number of separate groups. The algorithm is a disjoint-set union with path compression and size-based joins. | O(1) |
+| [NR2](NR2/README.md) | A bit lights up in a pair XOR when two switches disagree, and the final OR collects every lit bit across all pairs. Compute the OR and the AND of the whole list, then XOR those two results. | O(N) |
 
 ## License
 
