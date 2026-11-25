@@ -1,10 +1,10 @@
-# SPOJ — 596 problems, one method
+# SPOJ — 601 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![596 problems](https://img.shields.io/badge/problems-596-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![601 problems](https://img.shields.io/badge/problems-601-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 596 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 601 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 596 problems
+## The 601 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -293,7 +293,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [CERC07B](CERC07B/README.md) | Fix the first row of taps, then let each row decide the next row, like pushing a row of dominoes downward. Once the taps in one row are known, the only way to clear that row is to tap exactly the black tiles left in the row below. | O(1) |
 | [CERC07K](CERC07K/README.md) | Carry the set of collected keys with the position, like a traveler holding a ring of keys while walking a floor plan. Breadth-first search explores states in step order, so the first exit reached has the fewest steps. | O(1) |
 
-### Dynamic programming (41)
+### Dynamic programming (42)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -340,6 +340,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TWENDS](TWENDS/README.md) | Think of choosing cards like taking coins from a row where the opponent follows a fixed recipe. Once that recipe is known, each reply is predictable, so the first player can plan ahead. | O(1) |
 | [ACMAKER](ACMAKER/README.md) | Give each word a small set of tickets, one ticket for each possible letter it can donate, like choosing seats in a row. Count the tickets locally, then multiply choices across words with a running total. | O(1) |
 | [COUNT](COUNT/README.md) | Add one truck at a time, like stacking one more step onto a staircase, and reuse every smaller count. The algorithm is dynamic programming over computers and trucks. | O(NK + Q) |
+| [RAIN3](RAIN3/README.md) | Slide a window over the days and shrink it whenever the rain total exceeds the limit, like letting water drain from one end of a trough. The shortest violating window gives the answer directly: subtract one from its length. | O(1) |
 
 ### Number theory & big integers (89)
 
@@ -437,7 +438,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (169)
+### Greedy, search & enumeration (173)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -612,6 +613,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [MMCUT](MMCUT/README.md) | Treat each leaf edge as a light switch, like flipping switches in a hallway. A pair with the root needs its leaf switch on. A leaf-to-leaf pair needs exactly one of its two switches on when the answer is 1. | O(N + M) |
 | [SETCOV](SETCOV/README.md) | A hidden path is like a row of streetlights, and each element needs one lit edge between its two endpoints. Recover the order of the edges, then stab the intervals from left to right. | O(N^2 * M / 64 + ordering) |
 | [SKIVALL](SKIVALL/README.md) | A valley has two high ends and one low centre, like two streams running down opposite slopes into the same basin. Build the path backwards from those two high ends, always stepping to a lower neighbour. | O(C^2) for C cells |
+| [CAKE2](CAKE2/README.md) | Count crossings as you lay down each line, like slicing a loaf and counting the new faces exposed by each cut. A line's crossings with earlier lines become reduced fractions along that line. | O(N^2 log N) |
+| [FCTRL4](FCTRL4/README.md) | Peel off factors of five in groups, like removing matched pairs from a stack until the last card shows. The recursive reduction by five uses a four-entry table for the small factorials and a four-cycle for powers of two. | O(1) |
+| [KROW](KROW/README.md) | Read each direction like a strip of tape and start counting only where a matching mark begins. The maximal-run scan walks each same-mark strip once in every one of the four directions. | O(1) |
+| [LABYR2](LABYR2/README.md) | Reading the map is like following a subway line, with each stop lowering the ticket counter by one. A direct simulation applies the printed rule at the current node, decrements the counter, and moves. | O(1) |
 
 ### Data structures, bits & simulation (42)
 
