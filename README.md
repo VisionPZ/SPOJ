@@ -1,10 +1,10 @@
-# SPOJ — 1112 problems, one method
+# SPOJ — 1118 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1112 problems](https://img.shields.io/badge/problems-1112-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1118 problems](https://img.shields.io/badge/problems-1118-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1112 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1118 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1112 problems
+## The 1118 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -392,7 +392,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [IITWPC4J](IITWPC4J/README.md) | Think of seating fish one at a time, with a checklist marking every aquarium already taken. Use subset DP over occupied aquariums. A mask records the taken aquariums, and its set-bit count tells which fish moves next. | O(T times n times 2 to the n) |
 | [UOFTCF](UOFTCF/README.md) | Track both walkers at once with one state per pair of columns, like two fingers following separate lanes down a staircase. Each state holds the best hand-holding time when Alice and Bob end that row in those columns. | O(1) |
 
-### Number theory & big integers (101)
+### Number theory & big integers (102)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -499,8 +499,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [HG](HG/README.md) | Compare two towers by their bricks, then rebuild only the bricks they share. Prime factorization turns each product into a list of prime exponents. The gcd keeps the smaller exponent for every prime. | O(primeLimit log log primeLimit + (N+M) times divisions) |
 | [FONTSIZE](FONTSIZE/README.md) | Try a size, pack words greedily, then search for the largest size that still fits. This works like choosing the biggest text that fits a shelf: measure one candidate, then shift the guess up or down. | O(message length times log size bound) |
 | [NR1](NR1/README.md) | Applying a difference k times and then reading the constant is like taking a snapshot of how the polynomial changes at zero; no full basis conversion is needed. | O(25 squared + t times 25 times k) |
+| [SUFFIX](SUFFIX/README.md) | A suffix fixes the last digits, and those digits are the remainder modulo a power of the base, like reading only the last digits of a receipt. Convert each suffix to its remainder and modulus, then merge the congruences with the Chinese remainder theorem. | O(total suffix length times log of the modulus) |
 
-### Greedy, search & enumeration (619)
+### Greedy, search & enumeration (624)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1125,6 +1126,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [DCEPC14D](DCEPC14D/README.md) | Counting progressions is like counting runs of dominoes placed end to end along a row of values. Each run starts at a value whose predecessor by the ratio is absent, then extends while the next multiple exists. | O(1) |
 | [FINGP](FINGP/README.md) | Checking the tail of a fingerprint is like checking the last word on a page: compare only the ending characters. Read each line whole and compare its final pattern-length slice. | O(1) |
 | [PROFF](PROFF/README.md) | A carry passes to the next digit like a baton passed down a row of runners. Walk both numbers from the last digit to the first and keep one carry flag. | O(1) |
+| [CARINA](CARINA/README.md) | Think of each checkpoint as a toll booth that charges one copy per loaded crossing, like paying a coin at every gate. The truck can shuttle back and forth without returning to the depot, so a checkpoint costs exactly the number of loaded crossings needed there. | O(number of load bands) |
+| [CWC2015](CWC2015/README.md) | Split the player list into two halves of about twenty, like dealing cards into two piles. Check which sums each half can make with each possible number of cards. | O(2 to the N/2) per test |
+| [FRONT](FRONT/README.md) | Sweep from the right like checking a wall from its far end, and remember the tallest y seen so far. A soldier matters only when its group beats that remembered height, like spotting the last peak on a skyline. | O(N) on sorted input, O(N log N) otherwise |
+| [ODWS](ODWS/README.md) | Treat each word as a number written in base 26, like reading a car odometer. The words strictly between two ranks are the gap between the two numbers, minus one. | O(T times L) |
+| [SPLITS](SPLITS/README.md) | Keep the array as sorted intervals on a search tree, like a shelf of consecutive book stacks. A split finds one stack, shortens it to the single position X, and places two new stacks on either side. | O(Q log Q) |
 
 ### Data structures, bits & simulation (45)
 
