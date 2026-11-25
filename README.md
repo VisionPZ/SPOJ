@@ -1,10 +1,10 @@
-# SPOJ — 1141 problems, one method
+# SPOJ — 1147 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1141 problems](https://img.shields.io/badge/problems-1141-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1147 problems](https://img.shields.io/badge/problems-1147-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1141 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1147 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1141 problems
+## The 1147 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -241,7 +241,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 | [RROOT](RROOT/README.md) | Slice the square like a loaf of bread, then measure the slice below the parabola `c = b²` and divide by the whole loaf. The algorithm is analytic area integration in closed form, at O(1) cost per test. | O(T) |
 
-### Graphs & trees (73)
+### Graphs & trees (74)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -320,6 +320,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [VFRIENDS](VFRIENDS/README.md) | Treat the wishes like a seating chart: a table of N seats must give every guest the exact number of neighbours they request. The Erdős–Gallai theorem turns that chart into N cheap inequality checks. | O(1) |
 | [IITWPC4D](IITWPC4D/README.md) | Fill positions from right to left, like dealing cards from the bottom of a shuffled deck. At position i, choose the rank that leaves exactly A[i] taller ranks for the earlier positions. | O(n log n) per case |
 | [IITWPC4E](IITWPC4E/README.md) | Sweep a vertical line across the panels and measure the lit height at each x position, like counting water in a row of tanks as a wave passes. | O(N log N) |
+| [CARDFLIP](CARDFLIP/README.md) | Picture the deck as a row of beads on a string, where cutting and rejoining segments is cheaper than sliding every bead. An implicit treap stores the deck in position order without storing positions. | O(q log n) expected |
 
 ### Dynamic programming (64)
 
@@ -501,7 +502,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NR1](NR1/README.md) | Applying a difference k times and then reading the constant is like taking a snapshot of how the polynomial changes at zero; no full basis conversion is needed. | O(25 squared + t times 25 times k) |
 | [SUFFIX](SUFFIX/README.md) | A suffix fixes the last digits, and those digits are the remainder modulo a power of the base, like reading only the last digits of a receipt. Convert each suffix to its remainder and modulus, then merge the congruences with the Chinese remainder theorem. | O(total suffix length times log of the modulus) |
 
-### Greedy, search & enumeration (646)
+### Greedy, search & enumeration (651)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1153,6 +1154,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [SUMPRIM2](SUMPRIM2/README.md) | Estimate the answer by area, then verify it locally, like finding a shelf from the total shelf length. The prime sum grows like `x^2 / (2 ln x)`. | O(1) |
 | [TFRIENDS](TFRIENDS/README.md) | Read the friendship rule backwards, like tracing a rumour to its source. "A is a friend of B" means a chain of knows links leads from B to A. | O(1) |
 | [VENOM](VENOM/README.md) | Treat the health before attack `k` as a running total, like a bank balance with weekly pay and rising bills. The fatal attack is the first one whose bill exceeds that balance. | O(1) |
+| [HCMUS20A](HCMUS20A/README.md) | Treat blue as plus one and white as minus one, like balancing weights on a scale. A valid path has total weight zero. Centroid decomposition splits the tree into small pieces, and each centroid collects paths that pass through it. | O(n log n) |
+| [KQUERYO](KQUERYO/README.md) | Think of each prefix of the sequence as a snapshot of a bookshelf, like keeping a dated copy after every new book arrives. A persistent segment tree stores those snapshots with shared nodes. | O(n log n + q log n) |
+| [OGLEDALA](OGLEDALA/README.md) | Picture each free run as a rope that gets cut in half whenever someone steps into its middle. Longer ropes are always used before shorter ones, like serving the longest queue first. | O(R log R + Q log^2 M), R is collected pairs |
+| [YOSSY](YOSSY/README.md) | Sort soldiers by power per food, like packing the most valuable items first. Depth-first search decides include or exclude for each soldier and keeps the best k complete powers in a small heap. | O(n log n + V), V is visited search nodes |
+| [ZAMENA](ZAMENA/README.md) | Think of each remembered ID as a rung on a ladder, like stepping only onto stones within one digit of the stone under your foot. The trick is to keep the best score for every exact ID already seen, then try all one-digit changes of the current ID. | O(N * 10 * D), D is the digit length |
 
 ### Data structures, bits & simulation (46)
 
