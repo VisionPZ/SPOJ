@@ -3,8 +3,8 @@
 
 ## Problem
 
-A borrower must assemble an exact amount from 100 ATMs that pay or collect powers of two.
-The bank needs a recipe to obtain each loan and another to return it, or a refusal.
+Each query gives an amount of money.
+Find a set of ATMs, each used once, whose payments and receipts give that amount, and a set that gives it back.
 
 The first line gives the client count. Each next line holds a positive integer below 10 to the thirtieth power, written with at most 30 digits. Print two lines per client with ATM numbers in decreasing order, or the word No.
 

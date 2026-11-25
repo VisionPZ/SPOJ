@@ -4,7 +4,7 @@
 
 ## Problem
 
-A librarian reads labels with up to 800 digits and must find the shelf number whose square each label shows. Ordinary machine integers hold about 19 digits, so the librarian works on paper.
+Given positive integers of up to 800 digits whose square roots are integers, print each root.
 
 Input: `t` test cases, then `t` positive integers. Each integer is a perfect square with at most 800 digits. Output: exactly `t` lines, each holding the integer square root of one input number.
 

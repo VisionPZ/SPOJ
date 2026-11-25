@@ -3,8 +3,8 @@
 
 ## Problem
 
-Two couples tangle two strings while dancing.
-The program finds the shortest sequence of moves that straightens them.
+The input gives a sequence of moves already performed by two pairs of dancers holding strings.
+Moves `S` and `R` tangle the strings; find the fewest extra moves that leave both straight, horizontal, and parallel.
 
 Four dancers hold two strings at the corners of a square.
 Move `S` swaps the two dancers on the right side and adds one crossing.

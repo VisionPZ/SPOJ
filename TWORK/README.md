@@ -4,7 +4,7 @@
 
 ## Problem
 
-A medieval university must split its scholars into three-person workgroups. Each group needs a leader whom all three members accept, meaning the leader knows both other members. The chancellor accepts any grouping that leaves at most one quarter of the scholars idle.
+The input gives scientists and their acquaintance pairs, with each scientist knowing two or three others. Form three-person groups, each with a leader that all three members accept.
 
 Input starts with `t ≤ 100`. Each case gives `n m`, where `n` is divisible by four and `m` counts acquaintance pairs. The next `m` lines hold pairs `ai bi`; each scientist knows two or three others. Output `k`, the group count, then `k` lines of three scientist numbers. Any member may serve as the printed leader.
 
@@ -46,7 +46,7 @@ The sample input and output follow verbatim.
 
 ## Idea
 
-Treat each group as a path of length two, with a center who knows both ends. Think of seating guests at tables of three around a host who greets both neighbors.
+Treat each group as a path of length two, with a center who knows both ends. Picture the center as a hub with two spokes to the members it knows.
 
 The program repeatedly picks a center and two available neighbors. It removes those three scientists and lowers the remaining degree of their neighbors. Sixteen variants change the center order and the neighbor choice. The program keeps the packing that forms the most groups.
 

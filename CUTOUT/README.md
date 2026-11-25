@@ -3,8 +3,7 @@
 
 ## Problem
 
-A sheet of paper already has holes cut from it.
-The task is to find the largest rectangle of paper that remains.
+A square has several axis-aligned rectangles already removed. Find the largest area of a rectangle that fits in the remaining paper.
 
 Read several square sheets with axis-aligned rectangles already removed.
 Each dataset gives square side `n` and cut count `r`.

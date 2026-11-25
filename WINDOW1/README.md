@@ -4,7 +4,7 @@
 
 ## Problem
 
-An orthogonal polygon is painted red inside, but not on its border. A rectangular window frames part of it. Count the separate red fragments visible through that window.
+The input gives an axis-aligned polygon and an axis-aligned rectangular window. Count how many separate pieces of the polygon's interior lie inside the window.
 
 Input starts with `t`, then cases separated by a blank line. Each case gives four integers `x1 y1 x2 y2` for opposite window corners. The next line gives the vertex count `n`, from 4 to 5000. Then `n` lines give vertices in anticlockwise order, with coordinates from 0 to 10000. Output one integer per case, the fragment count.
 

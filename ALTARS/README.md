@@ -3,8 +3,8 @@
 
 ## Problem
 
-An evil spirit leaves each temple altar in a straight line, and a temple is profaned when one ray escapes every wall.
-The task is to list the temples that have such a ray.
+Each case describes axis-aligned rectangles with a doorway centered on one wall.
+Report which rectangles allow a straight ray from the center through the doorway without touching any wall.
 
 The first line gives the case count. Each case gives n, then n lines with four integers and an entrance letter E, W, S, or N. Print the numbers of escaping temples in ascending order, or the word NONE.
 
@@ -42,7 +42,7 @@ The sample input and its expected output follow byte for byte.
 
 ## Idea
 
-Treat each wall as a blocked slope interval, like spotting a gap in a fence viewed edge on.
+Treat each wall as a blocked slope interval, like finding a clear angle between walls seen edge on.
 The program collects slope events (begin and end marks for blocked angles) from walls ahead of the entrance. It sorts them and sweeps a counter to find a free angle. It repeats the sweep four times after rotating the whole scene by ninety degrees, which turns each entrance direction into the east case.
 Each altar costs one event sort, so a case stays near O(n squared log n). Trying sample rays one by one cannot cover a continuous range of directions.
 A slope sweep turns a geometric escape test into sorted integers.

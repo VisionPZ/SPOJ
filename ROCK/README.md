@@ -4,7 +4,7 @@
 
 ## Problem
 
-A candy maker produces sticks of sweet and sour segments. Children buy a piece only when it holds more sweet segments than sour ones. Break the stick into pieces to sell as much length as possible.
+A stick consists of sweet and sour one-centimeter segments. Break it into pieces, each with more sweet than sour segments, to maximize the total length sold.
 
 Input: `t` cases. Each starts with `N`, the stick length in centimetres, followed by a string of `N` characters where `1` means sweet and `0` means sour. Output: one integer per case, the maximum total length that can be sold.
 

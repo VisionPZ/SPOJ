@@ -3,7 +3,8 @@
 
 ## Problem
 
-Tom wrote tiny programs and fears they never stop. He wants the shortest running time over every starting register value and every random bit, or the word HANGS.
+The input describes a small program over 32 one-bit registers that may choose randomly.
+Find the shortest number of cycles in which it can stop, or report HANGS if no run stops.
 
 The first line holds a test count t. Each case gives an instruction count n from 1 to 16, then n instruction lines. The machine has 32 one-bit registers numbered 0 to 31. Registers start with arbitrary values, and each instruction costs one cycle. Print the cycle count at the first STOP, or HANGS if no run stops.
 

@@ -4,7 +4,7 @@
 
 ## Problem
 
-Johnny grows watermelons on a square field. Winter is coming, and he can afford glass for only a small greenhouse. Find the smallest rectangle, with sides parallel to the field edges, that protects at least `k` fruit.
+The input gives plants at grid coordinates, each bearing some fruit. Find the smallest axis-aligned rectangle containing at least `k` fruit.
 
 Input starts with `t ≤ 100`. Each case gives `n k`, where `n` counts plants and `k` is the fruit goal. The next `n` lines give `xi yi fi`: a plant's coordinates and its fruit count. Coordinates run from 1 to 1000. Output one integer, the minimum area.
 

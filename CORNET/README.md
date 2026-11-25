@@ -4,7 +4,7 @@
 
 ## Problem
 
-A company reassigns offices between enterprise centers. Each link moves one center under another, and a query asks for the total cable length from an enterprise to its current center.
+Each enterprise starts with its own center, and link commands merge clusters under a new center. Each query asks the total link length from an enterprise to its center.
 
 Input: one integer for the test count, then an enterprise count per test. Commands follow: `I i j` links center i to enterprise j, `E i` asks for a distance, and `O` ends the test.
 

@@ -3,8 +3,8 @@
 
 ## Problem
 
-A museum keeps balanced a/b strings and wants a display with no two alike.
-Its likeness rule is not transitive, so the curator must find the largest pairwise-unlike set.
+Each case gives a set of balanced strings over a and b, with a recursive similarity rule defined on them.
+Find the largest subset in which no two strings are similar.
 
 The first line gives the case count. Each case starts with n, then n strings built from a and b. Every string has length 1 to 200. Print one integer per case: the level of diversity, which is the largest subset with no similar pair.
 

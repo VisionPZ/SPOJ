@@ -4,7 +4,7 @@
 
 ## Problem
 
-A preschool riddle asks: Klaudia and Natalia have 10 apples together, and Klaudia has 2 more. How many does each girl have? Julka answers 6 and 4 without hesitation. The teacher keeps increasing the numbers until they reach 10^100, where ordinary computer integers overflow. Read the total and the difference, then print each girl's count.
+Two girls share a total number of apples, and one has a stated number more than the other. Find each girl's count, including cases with huge numbers.
 
 Input: exactly 10 test cases. Each case takes two lines: the total apples, then how many more Klaudia has. Output: two lines per case, Klaudia's count first.
 

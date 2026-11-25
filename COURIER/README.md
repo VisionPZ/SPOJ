@@ -4,7 +4,7 @@
 
 ## Problem
 
-A courier collects and delivers parcels one at a time before returning home. The road network offers many routes, so the courier needs the shortest total tour.
+A weighted undirected graph models cities and roads, and each request moves parcels between two cities. Find the shortest tour from the home city that carries every parcel one at a time and returns home.
 
 Input: one integer for the case count, then n, m, and home city b. Then come m roads as `u v length` and z requests as `a b k`. Each request adds k identical parcels from a to b.
 

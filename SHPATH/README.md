@@ -3,7 +3,7 @@
 
 ## Problem
 
-A traveller compares bus fares between named cities. Each direct link has a positive cost, and a trip costs the sum of its links. Answer several cheapest-fare queries per test case.
+Given named cities and positive costs on direct connections, the cost of a path is the sum of its links. Answer the given source-destination pairs with the minimum path cost.
 
 Input: an integer s, then s cases. Each case gives city count n, then for each city a name, neighbour count p, and p pairs of city index and cost. Then come r queries with two names. Output: one cost per query, in input order.
 

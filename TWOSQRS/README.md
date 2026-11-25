@@ -4,7 +4,7 @@
 
 ## Problem
 
-A number puzzle asks whether an integer can be written as the sum of two squares. Some values, like 17, have such a representation. Others, like 7, never do.
+For each input integer, decide whether it can be written as the sum of two squares of integers.
 
 Input starts with `c ≤ 100`, the test count. Each following line holds one integer `n` with `0 ≤ n ≤ 10^12`. Output `Yes` or `No` on its own line for each value. Zero counts as a valid sum, since `0 = 0^2 + 0^2`, and both squares may be equal.
 
@@ -50,7 +50,7 @@ No
 
 ## Idea
 
-Factor the value and inspect only primes of the form `4k + 3`. Think of a recipe check where one spice ruins the dish when it appears an odd number of times. Those primes must occur an even number of times; all other factors never block an answer.
+Factor the value and inspect only primes of the form `4k + 3`. Such a prime blocks the answer when it appears an odd number of times; every other factor is harmless.
 
 A sieve builds every prime up to 10^6 once. Each test case trial-divides by those primes and counts exponents. Factoring one value costs at most one pass over the prime list, about 78498 divisions.
 

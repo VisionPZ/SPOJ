@@ -2,6 +2,9 @@
 
 ## Problem
 
+Coins of known weights and prices fill a piggy bank of known empty and full
+weights. Find the minimum cash that the coins inside must be worth.
+
 For each test case you get the empty and filled pig weights (`1 <= E <= F <= 10000`
 grams), then `N <= 500` coin types with a price `P` and a weight `W`. Coins may be
 used any number of times. Find the cheapest way to reach the weight difference

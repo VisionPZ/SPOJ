@@ -3,8 +3,8 @@
 
 ## Problem
 
-A technician carries a heavy cache between two antennas and must keep one in sight at every step.
-The program finds the shortest legal walk.
+The input describes a grid of terrain heights and two base station cells.
+Find the shortest walk between the stations where, after each step, at least one station is visible and height limits hold.
 
 Read `T` towns.
 Each town is a `P` by `Q` grid of terrain heights, followed by two base station cells.
@@ -73,7 +73,7 @@ The four towns print two successes and two failures.
 
 ## Idea
 
-Check sightlines first, then draw the route, like surveying a map before planning a hike.
+Check sightlines first, then draw the route, like checking which stations are in view before choosing a path.
 For each station, group other cells by primitive direction, a direction divided by the gcd (greatest common divisor) of its offsets.
 March each ray outward once.
 

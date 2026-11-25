@@ -4,7 +4,7 @@
 
 ## Problem
 
-A dance organizer pairs `n` men with `n` women. Everyone ranks the other side, and no couple should prefer a different partner to the one assigned. The organizer needs any pairing with that property.
+Given n men and n women with preference lists, find a pairing where no man and woman prefer each other to their assigned partners.
 
 Input: `t` test cases. Each case starts with `n`, followed by `n` lines of women's rankings and `n` lines of men's rankings.
 

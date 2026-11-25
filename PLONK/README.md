@@ -3,9 +3,7 @@
 
 ## Problem
 
-A group of friends lives at crossroads of a square street grid. They want to meet at one friend's house and minimize the total walking distance.
-
-Everyone walks along the streets and turns only at crossroads. Adjacent crossroads are one unit apart. Find the smallest total distance over all friends' houses.
+Friends live at crossroads of a square street grid and walk along its streets. Find the smallest total walking distance when everyone meets at one friend's house.
 
 Input: the first integer is t, the number of cases. Each case gives n friends, then n pairs of coordinates. Output: one integer per case, the minimum total distance.
 

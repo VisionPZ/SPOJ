@@ -4,7 +4,7 @@
 
 ## Problem
 
-A library shelves every binary tree of a fixed size in dictionary order. Given one tree's catalog number, find the number of the next tree on the shelf.
+The input gives identifiers of binary trees coded as bitstrings. In the ordering of all trees with the same node count, find each tree's successor identifier.
 
 Input starts with the test count `t`. Each of the next `t` lines holds one integer identifier `n` with `0 ≤ n ≤ 2^30`. Output one integer per line: the successor identifier in the same size class. The order wraps from the largest tree back to the smallest.
 
@@ -33,7 +33,7 @@ The sample input and output follow verbatim.
 
 ## Idea
 
-Treat each tree as a word and flip the rightmost zero that still allows a valid ending. Think of a phone book: to reach the next name, you change the last position that can still increase.
+Treat each tree as a bitstring and flip the rightmost zero that still allows a valid ending. Like counting in binary, change the last position that can still increase.
 
 The identifier is the tree's preorder bitstring, with `1` for an internal node and `0` for a leaf. All trees of one size have bitstrings of equal length, so dictionary order equals numeric order. The successor is therefore the next valid bitstring above the given one. The program scans at most 31 bits, computes open slots, flips one zero, and writes the smallest valid tail.
 

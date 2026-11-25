@@ -3,8 +3,8 @@
 
 ## Problem
 
-Alice draws a convex polygon but hands Bob only a bag of edges, without marking which are sides.
-Bob must rebuild the border order from that bag of vertex pairs.
+Each case gives the endpoint pairs of the sides and diagonals of a convex polygon, without saying which are sides.
+Recover the order of the vertices around the border.
 
 The first line gives the dataset count. Each dataset gives n and m, then 2(m+n) endpoint integers for the sides and diagonals. Print vertices 1 to n in border order, starting at 1 with the smaller border neighbor second.
 

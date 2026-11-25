@@ -4,7 +4,7 @@
 
 ## Problem
 
-A road network has several possible routes between two towns. A travel clerk asks for the first, second, or k-th shortest route length, and routes may revisit towns.
+A directed road network connects towns, and each query names two towns and a rank k. Find the length of the k-th shortest walk, counting walks that revisit towns.
 
 Input: one integer for the case count, then n and m per case. Then come m roads as `u v length` and q queries as `u v rank`. Cases print a blank line between them.
 
@@ -60,7 +60,7 @@ The sample input and output:
 
 ## Idea
 
-Keep a sorted shortlist of the best few routes to every town, like a clerk keeping the cheapest fares in a notebook. Once a route is worse than the shortlist's last entry, it can never improve that town.
+Keep a sorted shortlist of the best few routes to every town, like posting only the fastest few times for each destination. Once a route is worse than the shortlist's last entry, it can never improve that town.
 
 The program runs a ranked shortest-path search from each town. A bucket queue settles partial walks in increasing length, and each town stores only its k best lengths. Queries then read one cell from a precomputed table.
 

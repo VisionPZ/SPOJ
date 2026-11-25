@@ -4,7 +4,7 @@
 
 ## Problem
 
-A calculator must multiply decimal integers with up to 300000 digits each. Schoolbook multiplication would take far too long at that size.
+The input gives pairs of decimal integers with up to 300000 digits each. Print the exact product of each pair.
 
 Input starts with `n ≤ 100`, the number of products. Each following case holds two integers separated by a space, each at most 300000 decimal digits. Output one product per case, with no leading zeros except for the value zero itself.
 

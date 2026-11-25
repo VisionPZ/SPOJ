@@ -3,8 +3,8 @@
 
 ## Problem
 
-A calculator must print long-number arithmetic the way a pupil writes it on paper, with aligned columns and dashed separators.
-Each expression needs a neat layout plus its exact result.
+Each case gives two long integers and an addition, subtraction, or multiplication operator.
+Compute the result and print the calculation in aligned columns with separator lines, and partial products for multiplication.
 
 The first line gives T. Each next line holds a positive integer, one of +, -, or *, and a second positive integer, with no spaces. Print the formatted calculation and a blank line after each case.
 

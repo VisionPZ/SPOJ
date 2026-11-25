@@ -3,7 +3,8 @@
 
 ## Problem
 
-A draftsman draws flat broken lines across a sheet of graph paper to cover marked points. Each stroke runs left to right and never tilts more than 45 degrees from horizontal. Find the fewest strokes that cover every point.
+The input gives points with integer coordinates.
+A flat broken line runs left to right with each segment within 45 degrees of horizontal; find the fewest such lines covering all points.
 
 The first line holds the test count t. Each case starts with a point count n, then n lines with coordinates x and y. Points are distinct and both coordinates run from 0 to 30000. Print one integer per case, the minimum number of lines.
 
@@ -39,7 +40,7 @@ The sample output reads:
 
 ## Idea
 
-Rewrite each point using two diagonal coordinates, like labeling a parcel with two routing numbers. Set u = y - x and v = y + x. One flat line covers points whose u does not rise while v does not fall. By Dilworth's theorem (a rule linking chain covers to antichains), the fewest lines equal the largest group with both u and v rising. Patience sorting (a card-game method for longest rising runs) counts that group in one pass. Each point costs one sort comparison and one binary search. A matching built from point pairs would cost cubic time. Takeaway: sort by one coordinate, then count rising values of the other.
+Rewrite each point using two diagonal coordinates, like measuring the same spot from two different axes. Set u = y - x and v = y + x. One flat line covers points whose u does not rise while v does not fall. By Dilworth's theorem (a rule linking chain covers to antichains), the fewest lines equal the largest group with both u and v rising. Patience sorting (a card-game method for longest rising runs) counts that group in one pass. Each point costs one sort comparison and one binary search. A matching built from point pairs would cost cubic time. Takeaway: sort by one coordinate, then count rising values of the other.
 
 ## Why It Works
 

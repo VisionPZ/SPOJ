@@ -4,7 +4,7 @@
 
 ## Problem
 
-A biologist lists every consecutive pair seen in a creature's genetic code. Rebuild the shortest genetic code that contains all those pairs in order. The pairs alone do not tell you how the creature chained them together.
+A genetic code is a sequence of numbers, and a feature is any consecutive pair in it. Given distinct features, find the shortest code that contains them all.
 
 Input: `t` cases separated by blank lines. Each case starts with `n`, the number of distinct features, then `n` lines `l r`. Output: one integer per case, the length of the shortest code containing every feature.
 
@@ -44,7 +44,7 @@ The sample input and output:
 
 ## Idea
 
-Treat each feature as a one-way arrow between two numbers, then find the fewest arrows you must add to make one continuous walk. Think of connecting train legs into the shortest itinerary that visits every leg.
+Treat each feature as a one-way arrow between two numbers, then find the fewest arrows you must add to make one continuous walk. Think of joining arrows end to end until one walk covers every arrow.
 
 The program builds a directed graph and groups numbers with union-find (a table that merges sets sharing any arrow). Each number records an out-degree and an in-degree. A component needs as many extra starts as its total positive imbalance, or one start when already balanced.
 

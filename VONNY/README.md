@@ -4,7 +4,7 @@
 
 ## Problem
 
-Vonny owns a standard double-six domino set and a box with 56 labeled squares. She wants to lay all 28 dominoes flat so each bone covers two touching squares with matching labels. Count the number of distinct arrangements.
+A standard double-six domino set must cover a 7 by 8 box of labeled squares. Each domino spans two adjacent squares whose labels match its own; count the arrangements.
 
 Input starts with the test count. Each case holds 56 integers, the labels of a 7 by 8 grid in row order. Every label runs from 0 to 6. Output one count per case.
 

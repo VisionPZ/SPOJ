@@ -39,7 +39,7 @@ The phrase `ba` appears twice without overlap in all four messages.
 
 ## Idea
 
-Guess a length, fingerprint every substring of that length, then keep the fingerprints that qualify everywhere. Picture comparing four intercepted letters by underlining every two-letter pair and keeping only pairs underlined twice, far apart, in all of them.
+Guess a length, fingerprint every substring of that length, then keep the fingerprints that qualify everywhere. Picture sliding a window of that length along each message and keeping substrings that qualify in every message.
 
 The program binary searches the answer. For a tested length L, rolling hashes (numbers computed from a string so equal strings give equal numbers) turn each substring into a key. Two 64-bit bases make collisions unlikely.
 

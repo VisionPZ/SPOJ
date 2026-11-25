@@ -38,7 +38,7 @@ Output:
 
 ## Idea
 
-Treat the two street directions as two sides of a crossing graph. Think of choosing the fewest hallways so every hallway meets a chosen one.
+Treat the two street directions as two sides of a crossing graph. Think of choosing the fewest streets so every street meets a chosen one.
 
 The program builds horizontal and vertical street segments, then a bipartite graph (two groups joined only across groups) of crossings. That graph is chordal bipartite (no long holes), so a greedy cover is optimal. The captain needs coverage both ways, so the program runs the greedy twice with roles swapped and adds the sizes.
 

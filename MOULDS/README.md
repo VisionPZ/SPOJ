@@ -2,7 +2,7 @@
 
 ## Problem
 
-A command block drives a 1 mm square blade over a 250 mm square cuboid. The blade is 30 mm tall and starts 1 mm above the north-west corner. A `^` command plunges or lifts the blade, and an `@` command shifts it in one compass direction. Print the hollow volume for each block.
+A command block of lifts and shifts drives a small blade over a solid cuboid. For each block, print the volume of hollows the blade cuts.
 
 The bounds set the size of the problem.
 

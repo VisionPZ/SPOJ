@@ -3,7 +3,7 @@
 
 ## Problem
 
-A crowded shop has shelves and open squares. Each open square costs a number of seconds to cross. Find the quickest route from the entrance S to the monitor counter D.
+A grid holds shelves, a start square S, a destination D, and open squares whose digits give crossing time in seconds. Find the minimum time to reach D from S using horizontal and vertical moves.
 
 Input: pairs of integers w and h, ending with 0 0. Each case then has h lines of w characters. `X` is a shelf, `S` the start, `D` the goal, and a digit 1 to 9 the crossing cost. Output: one integer per case, the minimum seconds.
 

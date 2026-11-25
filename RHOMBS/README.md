@@ -4,7 +4,7 @@
 
 ## Problem
 
-A polygon drawn on a triangular grid can be tiled by three kinds of diamond. Report how many tiles of each kind one valid partition uses. The judge accepts any valid partition's counts.
+A polygon on a triangular grid can be tiled by rhombs of three orientations. Report the counts of each type in any valid tiling.
 
 Input: `t` cases. Each starts with `n`, then `n` lines `d k`: a direction from 1 to 6 and a side length in triangle edges, listed clockwise. Output: three integers `A B C`, the counts for the three rhomb types.
 

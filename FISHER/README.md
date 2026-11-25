@@ -3,7 +3,8 @@
 
 ## Problem
 
-A fishmonger drives fish from the port to the market through many small states. Every border crossing costs a toll, and the fish spoil after a fixed number of minutes.
+Each case gives travel times and border tolls between states, with state 0 as the port and the last state as the market.
+Find a route to the market within the time limit that minimizes total toll, and print that toll and its travel time.
 
 Each case starts with two integers n and t. State 0 is the port and state n-1 is the market. Next come n rows of travel times, then n rows of tolls, each row holding n integers. A blank line separates tables, and the pair `0 0` ends the stream. Print the smallest total toll, then a space, then that route's travel time.
 
@@ -43,7 +44,7 @@ The sample output reads:
 
 ## Idea
 
-Treat each state and each elapsed minute as one stop, like adding time rows to a timetable. This expanded graph (one node per state-time pair) lets a shortest-path search minimize tolls while respecting the deadline. Each edge relaxation costs one arithmetic step, and each expanded node has n outgoing edges. Listing every route would grow exponentially, because routes may revisit states. Takeaway: add time to the node, then relax edges.
+Treat each state and each elapsed minute as one stop, like adding a time column to the table of states. This expanded graph (one node per state-time pair) lets a shortest-path search minimize tolls while respecting the deadline. Each edge relaxation costs one arithmetic step, and each expanded node has n outgoing edges. Listing every route would grow exponentially, because routes may revisit states. Takeaway: add time to the node, then relax edges.
 
 ## Why It Works
 

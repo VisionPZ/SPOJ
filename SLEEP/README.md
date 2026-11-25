@@ -3,7 +3,7 @@
 
 ## Problem
 
-A sleepwalker crosses a roof of tiles, following a path that repeats itself in smaller and smaller squares. One tile is missing. Given where the walk is observed and where the hole sits, count the steps until the fall.
+A sleepwalker walks a recursive path across a 3^k by 3^k tile roof, starting at the southwest corner. One tile is missing; given the observed tile and the hole, count the steps until the fall.
 
 Input: an integer t, then t cases separated by blank lines. Each case gives k, then the start coordinates x and y, then the hole coordinates. The roof side is 3 to the k. Output: one integer per case, the exact step count.
 

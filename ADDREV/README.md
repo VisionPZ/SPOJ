@@ -3,8 +3,8 @@
 
 ## Problem
 
-A clerk receives account numbers already written backwards and must add two of them in that notation.
-The receipt must show the sum backwards too, without any leading zero digits.
+Each case gives two numbers written least significant digit first.
+Add them and print the sum in that same reversed order, without leading zeros.
 
 The first line gives the case count. Each next line holds two reversed numbers separated by a space. Print one reversed sum per line.
 

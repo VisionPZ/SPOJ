@@ -4,7 +4,7 @@
 
 ## Problem
 
-An operator answers questions using only the statements heard earlier in a dialogue. Each reply must agree with those facts and with plain English grammar.
+A text module reads English sentences and remembers the facts they state. It must answer later questions from those remembered facts.
 
 Read `t` dialogues. A dialogue starts with a count line. Statement lines end in `.`, question lines end in `?`, and one exit line ends in `!`.
 

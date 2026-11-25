@@ -3,8 +3,8 @@
 
 ## Problem
 
-A monster family shares genes, and the program estimates how much any two monsters have in common.
-Every printed percentage is exact.
+The input describes a family graph where each child inherits each gene from either parent with equal chance.
+For each queried pair, compute the expected percentage of genes they have in common.
 
 Read `t` cases.
 Each case gives member count `n` and child count `k`, then `k` triples `a b c`.
@@ -55,7 +55,7 @@ The sample pair 7 and 5 shares 81.25 percent of genes.
 
 ## Idea
 
-Store each relationship as a big integer (a number held in binary limbs), like keeping an exact recipe instead of a rounded decimal.
+Store each relationship as a big integer (a number held in binary limbs), like keeping a fraction exact instead of rounding it.
 A memoized recurrence (caching each computed pair) expands the later-born monster into its two parents and halves their sum.
 Each cache entry also stores the binary shift of the numerator.
 

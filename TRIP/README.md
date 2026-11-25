@@ -4,7 +4,7 @@
 
 ## Problem
 
-Alice and Bob want one shared holiday route. Each keeps a personal list of cities in visiting order, and neither will reorder or add cities. They delete cities until their lists match, aiming to visit as many cities as possible.
+Each case gives two lists of city codes, one for Alice and one for Bob. Find every distinct longest common subsequence of the two lists, in lexicographic order.
 
 Input starts with `T ≤ 10`. Each case has two lines, one list per traveler, holding 1 to 80 lowercase letters. Cities may repeat, and letters `a` to `z` encode the 26 possible cities. Output every distinct longest common route, one per line in lexicographic order. Print one blank line between cases. The judge guarantees at least one shared city, with at most 1000 distinct answers.
 

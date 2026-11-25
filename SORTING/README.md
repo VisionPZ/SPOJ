@@ -3,7 +3,7 @@
 
 ## Problem
 
-A line of uppercase letters arrives scrambled. Print the same letters in alphabetical order. The judge restricts submission to an esoteric language, but exact output bytes are all that matter.
+Given a line of at most 1000 uppercase letters, print the same letters in non-decreasing order.
 
 Input: one line of at most 1000 uppercase letters, ended by a newline. Output: the same letters in nondecreasing order, followed by a newline.
 

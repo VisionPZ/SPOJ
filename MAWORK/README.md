@@ -65,7 +65,7 @@ NO
 
 ## Idea
 
-Track time by its remainder on one shared clock. Think of blinking traffic lights whose periods all realign every 5040 seconds.
+Track time by its remainder on one shared clock. Think of roadblocks that reopen on fixed cycles and realign every 5040 seconds.
 
 The program runs breadth-first search (a shortest-path walk over states) on cell plus time remainder. Five moves leave each state: north, south, west, east, and stay. Each state costs five checks. A search over raw time would revisit the same cell and phase many times.
 

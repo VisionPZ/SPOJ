@@ -3,7 +3,7 @@
 
 ## Problem
 
-A teacher splits n students into m non-empty groups. The Stirling number S(n, m) counts the splits, and the problem asks only whether that count is odd. Print 1 for odd and 0 for even.
+Each case gives n and m. Print 1 when the Stirling number S(n, m), which counts partitions of n items into m nonempty groups, is odd, and 0 otherwise.
 
 Input starts with a data set count d. Each following line holds two integers n and m with 1 ≤ m ≤ n ≤ 10^9. Output one bit per line.
 

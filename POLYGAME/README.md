@@ -3,9 +3,7 @@
 
 ## Problem
 
-A convex polygon is cut into triangles, one of them black. Players alternate removing a triangle along a given diagonal. Whoever removes the black triangle wins.
-
-Determine whether the first player has a winning strategy.
+A convex polygon is triangulated with one triangle black, and players take turns cutting off a triangle. Determine whether the first player can force cutting the black triangle.
 
 Input: the first integer is t, the number of cases; cases are separated by a blank line. Each case gives n vertices, then n − 2 triangles; the first triangle is black. Output: `YES` or `NO` per case.
 
@@ -39,7 +37,7 @@ The black triangle has one neighbor, so the first player removes it at once.
 
 ## Idea
 
-Check how exposed the black triangle is, then use parity. Picture a Jenga tower. If the target block sits on the outside, take it now. Otherwise the number of remaining blocks decides who gets the last move.
+Check how exposed the black triangle is, then use parity. Picture the triangulation as a tree of joined triangles. An outer triangle can be cut, and parity decides the last move.
 
 The dual graph of a triangulation is a tree: each triangle is a node, and an edge joins two triangles sharing a diagonal. Cutting a triangle removes a leaf of that tree. The black triangle can be cut only when it has at most one neighbor left.
 

@@ -4,7 +4,7 @@
 
 ## Problem
 
-A warehouse sells boxes whose heights are powers of two. Containers must be packed exactly, and the oldest goods go first, so the cheapest boxes should be used.
+Boxes have heights that are powers of two and each has a value. Choose boxes that exactly fill the given containers at the least total value, or report failure.
 
 Input: one integer for the case count, then a box count. Each box gives a size and value. Then come a kind count and one size-count pair per kind.
 

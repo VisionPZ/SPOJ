@@ -3,7 +3,7 @@
 
 ## Problem
 
-Spring moves sheep to mountain pastures, and the shepherd needs the shortest fence around them. Print that circumference rounded to two decimals, then the 1-based indices of the corner sheep in counterclockwise order.
+Each case gives point coordinates, possibly with repeated points. Find the shortest closed fence enclosing them, round its length to two decimals, and list its corner points by input index in counterclockwise order.
 
 Input starts with a test count. Each case gives a sheep count n, then n lines of integer x and y coordinates. Sheep at the same spot count once, using the first index in input order. Print the length, then the corner indices starting at the bottommost and leftmost corner, then a blank line.
 

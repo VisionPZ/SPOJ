@@ -3,7 +3,7 @@
 
 ## Problem
 
-A processor packs one to three instructions per bundle, using only approved type templates. A stop separates dependent instructions. Find the fewest bundles, then the fewest stops for that bundle count.
+Given templates for three-slot bundles and a sequence of instructions with dependency links, pack the sequence into the fewest bundles. Then use the fewest stops that make those bundles valid.
 
 Input starts with a case count. Each case gives a template count t and an instruction count n. Next come t templates: three type letters and a stop slot. Then come n instructions: one type letter and a dependency index. Output two integers: bundles and stops.
 

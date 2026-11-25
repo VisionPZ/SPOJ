@@ -4,7 +4,7 @@
 
 ## Problem
 
-A codebreaker collects pairs of prime factors in a notebook. Sometimes a new pair completes a product that is a perfect square, and the codebreaker counts that moment.
+Given pairs of primes arriving one at a time, keep those whose product never forms a perfect square with earlier pairs. Count each arrival that would complete a square, and skip it.
 
 Input: `T` test cases. Each case starts with `P` prime indices and `R` relations.
 

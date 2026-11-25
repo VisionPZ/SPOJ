@@ -4,7 +4,7 @@
 
 ## Problem
 
-A geometer draws a median on the longest side of a triangle, splitting it into two smaller triangles. She repeats the split forever on every new triangle. Two triangles share a style when they are similar, meaning their side ratios match. Count the distinct styles that ever appear.
+The input gives triangle side lengths. Repeatedly split each triangle by the median on its longest side, and count the distinct similarity classes that occur.
 
 Input starts with `N`, where `0 < N < 35`. Each following line holds three integers `a b c`, the sides of a valid triangle with `0 < a, b, c < 100`. Output one integer per line, the style count `T`, which the statement promises stays below 100.
 
@@ -35,7 +35,7 @@ The sample input and output follow verbatim.
 
 ## Idea
 
-Store squared side lengths and reduce each triple by its gcd, like simplifying a fraction. A sorted, reduced triple names one style. Think of a recipe book where scaled copies of a dish all reduce to the same recipe.
+Store squared side lengths and reduce each triple by its gcd, like simplifying a fraction. A sorted, reduced triple names one style, so scaled copies collapse to one entry.
 
 The program normalizes the starting triple, then runs a queue. For each shape it applies the median formula to get two children, normalizes them, and adds any new shape. A hash table rejects repeats in constant expected time.
 

@@ -3,7 +3,7 @@
 
 ## Problem
 
-Before printing, scribes copied books by hand. Split m books among k scribes so each gets a continuous block, and make the busiest scribe's work as small as possible. Print the page counts with slashes at the split points.
+Each case gives m books with page counts and a number of scribes k. Split the books into k contiguous groups so the largest group total is minimized, then print the split.
 
 Input starts with a case count. Each case gives m and k, then m page counts on one line. Output one line per case, with spaces between books and ` / ` between scribes' blocks.
 
@@ -38,7 +38,7 @@ The first case needs a maximum load of 1700 pages.
 
 ## Idea
 
-Binary search the largest block sum, called the load. For a trial load, pack books greedily from left to right and count the scribes used. If that count fits the budget, try a smaller load; otherwise raise it. Think of judging a row of boxes by one weight limit, then lowering the limit until the boxes no longer fit.
+Binary search the largest block sum, called the load. For a trial load, pack books greedily from left to right and count the scribes used. If that count fits the budget, try a smaller load; otherwise raise it. Think of testing one page limit for all books, then lowering it while a split still fits.
 
 Once the optimal load is known, place the slashes from right to left so early scribes carry the least work they can.
 

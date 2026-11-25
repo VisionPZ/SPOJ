@@ -3,7 +3,8 @@
 
 ## Problem
 
-A tired shepherd stands inside a polygon pen and counts sheep from one spot. He sees the whole interior, but some sheep sit on the fence and still count as inside.
+The input gives a polygon and a set of points representing sheep, with the observation point at the origin.
+Count how many sheep lie inside the polygon or on its boundary.
 
 The first line holds a test count t. Each case starts with a vertex count n and a sheep count m. Next come n vertex coordinates in counter-clockwise order, then m sheep coordinates. The shepherd stands at (0, 0). Print one integer per case, the number of sheep inside or on the fence.
 
@@ -45,7 +46,7 @@ The sample output reads:
 
 ## Idea
 
-The shepherd sees every corner, like a guard at the hub of a wheel. Each ray from the origin crosses the fence once, so the vertices already lie in angular order. Sort them by angle (the direction of a vector around the circle), then binary search the gap that contains each sheep. A triangle test using cross products (signed area of a parallelogram) settles containment in constant time. Each sheep costs O(log n) comparisons. Casting a ray against every edge would cost O(n) per sheep. Takeaway: find the angular wedge first, then test one triangle.
+The shepherd sees every corner from the origin, like rays spreading from a single point. Each ray from the origin crosses the fence once, so the vertices already lie in angular order. Sort them by angle (the direction of a vector around the circle), then binary search the gap that contains each sheep. A triangle test using cross products (signed area of a parallelogram) settles containment in constant time. Each sheep costs O(log n) comparisons. Casting a ray against every edge would cost O(n) per sheep. Takeaway: find the angular wedge first, then test one triangle.
 
 ## Why It Works
 

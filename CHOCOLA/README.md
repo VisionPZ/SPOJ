@@ -4,7 +4,7 @@
 
 ## Problem
 
-A chocolate maker cuts a bar into single squares. Every straight cut has a price, and the maker wants the smallest total bill.
+A rectangular bar is split by vertical and horizontal cuts, each with a fixed price. Find the least total cost to separate every square.
 
 Input: one integer for the test count, a blank line, then one case per test. Each case starts with `columnCount rowCount`, then lists `columnCount - 1` cut costs and `rowCount - 1` cut costs. A blank line separates cases.
 

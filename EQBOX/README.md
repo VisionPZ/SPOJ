@@ -3,8 +3,8 @@
 
 ## Problem
 
-A mechanic crosses a tiled floor carrying a rigid box.
-A single touch on a tile edge springs a trap, so the placement must be exact.
+Each input case gives the side lengths of a rectangular tile and a rectangular box.
+Decide whether the box fits on one tile without crossing its border, allowing rotation.
 
 Read `T` cases. Each gives tile sides `A` and `B` and box sides `X` and `Y`.
 The box may rotate.
@@ -41,7 +41,7 @@ An 8 by 8 box fits a 10 by 10 tile, but not the reverse.
 
 ## Idea
 
-Sort each shape's sides so the short side comes first, like fitting a book into a sleeve.
+Sort each shape's sides so the short side comes first, like lining up a box and a tile before testing a tilt.
 If the box cannot lie straight, test one tilted placement using the box diagonal and three angle functions.
 
 The straight test compares short with short and long with long.

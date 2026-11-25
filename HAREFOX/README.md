@@ -3,7 +3,8 @@
 
 ## Problem
 
-A theater researcher watches hares and foxes change year by year. He wants the long-term fate of each population without simulating centuries of biology.
+The input gives coefficients and starting values of a linear recurrence for two populations.
+Determine the long-term fate of each population and print the matching fixed sentence.
 
 The input holds about 5000 cases. The first line is a case count. Each case has six real numbers a, b, c, d, h, and f, written two per line, followed by a blank line. Each number uses at most ten characters. Print one of six fixed sentences describing the limits of hares and foxes.
 
@@ -42,7 +43,7 @@ Hares will die out while foxes will overgrow.
 
 ## Idea
 
-Find the fastest-growing part of a recurrence, like predicting a seesaw by watching its largest swing. Both populations obey the same second-order linear recurrence (each term is a fixed combination of two earlier terms). Its characteristic roots (solutions of the associated quadratic) set the long-term behavior. From each starting value, the program computes that root's weight and picks the dominant active one. Each case costs a fixed number of float operations, whatever the year count. Simulating year by year would cost O(years), could overflow, and still never reach a limit. Takeaway: solve the quadratic once, then read off each limit.
+Find the dominant part of a recurrence, like spotting the largest term as it outgrows the rest. Both populations obey the same second-order linear recurrence (each term is a fixed combination of two earlier terms). Its characteristic roots (solutions of the associated quadratic) set the long-term behavior. From each starting value, the program computes that root's weight and picks the dominant active one. Each case costs a fixed number of float operations, whatever the year count. Simulating year by year would cost O(years), could overflow, and still never reach a limit. Takeaway: solve the quadratic once, then read off each limit.
 
 ## Why It Works
 

@@ -3,7 +3,7 @@
 
 ## Problem
 
-Mirek walks a route of straight ten-metre sections, turning right angles as he goes. He wants one straight shortcut between two rest points, horizontal or vertical, and as short as possible.
+A route consists of straight sections of 10 meters each, ending at numbered break points. Find the shortest horizontal or vertical shortcut joining two break points, with ties broken by earliest start and furthest end.
 
 Input: an integer t, then t cases. Each case gives section count n, then a string of n letters N, E, S or W. Output: four fields, the length in sections, the begin point, the end point, and the direction letter.
 

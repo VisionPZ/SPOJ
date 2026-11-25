@@ -3,7 +3,8 @@
 
 ## Problem
 
-A club keeps member names in a small hash table with 101 slots and wants to see the table after a series of edits. Collisions are resolved by a fixed probing rule, so the exact slot of every name matters.
+The input gives insert and delete operations on a hash table with 101 slots.
+Apply the given hash and probing rules, then print the stored key count and every occupied slot in index order.
 
 The first line holds a test count t of at most 100. Each series starts with an operation count of at most 1000, then one operation per line: `ADD:string` or `DEL:string`. Keys use at most 15 letters from ASCII 'A' through 'z'. Print the stored key count, then one `index:key` line per occupied slot in index order.
 
@@ -50,7 +51,7 @@ The sample output reads:
 
 ## Idea
 
-Treat the table like a parking lot of 101 spaces. Park each key by a weighted address, like assigning a locker from its letters. A hash table (a fixed array indexed by a computed key) stores the string plus an occupancy flag. Quadratic probing (trying slots at square-growing offsets) walks at most twenty candidates. Each operation costs O(20 + key length). A language dictionary would hide the required probe order and the slot-by-slot dump. Takeaway: model the table exactly, then print it in slot order.
+Treat the table as 101 numbered slots. Place each key by computing its hash, then probing forward until a slot is free. A hash table (a fixed array indexed by a computed key) stores the string plus an occupancy flag. Quadratic probing (trying slots at square-growing offsets) walks at most twenty candidates. Each operation costs O(20 + key length). A language dictionary would hide the required probe order and the slot-by-slot dump. Takeaway: model the table exactly, then print it in slot order.
 
 ## Why It Works
 

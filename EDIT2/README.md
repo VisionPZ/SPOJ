@@ -3,8 +3,8 @@
 
 ## Problem
 
-A text editor can double the current line with one key.
-The program finds the shortest key sequence that rebuilds a given line.
+The input gives lines of text that never contain the doubling key `d`.
+For each line, find and print a shortest editor keystroke sequence that produces it, with the stated tie-breaking rules.
 
 Read exactly ten lines of text.
 Each line has at most 600 printable ASCII characters and never contains the doubling key `d`.

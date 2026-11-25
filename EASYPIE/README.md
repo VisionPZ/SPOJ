@@ -3,8 +3,8 @@
 
 ## Problem
 
-A contest director rates problem difficulty from the submission log left after a contest.
-The program turns that log into nine short statistics lines.
+The input describes a contest submission log with times, teams, problem letters, and results.
+For each problem, compute accepted-solution count, average submissions per solving team, and average time to solve.
 
 Read `t` test cases.
 Each case starts with the submission count, then that many submissions.
@@ -64,7 +64,7 @@ Problem A shows three solves with averages 1.33 and 3373.33.
 
 ## Idea
 
-Close each team-problem pair at its first accept, like stamping a ticket when a customer first succeeds.
+Close each team-problem pair at its first accept, like crossing it off a list the first time it succeeds.
 Later submissions of a closed pair no longer count.
 
 A flat hash table (a table indexed directly by a key) maps a team name to a numeric index in constant time.

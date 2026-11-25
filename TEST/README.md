@@ -4,6 +4,8 @@
 
 ## Problem
 
+The input holds integers of one or two digits, one per line. Copy each to output in order, but stop as soon as the number `42` is read.
+
 Input: one integer per line, each of one or two digits. Output: the same lines,
 copied in order, and processing stops once `42` has been read.
 

@@ -3,7 +3,7 @@
 
 ## Problem
 
-Sellers and buyers in Selfishland each trade with one partner only. Some pairs can move goods, and each pair moves a fixed amount. Choose the pairs that move the most goods in total.
+Some cities sell goods and others buy goods, and each city trades with only one partner. Given possible seller-buyer trades and the goods each moves, choose trades that maximize the total goods exchanged.
 
 Input: an integer t, then t cases. Each case starts with seller count C1 and buyer count C2. Then come triples seller, buyer, goods, ending with 0 0 0. Output: one integer per case, the maximum goods shipped.
 
@@ -57,7 +57,7 @@ The sample output:
 
 ## Idea
 
-Match partners like guests at a dance, then improve one pairing at a time until no swap helps. The program solves a maximum-weight bipartite matching through minimum-cost assignment. It stores minus the goods for each real offer and zero for a missing offer. The smaller city class supplies the rows, so skewed cases scan fewer cells.
+Pair sellers with buyers, then improve one pairing at a time until no swap raises the total goods. The program solves a maximum-weight bipartite matching through minimum-cost assignment. It stores minus the goods for each real offer and zero for a missing offer. The smaller city class supplies the rows, so skewed cases scan fewer cells.
 
 Each augmentation fixes one more row and may reassign earlier rows. One augmentation costs O(row times column) work, and a case runs one augmentation per row. A search over every matching would be factorial, which is impossible at 100 cities.
 

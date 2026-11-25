@@ -4,7 +4,7 @@
 
 ## Problem
 
-An algebra student checks whether a logic formula stays true for every choice of its letters. With up to sixteen letters, testing each choice one at a time takes too long.
+The input lists logical expressions in prefix notation using variables and the operators and, or, implies, equivalence, and not. Decide for each expression whether it is always true, whatever its variables are.
 
 Input: the first line gives the number of expressions, at most 35. Each following line holds one prefix-notation expression using `C`, `D`, `I`, `E`, `N`, and lowercase variables. Output: `YES` if the expression is a tautology, `NO` otherwise.
 

@@ -4,7 +4,7 @@
 
 ## Problem
 
-An archive stores numbers as spelled-out English words. The catalogue needs "butchered" Roman numerals instead, with overlines and lowercase letters for large values. Translate each number into two lines of text.
+Integers are given spelled out in uppercase English words. Convert each to extended Roman numerals, with overlines and lowercase letters for large values.
 
 Input: a count `n`, spelled out like every other number, then `n` lines of spelled-out values. Output: two lines per value, an overline bar line followed by the numeral line.
 

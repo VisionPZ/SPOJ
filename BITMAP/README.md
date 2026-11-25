@@ -3,7 +3,7 @@
 
 ## Problem
 
-A black-and-white picture is stored as rows of '0' and '1' characters. Each cell needs the Manhattan distance (sum of row and column gaps) to the nearest white cell. Print the distances as rows of space-separated integers.
+Each case gives a grid of pixels marked white or black, with at least one white pixel. For every pixel, compute its Manhattan distance (sum of row and column gaps) to the nearest white pixel.
 
 Input starts with a case count t, and blank lines separate cases. Each case gives n and m, then n strings of length m where '1' means white. At least one cell is white. Output n rows of m integers per case.
 
@@ -39,7 +39,7 @@ The far top-left corner is three steps from the nearest white cell.
 
 ## Idea
 
-Spread distances across the grid like ripples from several stones. Set white cells to zero and every other cell to a large number. Sweep from the top-left, then from the bottom-right, and keep the smaller value at each cell. This is a two-pass distance transform (a table that replaces a search).
+Spread distances across the grid from each white pixel, like a wave advancing one cell per step. Set white cells to zero and every other cell to a large number. Sweep from the top-left, then from the bottom-right, and keep the smaller value at each cell. This is a two-pass distance transform (a table that replaces a search).
 
 Each sweep visits each cell once and reads only the up, left, down, and right neighbours, so the cost is O(1) per cell. A queue-based multi-source search would push every cell and allocate queue state, which costs more on a 33,124-cell grid.
 

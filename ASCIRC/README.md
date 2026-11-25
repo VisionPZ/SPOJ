@@ -3,8 +3,8 @@
 
 ## Problem
 
-A company wants to replace small assembler programs with gate circuits, and each gate costs money.
-The task is to find the cheapest circuit that behaves like the given program.
+Each case gives a sequence of register assignments using four elementary operations.
+Find the fewest gates in an acyclic circuit that produces the same final register values.
 
 The first line gives the case count. Each case gives n, then n four-letter instructions with an operation A, B, C, or D and three register letters. Print the minimal gate count.
 

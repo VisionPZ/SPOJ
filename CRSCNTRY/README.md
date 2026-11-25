@@ -4,6 +4,8 @@
 
 ## Problem
 
+Each dataset gives a reference route card and several candidate cards, each a list of checkpoints. Count how many checkpoints a candidate shares with the reference in order, and print the largest count.
+
 Read `d` datasets. Each dataset holds Agnes' route card, then one or more cards for Tom. A card is a list of checkpoints ending in `0`; a `0` alone on a line ends the dataset. Tom picks one card and scores a point each time he meets Agnes in order. Print his highest score for each dataset.
 
 | item | bound |

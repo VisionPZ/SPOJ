@@ -3,7 +3,7 @@
 
 ## Problem
 
-A puzzle builds numbers using only repeated copies of one digit. Each expression may use at most eight copies.
+Expressions may use only numbers made from one repeated digit K, plus arithmetic. For each query number, find the shortest representation using at most eight copies of K.
 
 The input starts with the case count. Each case gives a digit and a list of target numbers. Print the shortest representation length, or `NO`.
 
@@ -42,7 +42,7 @@ NO
 
 ## Idea
 
-Precompute every short expression once per digit. Think of a recipe book that lists every dish made with at most eight spoons of one ingredient.
+Precompute every short expression once per digit. Think of a table that lists every value reachable with at most eight copies of that digit.
 
 The program grows values by total digit count. It combines two shorter values with addition, subtraction, multiplication, or exact division. A hash table (a key-to-value lookup) keeps the shortest length seen. Each query then costs one lookup. Searching expressions per query would repeat the same work.
 

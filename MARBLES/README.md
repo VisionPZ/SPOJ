@@ -3,7 +3,7 @@
 
 ## Problem
 
-A child picks marbles from an endless shop shelf. Every color must appear at least once. The order of the marbles does not matter.
+Given marbles to choose from several unlimited colors, count selections that use every color at least once. Marbles of one color are indistinguishable, and order does not matter.
 
 The input starts with the case count. Each case gives `n` marbles and `k` colors. Print the number of distinct selections.
 

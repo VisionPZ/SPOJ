@@ -4,7 +4,7 @@
 
 ## Problem
 
-A rail passenger wants a booklet listing the best connections from city 1 to city n. Each station posts only direct trains, and a change costs no time. A connection is optimal when no alternative leaves no earlier, arrives no later, and takes strictly less time.
+The input gives direct train timetables for n cities. A connection is optimal when no faster option leaves no earlier and arrives no later; list the optimal ones from city 1 to n.
 
 Input starts with the test count `t`. Each case starts with `n`, then lists `n` timetables. A timetable starts with `m`, followed by `m` rows of departure `A`, arrival `B`, and destination city. Clock times use `hh:mm` form, departures are sorted, and all `m` values sum to at most 1,000,000. Output the count `r`, then `r` increasing departure rows of the form `A B`. Duplicate clock pairs print once.
 

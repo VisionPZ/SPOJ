@@ -34,7 +34,7 @@ The three answers are 2134, 1324, and 1243.
 
 ## Idea
 
-Insert the largest number last and count how many smaller numbers it passes. Picture adding one new book to a sorted shelf: sliding it past t books creates exactly t new out-of-order pairs.
+Insert the largest number last and count how many smaller numbers it passes. Picture inserting the next largest number into a row of smaller ones; each step past an entry creates one inversion.
 
 The program uses dynamic programming. Entry `dp[j][inv]` counts permutations of j numbers with inv inversions. Inserting the new largest value j lets it pass `added` smaller values, where added ranges from 0 to j − 1. So `dp[j][inv]` is the sum of `dp[j − 1][inv − added]` over that range.
 

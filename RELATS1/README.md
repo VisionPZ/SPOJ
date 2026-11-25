@@ -4,9 +4,8 @@
 
 ## Problem
 
-Each data set describes a directed graph. Every edge carries `<`, `>`, or `=`.
-Assign an integer from 0 to k to each vertex so every edge label holds.
-Print the smallest k that works, or NO when no k works.
+A directed graph has edges labeled `<`, `>`, or `=`. Assign integers from 0 to k to
+vertices so each label holds, and report the smallest feasible k or NO.
 
 Bounds and judge limit:
 

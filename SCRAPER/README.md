@@ -3,7 +3,7 @@
 
 ## Problem
 
-A large piece of furniture must move between two floors of a skyscraper. Each elevator starts at a floor and stops every X floors above it. The high-capacity elevator is broken, so transfers happen only where two elevators share a floor.
+Elevators in a building start at floor Y and stop every X floors above it. With the high-capacity elevator broken, decide whether floor B is reachable from floor A using only the elevators.
 
 Input: an integer N, then N cases. Each case gives floors F, elevators E, and floors A and B, followed by E lines with step X and start Y. Output: one sentence per case, either `It is possible to move the furniture.` or `The furniture cannot be moved.`
 

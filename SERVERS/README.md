@@ -3,7 +3,7 @@
 
 ## Problem
 
-A network of servers offers services, and each server carries a rank from 1 to 10. A server W interests V when no server at equal or smaller distance from V has a higher rank. Sum the sizes of all interest sets over the network.
+Servers in a connected network carry ranks and positive wire times. A server W interests V when no server within distance D(V,W) of V outranks W; sum the sizes of all interest sets.
 
 Input: an integer z, then z cases. Each case gives server count n and wire count m, then n ranks, then m triples a, b, t. Output: one integer per case, the total number of interesting pairs.
 

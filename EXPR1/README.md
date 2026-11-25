@@ -3,8 +3,8 @@
 
 ## Problem
 
-A student adds parentheses to an arithmetic expression to hit a target value with the fewest pairs.
-The program checks whether any placement works.
+The input gives an arithmetic expression using `+`, `-`, and single digits, plus a target value k.
+Decide whether adding parentheses can make the value equal k, and give the minimum number of pairs needed.
 
 Read `d` data sets. Each gives expression length `n` and target `k`, then the expression string.
 The string starts with an operator and alternates operator and digit.
@@ -53,7 +53,7 @@ The first expression needs one pair to reach -4.
 
 ## Idea
 
-Parentheses matter only after a minus sign, like flipping a row of dominoes.
+Parentheses matter only after a minus sign, like flipping the sign of every later term in a sum.
 A group after `+` changes nothing.
 A group after `-` flips every digit after its first inside that group.
 

@@ -3,8 +3,7 @@
 
 ## Problem
 
-A fairytale contest needs the cube root of a huge integer printed to ten decimal places.
-Ordinary floating point cannot hold 150 digits.
+For each large integer, print its cube root truncated after ten decimal places. Also print the sum of the printed digits modulo ten.
 
 Read a count `t`, then `t` integers of up to 150 digits.
 Blank lines and surrounding spaces may appear.

@@ -3,7 +3,7 @@
 
 ## Problem
 
-Vertical segments stand side by side on a plane. Two segments are visible when a horizontal line joins them without crossing any other segment. Three segments form a triangle when every pair is visible. Count the triangles.
+Given disjoint vertical segments in the plane, two segments are horizontally visible when a horizontal line joins them without crossing any other segment. Count the triples where every pair is visible.
 
 Input: an integer d, then d datasets. Each dataset starts with segment count n, then n lines with low y, high y and x. Output: one integer per dataset, the triangle count.
 

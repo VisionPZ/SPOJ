@@ -4,7 +4,7 @@
 
 ## Problem
 
-Every politician hung one poster on the shared election wall. Later posters cover earlier ones, so some messages vanish before voting day. Count how many posters still show at least one section.
+Posters cover ranges of wall sections and are hung one after another. Count how many posters still show at least one section after later ones cover them.
 
 Input: `t` test cases. Each case starts with `n`, followed by `n` lines `li ri`, the sections one poster covers in hanging order. Output: one integer per case, the number of posters with a visible section.
 

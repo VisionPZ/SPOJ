@@ -4,7 +4,7 @@
 
 ## Problem
 
-A sphere sits snugly inside a four-faced solid, touching every face. Its center sits the same distance from each face, and that distance is the radius the team needs. Read the six edge lengths of the solid and print the radius of the sphere.
+The input gives the six edge lengths of a tetrahedron in a fixed order. For each one, compute the radius of a sphere tangent to all four faces.
 
 Input: `N` cases. Each line holds six integers: `WX WY WZ XY XZ YZ`, the edges of tetrahedron `WXYZ` in that order. Output: one radius per line, with exactly four digits after the decimal point.
 

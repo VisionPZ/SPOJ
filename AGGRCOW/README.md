@@ -3,8 +3,8 @@
 
 ## Problem
 
-A farmer must place aggressive cows in the widest possible stalls along a long barn.
-He wants the largest gap that still fits every cow without a fight.
+Each case gives stall positions on a line and a cow count.
+Place the cows in stalls so the smallest distance between any two is as large as possible.
 
 The first line gives the case count. Each case gives N stalls and C cows, then N stall positions. Print the largest achievable minimum distance between two cows.
 
@@ -39,7 +39,7 @@ The sample input and its expected output follow byte for byte.
 
 ## Idea
 
-Guess a distance and walk the sorted stalls, like checking whether a row of chairs fits a spacing rule.
+Guess a distance and walk the sorted stalls, like checking whether a row of stalls fits a spacing rule.
 The program sorts the stall positions, then applies binary search (repeated guessing over an ordered range). A greedy scan places each cow in the earliest stall that respects the guessed gap.
 That scan costs one pass over N stalls. Sorting costs O(N log N), and the binary search adds O(log range) passes.
 Trying every set of C stalls is combinatorial and far slower.

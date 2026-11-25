@@ -3,7 +3,7 @@
 
 ## Problem
 
-A row of lettered bricks must be rearranged into a target word. Only adjacent bricks whose letters form an allowed pair may swap. Find the minimum swaps, or -1 when no sequence works.
+Each case gives a start word, a target word, and pairs of letters whose bricks may swap when adjacent. Find the minimum number of swaps, or -1 if the target is unreachable.
 
 Input starts with a case count. Each case holds two lowercase words, then a pair count m, then m letter pairs. Output the minimum swap count modulo 2^32, or -1.
 

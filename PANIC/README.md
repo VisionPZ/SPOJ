@@ -47,7 +47,7 @@ In the first case the longest survival is 22.5 time units.
 
 ## Idea
 
-Spread the panic first, then work out the best escape from every plaza. Imagine a fire starting at several cafés at once, with people running down every street except the one the smoke came from.
+Spread the panic first, then work out the best escape from every plaza. Imagine panic starting at several plazas at once, with crowds running down every street except the one panic came from.
 
 The program runs Dijkstra (a shortest-path search that always expands the closest plaza) from all bag plazas at once. The distance d[v] is the moment panic reaches plaza v. A shortest-path tree records the street panic came from; people cannot use that street to escape.
 

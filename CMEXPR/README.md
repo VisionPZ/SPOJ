@@ -4,7 +4,7 @@
 
 ## Problem
 
-An accountant wants shorter arithmetic notes. Parentheses that do not change the meaning only add clutter, so the accountant removes them.
+Each input line is an arithmetic expression using variables, four operators, and parentheses. Print the same expression with every unnecessary parenthesis pair removed.
 
 Input: one integer for the expression count, then one expression per line. Each expression uses lowercase variables, the operators `+ - * /`, and parentheses.
 

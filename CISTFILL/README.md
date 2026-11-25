@@ -4,7 +4,7 @@
 
 ## Problem
 
-A row of cisterns waits for a measured pour of water. Some tanks start above the floor, so the water rises through several levels before it reaches them.
+Cisterns sit at given base levels with given dimensions, and a fixed water volume fills the connected network. Find the water level reached, or report overflow.
 
 Input: one integer for the data-set count, then one data set per block. Each block starts with a cistern count, then one line of base, height, width, and depth per cistern, then the water volume.
 

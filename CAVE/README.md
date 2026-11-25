@@ -3,7 +3,7 @@
 
 ## Problem
 
-An explorer walks cave corridors with a fixed rule: turn left if possible, else go straight, else turn right, else turn back. He stops on reaching the entry point again. Count the corridors he never touched.
+A map lists horizontal and vertical cave corridors and an entry point with a heading. An explorer turns left when possible, then goes straight, right, or back; count the corridors never visited.
 
 Input starts with a map count T. Each map gives a corridor count N, then N corridor lines. Each line starts with V or H and holds three coordinates: one fixed line coordinate and two bounds. The last line gives the entry x, entry y, and heading N, E, S, or W. Output the unvisited corridor count per map.
 

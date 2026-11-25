@@ -4,7 +4,7 @@
 
 ## Problem
 
-A troupe arranges numbered cards in a cube of slots, with one empty slot for sliding. The troupe wants to know whether a shown arrangement can be slid back into order.
+A cube of M by M by M slots holds numbered tiles with one slot empty. Decide whether sliding tiles into the empty slot can restore the original ordering.
 
 Input: one integer for the puzzle count, then one side length M and M cubed tile values per puzzle. Zero marks the empty slot.
 

@@ -3,8 +3,8 @@
 
 ## Problem
 
-Aliens want to abduct a whole crowd with one circular tractor beam and need the smallest possible beam.
-The center of that beam is the spacecraft position above the ground.
+Each case gives n points in the plane.
+Find the smallest circle containing them all, and report its radius and center.
 
 The first line gives the case count. Each case gives n, then n lines with real x and y coordinates. Print the radius on one line, then the center coordinates on the next line. Round every number to two decimal places.
 

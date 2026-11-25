@@ -4,7 +4,7 @@
 
 ## Problem
 
-Cities sit around a circular waterway. Each arc between neighbors passes boats clockwise `C`, anticlockwise `A`, or both ways `B`. The old boats cannot pass each other, so the council builds new one-way circular channels. Build the fewest circles so every communicating ordered pair gets its own channel, with no two channels sharing an arc.
+Cities sit on a circle; each arc is passable clockwise, anticlockwise, or both. Find the fewest one-way circles so every ordered pair of cities has a separate route.
 
 Input starts with `t ≤ 100`. Each case gives `n`, then a string of exactly `n` letters `A`, `B`, or `C`. Letter `i` describes the arc from city `i` to city `i+1`, wrapping around. Output one integer per case: the minimum circle count.
 
@@ -36,7 +36,7 @@ BACB
 
 ## Idea
 
-Choose each channel's arc to spread the load, then count the busiest fragment. Think of assigning delivery vans to the least crowded streets, so no street ever needs two vans.
+Choose each channel's arc to spread the load, then count the busiest fragment. Spread channels over arcs so no arc carries two channels on the same circle.
 
 A channel from `u` to `v` uses one of two complementary arcs. A one-way pair must use its forced arc, while a two-way pair may choose either. Channels sharing a fragment conflict on one circle, so the circle count follows a fragment-load formula. The program sweeps the cities left to right and keeps candidate values in a lazy segment tree. Each city costs logarithmic time.
 

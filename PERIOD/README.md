@@ -45,7 +45,7 @@ The prefix `aabaab` of the second string repeats `aab` twice.
 
 ## Idea
 
-Measure how much of each prefix echoes at its end, then read off the repeat count. Picture finding the beat of a song by noticing the longest bit that ends exactly as the beginning did.
+Measure how much of each prefix echoes at its end, then read off the repeat count. Picture comparing each prefix with the preceding text and noting the longest ending that matches the start.
 
 The program builds the prefix function (also called a border array) with the KMP (Knuth–Morris–Pratt string matching) method. Entry `border[i − 1]` is the longest proper prefix of the length-i prefix that is also its suffix.
 

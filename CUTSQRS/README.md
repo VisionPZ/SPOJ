@@ -3,8 +3,7 @@
 
 ## Problem
 
-Two players trim squares from a rectangle, and a bored spectator counts the characters in the game log.
-The program must predict that count without playing the game.
+Two players alternately cut squares from a rectangle, and the last to remove a piece wins. Count all move sequences, the winning sequences for the first player, and the winner under optimal play; print their total character count.
 
 Two players cut squares from a rectangle with sides `a` and `b`, where `a` is at most `b`.
 Each turn removes at least one square of side `a` touching three sides of the current rectangle.

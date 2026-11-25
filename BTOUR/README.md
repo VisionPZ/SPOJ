@@ -3,7 +3,7 @@
 
 ## Problem
 
-The mayor wants the shortest bicycle loop through Byteland's streets, plus a count of how many loops tie for shortest. Print both numbers for each street map, or `0 0` when no loop exists.
+Each case gives an undirected weighted street graph with at most four streets per intersection. Find the length of the shortest simple cycle and how many cycles have that length, or print `0 0` if none exists.
 
 Input starts with a case count t. Each case gives n intersections and m streets, then m lines of form u v d with u at most v. Output the loop length and the number of shortest loops.
 

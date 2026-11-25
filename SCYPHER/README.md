@@ -4,9 +4,7 @@
 
 ## Problem
 
-Each case gives an alphabet size, a word count, encrypted words, and one encrypted message.
-The hidden plain words sit in sorted dictionary order, and the encrypted words keep that order.
-Print the decrypted message when the cipher is unique, or print the failure sentence.
+Under a substitution cipher, the plain words were sorted before encryption, and the encrypted words keep that order. Given those words and an encrypted message, decide whether the cipher is unique and print the decrypted message when it is.
 
 The judge sets these limits.
 

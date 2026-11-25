@@ -4,7 +4,7 @@
 
 ## Problem
 
-A gate guard at the pyramid asks one question about every number that passes: is it prime? Five hundred numbers arrive in one batch, so each answer must come back fast. Print YES or NO for each number.
+For each given integer, decide whether it is prime. Print YES or NO for each input number.
 
 Input: `t`, the number of test cases, then `t` lines. Each line holds one integer `N`. Output: one line per case, `YES` when `N` is prime and `NO` otherwise.
 
@@ -40,7 +40,7 @@ NO
 
 ## Idea
 
-Probe a number with a few clever arithmetic questions instead of dividing by every smaller number. Think of a guard who recognizes a guest by asking a few secret questions, not by searching the whole guest list.
+Probe a number with a few clever arithmetic questions instead of dividing by every smaller number. Think of a few quick checks that rule out most composite numbers at once.
 
 The program uses the Miller–Rabin primality test (a residue test made deterministic by fixed bases). Write `N − 1` as `d · 2^s` with `d` odd. For each base `a`, raise `a` to `d` modulo `N`, then square up to `s` times.
 

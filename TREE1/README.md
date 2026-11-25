@@ -4,7 +4,7 @@
 
 ## Problem
 
-A teacher builds a binary search tree by inserting numbers one at a time. Given the finished tree shape, count how many insertion orders could have produced it.
+The input describes a binary search tree with keys 1 to n, given in preorder. Count the permutations whose step-by-step insertion builds exactly that tree.
 
 Input: `d` data sets. Each set gives `n`, then the `n` keys in preorder.
 
@@ -47,7 +47,7 @@ The sample input and output:
 
 ## Idea
 
-Treat the two subtrees as queues of guests that may interleave, while each queue keeps its own internal order. Count the interleavings at every node and multiply them.
+Treat the two subtrees as ordered lists that may interleave, each keeping its own internal order. Count the interleavings at every node and multiply them.
 
 The program walks the preorder keys recursively and collects binomial (choose) factors. It then multiplies those small factors into a big number stored in base one billion limbs. Collecting factors costs `O(n²)`, and printing the answer costs one pass over its limbs.
 

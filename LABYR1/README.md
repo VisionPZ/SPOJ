@@ -2,6 +2,10 @@
 
 ## Problem
 
+A labyrinth is a grid of rock and free cells with exactly one path between any
+two free cells. Two hooks joined by a rope need the longest possible rope, so find
+the greatest number of steps between two free cells.
+
 Each test case gives the column count and the row count, then a grid of `#` (rock)
 and `.` (free) cells. Free cells form a tree: exactly one path joins any two of them.
 Print `Maximum rope length is X.` where X is the number of steps on the longest path

@@ -4,7 +4,7 @@
 
 ## Problem
 
-A rental company owns one plane and receives offers from large airlines. Each offer covers a time interval and pays a price. Choose the offers that do not overlap so the company earns the most.
+A company with one plane receives rental orders, each giving a time interval and a price. Choose non-overlapping orders that maximize the total price.
 
 Input: `T` cases. Each starts with `n`, then `n` lines `st d p`: start time, duration, and price. Output: one line per case, the maximum total price the company can earn.
 
@@ -37,7 +37,7 @@ The sample input and output:
 
 ## Idea
 
-Treat the offers as jobs on one calendar and decide each one by comparing take against skip. Think of a clerk filling a single booking book, always checking the last free slot.
+Treat the offers as jobs on one calendar and decide each one by comparing take against skip. Think of one airplane's calendar, where a new order fits only after the last accepted one.
 
 The program sorts orders by finish time. For order `i`, a binary search finds how many earlier orders finish before its start. The dynamic program then compares taking order `i` plus that prefix's best profit with skipping order `i`.
 

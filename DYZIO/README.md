@@ -2,6 +2,9 @@
 
 ## Problem
 
+The input encodes a rope-cutting procedure as a word of `0` and `1`, where a `1` cuts a piece in half.
+For each word, count the cuts made before the first shortest piece is cut off.
+
 Input holds ten cases, one after another. Each case gives a length `n` and a word of `n` symbols.
 
 A `1` cuts a piece in half, then describes the left half and the right half. A `0` leaves a piece whole. Print the number of cuts before the first shortest piece is cut off.

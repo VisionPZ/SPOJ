@@ -3,7 +3,8 @@
 
 ## Problem
 
-Eric's combinatorics class needs exact factorials for small inputs, and a machine integer holds only the first dozen digits. The program must print all digits of n! for every requested n.
+The input gives several small positive integers n.
+For each, print every digit of n! on its own line.
 
 The first line holds an integer t from 1 to 100. Each of the next t lines holds one integer n from 1 to 100. Print n! on its own line, with no leading zeros.
 
@@ -40,7 +41,7 @@ The sample output reads:
 
 ## Idea
 
-Build every factorial once, like filling a multiplication table before a quiz. Store each huge value as a list of base-10^9 limbs, which are ordinary integers holding nine decimal digits each. Multiply the previous list by the next small factor with schoolbook carry propagation. Each precomputation step touches one limb per digit group, and each query only prints a stored list. A fresh multiplication per query would repeat work and could overflow. Takeaway: precompute once, then print the stored result.
+Build every factorial once, like filling a multiplication table whose cells you can read later. Store each huge value as a list of base-10^9 limbs, which are ordinary integers holding nine decimal digits each. Multiply the previous list by the next small factor with schoolbook carry propagation. Each precomputation step touches one limb per digit group, and each query only prints a stored list. A fresh multiplication per query would repeat work and could overflow. Takeaway: precompute once, then print the stored result.
 
 ## Why It Works
 

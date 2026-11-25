@@ -4,7 +4,7 @@
 
 ## Problem
 
-A store-keeper must push a parcel across a floor of fixed crates to a target square. Walking around the parcel costs nothing, but each push counts, and the keeper wants the smallest count.
+A store-keeper pushes a parcel across a grid of fixed cases toward a target square, counting each push. Find the minimum number of pushes, or report that the target is unreachable.
 
 Input: `t` test cases. Each case starts with `n m`, then `n` lines of `m` letters. `S` is a crate, `M` is the keeper, `P` is the parcel, `K` is the target, and `w` is empty floor.
 

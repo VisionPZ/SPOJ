@@ -3,7 +3,7 @@
 
 ## Problem
 
-Byteland's cities need a new communication network. Each possible link has a known cost, and the goal is to join every city as cheaply as possible. Print that minimum cost for each network.
+Each case gives cities and weighted links listed in both directions. Choose links that connect all cities at the smallest total cost, and print that cost for each case.
 
 Input starts with a case count. Each case gives a city count, then one block per city: its name, its neighbour count, and each neighbour index with a link cost. Both directions of a link appear in the input. Output one cost per case.
 

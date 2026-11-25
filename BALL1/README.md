@@ -3,8 +3,8 @@
 
 ## Problem
 
-A ball rolls at forty-five degrees across a chessboard and bounces off each edge it meets.
-Count the squares that receive an odd number of visits before the ball returns.
+A ball starts in an edge cell of a board and travels at 45 degrees, reflecting from each border it reaches.
+Count cells visited an odd number of times before it returns to the start.
 
 The first line gives the dataset count. Each next line gives board width, board height, start column, and start row. The board holds at most 10 to the ninth power squares, and the start square touches an edge. Print one odd-square count per dataset.
 

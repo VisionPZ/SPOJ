@@ -4,7 +4,7 @@
 
 ## Problem
 
-A permutation lists numbers in some order. Its longest increasing subsequences may be several, and a supernumber belongs to at least one of them. The task finds every supernumber.
+The input gives several permutations, each a sequence of distinct numbers from 1 to n. For each, report every number that belongs to at least one longest increasing subsequence.
 
 Input: ten test cases one after another. Each case gives `n`, then a permutation of `1..n`. Output: two lines per case, first the count of supernumbers, then the numbers in increasing order.
 
@@ -33,7 +33,7 @@ The sample input and output:
 
 ## Idea
 
-Check whether each number sits on a longest rising route, like a commuter who belongs to at least one fastest path through a city. Compute the best route ending at each stop and the best route starting there.
+Check which numbers lie on a longest increasing run, like marking the cards that fit a longest rising row. Compute the best run ending at each number and the best run starting there.
 
 The program uses patience sorting with binary search in both directions. Forward passes give the longest increasing subsequence ending at each position.
 

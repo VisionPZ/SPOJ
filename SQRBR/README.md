@@ -4,7 +4,7 @@
 
 ## Problem
 
-A theater usher checks rows of brackets before a show. Some seats must hold an opening bracket, and the rest may hold either kind. The usher counts the rows that are properly matched and honor every reserved seat.
+Given length 2n and k required opening-bracket positions, count the proper bracket expressions of length 2n whose opening brackets sit exactly at those positions.
 
 Input: the first line gives `d` data sets. Each data set has a line with `n` and `k`, then a line with `k` increasing positions. Output: one integer per data set, the count of proper expressions of length `2n` that open at all `k` positions.
 

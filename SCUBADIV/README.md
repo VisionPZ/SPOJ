@@ -3,7 +3,7 @@
 
 ## Problem
 
-A diver needs fixed amounts of oxygen and nitrogen for a trip. Each available cylinder holds some of each gas and has a weight. Choose cylinders so both needs are met with the smallest total weight.
+A scuba diver needs fixed amounts of oxygen and nitrogen, and each available cylinder holds some of each gas with a given weight. Choose cylinders meeting both needs with the smallest total weight.
 
 Input: an integer c, then c cases separated by blank lines. Each case gives oxygen t and nitrogen a, then cylinder count n, then n lines with oxygen, nitrogen and weight. Output: one integer per case, the minimum total weight.
 

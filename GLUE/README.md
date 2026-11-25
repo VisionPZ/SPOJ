@@ -3,7 +3,8 @@
 
 ## Problem
 
-Johnny smears glue dabs on the floor and wants to trap guests with a box. The box must cover every dab, and each of its four edges must touch at least two dabs. Count how many different floor sections he can choose.
+The input gives points representing dabs of glue on a floor.
+Count the rectangles that contain every point with at least two points on each of their four sides.
 
 The first line holds a test count t. Each case gives a dab count n, then n lines with coordinates x and y. Coordinates run from -15000 to 15000. Print one integer per case, the number of qualifying rectangles, possibly zero.
 
@@ -41,7 +42,7 @@ The sample output reads:
 
 ## Idea
 
-Treat the box as the bounding rectangle of all dabs in some orientation, like turning a picture frame around a pinned canvas. Each side touches a supporting line of the convex hull (the smallest enclosing polygon). Such a line keeps all points on one side. A side holds two dabs when that line carries a hull edge or two dabs share the touched hull corner. One side lies on a hull edge on judge inputs, which pins the orientation to a quarter turn of one edge normal. Test those directions and divide the count by four. Each direction costs four binary searches over sorted normals. Trying every rectangle from dab pairs would cost cubic time. Takeaway: reduce rectangles to a few hull directions, then check each face.
+Treat the box as the bounding rectangle of all dabs in some orientation, like rotating a rectangle around the point set. Each side touches a supporting line of the convex hull (the smallest enclosing polygon). Such a line keeps all points on one side. A side holds two dabs when that line carries a hull edge or two dabs share the touched hull corner. One side lies on a hull edge on judge inputs, which pins the orientation to a quarter turn of one edge normal. Test those directions and divide the count by four. Each direction costs four binary searches over sorted normals. Trying every rectangle from dab pairs would cost cubic time. Takeaway: reduce rectangles to a few hull directions, then check each face.
 
 ## Why It Works
 

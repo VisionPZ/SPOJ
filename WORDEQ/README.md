@@ -4,7 +4,7 @@
 
 ## Problem
 
-A word equation sets a string of digits and variables equal to another such string. Each variable stands for a binary word of a fixed length. Count the assignments of binary words that make the equality true.
+The input gives two strings built from bits and variables, each variable having a fixed word length. Count the assignments of binary words that make both sides equal.
 
 Input starts with `t`, then cases separated by blank lines. Each case has six lines: the count `k`, the `k` lengths, the left token count, and the left word. The last two lines give the right token count and the right word. Variables are the first `k` lowercase letters. Each side expands to at most 10000 symbols. Output one count per case.
 

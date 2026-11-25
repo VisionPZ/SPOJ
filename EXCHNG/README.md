@@ -3,8 +3,8 @@
 
 ## Problem
 
-A chip machine compares and swaps register values.
-One broken instruction must not break the program that finds the minimum.
+The input describes a compare-exchange program over integer registers.
+Compute the fewest instructions to append so the program still finds the minimum after any single instruction is removed.
 
 Read a compare-exchange program.
 Instruction CE(a, b) with a < b puts the smaller of registers a and b into register a.
@@ -43,7 +43,7 @@ The three-instruction sample needs two appended instructions.
 
 ## Idea
 
-Track a token (a possible origin of the minimum) in each register, like marking every candidate ballot in a box.
+Track a token (a possible origin of the minimum) in each register, like tagging each candidate where it sits.
 Every register starts with its own token.
 CE(a, b) moves all tokens from b into a and empties b.
 The program finds the minimum when no token rests outside register 1.

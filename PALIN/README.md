@@ -2,8 +2,7 @@
 
 ## Problem
 
-A positive integer `K` is given. Print the smallest palindrome that is strictly larger than `K`.
-A palindrome reads the same forwards and backwards. The output must not start with `0`.
+Given a positive integer `K`, output the smallest palindrome strictly larger than `K`. A palindrome reads the same in both directions, and numbers have no leading zeros.
 
 | Item | Bound |
 |---|---|

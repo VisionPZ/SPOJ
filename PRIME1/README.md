@@ -4,6 +4,8 @@
 
 ## Problem
 
+For each given range `[m, n]`, list every prime number inside it, one per line.
+
 Input: `t`, then `t` lines of `m n`. Output: every prime in `[m, n]`, one per line,
 then one blank line after each test case.
 

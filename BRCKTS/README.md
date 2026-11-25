@@ -3,7 +3,7 @@
 
 ## Problem
 
-A word of parentheses is correct when every opening bracket finds a matching closing bracket and no prefix dips below zero. Ten words arrive with flip and check operations. Print YES or NO for each check.
+A bracket word is correct when every opening bracket matches a later closing bracket and no prefix has more closes than opens. Process flip and check operations, printing YES or NO for each check.
 
 Input holds ten test cases one after another. Each case starts with the word length n, then the bracket word, then the operation count m, then m integers. A zero asks for a check; a positive k flips bracket k. Output a `Test i:` header per case, then one result per check.
 
@@ -41,7 +41,7 @@ The first check succeeds after flipping bracket four.
 
 ## Idea
 
-Keep a scoreboard for every interval of the word. A segment tree (an array storing one value per interval) holds each interval's bracket sum and its smallest running prefix. A flip changes one leaf and rebuilds its ancestors; a check reads the root. Think of each interval as a team whose score and worst moment are both recorded.
+Keep a scoreboard for every interval of the word. A segment tree (an array storing one value per interval) holds each interval's bracket sum and its smallest running prefix. A flip changes one leaf and rebuilds its ancestors; a check reads the root. The root's two values answer every check.
 
 Each flip costs O(log n), and each check costs O(1). Rescanning the whole word on every check would cost O(n) each time and lose on a long operation stream.
 

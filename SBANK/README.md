@@ -2,6 +2,8 @@
 
 ## Problem
 
+A list of bank account numbers is given, with some accounts repeated. Sort them ascending and report how many times each account appears.
+
 Up to 5 test cases, each with up to 100 000 bank account numbers of the same
 fixed shape (`control digits`, an 8 digit bank code and 16 owner digits in
 groups of four). Sort the account numbers ascending and print how many times

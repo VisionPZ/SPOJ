@@ -4,7 +4,7 @@
 
 ## Problem
 
-A climbing game lays numbers in triangular rows. A climber starts at the top and steps to the row below, either straight down or one place to the right.
+The input gives a triangle of numbers with one value in the first row, two in the second, and so on. Compute the largest sum of a path from top to base, stepping each time directly below or one place to the right.
 
 Input: the first integer gives the number of test cases. Each case starts with its row count `r`, followed by all row values. Output: one line per case, the largest sum along a path from top to base.
 

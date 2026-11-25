@@ -4,7 +4,7 @@
 
 ## Problem
 
-Two jugs of different sizes stand empty on a table. You may fill a jug, empty it, or pour one into the other until it is full or empty. Find the fewest moves that leave exactly the target amount in either jug.
+Two empty vessels of given capacities can be filled, emptied, or poured into each other. Find the fewest steps to obtain exactly the target amount in either vessel.
 
 Input: `t`, the number of test cases, then `t` triples `a b c`, each on its own line. Output: one integer per case, the minimum number of steps, or −1 when the target cannot be measured.
 

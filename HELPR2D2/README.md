@@ -3,7 +3,8 @@
 
 ## Problem
 
-R2-D2 loads containers into a row of starships, always choosing the first ship with enough free space. He wants the number of ships used and the total wasted volume after the sequence.
+The input gives a ship capacity and a sequence of container volumes.
+Placing each container into the lowest-indexed ship with enough room, compute the ships used and the total unused volume.
 
 Each case starts with a ship capacity K, a container count n, then n entries. An entry is one volume, or the letter `b` with a repeat count r and a volume v, meaning r containers of volume v. Print the ship count and the total unused volume on one line.
 
@@ -46,7 +47,7 @@ The sample output reads:
 
 ## Idea
 
-Keep the ships in a row and always fill the leftmost one with room, like a loader using the nearest open bin. A segment tree (a binary tree storing the maximum free space of each range) finds that ship in about 17 steps. Inside a block the volume stays fixed. A ship that no longer fits stays unusable, so the loader walks ships in index order. Each visit costs one tree update of 17 steps. Scanning every ship for every container would cost O(n times s). Takeaway: use a tree for the search, then sweep ships once per block.
+Keep the ships in a row and always fill the leftmost one with room, like choosing the nearest open starship. A segment tree (a binary tree storing the maximum free space of each range) finds that ship in about 17 steps. Inside a block the volume stays fixed. A ship that no longer fits stays unusable, so the loader walks ships in index order. Each visit costs one tree update of 17 steps. Scanning every ship for every container would cost O(n times s). Takeaway: use a tree for the search, then sweep ships once per block.
 
 ## Why It Works
 

@@ -3,8 +3,8 @@
 
 ## Problem
 
-A network must keep every computer reachable from the server, and one broken relay can cut off a whole branch.
-The agency needs a list of the relays that matter.
+Each case gives a directed network in which every computer is reachable from computer 1.
+Find every computer whose failure leaves some other computer unreachable from 1.
 
 The input holds ten cases one after another with no count line. Each case gives n and m, then m directed channel pairs. Print the number of critical computers, then their numbers in increasing order.
 

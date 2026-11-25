@@ -3,7 +3,7 @@
 
 ## Problem
 
-A studio stamps two fractal templates onto canvas and paints every hole that lines up. The count grows fast with the template size.
+Two hole-pattern matrices are overlaid with one shifted by x columns and y rows. Count the holes that coincide, which become yellow stains.
 
 The input starts with the case count. Each case gives matrix size `n` and two shifts `x` and `y`. Print the number of yellow stains.
 
@@ -39,7 +39,7 @@ Output:
 
 ## Idea
 
-Decide the hole pattern one bit at a time. Think of stamping two lace doilies and checking their holes row by row.
+Decide the hole pattern one bit at a time. Think of laying two hole-punched matrices over each other and counting holes that land on holes.
 
 The program runs a digit dynamic program (state-by-state counting) over the `n` bits of each coordinate. A state holds a carry and a borrow from binary arithmetic. Four states cover every choice. Counts use big integers held in base-10^9 limbs (fixed-size digit blocks). Listing all 2^n cells would be impossible at `n = 100`.
 

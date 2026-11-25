@@ -4,6 +4,8 @@
 
 ## Problem
 
+Convert each fully bracketed infix expression into Reverse Polish Notation.
+
 Input: `t`, then `t` fully bracketed infix expressions, one per line.
 Output: one Reverse Polish Notation (RPN, postfix) line per expression, in input
 order.

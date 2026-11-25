@@ -4,7 +4,7 @@
 
 ## Problem
 
-A warehouse starts with up to four containers full of water. A worker pours, fills, and drains them to reach a requested set of amounts in as few moves as possible.
+Up to four containers start full, and moves pour, fill, or drain them. Find the fewest moves that reach the requested amounts, or report that it is impossible.
 
 Input: one integer for the case count, a blank line, then one case per block. Each case gives the container count, the capacities, and the requested final amounts, with a blank line between cases.
 

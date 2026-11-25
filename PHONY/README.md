@@ -39,7 +39,7 @@ The first interval contains three fake primes; the second contains none.
 
 ## Idea
 
-Mark numbers by a congruence for each small prime, then test only the marked ones. Picture walking down a street. Put a sticker on each door whose number fits a pattern for prime 3, then prime 5. Doors with three or more distinct stickers are the suspects.
+Mark numbers by a congruence for each small prime, then test only the marked ones. Picture stamping each candidate number once for every prime whose divisibility test it passes.
 
 The program sieves primes up to 46341, the square root of 2³¹. For each odd prime p, it steps through numbers N with N ≡ p mod p(p − 1). That single pattern enforces both p | N and p − 1 | N − 1.
 

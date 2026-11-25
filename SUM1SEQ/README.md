@@ -4,7 +4,7 @@
 
 ## Problem
 
-A hiker starts at altitude zero and climbs or descends one meter at each step. Given the total of all visited altitudes, find a walk with the required length.
+A one-sequence starts at 0 and changes by 1 or -1 at each step. Given a length n and a target sum S, find such a sequence with that sum, or report that none exists.
 
 Input: `t` test cases, each separated by a blank line. A case gives `n` on one line and the target sum `S` on the next.
 

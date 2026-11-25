@@ -4,7 +4,7 @@
 
 ## Problem
 
-November rain falls straight onto a jagged roof. Some slopes shelter others, so each sloping segment drains a different amount of water. Report the flow leaving every segment in one second.
+Rain falls vertically onto sloping roof segments, some of which shelter others. Compute the water draining from each segment in one second.
 
 Input: `t` cases. Each starts with `n`, then `n` lines `x1 y1 x2 y2`, the endpoints of one sloping segment. Output: `n` lines, one per segment, giving the litres that drain from that segment.
 

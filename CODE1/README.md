@@ -4,7 +4,7 @@
 
 ## Problem
 
-A spy writes numbers as strings of digits in a strange complex-number base. The code hides a Gaussian integer (a number with a real part and an imaginary part) inside another complex number.
+A Gaussian integer X is written as digits in a complex base B. Recover the digits, or print that no valid representation exists.
 
 Input: one integer for the case count, then four integers per case. The first two give X, and the last two give base B.
 

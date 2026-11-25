@@ -3,8 +3,8 @@
 
 ## Problem
 
-A die rolls across a four-row strip, and each landing costs the number on top.
-The program finds the cheapest route to the target square.
+The input describes a die with a cost on each face and a start and target square on a four-row strip.
+Compute the minimum total cost of rolls from start to target, where each roll costs the new top face's number.
 
 Read `t` test cases.
 Each case gives six face costs, then a start square and a target square.
@@ -43,7 +43,7 @@ The sample die reaches its target for a total cost of 7.
 
 ## Idea
 
-Use Dijkstra's algorithm (shortest paths with non-negative costs) on a repeating pattern, like a bus timetable that repeats every few stops.
+Use Dijkstra's algorithm (shortest paths with non-negative costs) on a repeating pattern, like a strip of squares whose layout repeats every few columns.
 A state is a column offset, a row, and one of 24 orientations (which face is on top and front).
 The strip is periodic, so distant columns repeat an earlier distance table plus a fixed cost delta.
 

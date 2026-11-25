@@ -3,7 +3,7 @@
 
 ## Problem
 
-Four identical pieces sit on an 8 by 8 board. A move steps one piece to an empty neighbor or jumps it over another piece. Decide whether one arrangement can become another in at most eight moves.
+Four identical pieces sit on an 8 by 8 board, moving to adjacent empty squares or jumping over one piece. Decide whether a second arrangement is reachable from the first in at most eight moves.
 
 Input: an integer t, then t cases. Each case has two lines of eight integers, four row-column pairs per line. Output: `YES` when the target is reachable within eight moves, and `NO` otherwise.
 

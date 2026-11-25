@@ -2,6 +2,10 @@
 
 ## Problem
 
+The input lists people by PESEL code with a recruitment office, then closed
+offices each redirected to another office. For every PESEL in the final query
+list, print that PESEL and the office reached by following the redirections.
+
 Each test case lists up to 100 000 boys with their PESEL code and their old
 recruitment office code, then up to 100 000 redirections `old office new office`,
 then up to 100 000 PESEL codes of the boys who are recruited. For every

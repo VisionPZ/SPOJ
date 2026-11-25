@@ -3,7 +3,7 @@
 
 ## Problem
 
-A number can be split into sorted positive parts in many ways. A dictionary orders those splits from smallest first part upward. Given a position in that dictionary, find the split.
+A number m can be split into n sorted positive parts in many ways. Given m, n and a rank k, output the k-th split in lexicographic order.
 
 A partition of m into n components is a sorted sequence a₁ ≤ a₂ ≤ … ≤ aₙ with sum m. Sort all such sequences lexicographically. Print the k-th one.
 

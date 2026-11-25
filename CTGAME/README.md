@@ -3,8 +3,7 @@
 
 ## Problem
 
-A city planner fills a grid-shaped district with buildings.
-Each free cell earns 3 dollars, so the planner wants the largest rectangle of free cells.
+Each area is a grid of free and reserved cells. Find the largest rectangle of free cells and print its area times three.
 
 Read `K` areas. Each area gives row count `M` and column count `N`.
 The next `M` lines hold `N` symbols each, separated by spaces.

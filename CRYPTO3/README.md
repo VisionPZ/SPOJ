@@ -4,7 +4,7 @@
 
 ## Problem
 
-A cryptographer reveals how many amounts cannot be formed with two coin values. That hint turns out to reveal a second number the cryptographer wanted to hide.
+An input integer counts the values not expressible as a non-negative combination of two primes. From that count, compute how many smaller integers are coprime to the primes' product.
 
 Input: one positive integer of at most 99 decimal digits.
 

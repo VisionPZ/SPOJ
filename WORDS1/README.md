@@ -4,7 +4,7 @@
 
 ## Problem
 
-A door holds magnetic plates, each with one word. Arrange the plates in a chain so every word begins with the letter the previous word ends with. Use every plate exactly once to open the door.
+Each case gives a list of words. Decide whether they can be chained so each word starts with the letter the previous one ends, using every word once.
 
 Input starts with `T`, about 500. Each case gives `N`, from 1 to 100000, then `N` words of 2 to 1000 lowercase letters. A word may repeat. Print one sentence per case, and match its text exactly. Use `Ordering is possible.` when a chain exists.
 Otherwise print `The door cannot be opened.`
@@ -43,7 +43,7 @@ The door cannot be opened.
 
 ## Idea
 
-Model each word as a directed edge from its first letter to its last letter. Think of planning a delivery route that uses every one-way street exactly once. The question becomes whether that letter graph has an Eulerian path.
+Model each word as a directed edge from its first letter to its last letter. Think of the words as one-way links between letters, and ask for a route using each link once. The question becomes whether that letter graph has an Eulerian path.
 
 Union-find checks that all letters with an edge share one connected component. Degree counts check the path endpoints. Each word costs one union and two counter updates.
 

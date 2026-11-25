@@ -3,7 +3,8 @@
 
 ## Problem
 
-Eric paints half of a classic soccer ball green and traces a loop along the seams. Given only the loop's vertices and the number of green faces at each corner, he wants the counts of black, white, and green pieces.
+The input describes a loop along the seams of a football, with the count of green pieces at each vertex.
+Compute the numbers of black, white, and green pieces.
 
 The input starts with a test count t. Each case gives a vertex count n, then n values of 1 or 2, one per vertex. Value 1 means one green piece at that vertex, and value 2 means two. The closing edge always lies between two hexagons. Print three integers: black pieces, white pieces, and green pieces.
 
@@ -35,7 +36,7 @@ The sample output reads:
 
 ## Idea
 
-Count faces with Euler's formula (a rule linking vertices, edges, and faces on a surface), like balancing a ledger instead of rebuilding the ball. The sum of vertex values gives the green pentagons after one substitution. A three-state walk along the loop supplies the corner count that fixes the green hexagons. Each vertex costs one state transition, so the work is linear. Rebuilding the ball would need geometry the input does not provide. Takeaway: sum corners, walk states, then apply two formulas.
+Count faces with Euler's formula (a rule linking vertices, edges, and faces on a surface), like counting pieces instead of rebuilding the ball. The sum of vertex values gives the green pentagons after one substitution. A three-state walk along the loop supplies the corner count that fixes the green hexagons. Each vertex costs one state transition, so the work is linear. Rebuilding the ball would need geometry the input does not provide. Takeaway: sum corners, walk states, then apply two formulas.
 
 ## Why It Works
 

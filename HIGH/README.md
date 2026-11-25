@@ -3,7 +3,8 @@
 
 ## Problem
 
-A country lists the city pairs that may get highways. It asks how many networks connect every city with exactly one path between any pair. Each network is a different subset of the listed links.
+The input lists city pairs that may be joined by highways.
+Count the networks in which every two cities are connected by exactly one path.
 
 The input starts with a test count of about 1000. Each case gives a city count n from 1 to 12 and a link count, then one link per line. City numbers run from 1 to n, and a blank line separates cases. Print one count per case, which fits a signed 64-bit integer. A single city has answer 1.
 
@@ -53,7 +54,7 @@ The sample output reads:
 
 ## Idea
 
-Turn the link list into a degree-and-minus-one matrix, like copying a wiring diagram into a table. The matrix-tree theorem (a rule linking determinants to spanning trees) says one determinant of that matrix counts the networks. Compute the determinant modulo two large primes. Combine the remainders with the Chinese remainder theorem (rebuilding a number from two remainders). Each determinant costs O(n³) operations. Enumerating all link subsets would cost O(2^m). Takeaway: build the matrix, take two determinants, and rebuild the exact answer.
+Turn the link list into a degree-and-minus-one matrix, like writing the allowed city links into a table. The matrix-tree theorem (a rule linking determinants to spanning trees) says one determinant of that matrix counts the networks. Compute the determinant modulo two large primes. Combine the remainders with the Chinese remainder theorem (rebuilding a number from two remainders). Each determinant costs O(n³) operations. Enumerating all link subsets would cost O(2^m). Takeaway: build the matrix, take two determinants, and rebuild the exact answer.
 
 ## Why It Works
 

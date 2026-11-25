@@ -4,7 +4,7 @@
 
 ## Problem
 
-A roadmap comes with a table of shortest distances between every pair of towns. Two towns count as neighbours when no third town lies on a shortest route between them. List all such pairs.
+A table gives shortest distances between every pair of towns. Two towns are neighbors when no third town lies on a shortest route between them; list all such pairs.
 
 Input: `t` cases separated by blank lines. Each starts with `n`, followed by `n` rows of `n` distances. Output: all neighbouring pairs, one per line, with the smaller town first. Consecutive cases get a blank line between them.
 

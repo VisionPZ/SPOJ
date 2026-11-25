@@ -4,7 +4,7 @@
 
 ## Problem
 
-Road prices change linearly with time, so the cheapest spanning tree changes too. Find the moment when that total price peaks.
+Road prices change linearly with time, so the cheapest way to connect all cities changes. Choose the moment in a given interval that maximizes the total price of that connection.
 
 Read `t` cases. Each gives the city count, the road count, and a time interval. Each road line gives two endpoints and two coefficients.
 

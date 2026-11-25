@@ -4,7 +4,11 @@
 
 ## Problem
 
-An Imp starts at the origin of an infinite chessboard. A move adds or subtracts one of two vectors, (a, b) or (c, d). Read ten cases, each holding the four components. Print the smallest |x| + |y| over all reachable squares except the origin.
+An Imp jumps on an infinite chessboard by adding or subtracting either of two
+given vectors at each move. Find the smallest `|x| + |y|` among all reachable
+squares other than the origin.
+
+Read ten cases, each holding the four components. Print the smallest |x| + |y| over all reachable squares except the origin.
 
 | item | bound |
 |---|---|

@@ -3,8 +3,8 @@
 
 ## Problem
 
-A museum stacks stone blocks into the tallest tower it can build, and each block can be turned three ways.
-A block rests on another only when both sides of its base are shorter.
+Each case lists block types with a height, width, and depth; blocks may be rotated and reused.
+Find the maximum tower height when a block sits on another only if both base sides are shorter.
 
 Each case starts with n block types, followed by n lines of height, width, and depth. A line with n=0 ends the input. Print one line with the tallest tower height.
 
@@ -42,7 +42,7 @@ The sample input and its expected output follow byte for byte.
 
 ## Idea
 
-Turn each block into three orientations (choices of height axis) and sort them by base, like stacking plates from the widest base upward.
+Turn each block into three orientations (choices of height axis) and sort them by base, like ordering blocks from the widest base upward.
 The program stores each orientation by its large base, its small base, and its height. Sorting puts the widest bases first, so every legal support appears earlier in the array.
 For each orientation, the code scans earlier orientations with strictly larger bases and keeps the tallest chain. That costs O(n squared) with at most 90 items.
 Trying every stack and rotation order is exponential, while one pass over sorted orientations settles each case.

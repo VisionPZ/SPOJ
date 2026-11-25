@@ -4,7 +4,7 @@
 
 ## Problem
 
-A heavy stone slab covers a secret trapdoor. To lift it level, the rescue team must tie the rope at the stone's center of gravity, or one edge will rise first. The slab has the shape of a polygon, and its height is the same everywhere. Read the vertices of each polygon and print the point where the rope belongs.
+Given the vertices of a polygon of uniform height, compute its center of gravity. Print the two coordinates rounded to two decimal places.
 
 Input: `T` cases. Each case starts with `N`, followed by `N` lines of `X Y`, the vertices in order around the polygon. Output: one line per case, two numbers `x y` with exactly two digits after the decimal point.
 

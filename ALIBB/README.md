@@ -3,8 +3,8 @@
 
 ## Problem
 
-Alibaba must grab treasures before their deadlines while starting from the best spot on a long road.
-He needs the earliest finish time, or a report that no plan can work.
+Each dataset gives positions and deadlines of items along a line.
+Find the earliest time to collect them all, choosing the starting point, or report that it cannot be done.
 
 The first line gives the dataset count. Each dataset gives n, then n pairs of place and deadline in increasing place order. Print the smallest finish time, or the words No solution.
 
@@ -45,7 +45,7 @@ No solution
 
 ## Idea
 
-Treat each sweep as choosing which end to visit next, like a runner who keeps extending a collected interval at either end.
+Treat each sweep as choosing which end to visit next, extending a collected block one item at a time.
 The program keeps two dynamic program rows (tables of best times) over the collected block. One row ends at the left end, and the other row ends at the right end.
 Each state adds the travel time for the next treasure and rejects a choice that misses its deadline. A full straight sweep is handled as a quick special case.
 Enumerating visit orders costs factorial time, while the block state collapses them into O(n squared) work.

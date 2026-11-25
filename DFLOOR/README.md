@@ -3,8 +3,8 @@
 
 ## Problem
 
-A singer steps on glowing tiles, flipping that tile and its four side neighbors.
-The program finds a short routine that lights them all.
+The input describes rectangular grids of on and off tiles; stepping on a tile flips it and its four side neighbors.
+Find a sequence of steps that turns every tile on.
 
 Read several dance floors as grids of `0` and `1`.
 Stepping on a tile flips it and its four side neighbors, up, down, left, and right.

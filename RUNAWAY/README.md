@@ -4,7 +4,7 @@
 
 ## Problem
 
-A room has small holes that spew hot lava when triggered. An archaeologist must stand as far as possible from the nearest hole. Find the safest point and report its coordinates to one decimal.
+A rectangular room contains holes that erupt with hot lava. Find the point farthest from all holes and print its coordinates with one decimal digit.
 
 Input: `T` cases. Each starts with `X Y M`, the room size and hole count, then `M` lines `U V`. Output: one line per case, `The safest point is (P, Q).` with exactly one digit after each decimal point.
 

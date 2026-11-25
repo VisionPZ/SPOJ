@@ -3,7 +3,7 @@
 
 ## Problem
 
-A detective holds a ten-digit code and a five-digit fragment. The fragment must appear inside the code, in order and without gaps. Print 1 when it appears and 0 when it does not.
+For two binary strings A of length 10 and B of length 5, print 1 if B occurs inside A, else 0.
 
 Input: 24 lines. Each line holds binary string A of length 10, one space, and binary string B of length 5. Output: one line per input line, holding either 1 or 0.
 

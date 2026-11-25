@@ -3,7 +3,7 @@
 
 ## Problem
 
-A radio signal arrives without pauses between letters. A dictionary decides which word sequences could have produced it.
+A Morse sequence arrives with no pauses between letters. Using a dictionary of words, count how many full phrases decode the whole sequence.
 
 The input starts with the data-set count. Each set gives a Morse string, a word count, and the dictionary words. Print the number of full phrase decodings.
 
@@ -46,7 +46,7 @@ Output:
 
 ## Idea
 
-Convert each word into dots and dashes, then walk a trie along the signal. Think of tracing a maze with a dictionary in hand and noting every exit.
+Convert each word into dots and dashes, then walk a trie along the signal. Think of following the signal path and noting every point where a dictionary word ends.
 
 The program stores words in a trie (a tree of shared prefixes). Dynamic programming counts ways to reach each signal position. A start position advances at most 80 pulses, the longest word code. Trying every word at every position would cost far more.
 

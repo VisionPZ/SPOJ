@@ -4,7 +4,7 @@
 
 ## Problem
 
-A draftsman draws many axis-aligned rectangles on one sheet. Two rectangles join when they share a segment of positive length. Count the separate groups of rectangles on the sheet.
+Axis-aligned rectangles form one group when they share a segment of positive length. Count the separate groups formed by the given rectangles.
 
 Input: `t` cases separated by blank lines. Each starts with `n`, then `n` lines `x1 y1 x2 y2`, the bottom-left and top-right corners. Output: one integer per case, the number of separate blocks.
 

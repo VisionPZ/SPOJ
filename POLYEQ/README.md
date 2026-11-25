@@ -3,9 +3,7 @@
 
 ## Problem
 
-A polynomial is given as a sum of monomials, such as `x^4-6*x^3+11*x^2-6*x`. Find every real root, including repeated roots, in non-decreasing order.
-
-All roots lie between −100 and 100. Print each with two digits after the decimal point; an error of 0.01 is allowed.
+A polynomial is given as a sum of monomials in compact text form. Find all its real roots, including repeats, and print them in non-decreasing order.
 
 Input: the first integer is t, the number of cases. Each following line holds one polynomial. Output: one line per case with all roots separated by spaces.
 

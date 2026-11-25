@@ -4,7 +4,7 @@
 
 ## Problem
 
-A cryptographer shifted every number down by one before writing it down. The original numbers must be recovered and printed with three digits.
+Each input is a three-digit number that had one subtracted from it. Print the original number, keeping three digits and allowing 1000.
 
 Input: one encrypted value, from `000` to `999`.
 

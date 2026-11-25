@@ -3,7 +3,7 @@
 
 ## Problem
 
-A planner must choose integer positions so that every interval gets at least its requested number of positions. The positions may be shared between intervals, so the goal is the smallest possible set.
+Given closed integer intervals with required counts, choose a set `Z` of integers with at least the required count in each interval. Minimize the size of `Z`, since one position can serve several intervals.
 
 The first line holds a test count. Each case starts with an interval count n from 1 to 50000, then n lines of three integers a, b, and c. The interval is [a, b] with 0 <= a <= b <= 50000, and the demand c lies from 1 to b - a + 1. Print one integer per case, the minimum size of the chosen set.
 
@@ -39,7 +39,7 @@ The sample output reads:
 
 ## Idea
 
-Fill the rightmost open seats first, like seating guests from the back row forward. Sort intervals by right endpoint so each new interval ends no earlier than the last one. A Fenwick tree (a prefix-sum array with logarithmic updates) counts chosen positions in a range and finds the highest free coordinate. Each chosen point costs O(log 50001), and each interval is visited once. Scanning every coordinate for every interval would cost O(n times 50000). Takeaway: sort by deadline, then fill the highest free slots.
+Fill the rightmost open integer positions first, like taking the highest free slots in a row. Sort intervals by right endpoint so each new interval ends no earlier than the last one. A Fenwick tree (a prefix-sum array with logarithmic updates) counts chosen positions in a range and finds the highest free coordinate. Each chosen point costs O(log 50001), and each interval is visited once. Scanning every coordinate for every interval would cost O(n times 50000). Takeaway: sort by deadline, then fill the highest free slots.
 
 ## Why It Works
 

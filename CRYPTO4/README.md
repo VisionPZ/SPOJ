@@ -4,7 +4,7 @@
 
 ## Problem
 
-Two copies of a secret message arrive with letters burned away. The remaining letters still reveal the repeating key, so some missing letters can be restored with certainty.
+A repeating-key cipher maps plaintext letters to ciphertext letters, and both strings have damaged characters. Restore each plaintext letter that the surviving pairs determine, leaving the rest as stars.
 
 Input: one integer for the case count, then an upper bound m, the damaged plaintext x, and the damaged ciphertext y. Stars mark lost characters.
 

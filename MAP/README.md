@@ -3,7 +3,7 @@
 
 ## Problem
 
-A map maker must color regions using only a few colors. Regions with similar populations should share a color. The goal is the smallest total coloring error.
+Regions carry populations, and a small palette of colors is available. Assign a color to each region so the sum of absolute deviations from each color's median population is smallest.
 
 The input starts with the case count. Each case gives a region count, a color count, and one population per region. Print the minimum cumulative error.
 
@@ -49,7 +49,7 @@ Output:
 
 ## Idea
 
-Sort the populations first, then cut the sorted list into color groups. Think of slicing a row of houses into contiguous blocks and marking each block with one number.
+Sort the populations first, then cut the sorted list into color groups. Think of slicing the sorted population line into contiguous blocks, one block per color.
 
 The best value for a group is its median (the middle population). The program computes each block cost from prefix sums. Dynamic programming (a table of best costs) then tries every split. A block costs O(1), and one case costs O(m * n^2). Trying every coloring of every region would be exponential.
 

@@ -4,7 +4,7 @@
 
 ## Problem
 
-An Egyptian lock takes a flat wooden key shaped like a Tetris piece. The key falls into a grid of slots and may slide sideways, but never rotates. Report how deep it can go, or say it falls through.
+A flat wooden key falls into a grid lock, sliding sideways but never rotating. Report how deep it can fall, or whether it passes through.
 
 Input: `T` cases. Each starts with `R C`, then `R` rows of `#` (wood) and `.` (empty) for the key. Next come `D W`, then `D` such rows for the lock. Output: `The key falls to depth X.` when it stops, or `The key can fall through.` when it exits the bottom.
 
@@ -57,7 +57,7 @@ The key falls to depth 2.
 
 ## Idea
 
-Model the fall as a sequence of sideways slides, like dropping a cookie cutter into a tray of slots. If a slot is free, the key can slide there and keep going down.
+Model the fall as a sequence of sideways slides, like a Tetris piece that slides but never rotates. If a slot is free, the key can slide there and keep going down.
 
 The program first stores each lock column as bitsets (arrays of 64-bit words, one bit per depth row). For every key row it builds a fail mask: the offsets where that key row hits lock wood. A sweep over depth then tracks which offsets stay reachable.
 

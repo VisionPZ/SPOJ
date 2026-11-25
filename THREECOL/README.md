@@ -4,7 +4,7 @@
 
 ## Problem
 
-A painter colors a family tree with red, green, and blue paint. A node must differ from its children, and two children must differ from each other. The painter wants the largest and smallest possible number of green nodes.
+The input gives binary trees as digit strings: 0 is a leaf, 1 a node with one child, and 2 a node with two. Color nodes red, green, or blue so a node differs from its children and two children differ; report the fewest and most green nodes.
 
 Input: `t` test cases, one specification word per line. A digit `0` means a leaf, `1` means one child follows, and `2` means two children follow. Output: two integers per case, the maximum and minimum green count.
 
@@ -31,7 +31,7 @@ The sample input and output:
 
 ## Idea
 
-Color each subtree from its leaves upward, keeping only two numbers for each node. Think of a bookkeeper who records one total when the boss is green and another when the boss is not.
+Color each subtree from its leaves upward, keeping only two numbers for each node. Remember the most and fewest green nodes when the root is green, and the same two counts when it is not.
 
 The program builds child links from the preorder specification, then applies dynamic programming (reusing each subtree's best answer) in reverse order. Each node needs a constant number of comparisons, so a case costs `O(n)`.
 

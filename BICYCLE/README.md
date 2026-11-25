@@ -3,7 +3,7 @@
 
 ## Problem
 
-Peter rides to school on two circular bike lanes. He starts at home and exits at school, and both points sit on a lane. Find the shortest ride along the lanes, or -1 when no route exists.
+Each case gives two circular lanes and a start point and target point lying on them. Find the shortest distance along the lanes between the points, or -1 if no route exists.
 
 Input begins with a case count t. Each case gives two circles as center x, center y, radius, then the home point and the school point as floating pairs. Output one distance per case with ten decimals, or -1.
 
@@ -51,7 +51,7 @@ The third case has no crossing, so it prints -1.
 
 ## Idea
 
-Treat the lanes as a tiny subway map. Home, school, and the circle crossings are the stations, and the arcs between them are the tracks. The shortest ride is then a shortest path on at most four nodes. The program builds this graph and runs Floyd-Warshall (an all-pairs shortest path method). Crossings are the only places to switch lanes, so no other point can improve the route.
+Treat the two circles as a tiny graph: start, target, and circle crossings are the nodes, and circle arcs are the edges. The shortest ride is then a shortest path on at most four nodes. The program builds this graph and runs Floyd-Warshall (an all-pairs shortest path method). Crossings are the only places to switch lanes, so no other point can improve the route.
 
 Each case costs constant time: at most four nodes, six edges, and one 4 by 4 relaxation. Sampling many angles on each circle would only approximate the distance and still miss an exact crossing. The graph gives the exact answer in fixed work.
 

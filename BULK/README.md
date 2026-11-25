@@ -3,7 +3,7 @@
 
 ## Problem
 
-Old transceiver bulks are made of unit cubes, and nobody knows the cube count. An X-ray lists every face polygon, including the walls of inner cavities. Print the number of unit cubes in each bulk.
+Each test case lists the face polygons of a connected solid made of unit cubes, including cavity walls. Compute the solid's volume in cubes.
 
 Input starts with a bulk count T. Each bulk begins with a face count F, then F lines. Each face line gives a point count P followed by 3P coordinates; the points are separated by two spaces. Print `The bulk is composed of N units.` for each bulk.
 

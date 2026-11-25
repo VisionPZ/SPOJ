@@ -62,7 +62,7 @@ Output:
 
 ## Idea
 
-Convert the walk into area, then let a lattice rule count the squares. Think of a gardener who measures a fence outline to count the tiles inside it.
+Convert the walk into area, then let a lattice rule count the squares. Think of tracing the outline of colored cells and counting the tiles it encloses.
 
 The program applies the shoelace formula (twice the signed area from vertex coordinates) while reading the steps. A lattice rule (a link between enclosed area, walk length, and cells) turns that area into a square count. Each step costs two products and three additions. Drawing the picture and flooding it would need a grid and repeated scans.
 

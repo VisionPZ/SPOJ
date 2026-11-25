@@ -3,8 +3,8 @@
 
 ## Problem
 
-Bacteria spread across a plate until neighbouring colonies meet, and a lab wants the area each colony claims.
-A report must rank the colonies by their claimed area.
+Each case gives a rectangular plate and starting positions of samples that spread at equal speed until they meet.
+Report each sample's claimed area, sorted from largest to smallest.
 
 Each case gives plate width and height, then k, then k positions. A zero width or height ends the input, and blank lines separate cases. Print each sample id as three zero-padded digits and its area in fourteen columns with two decimals. List larger areas first and add a blank line after each case.
 
@@ -40,7 +40,7 @@ The sample input and its expected output follow byte for byte.
 
 ## Idea
 
-Clip the plate by each halfway boundary between two colonies, like cutting a cake with straight cuts. This is half-plane clipping (trimming a polygon to one side of a line).
+Clip the plate by each halfway boundary between two samples, like slicing the plate with straight cuts. This is half-plane clipping (trimming a polygon to one side of a line).
 The program starts every cell as the full plate polygon. For each rival site it clips the polygon with the perpendicular bisector, which keeps only points closer to the current site.
 The shoelace formula then gives the area of the remaining convex polygon. Each case costs O(k squared) clipping steps, while a grid simulation over a million cells per case cannot meet the limit.
 Half-plane clipping gives exact areas with a handful of vertices per cell.

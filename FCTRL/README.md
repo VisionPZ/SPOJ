@@ -3,7 +3,8 @@
 
 ## Problem
 
-A phone-network technician visits radio stations, so he studies how fast a factorial grows. He records how many zeros sit at the end of N! for many values of N.
+The input gives many integers N.
+For each, print Z(N), the number of trailing zeros in the decimal form of N!.
 
 The first line holds one positive integer T. Then T lines each hold one positive integer N. Print one non-negative integer Z(N) per line, where Z(N) counts trailing zeros in decimal N!.
 
@@ -43,7 +44,7 @@ The sample output reads:
 
 ## Idea
 
-Count the fives hidden in the factorial, like counting matching pairs of socks in a drawer. A trailing zero needs one factor 2 and one factor 5, and every factorial holds more twos than fives. The program adds N div 5, N div 25, and each higher power of five that still fits. This divisor-count trick costs a handful of divisions per query. Building N! would cost O(N) work and overflow immediately. Each query uses at most 13 terms, so input and output dominate the run. Takeaway: count factors of five, never the factorial itself.
+Count the fives hidden in the factorial, like tallying the fives that each multiple contributes to a product. A trailing zero needs one factor 2 and one factor 5, and every factorial holds more twos than fives. The program adds N div 5, N div 25, and each higher power of five that still fits. This divisor-count trick costs a handful of divisions per query. Building N! would cost O(N) work and overflow immediately. Each query uses at most 13 terms, so input and output dominate the run. Takeaway: count factors of five, never the factorial itself.
 
 ## Why It Works
 

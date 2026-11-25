@@ -4,7 +4,7 @@
 
 ## Problem
 
-A sports committee schedules matches one pair at a time. Some rivals always beat a given contestant, so only certain players can be guided to the trophy.
+The input describes a knockout tournament through, for each contestant, the opponents who always beat them. Count the contestants who can be scheduled to win the whole tournament.
 
 Input: `t` tests. Each test starts with `n`, followed by `n` lines. Line `k` begins with a count `m`, then lists contestants who always beat player `k`.
 
@@ -36,7 +36,7 @@ The sample input and output:
 
 ## Idea
 
-Group rivals who can all reach each other, then look for a group with no rivals above it. Think of political factions: only a faction with no stronger faction can take power.
+Group contestants who can reach one another, then find the group that beats every other group.
 
 The program uses Kosaraju's algorithm for strongly connected components (groups with two-way reachability). It runs two depth-first searches, one on the graph and one on the reversed graph.
 

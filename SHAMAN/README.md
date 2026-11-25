@@ -3,7 +3,7 @@
 
 ## Problem
 
-Four shamans pick mountain peaks and pray at the corners of the shape they form. The tribe wants the largest possible area. Pick four peaks that maximize the covered area and print it with one decimal digit.
+Four shamans choose peaks as the corners of a quadrangle, and the tribe wants the largest possible area. Print the maximum area with one decimal digit.
 
 Input: an integer t, a blank line, then t cases separated by blank lines. Each case gives peak count n, followed by n lines with x and y. Output: one number per case with exactly one digit after the decimal point.
 

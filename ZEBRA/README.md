@@ -3,7 +3,7 @@
 
 ## Problem
 
-Pedestrians cross a street at known times and angles, and you may pick your own start, angle, and speed. The goal is the largest possible collision count.
+The input gives the start position, crossing time, and angle of each pedestrian across a street. You choose your own start, angle, and speed to maximize how many you collide with.
 
 The input starts with the case count. Each case gives the person count, street width, and speed limit, then one start, crossing time, and angle per person. Print the maximum collisions.
 

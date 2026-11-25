@@ -40,7 +40,7 @@ The answer of 6 comes from periods 4, 5, and 1 in that order.
 
 ## Idea
 
-Try both ways around the circle and keep the better answer. Picture a string of beads laid flat, then taped into a loop.
+Try both ways around the circle and keep the better answer. Picture the periods laid out in a row, then the last one joined back to the first.
 
 The program uses dynamic programming (DP, a table of best answers for smaller subproblems). A state holds the period, the bed count used, and whether the previous period is in bed. Entering bed adds nothing; staying in bed adds that period's utility.
 

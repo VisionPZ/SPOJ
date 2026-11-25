@@ -4,7 +4,7 @@
 
 ## Problem
 
-A linguist rewrites symbols in a sentence. Each step replaces one symbol with two or three new symbols, and the goal is to turn one sentence into another.
+The input gives a source sequence, a target sequence, and rules that replace one number with two or three. Find the fewest steps that turn the source into the target, or report that it is impossible.
 
 Input: `t` cases. Each case gives `N M U V`.
 
@@ -41,7 +41,7 @@ The sample input and output:
 
 ## Idea
 
-Fit the target sentence like a jigsaw, solving short pieces before longer ones. Each rewrite rule acts as a piece shape that can cover a stretch of the target.
+Fill a chart of target intervals from shortest to longest, reusing each shorter result. Each rewrite rule acts as a way to cover one stretch of the target.
 
 The program uses interval dynamic programming in the style of CYK (a chart parser over substrings). It records the cheapest way for each symbol to produce each target interval.
 

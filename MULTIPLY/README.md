@@ -4,7 +4,7 @@
 
 ## Problem
 
-Multiply two integers and print the product. The limit is tight, so even input and output must stay lean.
+Two positive integers are given on separate lines; print their product.
 
 Read two positive integers per pair and print their product on its own line. The judge supplies one pair per run. Stress data can hold several pairs.
 

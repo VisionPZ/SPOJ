@@ -4,7 +4,7 @@
 
 ## Problem
 
-A puzzle book prints number sequences with the last few entries missing. The reader must extend each line using the lowest-degree polynomial that fits the given values.
+A sequence of S integers comes from a polynomial of least possible degree. Compute the next C values of that polynomial.
 
 Input: one integer for the case count, then one case per block. Each block starts with S (given values) and C (requested values), followed by the S given integers.
 

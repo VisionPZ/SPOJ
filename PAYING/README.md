@@ -3,7 +3,7 @@
 
 ## Problem
 
-Byteland mints coins in every power of two. A collection is perfect when it can pay every amount from zero up to its total value. Find the smallest perfect collection whose total is exactly n.
+Byteland coins have values 2^i, and a set is perfect when it pays every amount up to its total. For each sum n, find the fewest coins in a perfect set totaling n.
 
 You receive up to 50 large sums. Each sum can have 1000 digits, so ordinary machine integers cannot hold it. The answer is a small coin count.
 
@@ -42,7 +42,7 @@ The sum 29 needs seven coins.
 
 ## Idea
 
-Add one to the sum, then count binary digits by repeated halving on paper. Picture folding a long strip of paper in half. Each fold is one binary digit. Each leftover square is a one bit.
+Add one to the sum, then count binary digits by repeated halving on paper. Picture halving a pile of coins: each halving is one binary digit, and each leftover coin is one more.
 
 The program stores n as decimal digits, increments it by one with a carry, and halves it repeatedly. Each halving adds one to `bitLength`; each odd intermediate value adds one to `setBits`. The answer is `bitLength + setBits − 2`.
 

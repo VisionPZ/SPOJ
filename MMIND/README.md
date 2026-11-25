@@ -3,7 +3,7 @@
 
 ## Problem
 
-A phone game asks the player to find a hidden color code from past guesses. Each guess reports exact hits and misplaced hits.
+Past Master-Mind guesses and their black and white hints are given. Output the lexicographically smallest secret code still consistent with every hint.
 
 The input starts with the case count. Each case gives pin count, color count, and guess count, followed by each guess and its two hint numbers. Print a valid code, or `You are cheating!`.
 
@@ -56,7 +56,7 @@ You are cheating!
 
 ## Idea
 
-Build the code one pin at a time and stop when a hint can no longer match. Think of trying keys on a ring, discarding each key that misses the first notch.
+Build the code one pin at a time and stop when a hint can no longer match. Think of filling pin slots one at a time, discarding each color choice that contradicts an earlier hint.
 
 The program backtracks (tries a choice, then undoes it) over colors in increasing order. Running counters check every past guess after each pin. Each candidate costs O(M) checks. Enumerating all C^P codes would be far slower.
 

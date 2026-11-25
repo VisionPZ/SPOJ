@@ -4,7 +4,7 @@
 
 ## Problem
 
-Rain falls on a rectangular field of cuboids. Water collects above a field when every escape path to the field edge climbs higher than that field. Compute the total trapped volume in cubic inches.
+The input gives heights on a rectangular grid of cells. Compute how much water can collect above the cells after rain, in cubic inches.
 
 Input starts with `t`, then `t` cases separated by a blank line. Each case starts with `n m`, followed by `n` lines of `m` heights in inches. Output one integer per case: the maximum water volume.
 

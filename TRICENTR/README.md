@@ -4,7 +4,7 @@
 
 ## Problem
 
-A surveyor knows one side of a triangular plot and the centroid's perpendicular distance to each of the three sides. She needs the plot's area and the gap between its orthocenter and centroid.
+The input gives one side of a triangle and the distances from its centroid to all three sides. Compute the triangle's area and the distance from its orthocenter to the centroid.
 
 Input starts with the case count `n`, about 1000. Each following line holds four floating values: side length `a`, then the centroid distances `da`, `db`, and `dc` to sides `a`, `b`, and `c`. Output `n` lines, each with the area and the centroid-to-orthocenter distance formatted to three decimals.
 

@@ -4,7 +4,7 @@
 
 ## Problem
 
-A parade organizer uses a narrow side street as a sorting lane. Trucks enter and leave in last-in-first-out order, so some arrival orders can be rearranged and others cannot.
+A narrow side street works as a stack: the last truck entering leaves first. Given the arrival order of numbered trucks, decide whether they can leave in order from 1 to n.
 
 Input: several test cases. Each starts with `n`, then one line holding a permutation of `1..n` in arrival order. The number `0` ends the input.
 

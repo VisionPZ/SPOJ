@@ -52,7 +52,7 @@ The first case needs two colors; the second needs one.
 
 ## Idea
 
-Turn colors into street capacity, then search for the smallest capacity that works. Picture delivery vans on a street grid: one van per customer, and a street with c lanes carries at most c vans at once.
+Turn colors into street capacity, then search for the smallest capacity that works. Picture one cable per house, with a street able to carry at most one cable of each color.
 
 The program builds a flow network. A super-source sends one unit to each client. Each client sends toward the administrator's house. Every street allows c units, where c is the tested color count.
 

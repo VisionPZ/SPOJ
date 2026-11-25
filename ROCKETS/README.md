@@ -4,7 +4,7 @@
 
 ## Problem
 
-Ground-to-ground rockets must hit enemy targets with straight flight paths that never cross. Assign one target to each rocket so every pair of trajectories stays clear.
+Each of n rockets must be paired with one of n targets by straight segments. Find a pairing whose segments do not intersect.
 
 Input: `t` cases separated by blank lines. Each starts with `n`, then `n` rocket points followed by `n` target points. Output: `n` lines; line `i` gives the index of the target assigned to rocket `i`.
 

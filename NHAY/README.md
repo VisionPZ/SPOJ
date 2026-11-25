@@ -2,6 +2,8 @@
 
 ## Problem
 
+Find every occurrence of a given pattern in a given input string.
+
 Many test cases, each one a needle length, the needle and the haystack on three
 consecutive lines. Print every position (0 based) where the needle occurs in the
 haystack, one per line, and a blank line after each test case. The needle length

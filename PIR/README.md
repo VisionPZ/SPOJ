@@ -3,9 +3,7 @@
 
 ## Problem
 
-An archaeologist finds tetrahedrons with triangular bases. He measures all six edges but needs the volume for a calendar study.
-
-You receive the edge lengths in a fixed order. Compute each volume and print it with four digits after the decimal point.
+A tetrahedron is described by the lengths of its six edges, given in a fixed order. Compute its volume and print it with four digits after the decimal point.
 
 Input: the first integer is t, the number of tests. Each following line holds six positive integers: AB, AC, AD, BC, BD, CD. Output: one real number per test, rounded to four decimals.
 

@@ -4,7 +4,7 @@
 
 ## Problem
 
-Steve and Digit share a box of donuts. Whoever empties the box eats their own pile, while the other player's pile rolls back into the box for another round.
+Two players alternately take donuts from a box, up to m per turn. Whoever empties it keeps that pile while the other pile returns; compute the first player's best total.
 
 Input: `t` test cases, then one line `n m` per case. Here `n` is the starting donut count and `m` is the largest take in one move. Output: one integer per case, the number of donuts Steve eats under optimal play.
 

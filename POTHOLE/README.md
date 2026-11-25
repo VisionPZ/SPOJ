@@ -4,7 +4,7 @@
 
 ## Problem
 
-A team of speleologists wants to descend from the top chamber to the bottom chamber together. Each explorer must leave through a different top corridor and enter through a different bottom corridor. Find the largest team that can train at once.
+Speleologists explore routes from the top chamber to the bottom chamber, moving only downward. Each must use distinct start and finish corridors; find the largest team that can train at once.
 
 Input: `t` cases separated by blank lines. Each case starts with `n`, then `n − 1` lines. Line `i` gives the count of corridors leaving chamber `i`, followed by the higher-numbered chambers they reach. Chamber 1 is the top and chamber `n` is the bottom. Output: one integer per case, the largest team size.
 

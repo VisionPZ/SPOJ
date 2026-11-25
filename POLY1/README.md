@@ -3,9 +3,7 @@
 
 ## Problem
 
-A convex polygon is cut into elementary triangles. Choose one more triangle whose corners are polygon vertices. How many triangles of the given triangulation can it intersect?
-
-Two triangles intersect when their interiors share a point. You need the largest possible count over all choices of the three corners.
+A convex polygon comes with a triangulation; two triangles intersect when their interiors share a point. Find the largest number of triangulation triangles an elementary triangle can intersect.
 
 Input: the first integer is t, the number of cases; cases are separated by a blank line. Each case gives n and then n − 2 triangles, each as three vertex numbers. Output: one integer per case, the maximum intersection count.
 

@@ -3,8 +3,8 @@
 
 ## Problem
 
-A warehouse wants the biggest box from the origin that contains none of the stored marker points inside.
-The program prints the far corner of that box.
+The input gives a set of points with integer coordinates from 1 to 10^6.
+Find the largest-volume cuboid at the origin with no given point inside and print its far corner.
 
 Read `t` cases. Each case gives `n` points with integer coordinates from 1 to 10^6.
 Find the cuboid with largest volume that has one corner at the origin.

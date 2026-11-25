@@ -4,7 +4,7 @@
 
 ## Problem
 
-A cryptographer hides timestamps by squaring them modulo a large prime. The encrypted numbers look random, yet each one still encodes an ordinary GMT date and time.
+Each input value is a timestamp squared modulo a large prime. Recover the original timestamp and print it as a GMT date and time.
 
 Input: one encrypted integer per line, continuing to the end of the stream.
 

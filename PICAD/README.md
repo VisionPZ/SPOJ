@@ -2,7 +2,7 @@
 
 ## Problem
 
-Read a time window and a set of people intervals. Each person stays from moment `a` to moment `b`, both ends included. Time flows continuously, so a person leaves immediately after moment `b`. Print the smallest and largest number of people present at any moment of the window.
+People are each present from moment `a` to moment `b`, both ends included. Given a time window, find the smallest and largest number present at any moment inside it.
 
 The spec gives these bounds:
 

@@ -3,7 +3,7 @@
 
 ## Problem
 
-A stone of weight W rests on one pan of a balance. You own N weights with masses 1, 2, 4, up to 2 raised to N minus 1. Each weight can go on either pan or stay aside. Count the placements that balance the stone, modulo D.
+A stone of weight W sits on one pan of a balance, with N weights of masses 1, 2, 4, up to 2^(N-1). Count the ways to place weights on either pan that balance the stone, modulo D.
 
 Input: an integer t, then t cases. Each case gives N, L and D on one line, followed by a line holding exactly L binary digits for W. Output: one integer per case, the count modulo D.
 

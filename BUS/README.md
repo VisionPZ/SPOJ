@@ -3,7 +3,7 @@
 
 ## Problem
 
-Bus drivers in Buscelona chat whenever they meet at a stop. Each driver starts with news that only he knows. Find the minute when every driver knows all news, or print NEVER.
+Several circular bus routes share stops, and drivers exchange all news whenever they meet. Find the minutes until every driver knows all news, or print `NEVER`.
 
 Input holds many networks separated by blank lines. Each network starts with a bus count n, and n is zero at the end. Each following line gives a stop count s and then s station numbers, starting from the first station. Output one time in minutes or the word NEVER per network.
 

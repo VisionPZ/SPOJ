@@ -65,7 +65,7 @@ The sample case:
 
 ## Idea
 
-Picture a city where you slide down an avenue until a building faces you, then turn. Each wall you hit becomes a new decision point.
+Picture sliding across the rink until an obstacle wall stops you, then pushing off in another direction. Each wall you hit becomes a new decision point.
 
 The model uses one state per directed wall. Two sweeps, one along `x` and one along `y`, compute the landing wall for every state in both directions. A Fenwick tree (a prefix-count array with fast prefix sums) finds the nearest active wall at each sweep line.
 

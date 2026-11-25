@@ -3,7 +3,7 @@
 
 ## Problem
 
-Children rearrange colored square blocks on an n by n board. In one minute they permute a whole row or a whole column, and each color appears at most twice. Find the fewest minutes, or `no` when the target cannot be built.
+An n by n color grid must become a target grid by permuting whole rows or columns, one per minute. Find the fewest minutes, or report that the target cannot be reached.
 
 Input starts with a case count t. Each case gives n, then n rows of start colors, then n rows of target colors. Output one number from 0 to 3, or the word `no`.
 

@@ -36,7 +36,7 @@ The sample case:
 
 ## Idea
 
-Keep the `n` cheapest words in a growing tree, like a gardener pruning branches. Cut the cheapest branch into children, then trim the most expensive twig.
+Keep the `n` cheapest words in a growing prefix tree, like trimming the costliest twig and letting it sprout children.
 
 A frontier of `n` words stays prefix-free after each step. The program expands the lightest word into its `k` children, then removes the heaviest word so `n` words remain. A min-heap (smallest first) finds the lightest word.
 

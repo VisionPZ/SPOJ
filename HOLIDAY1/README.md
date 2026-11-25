@@ -4,7 +4,7 @@
 
 ## Problem
 
-A company throws a party whenever a holiday returns. Remove some holidays, and the remaining parties spread apart.
+Holidays recur after fixed numbers of days, and a party happens on any day when a holiday falls. Remove at most `k` holidays so consecutive parties are as far apart as possible.
 
 Read `t` cases. Each case gives `n`, the count `k` to remove, and `n` periods. Holiday `i` starts on day zero and returns every period `i` days.
 

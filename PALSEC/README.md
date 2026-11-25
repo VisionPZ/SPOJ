@@ -47,7 +47,7 @@ Output:
 
 ## Idea
 
-Build the palindrome from both ends inward. Think of zipping a jacket: every new tooth must meet the tooth already on the other side.
+Build the palindrome from both ends inward. Think of pairing letters from the two ends as if folding the joined words in half.
 
 The program precomputes hash answers for word overlaps, then runs dynamic programming over the left index, right index, and length difference. Each state makes a constant number of transitions. Enumerating all 2^n binary choices would be impossible at length thirty.
 

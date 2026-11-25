@@ -4,7 +4,8 @@
 
 ## Problem
 
-The program reads one stream of editor key presses. Ordinary keys append to the current line, `d` doubles the current line, and `\n` ends the line. An empty line stops the input, and the program prints every finished line in order. No finished line exceeds 150 characters.
+The input is a stream of editor keys: ordinary characters append to the current line, `d` duplicates it, and a newline ends the line.
+Output ends at a newline on an empty line, after which every finished line is printed in order.
 
 The limits and input shape are fixed.
 

@@ -3,8 +3,8 @@
 
 ## Problem
 
-A necklace can be opened at any bead, and a weak joint depends on the bead sizes that end up in front.
-The inspector must find the opening that gives the smallest reading of sizes.
+Each case gives a circular string of bead sizes.
+Find the starting position whose rotation is lexicographically smallest, using the lowest index when positions tie.
 
 The first line gives the case count. Each next line holds one lowercase bead string of length up to 10000. Print the one-based index of the lexicographically smallest rotation (dictionary order), using the lowest index when ties occur.
 

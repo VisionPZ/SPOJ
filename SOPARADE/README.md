@@ -3,7 +3,7 @@
 
 ## Problem
 
-Soldiers stand in one row with ranks 1 to 4. Neighbors must differ by at least two ranks. Extra rules say that certain sets of positions must all have different ranks. Detect provinces whose rules cannot be satisfied.
+Soldiers stand in a row with ranks 1 to 4, and neighbors must differ by at least two ranks. Extra rules require certain positions to have distinct ranks; detect sets of rules that no assignment can satisfy.
 
 Input: an integer t, then t rule sets separated by blank lines. Each set starts with n and p, then p rules. A rule gives a count b and b positions. Output: `approved` when some arrangement exists, and `rejected` otherwise.
 

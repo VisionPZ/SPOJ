@@ -3,7 +3,7 @@
 
 ## Problem
 
-A cop and a runner move on a triangle-free board of squares. The runner moves first in each turn, then the cop. Both may stay put or step to an adjacent square. Decide whether the cop can force a catch, and print the turn count under optimal play.
+Two pieces move on a triangle-free graph, with the runner stepping before the chaser each turn. Decide whether the chaser can force a meeting, and print the turns needed under optimal play.
 
 Input starts with a test count. Each case gives square count n, adjacent-pair count m, the runner's start a, and the cop's start b, then m edges. Output `No` when the cop cannot win, otherwise the number of turns.
 
