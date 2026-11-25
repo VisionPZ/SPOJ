@@ -1,10 +1,10 @@
-# SPOJ — 452 problems, one method
+# SPOJ — 455 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![452 problems](https://img.shields.io/badge/problems-452-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![455 problems](https://img.shields.io/badge/problems-455-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 452 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 455 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 452 problems
+## The 455 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -121,7 +121,7 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [MOZSATC](MOZSATC/README.md) | Think of a zipper sliding along the string: you open it past one comma and close it when a fourth comma appears. That is the two-pointer sliding window, costing one look at each character. | O(n) |
 | [MOZSATSK](MOZSATSK/README.md) | Think of each position as a room whose doors depend on the digit you carry. At each minute, the doors open to four nearby positions whose digits differ by at most one around the clock. | O(n) |
 
-### Geometry & grids (91)
+### Geometry & grids (92)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
@@ -218,6 +218,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [LANDPLAN](LANDPLAN/README.md) | The frame has only two row types, like a picture made from two reusable stamps. Build the top row and the middle row once, then print them the right number of times. | O(1) |
 | [MOZGEOL](MOZGEOL/README.md) | The short side is the shadow of the hypotenuse, like a ladder's height against its length. Divide the short side by the sine of the small angle to recover the long side. | O(1) |
 | [PATIOSLB](PATIOSLB/README.md) | Turn each slab length into a weight that already includes its grout gap, like packing boxes with their own padding. Sort the slabs from largest to smallest and greedily keep a slab whenever a completion still exists. | O(m * T/64 + m^2) |
+| [MUJGEO](MUJGEO/README.md) | Picture two triangular plates hinged along edge AC. The far corners C and D lie on a circle sized by the span CD, like a compass opened to half that span. | O(1) |
 
 ### Graphs & trees (38)
 
@@ -379,7 +380,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NUMTHEO01](NUMTHEO01/README.md) | Keep the running product small by reducing it after each factor, like paying down a balance after every purchase. Split the next factor into two small pieces so both partial products stay inside 64 bits. | O(t*n) worst case |
 | [SIS110G401](SIS110G401/README.md) | Treat each pair like two hands of counters and combine them into one pile. Read every integer in order, pair the values, and add them. The algorithm is a linear scan with a hand-written integer reader and a block output buffer. | O(total input bytes) |
 
-### Greedy, search & enumeration (89)
+### Greedy, search & enumeration (91)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -474,6 +475,8 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [SHEEPNAM](SHEEPNAM/README.md) | A tree has one path between two nodes, like a single corridor between two rooms. Walk that corridor once from X and stop on reaching Y, adding the road times as you go. | O(n) |
 | [MOZSATD](MOZSATD/README.md) | Think of removing coins from a pile until the rest can be cut exactly in half. If the pile is already even, keep everything. If it is odd, dropping the smallest odd coin is the cheapest repair. | O(n) |
 | [MOZTAIP](MOZTAIP/README.md) | Think of copying a sign letter by letter instead of reading its meaning. A backslash followed by `t` is two marks on the paper, not a tab. Print the 26 characters as one constant string. | O(1) |
+| [MOVES000](MOVES000/README.md) | Treat the row like a row of beads on a zipper. Unclip one run of beads and clip it onto the front. An implicit treap stores the beads in order, and subtree sizes replace stored positions. | O(1) |
+| [RCKTFUEL](RCKTFUEL/README.md) | Treat the fuel like a debt that charges interest on itself. Every quarter of weight creates another quarter of fuel, yet the whole endless chain settles on one simple total. | O(1) |
 
 ### Data structures, bits & simulation (36)
 
