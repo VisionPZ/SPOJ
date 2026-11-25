@@ -1,10 +1,10 @@
-# SPOJ — 1206 problems, one method
+# SPOJ — 1212 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1206 problems](https://img.shields.io/badge/problems-1206-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1212 problems](https://img.shields.io/badge/problems-1212-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1206 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1212 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1206 problems
+## The 1212 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -325,7 +325,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [EAGLE1](EAGLE1/README.md) | A walk that never reuses a road follows one simple path, like walking away from a camp along one branch and never doubling back. The worst path from a node ends at a farthest node, and in a tree every farthest node is an endpoint of the diameter. | O(n) per test case |
 | [ADABASH](ADABASH/README.md) | Merge sets as wires arrive, like stamping every employee in a newly merged team with the same team label. Use a disjoint-set union, also called union-find. Each merge costs nearly constant time, while a fresh search from scratch per wire would cost up to O(M × N). | O(1) |
 
-### Dynamic programming (69)
+### Dynamic programming (70)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -400,6 +400,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [JARJAR](JARJAR/README.md) | Treat each possible piece count as a row of checkboxes, one box per reachable weight, like a chart that lights up when a new part is tried. Adding a part shifts the previous row's boxes forward by that part's weight and ORs them into the new row. | O(N^2 * 60000 / 64 + Q * N) |
 | [MOWGLI](MOWGLI/README.md) | Treat the far bank as one extra stone, like counting stair climbs with strides of at most K + 1 steps. A crossing becomes a composition of A + 1 whose parts are legal jump lengths. | O(D times maxA + R) |
 | [SHUB1307](SHUB1307/README.md) | Track which totals are possible at each tile, like crossing a bridge and marking every weight the bridge can still carry. Store all totals from zero to `K` as bits in one row of machine words. | O(1) |
+| [ADASEQEN](ADASEQEN/README.md) | Keeping only the previous row of the table is like filling a crossword one line at a time with the line above as your sole reference. The algorithm runs weighted longest-common-subsequence dynamic programming with two rolling rows. | `O(N M)` per test case |
 
 ### Number theory & big integers (107)
 
@@ -515,7 +516,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [POWFIB](POWFIB/README.md) | Skipping Fibonacci numbers is like counting seats in a row while reserving a few labelled seats. Only about forty-five Fibonacci values fit below the modulus, so binary search finds the Nth gap in a few steps. | O(T log N) |
 | [ADASUM](ADASUM/README.md) | A digit contributes to many blocks, like one brick supporting several overlapping arches. Count how many blocks start at or before that digit and how many end after it. | O(1) |
 
-### Greedy, search & enumeration (697)
+### Greedy, search & enumeration (702)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1218,6 +1219,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [VECTAR4](VECTAR4/README.md) | Build the tallest hill that still lands back at one, like stacking blocks up to a peak and then back down. A peak of h gives a perfect square of h squared enemies in 2h - 1 days. | O(T log 1000000000) |
 | [BLBONO](BLBONO/README.md) | Treat each board like a pile in Nim: the piles add by XOR, so equal piles cancel. Compute a Grundy number for every one of the 512 board states by working backward from full boards. | O(1) |
 | [VECTAR12](VECTAR12/README.md) | The x-coordinate must rise by one on every step, like climbing one stair per move to reach step `n` in `n` moves. That leaves three choices per move: go up, stay, or go down in y. | O(1) |
+| [ADAFRIEN](ADAFRIEN/README.md) | Adding up each friend's tab before cutting the biggest tabs is the whole trick. The algorithm sorts records by name to aggregate totals, then sorts those totals from largest to smallest. | `O(Q log Q)` per test case |
+| [ADAUSORT](ADAUSORT/README.md) | Reversing each group of equal values is like a row of twins turning around in place, so the row still has the right order but every twin pair swaps. | `O(N log N)` per test case |
+| [CODWRECK4](CODWRECK4/README.md) | A sorted dictionary makes each split check a phone-book lookup, so trying short prefixes first lands on the shortest answer directly. The algorithm sorts the words and tests membership with binary search. | `O(N log N + T * 40 * log N)` |
+| [KDOMINO](KDOMINO/README.md) | Ordering the queries to keep both window edges nearby is like a waiter serving tables in one sweep instead of crossing the room for every order. The algorithm is Mo's algorithm over the query ranges. | `O((N + Q) log(N + Q) + (N + Q) sqrt N)` |
+| [MEANARR](MEANARR/README.md) | Subtracting `K` from every value and counting negative-sum subarrays is like removing the bad apples from a crate and counting what remains. The real algorithm counts decreasing prefix-sum pairs with a merge sort. | `O(N log N)` |
 
 ### Data structures, bits & simulation (46)
 
