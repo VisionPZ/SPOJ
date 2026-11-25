@@ -1,10 +1,10 @@
-# SPOJ — 744 problems, one method
+# SPOJ — 750 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![744 problems](https://img.shields.io/badge/problems-744-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![750 problems](https://img.shields.io/badge/problems-750-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 744 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 750 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 744 problems
+## The 750 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -454,7 +454,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (299)
+### Greedy, search & enumeration (305)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -759,6 +759,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [MDOLLS](MDOLLS/README.md) | Sort the dolls into a line, then stack them like plates in as few piles as possible. The trick is Dilworth's theorem: the fewest nested chains equals the largest set of mutually non-fitting dolls. | O(t * (m + 10000 + m log 10000)) |
 | [MKTHPATH](MKTHPATH/README.md) | Grow paths one edge at a time, shortest first, like pulling slips from a sorted pile. This is best-first enumeration with a priority queue ordered by length, then by node sequence. | O(k * (m log k + n)) for typical graphs |
 | [MPOLEVAL](MPOLEVAL/README.md) | Only the last `m` digits matter, so keep numbers modulo 10^m in chunks of four digits. Think of it as a receipt tape that keeps only the final digits of every calculation. | O(n^2 * m^2 + k * n * m) limb operations |
+| [BNWNIM](BNWNIM/README.md) | Score each row as a Nim heap, then add the heaps with XOR, like combining piles in ordinary Nim. A row's score depends only on the white gaps around its black beads, so a short dynamic program counts how often each score appears. | O(N times black times white squared) for distinct rows |
+| [BYTESE1](BYTESE1/README.md) | Treat each room as a junction whose entry fee is its guard time, then find the cheapest route with Dijkstra's algorithm, like picking the shortest toll road through a city. | O(M N log(M N)) per case |
+| [FWFUNC](FWFUNC/README.md) | Treat each prime as a color that owns a private set of output primes, like paint cans that never share a color. Every pair then becomes one linear equation per output prime, and each equation has at most one unknown color. | O(P D C) per case for P pairs, D input primes, C output primes |
+| [MMOD29](MMOD29/README.md) | Factor 2004 once, then treat each prime separately, like adding the rungs of three ladders and multiplying the totals. A divisor sum of a prime power is a short geometric series, and fast exponentiation finds its top term. | O(T log X) for T test lines |
+| [MPOLSTAR](MPOLSTAR/README.md) | Treat every edge as a fence that keeps allowed points on its left, like slicing a cake with straight cuts. The center exists exactly when all those half-planes share a point. | O(n cubed) per dataset |
+| [MTREECOL](MTREECOL/README.md) | Treat each finished group of nodes as one block, like stacking boxes from heaviest to lightest. Repeatedly pull the block with the highest average factor next to its parent, then fuse the two blocks. | O(N squared) per case |
 
 ### Data structures, bits & simulation (43)
 
