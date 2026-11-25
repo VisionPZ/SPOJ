@@ -1,10 +1,10 @@
-# SPOJ — 903 problems, one method
+# SPOJ — 908 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![903 problems](https://img.shields.io/badge/problems-903-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![908 problems](https://img.shields.io/badge/problems-908-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 903 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 908 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 903 problems
+## The 908 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -240,7 +240,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 
-### Graphs & trees (60)
+### Graphs & trees (61)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -306,6 +306,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [RPLN](RPLN/README.md) | Overlapping pairs of blocks answer each range in one step, like reading a ladder of precomputed answers instead of rescanning the list. The program builds a sparse table. | O(1) |
 | [SEGSQRSS](SEGSQRSS/README.md) | Store a sum and a square sum at each tree node, like keeping both a running total and a tally of squared scores for a class. A pending add and a pending set travel down only when a child is touched. | O(N + Q log N) per case |
 | [CNTPRIME](CNTPRIME/README.md) | Turn each value into a zero-or-one prime flag, like painting fence posts either marked or plain. A whole-range assignment paints one stretch a single color, so its prime count becomes either the stretch length or zero. | `O(1000000 log log 1000000)` once, then `O((n + q) log n)` per case |
+| [KOZE](KOZE/README.md) | Think of each enclosed yard as a locked room: count the animals inside before declaring a winner. Flood fill discovers each sector in one pass over the grid. | O(N * M) |
 
 ### Dynamic programming (54)
 
@@ -467,7 +468,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [DCEPCA03](DCEPCA03/README.md) | Squaring a sum is like pairing every card in a pile with every card in the same pile. One pass builds all totients with a sieve, and a prefix array gives each sum at once. | O(N log log N + T) |
 | [NDIV](NDIV/README.md) | Stamp divisor counts across the interval, like marking every tenth house on a street. Each small prime visits its multiples once, so no number needs a fresh factor search. | O(sqrt(b) log log b + (b - a) log log b) |
 
-### Greedy, search & enumeration (444)
+### Greedy, search & enumeration (448)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -917,6 +918,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [TRECOUNT](TRECOUNT/README.md) | Group trees by height before counting them, like sorting mail into pigeonholes before adding each pile. A balanced root has child heights that differ by zero or one, so counts at one height come from two neighbouring piles. | O(H * N^2) |
 | [TREEII](TREEII/README.md) | A level of equal-degree nodes acts like one stack of identical boxes: only its size matters. The root has c children, and each child subtree has the same shape, so removing the root leaves c identical trees. | O(n_max sqrt(n_max) + cases) |
 | [ZZPERM2](ZZPERM2/README.md) | Think of a fence with posts that must alternate high and low, like choosing a repeating up-down pattern of letter sizes. A prefix can be completed in a fixed number of ways, and that count tells how many ranks the prefix owns. | O(states * alphabet + outputs * length * alphabet) |
+| [DCEPCA02](DCEPCA02/README.md) | Picture the grid as a city where every intersection broadcasts both kinds of messages; the last hop into the destination decides which message type delivers it. A broadcast fills a diamond of cells over time, so the earliest useful cell next to the target has the smallest Manhattan distance from the start. | O(T) |
+| [MULTII](MULTII/README.md) | Treat each remainder as a room: an allowed digit walks you into the next room, and the first visit to room zero gives the shortest valid number. Breadth-first search over remainders is the algorithm; each remainder has at most ten outgoing digits, so the work per state is constant. | O(1) |
+| [NTICKETS](NTICKETS/README.md) | Think of each city as having a stack of snapshots of the road to its ancestor; answering a query pops matching snapshots until both climbers meet. Binary lifting is the algorithm, with the largest edge cost stored beside each ancestor. | O(1) |
+| [PBBN2](PBBN2/README.md) | Think of a huge number as a row of equal boxes: XOR changes bits inside boxes, and the answer adds the box values. Store each power in 32-bit limbs, XOR limb by limb, then add 512-limb groups into one accumulator. | O((B + C) * L + D) |
 
 ### Data structures, bits & simulation (44)
 
