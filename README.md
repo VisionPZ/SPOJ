@@ -1,10 +1,10 @@
-# SPOJ — 726 problems, one method
+# SPOJ — 732 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![726 problems](https://img.shields.io/badge/problems-726-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![732 problems](https://img.shields.io/badge/problems-732-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 726 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 732 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 726 problems
+## The 732 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -451,7 +451,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (284)
+### Greedy, search & enumeration (290)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -741,6 +741,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [MPRIME1](MPRIME1/README.md) | Build a lookup table of counts once, like indexing every recipe before taking orders. The algorithm sieves the primes, then slides a window over them and tallies each sum it reaches. | O(L log log L plus queries), L = 11000 |
 | [MRECAMAN](MRECAMAN/README.md) | Fill the sequence once, like labelling every shelf before answering any question about a shelf. The algorithm is a direct simulation that records used values in an array. | O(max k + number of queries) |
 | [MSTICK](MSTICK/README.md) | Sort the sticks by size, then drop each stick onto the chain whose end fits it best, like stacking plates by decreasing diameter. The algorithm keeps the last weight of every open chain and extends the chain with the largest tail that is still no heavier than the stick. | O(n log n) per case |
+| [BOBALLS](BOBALLS/README.md) | Think of the two balls as raindrops on a tiled roof: each tile pays once even when both drops cross it. The trick is to compute each ball's chance of visiting every cell, then subtract the chance that both visit it. | O(N times M cubed) |
+| [MCLONUM](MCLONUM/README.md) | Think of matching the target digit by digit, like turning a combination lock until one wheel can be moved. Keep the prefix equal for as long as possible, then make one decisive change and sort the remaining digits. | O(n times 10) per answer |
+| [MRECTCNT](MRECTCNT/README.md) | A diagonal climbs across grid lines like a walker stepping over tiles, and it enters a new square at every row line or column line it crosses. Shared crossings at grid corners merge two steps, which is why the greatest common divisor is subtracted. | O(N log log N) |
+| [SEQ5](SEQ5/README.md) | Slide a frame along the row and track which colours sit inside it, like counting pictures with two or three colours. For a fixed left end, grow the right end until the frame holds too many distinct values. | O(N cubed) worst case |
+| [SOLDIER](SOLDIER/README.md) | Treat a candidate quality as a bar that every chosen item must clear, like six friends each needing a ticket above the same height. For each bar, keep the cheapest qualifying item of each type and add the six prices. | O(N times T) |
+| [SPACESET](SPACESET/README.md) | Every settlement in the colony offers the same number of next stops, like a newsletter sent to an equal-size mailing list from each address. The total number of routes then multiplies by that same number at each of the k minus 1 moves. | O(T log k) |
 
 ### Data structures, bits & simulation (43)
 
