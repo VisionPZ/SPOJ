@@ -1,10 +1,10 @@
-# SPOJ — 673 problems, one method
+# SPOJ — 679 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![673 problems](https://img.shields.io/badge/problems-673-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![679 problems](https://img.shields.io/badge/problems-679-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 673 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 679 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 673 problems
+## The 679 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -297,7 +297,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [MSTS](MSTS/README.md) | Process equal weights in batches, like laying identical bricks one layer at a time before moving to the next layer. Kirchhoff matrix-tree theorem counts spanning trees of each batch graph after cheaper batches are contracted. | O(1) |
 | [QTREE4](QTREE4/README.md) | Split the tree into centre regions, like finding the longest trip between two neighbourhoods by keeping the best outgoing road from each neighbourhood. Centroid decomposition gives every node a logarithmic list of ancestor centroids. | O(1) |
 
-### Dynamic programming (44)
+### Dynamic programming (46)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -347,6 +347,8 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [RAIN3](RAIN3/README.md) | Slide a window over the days and shrink it whenever the rain total exceeds the limit, like letting water drain from one end of a trough. The shortest violating window gives the answer directly: subtract one from its length. | O(1) |
 | [GNY07H](GNY07H/README.md) | Treat the right edge of the grid like a stack of four slots that a domino can fill, like packing a bookshelf one shelf at a time. Track three counts: full grids, grids with two corner cells missing, and grids with two cells missing on one side. | O(C + Wmax) |
 | [DSUBSEQ](DSUBSEQ/README.md) | Adding one letter doubles the pile of subsequences, like flipping a switch for every existing choice, and repeats collapse by subtracting the previous total for that same letter. | O(total string length) |
+| [CSUBSEQS](CSUBSEQS/README.md) | Count each distinct string at the earliest place it can finish, like filing a book under the first shelf where the whole title appears. For a chosen first letter, use its first occurrence in each string. | O(26 S), with S reachable states |
+| [INCSEQ](INCSEQ/README.md) | Each new value extends shorter subsequences, like stacking blocks where every new block must be taller than the top one. A Fenwick tree stores counts grouped by last value, so the sum of all smaller tops is one prefix query. | O(N K log V) |
 
 ### Number theory & big integers (89)
 
@@ -444,7 +446,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (239)
+### Greedy, search & enumeration (243)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -689,6 +691,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [FFROG](FFROG/README.md) | A frog sitting at row i and column j behaves like two piles of sizes i and j, like coins in two stacks that only shrink. Up to K orders per turn make this Moore's Nim, whose losing positions have equal digit sums in every binary place modulo K plus one. | O(m times n plus (m + n) log max(m, n)) per test |
 | [GLGRID](GLGRID/README.md) | A square total means a perfect square, like asking when a rectangular tiling closes exactly. Rewrite the quadratic as a Pell equation u^2 - a v^2 = b^2 - 4ac with u = 2ax + b. | O(sqrt(D * unit) + k log k) per case |
 | [RESIST](RESIST/README.md) | Treat node N as zero volts and push one ampere into node 1, like measuring pressure at a tap with a known flow. Kirchhoff's current law gives one linear equation per remaining node, and the voltage at node 1 equals the resistance. | O(N^3 + M) per case |
+| [INCDSEQ](INCDSEQ/README.md) | A repeat of a value must replace the old contribution, like updating one row in a ledger instead of writing a second copy. The Fenwick tree for each length holds the current contribution of every value. | O(N K log N) |
+| [PRETILE](PRETILE/README.md) | A repeated prefix is a shifted copy of the same text, like sliding a transparent strip along a row of tiles. The Z array already measures how far any shifted copy agrees with the start. | O(N) per test |
+| [RRSCHED](RRSCHED/README.md) | A task that needs t seconds finishes in pass t, like a runner who needs one lap per unit of energy. Count how many seconds pass before that pass, then add the task's place among unfinished tasks in that pass. | O(N log N) |
+| [SUMSUMS](SUMSUMS/README.md) | A round is a reflection around the herd total, like swapping seats across a table while the table itself rotates. Binary exponentiation evaluates the rotation after T rounds, and one modular inverse removes the leftover division. | O(N + log T) |
 
 ### Data structures, bits & simulation (42)
 
