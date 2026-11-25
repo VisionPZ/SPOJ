@@ -1,10 +1,10 @@
-# SPOJ — 1058 problems, one method
+# SPOJ — 1064 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1058 problems](https://img.shields.io/badge/problems-1058-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1064 problems](https://img.shields.io/badge/problems-1064-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1058 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1064 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1058 problems
+## The 1064 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -241,7 +241,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 | [RROOT](RROOT/README.md) | Slice the square like a loaf of bread, then measure the slice below the parabola `c = b²` and divide by the whole loaf. The algorithm is analytic area integration in closed form, at O(1) cost per test. | O(T) |
 
-### Graphs & trees (66)
+### Graphs & trees (67)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -313,8 +313,9 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [RANGESUM](RANGESUM/README.md) | Push work to one end of a fixed array, like adding pages to the front of a notebook while keeping the page numbers. Store suffix totals anchored at the far right, so a front push only writes one new cell. | O(N + Q) |
 | [GIVEAWAY](GIVEAWAY/README.md) | Think of the array as a row of sorted filing cabinets: each cabinet holds one block of entries in order. A count query scans the two partial cabinets by hand and binary-searches every full cabinet. | O(1) |
 | [BRDGHRD](BRDGHRD/README.md) | Think of each bridge as a pin with two coordinates, and the chosen pins must let a rubber band pass without folding back. Two bridges cross exactly when their two endpoint orders disagree. | O(1) |
+| [IITWPC4I](IITWPC4I/README.md) | Think of an imaginary depot linked to every milkman for free, and buy the cheapest road tree that reaches that depot. Kruskal's algorithm sorts all roads by cost and joins components with a disjoint-set structure. | O((m + n) times log(m + n)) per case |
 
-### Dynamic programming (61)
+### Dynamic programming (63)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -381,6 +382,8 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [BAT4](BAT4/README.md) | Picture a hiker choosing the gentlest steepest step, like picking the easiest rung on a ladder. A minimax DP finds the smallest possible worst climb to every cell. | O(1) |
 | [AUTOMATA](AUTOMATA/README.md) | Treat each star as a bookmark you can move forward when a later letter fails. This is the classic greedy wildcard scan: consume letters directly, remember the last star, and retry from it on mismatch. | O(length of pattern + length of subject) per ordinary case |
 | [INGRED](INGRED/README.md) | Think of the two friends as two hands passing ingredients around a table of at most ten relevant seats. Compute shortest walks from each relevant city, then try every collected subset and both hand positions. | O(1) |
+| [CODEM4](CODEM4/README.md) | Think of the remaining row as a corridor with one door at each end, and each turn closes one door. Use interval DP keyed by the left and right ends. | O(T times size squared) |
+| [IITWPC4J](IITWPC4J/README.md) | Think of seating fish one at a time, with a checklist marking every aquarium already taken. Use subset DP over occupied aquariums. A mask records the taken aquariums, and its set-bit count tells which fish moves next. | O(T times n times 2 to the n) |
 
 ### Number theory & big integers (99)
 
@@ -488,7 +491,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [RLTHREE](RLTHREE/README.md) | Think of three runners on a ladder where each rung belongs to two of them and one outsider. Equal distances mean each outsider gets the same number of losing rungs. | O(N) |
 | [HG](HG/README.md) | Compare two towers by their bricks, then rebuild only the bricks they share. Prime factorization turns each product into a list of prime exponents. The gcd keeps the smaller exponent for every prime. | O(primeLimit log log primeLimit + (N+M) times divisions) |
 
-### Greedy, search & enumeration (577)
+### Greedy, search & enumeration (580)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1071,6 +1074,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [IITWPC4C](IITWPC4C/README.md) | Lay two arrows tip to tail; the third side runs from the start of the first to the tip of the second. That third vector equals the sum of the first two, so a triangle exists when some pair sums to a vector in the set. | O(N^2) per case |
 | [KURUK14](KURUK14/README.md) | Treat mirrored ticket numbers as sharing the same two seats. A position can hold its own index or the mirrored index. Two mirrored values claim the same two positions, so their combined count must be exactly two. | O(N) per case |
 | [RKS](RKS/README.md) | Count ballots, then line up candidates by vote count with earlier arrivals breaking ties. The program stores each distinct value once with its frequency and first position. It insertion-sorts the distinct indices by falling frequency and rising first position. | O(N * D + D^2), at most O(N^2) |
+| [IDC1948](IDC1948/README.md) | Think of the gap to the next all-nine number as a bill, and find the smallest coin size above one that splits it. Compute the all-nine value with a short loop. | O(T times sqrt(D)) for difference D |
+| [IITWPC4K](IITWPC4K/README.md) | Think of each comparison as an arrow in a line-up, like a note saying one book must stand before another. Detect cycles with Kahn's topological sort, which removes students whose incoming arrows are all gone. | O(n + m) per case |
+| [IITWPC4L](IITWPC4L/README.md) | Think of each door as a drawer holding the keys it can reach, and pick distinct keys for the cheapest drawers. Build a min-cost flow network. A source feeds every door, each door feeds reachable key values, and each key feeds the sink with unit capacity. | O(d times nodes times edges) worst case |
 
 ### Data structures, bits & simulation (45)
 
