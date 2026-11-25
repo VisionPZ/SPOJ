@@ -1,10 +1,10 @@
-# SPOJ — 826 problems, one method
+# SPOJ — 832 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![826 problems](https://img.shields.io/badge/problems-826-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![832 problems](https://img.shields.io/badge/problems-832-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 826 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 832 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 826 problems
+## The 832 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -239,7 +239,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 
-### Graphs & trees (57)
+### Graphs & trees (58)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -302,6 +302,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [MKTHNUM](MKTHNUM/README.md) | Keep one sorted-history snapshot per array prefix, like saving a cumulative tally after each card is dealt. This is a persistent segment tree over compressed value ranks. Build a version for every prefix by copying one root-to-leaf path. | O(n log n + m log n) |
 | [MMINPAID](MMINPAID/README.md) | Prepaying a road is like buying a ticket at a booth: once bought, the ride costs nothing later. The algorithm is a shortest-path search over states made of a city and a prepaid-road mask. | O(N times m times two to the m) |
 | [MTREE](MTREE/README.md) | Charge every pair to the vertex where its two branches meet, like sorting letters by their common post office. Root the tree once and walk it in reverse postorder. | O(N) |
+| [RPLN](RPLN/README.md) | Overlapping pairs of blocks answer each range in one step, like reading a ladder of precomputed answers instead of rescanning the list. The program builds a sparse table. | O(1) |
 
 ### Dynamic programming (54)
 
@@ -461,7 +462,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 | [PTIME](PTIME/README.md) | Count each prime inside a factorial by adding floor divisions, like counting how many rows of a fixed size fit in a stack. The real algorithm is Legendre's formula, computed after one sieve primes once. | O(maxN log log maxN + cases * pi(maxN) log maxN) |
 
-### Greedy, search & enumeration (373)
+### Greedy, search & enumeration (378)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -840,6 +841,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [ROIM](ROIM/README.md) | Send two units of flow through a network of one-use flights, like routing two parcels through a grid of single-use tunnels. A large penalty on chartered flights makes the cheapest flow also the one with the fewest charters. | O(E log V) per augmentation |
 | [RPLK](RPLK/README.md) | Take the tallest available steps first, like picking the tallest books off a row of shelves. A counting array groups steps by height, so the program scans heights from high to low instead of sorting a huge step list. | O(E + V) per case, with V the largest value |
 | [RPLL](RPLL/README.md) | The triangle area grows as a quadratic, so find the last valid hour by bracketing and bisecting it. Think of climbing a ladder and stopping at the last rung below a ceiling. | O(log t) per case, where t is the answer |
+| [ALIEN3](ALIEN3/README.md) | Remember which teleporters are spent and the lowest cost at each station, like tracking both your remaining tickets and your current stop. The program uses a subset dynamic program over teleporter masks. | O(1) |
+| [CNTPATHS](CNTPATHS/README.md) | Keep the last three time layers, like a sliding window that remembers every road length still in flight. Each step builds the next time layer from the previous three layers, because road times are at most three. | O(1) |
+| [MAX2214](MAX2214/README.md) | Treat each row like a strip that can hold small bricks, and remember which bricks reach the next strip. A 2 by 2 square uses two columns in the current row and two in the next row. | O(1) |
+| [RPLM](RPLM/README.md) | Carry two backpack counters, one for time and one for spent hammers, like choosing a route with both a clock and a ticket book. Each state is a room plus the number of hammers already broken. | O(1) |
+| [SEQAGAIN](SEQAGAIN/README.md) | Track how many copies of each starting value appear, like counting ingredients instead of weighing the whole cake. Every term equals F(0) raised to a count times F(1) raised to another count. | O(1) |
 
 ### Data structures, bits & simulation (44)
 
