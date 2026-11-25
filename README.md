@@ -1,10 +1,10 @@
-# SPOJ — 1194 problems, one method
+# SPOJ — 1200 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1194 problems](https://img.shields.io/badge/problems-1194-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1200 problems](https://img.shields.io/badge/problems-1200-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1194 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1200 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1194 problems
+## The 1200 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -323,7 +323,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [CARDFLIP](CARDFLIP/README.md) | Picture the deck as a row of beads on a string, where cutting and rejoining segments is cheaper than sliding every bead. An implicit treap stores the deck in position order without storing positions. | O(q log n) expected |
 | [EAGLE1](EAGLE1/README.md) | A walk that never reuses a road follows one simple path, like walking away from a camp along one branch and never doubling back. The worst path from a node ends at a farthest node, and in a tree every farthest node is an endpoint of the diameter. | O(n) per test case |
 
-### Dynamic programming (67)
+### Dynamic programming (68)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -396,6 +396,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [LOVEBIRDS](LOVEBIRDS/README.md) | Picking the root splits the remaining numbers into two piles, like dividing a deck into a left hand and a right hand. The count follows the Catalan recurrence, built once with dynamic programming. | O(1) |
 | [SMILEY1807](SMILEY1807/README.md) | Keeping four running lengths is like filling four cups in a row: you open the next cup only after the previous one holds a drop. Each new digit extends the current block or opens the next block. | O(L) |
 | [JARJAR](JARJAR/README.md) | Treat each possible piece count as a row of checkboxes, one box per reachable weight, like a chart that lights up when a new part is tried. Adding a part shifts the previous row's boxes forward by that part's weight and ORs them into the new row. | O(N^2 * 60000 / 64 + Q * N) |
+| [MOWGLI](MOWGLI/README.md) | Treat the far bank as one extra stone, like counting stair climbs with strides of at most K + 1 steps. A crossing becomes a composition of A + 1 whose parts are legal jump lengths. | O(D times maxA + R) |
 
 ### Number theory & big integers (106)
 
@@ -510,7 +511,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [IAPCR2D](IAPCR2D/README.md) | The divisor count of `X!` is a product of small factors, one for each prime exponent. Think of it as a sorted phone book: build the book once, then look up each query quickly. | O(1) |
 | [POWFIB](POWFIB/README.md) | Skipping Fibonacci numbers is like counting seats in a row while reserving a few labelled seats. Only about forty-five Fibonacci values fit below the modulus, so binary search finds the Nth gap in a few steps. | O(T log N) |
 
-### Greedy, search & enumeration (690)
+### Greedy, search & enumeration (695)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1206,6 +1207,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [DWARFLOG](DWARFLOG/README.md) | A set of heights forms one block exactly when its leftmost and rightmost positions are as close as the count allows. Think of numbered books on a shelf: if the first and last book of a series sit the right number of slots apart, no other book interrupts the series. | O(M log N) |
 | [PETYABRO](PETYABRO/README.md) | Split the city into one region per milkman, where each citizen belongs to the region of their nearest milkman. Think of postal districts: every house must reach its own district office, and connecting two offices never helps. | O(M log M + M log N) |
 | [SIOKULE](SIOKULE/README.md) | Splitting a tower is like cutting a rope into pieces while the buyer names the piece they keep. A larger kept piece belongs earlier in the row, because later positions cost more. | O(answer times square root of answer times digits) |
+| [FUNMODSEQ](FUNMODSEQ/README.md) | A modular inverse is a partner that brings a product back to one, and applying it twice returns the original number, like turning a lock key over twice. | O(T log p) |
+| [KNMOVE](KNMOVE/README.md) | Search outward from the target once, like ripples spreading from a drain, and read every answer from a stored distance table. Breadth-first search on the whole board gives the exact move count from each square to the corner. | O(boardCells times 8 + t) |
+| [ORDSUM23](ORDSUM23/README.md) | The last term is either a domino of length 2 or a triomino of length 3, like finishing a tiled row with one of two tile sizes. Removing that last term leaves a smaller ordered sum, so each count is the sum of two earlier counts. | O(maxN + T) |
+| [VECTAR1](VECTAR1/README.md) | Cells with the same xor value form one pile, like sorting cards into labelled stacks before numbering the whole deck. The rule orders whole piles but never orders cards inside a pile. | O(1000 + T times 1024 times 10) |
+| [VECTAR4](VECTAR4/README.md) | Build the tallest hill that still lands back at one, like stacking blocks up to a peak and then back down. A peak of h gives a perfect square of h squared enemies in 2h - 1 days. | O(T log 1000000000) |
 
 ### Data structures, bits & simulation (46)
 
