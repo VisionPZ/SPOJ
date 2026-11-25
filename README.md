@@ -1,10 +1,10 @@
-# SPOJ — 814 problems, one method
+# SPOJ — 826 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![814 problems](https://img.shields.io/badge/problems-814-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![826 problems](https://img.shields.io/badge/problems-826-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 814 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 826 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 814 problems
+## The 826 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -303,7 +303,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [MMINPAID](MMINPAID/README.md) | Prepaying a road is like buying a ticket at a booth: once bought, the ride costs nothing later. The algorithm is a shortest-path search over states made of a city and a prepaid-road mask. | O(N times m times two to the m) |
 | [MTREE](MTREE/README.md) | Charge every pair to the vertex where its two branches meet, like sorting letters by their common post office. Root the tree once and walk it in reverse postorder. | O(N) |
 
-### Dynamic programming (53)
+### Dynamic programming (54)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -362,8 +362,9 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [MINVEST](MINVEST/README.md) | Choosing bonds is like filling a backpack at each weight: keep the best interest for every exact load, then reuse that answer next year. Divide by 1000 and treat bond values as item weights and interests as item values. | O(1) |
 | [KOPC12H](KOPC12H/README.md) | Counting qualifying numbers resembles walking a digit-by-digit decision tree while keeping a balance scale that tips toward even digits. Precompute how many digit endings succeed from each balance and remaining length, then walk the upper bound once. | O(1) |
 | [M00PAIR](M00PAIR/README.md) | Think of each digit as a domino that flips into a two-character tile, so zero pairs can only appear where two tiles touch. The recurrence a(n) = a(n-2) + 2^(n-3) counts those touching edges with ordinary integer arithmetic. | O(999 d + q) with d answer digits and q queries |
+| [BYTESM2](BYTESM2/README.md) | Keep only the best total that can reach each tile, like marking the highest score on each step of a staircase. Each tile looks at the three tiles above it and adds its own stones. | O(T · h · w) |
 
-### Number theory & big integers (89)
+### Number theory & big integers (90)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -458,8 +459,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SHAMIM9](SHAMIM9/README.md) | Think of a multiplication table where only the final column survives. The units digit of a product uses only the units digits of the factors. The program keeps the last digit while scanning each token and computes nine times that digit modulo ten. | O(1) |
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
+| [PTIME](PTIME/README.md) | Count each prime inside a factorial by adding floor divisions, like counting how many rows of a fixed size fit in a stack. The real algorithm is Legendre's formula, computed after one sieve primes once. | O(maxN log log maxN + cases * pi(maxN) log maxN) |
 
-### Greedy, search & enumeration (363)
+### Greedy, search & enumeration (373)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -828,6 +830,16 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [DELIVER](DELIVER/README.md) | Put a bus stop at each farm and near each farm, then hop between stops, like walking around a closed building. A shortest leg becomes a chain of L-shaped hops on this small graph. | O(N^3) |
 | [DERP](DERP/README.md) | Stretch the cloud along eight diagonals, like measuring a tilted box from opposite corners. The farthest pair shows up as the widest gap on one diagonal. The method is the eight-sign Manhattan transform. | O(8N) per sample |
 | [MINI](MINI/README.md) | Choose the inner cells freely, like filling the middle of a sudoku; the border cells then lock into place. The count collapses to a single power of N. | O(total digits + T log 1000000009) |
+| [BYTESE2](BYTESE2/README.md) | Turn each visit into two events on one timeline, like tallying guests as a doorman reads arrival and departure notes in time order. An entry adds one dancer and an exit removes one dancer. | O(T · N²) with insertion sort |
+| [BYTESH1](BYTESH1/README.md) | Build the count from short paths to long ones, like extending a row of fences one post at a time. Each new length needs only three earlier counts. | O(1000000 + T) |
+| [BYTESM1](BYTESM1/README.md) | Use the digit-sum rule to sort numbers into lanes, like trains that can only meet on the same track. The residue of a stone modulo 9 never leaves its lane, so each remembered number can meet only one river. | O(L + K) where L is the precompute length and K is total search steps |
+| [COMPLEX2](COMPLEX2/README.md) | The root product collapses into one geometric sum, like folding a long strip so every interior crease meets its neighbor. The algorithm uses the identity (x^n - 1)/(x - 1) and prints that fraction without reducing it. | O(n^2 log x) digit work per case |
+| [MMAHWIRE](MMAHWIRE/README.md) | Grow one wire step by step. Let a shortest-path search finish the other wire. This is like laying one cable first, then routing the second around it. | exponential in the wire length in the worst case |
+| [MPOLGRID](MPOLGRID/README.md) | Split the rods into two small groups and match the groups by their net offset, like balancing two piles of vectors until they point opposite ways. A closed polygon needs the total offset to be zero, so matching sums find every candidate. | O(V^(n/2) + P · n²) with V ≤ 36 and P matched pairs |
+| [PONY5](PONY5/README.md) | Equal remainders mean X divides every difference, so the answer is their greatest common divisor. Think of finding the longest ruler interval that lands on every cut mark. | O(N log V) per case, where V is the largest value |
+| [ROIM](ROIM/README.md) | Send two units of flow through a network of one-use flights, like routing two parcels through a grid of single-use tunnels. A large penalty on chartered flights makes the cheapest flow also the one with the fewest charters. | O(E log V) per augmentation |
+| [RPLK](RPLK/README.md) | Take the tallest available steps first, like picking the tallest books off a row of shelves. A counting array groups steps by height, so the program scans heights from high to low instead of sorting a huge step list. | O(E + V) per case, with V the largest value |
+| [RPLL](RPLL/README.md) | The triangle area grows as a quadratic, so find the last valid hour by bracketing and bisecting it. Think of climbing a ladder and stopping at the last rung below a ceiling. | O(log t) per case, where t is the answer |
 
 ### Data structures, bits & simulation (44)
 
