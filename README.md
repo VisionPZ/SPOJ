@@ -1,10 +1,10 @@
-# SPOJ — 410 problems, one method
+# SPOJ — 411 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![410 problems](https://img.shields.io/badge/problems-410-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![411 problems](https://img.shields.io/badge/problems-411-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 410 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 411 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 410 problems
+## The 411 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -118,7 +118,7 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [STARJUST](STARJUST/README.md) | Think of hanging a picture on a wall, then filling the empty space with equal stacks of stars on each side. The leftover star goes on the left when the gap is odd. | O(total output characters) |
 | [TIMORSE](TIMORSE/README.md) | Add durations like filling a timeline with blocks, like stacking tiles of length one and three. Each letter contributes its symbols plus the small gaps between them. A new letter after letters adds three; a new letter after spaces adds seven. | O(total input characters) |
 
-### Geometry & grids (86)
+### Geometry & grids (87)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
@@ -210,6 +210,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [ZEBRA](ZEBRA/README.md) | Only people with your crossing time can collide. Think of picking a lane on a crosswalk and counting paths that cross your own. | O(n) |
 | [VCYLINDER](VCYLINDER/README.md) | Apply the textbook volume rule, like filling a can and measuring the result to the nearest hundredth. Radius is half the diameter. Multiply pi by radius squared and by height. | O(1) apart from input bytes |
 | [ALIENCLK](ALIENCLK/README.md) | Reading both hands on a shared ruler is like measuring them in thirty-seconds of a degree. The minute hand advances 144 units per minute and the hour hand advances 9 units per minute. | O(test count) |
+| [AARTDARK](AARTDARK/README.md) | Count dark cells and divide, like tallying shaded squares on a grid sheet. The side length gives the total cell count directly. Scan each picture's characters once and count asterisks. | O(total pixels) |
 
 ### Graphs & trees (38)
 
