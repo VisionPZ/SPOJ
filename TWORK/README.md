@@ -1,10 +1,14 @@
+# TWORK — Teamwork is Crucial (SPOJ)
+
+<https://www.spoj.com/problems/TWORK/>
+
 ## Problem
 
-Read several test cases. Each case lists n scientists and m acquaintance pairs. Each scientist knows 2 or 3 other scientists.
-Print k three-person groups. Each group needs one leader whom all three members accept. That leader must know the other two members.
-Leave at most 25% of the scientists without a group.
+A medieval university must split its scholars into three-person workgroups. Each group needs a leader whom all three members accept, meaning the leader knows both other members. The chancellor accepts any grouping that leaves at most one quarter of the scholars idle.
 
-The judge bounds are:
+Input starts with `t ≤ 100`. Each case gives `n m`, where `n` is divisible by four and `m` counts acquaintance pairs. The next `m` lines hold pairs `ai bi`; each scientist knows two or three others. Output `k`, the group count, then `k` lines of three scientist numbers. Any member may serve as the printed leader.
+
+The judge bounds are these.
 
 | Quantity | Bound |
 | --- | --- |
@@ -15,34 +19,63 @@ The judge bounds are:
 | Time limit | 1028 ms |
 | Memory limit | 1536 MB |
 
-The 25% tolerance permits disjoint paths of length two instead of a perfect partition.
+The 25 percent tolerance permits a few idle scholars on tight graphs.
+
+The sample input and output follow verbatim.
+
+```
+1
+8 10
+1 2
+1 3
+2 5
+4 6
+3 7
+2 3
+5 6
+6 7
+7 8
+8 4
+```
+
+```
+2
+1 3 7
+4 5 6
+```
 
 ## Idea
 
-Treat each group as a path of length two. The center knows both ends, so all three members accept the center as leader.
-The program repeatedly takes a center and two available neighbors. It marks those three scientists used and continues.
-Sixteen variants change the center order and the neighbor choice. The program keeps the packing with the most groups.
+Treat each group as a path of length two, with a center who knows both ends. Think of seating guests at tables of three around a host who greets both neighbors.
 
-Each variant touches every scientist once and every acquaintance pair a constant number of times.
+The program repeatedly picks a center and two available neighbors. It removes those three scientists and lowers the remaining degree of their neighbors. Sixteen variants change the center order and the neighbor choice. The program keeps the packing that forms the most groups.
+
+Trying every triple of scientists costs cubic time and fails at 20000. Each variant touches every scientist and every edge a constant number of times.
+
+A greedy path packing with sixteen restarts beats exhaustive triples.
 
 ## Why It Works
 
-A scientist tolerates themselves and their acquaintances. The leader of a group must know the other two members.
-That condition is exactly a path of length two. Removing a group only lowers the remaining degree of surrounding scientists.
-A scientist stops being a center once that degree falls below two.
+Four facts justify the greedy packing.
 
-For a center v, the printed group is (x, v, y).
+1. A scientist accepts themselves or an acquaintance as leader. A group with a leader who knows both others is exactly a path of length two.
+2. Removing a group only lowers the remaining degree of nearby scientists. A center stops being useful once that count falls below two.
+3. The center score is the sum of the two smallest available neighbor degrees. Five buckets hold centers by score, and the lowest bucket is used first. That order saves scarce neighbors for later groups.
+4. Sixteen variants combine bucket order, stack order, and shuffled order. The largest result meets the 25 percent bound on the generated families.
 
-- x is the first available neighbor of v.
-- v is the center and knows x and y.
-- y is the second available neighbor of v.
+The table explains the score and the outputs.
 
-A center score is the sum of its two smallest remaining neighbor degrees. Five buckets hold centers by score.
-The program takes centers from the lowest bucket first. That order saves low-degree neighbors for later groups.
-Four bucket variants use different scan directions and neighbor choices. Four shuffled variants and eight ordered variants add more coverage.
-The largest result meets the 25% bound on the generated families. A K4 leaves one scientist out of four, so 25% is tight.
+| Term | Meaning |
+| --- | --- |
+| `remainingDegree` | available acquaintances of a scientist |
+| `centerScore` | sum of the two smallest neighbor degrees |
+| `bucketCount` | five score classes for centers |
+| `available` | marks scientists not yet assigned |
+| `bestCount` | largest group count across variants |
 
-The example below comes from the gen.py example mode on the sample graph.
+A complete graph on four vertices leaves one scientist idle, so 25 percent is tight.
+
+The generator prints this trace for the sample graph.
 
 ```
 center 1: neighbors 2, 3 -> group 2 1 3
@@ -50,9 +83,11 @@ center 4: neighbors 6, 8 -> group 6 4 8
 assigned 6 of 8; uncovered 25%
 ```
 
+Both centers know their two ends, so each group has a valid leader.
+
 ## Code
 
-The program reads all input into one string. The scanner walks digits with a byte position. Output waits in a buffer until it reaches the flush size.
+**Input setup.** Constants, bulk input, the scanner, and the random source set up the run.
 
 ```nim
 {.define: release.}
@@ -96,9 +131,9 @@ proc nextRandom(): uint32 =
   return rngState
 ```
 
-The read loop runs until input ends. The scanner stops at the first non-digit. The buffer avoids a write per number. Its name avoids a Nim keyword.
+The read loop runs until input ends. The scanner stops at the first non-digit. The buffer avoids a write per number, and its name avoids a Nim keyword.
 
-The helpers compare neighbors and compute center scores. A score uses the two smallest available neighbor degrees. The bucket push writes into a reserved slice of one array.
+**Scoring helpers.** The helpers compare neighbors and score centers.
 
 ```nim
 proc pickBetter(candidate: int, current: int, degrees: seq[int], preferMax: bool,
@@ -144,12 +179,11 @@ proc pushBucket(slot: int, scientist: int, capacity: int, store: var seq[int],
                 lengths: var array[bucketCount, int]) =
   store[slot * capacity + lengths[slot]] = scientist
   lengths[slot] += 1
-
 ```
 
-The score returns -1 when a scientist has fewer than two available neighbors. Scores are clamped to the five buckets. A push costs constant time.
+The score returns minus one when fewer than two neighbors remain. Scores are clamped to five buckets. A push costs constant time.
 
-The packing procedure runs one variant. Bucket variants take the lowest available score. Ordered variants pop a stack. Shuffled variants pick random neighbors.
+**One packing variant.** One variant packs groups until no center remains.
 
 ```nim
 proc runPacking(variant: int, caseIndex: int, scientistCount: int,
@@ -329,12 +363,11 @@ proc runPacking(variant: int, caseIndex: int, scientistCount: int,
       removedIndex += 1
 
   return groupCount
-
 ```
 
-The loop ends when every bucket or stack is empty. Stale bucket entries are skipped or repushed. One pass costs O(n+m) for n scientists and m pairs.
+The loop ends when every bucket or stack is empty. Stale entries are skipped or repushed. One pass costs `O(n + m)` for `n` scientists and `m` pairs.
 
-The main loop builds adjacency for each case. All sixteen variants reuse those arrays. The best group list is copied only after an improvement.
+**Case driver.** The main loop builds adjacency and tries every variant.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -417,18 +450,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The case loop runs t times. The variant loop runs sixteen times. Input numbers become zero-based at read time. Output goes to one block-flushed buffer.
+The case loop runs `t` times and the variant loop sixteen times. Input numbers become zero-based at read time. Output goes to one block-flushed buffer.
 
 ## Complexity
 
-The table lists the cost of each phase.
+Costs by phase are linear in the graph size.
 
 | Phase | Time per case | Space per case |
 | --- | --- | --- |
 | Input | O(input bytes) | O(input bytes) |
-| Graph build | O(n+m) | O(n+m) |
-| Packing | 16 × O(n+m) | O(n+m) |
-| Output | O(k) | O(flush block) |
+| Graph build | O(n + m) | O(n + m) |
+| Packing | 16 · O(n + m) | O(n + m) |
+| Output | O(k) | one flush block |
 
-Packing dominates the time bound. The total time is linear in the input size, and total space is linear in the largest case.
-Trying every triple costs O(n³) per case and cannot handle n = 20000.
+Packing dominates the time bound. Total space is linear in the largest case.
+
+The totals use scientists, pairs, and groups.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(t · (n + m)) |
+| Space | O(n + m) per case |
+
+Trying every triple costs `O(n^3)` per case and cannot handle 20000 scientists.

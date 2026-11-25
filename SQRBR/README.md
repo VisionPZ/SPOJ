@@ -1,38 +1,98 @@
+# SQRBR — Square Brackets (SPOJ)
+
+<https://www.spoj.com/problems/SQRBR/>
+
 ## Problem
 
-Read several data sets. Each gives a number `n`, a count `k`, and `k` positions in a bracket string of length `2n`. Count the proper bracket expressions whose opening brackets include all `k` given positions. Print one count per data set.
+A theater usher checks rows of brackets before a show. Some seats must hold an opening bracket, and the rest may hold either kind. The usher counts the rows that are properly matched and honor every reserved seat.
 
-| Quantity | Bound |
+Input: the first line gives `d` data sets. Each data set has a line with `n` and `k`, then a line with `k` increasing positions. Output: one integer per data set, the count of proper expressions of length `2n` that open at all `k` positions.
+
+The statement gives these bounds:
+
+| Item | Bound |
 | --- | --- |
 | Data sets `d` | 1 to 10 |
 | Pairs `n` | 1 to 19 |
 | Fixed positions `k` | 1 to `n` |
-| Time limit | 3000 ms |
-| Memory limit | 1536 MB |
+| Judge limit | 3000 ms, 1536 MB |
 
-A proper expression never has more closing brackets than opening brackets in any prefix, and ends with equal counts.
+The pair count caps the table at twenty balances.
+
+The sample input and output:
+
+```
+5
+1 1
+1
+1 1
+2
+2 1
+1
+3 1
+2
+4 2
+5 7
+```
+
+```
+1
+0
+2
+3
+2
+```
 
 ## Idea
 
-Sweep the string from left to right while tracking the current balance. At each position try a closing bracket when the balance is positive and an opening bracket when fewer than `n` are open. Positions named in the input allow only an opening bracket. Add the number of ways reaching each balance in a second table.
+Walk the row left to right and keep one tally per current balance. Think of a tightrope walker who steps up or down but never goes below the ground.
 
-Each of the `2n` positions updates at most `n + 1` balances, so the cost per data set is O(n²). Enumerating all bracket strings would cost O(4ⁿ).
+This is dynamic programming over positions and balance. Each of the `2n` positions updates `n + 1` balances, so the cost is `O(n²)` per data set. Listing every bracket string costs `O(4ⁿ)` and stalls at `n = 19`.
+
+Counting partial walks collapses a huge list into a small table of balances.
 
 ## Why It Works
 
-A prefix balance records how many more openings than closings have appeared. A closing bracket is legal only when that balance is positive. An opening bracket is legal only when fewer than `n` openings have been used, so the total cannot exceed `n`. Reaching balance zero after `2n` positions means the expression is proper.
+Four facts justify the update rule.
 
-The update rule is:
+1. The balance is openings minus closings in the prefix so far.
+2. A closing bracket is legal only when the balance is positive. An opening bracket is legal only when fewer than `n` openings have been placed.
+3. At a fixed position, the closing branch is skipped. Every counted row therefore opens there.
+4. After `2n` positions, a balance of zero means all brackets match. The zero entry of the final table is the answer.
 
-- if `balance > 0`, add `ways[balance]` to `nextWays[balance − 1]`
-- if `balance < n`, add `ways[balance]` to `nextWays[balance + 1]`
-- at a fixed position, skip the closing branch
+The terms used by the update:
 
-The sample data set `n = 4`, fixed positions 5 and 7 has two valid expressions. The final table reports the count at balance zero.
+| Term | Meaning |
+| --- | --- |
+| `mustOpen[k]` | true when position `k` is reserved |
+| `ways[balance]` | rows reaching `balance` before this position |
+| `nextWays[balance - 1]` | rows that placed a closing bracket on this step |
+| `nextWays[balance + 1]` | rows that placed an opening bracket on this step |
+| `ways[0]` | rows that end with all brackets matched |
+
+Copying `nextWays` into `ways` keeps only the current column of the table.
+
+A script trace for `n = 4` with reserved positions 5 and 7:
+
+```
+| position | fixed | balance counts 0..4 |
+| --- | --- | --- |
+| 1 | no | [0, 1, 0, 0, 0] |
+| 2 | no | [1, 0, 1, 0, 0] |
+| 3 | no | [0, 2, 0, 1, 0] |
+| 4 | no | [2, 0, 3, 0, 1] |
+| 5 | yes | [0, 2, 0, 3, 0] |
+| 6 | no | [2, 0, 5, 0, 3] |
+| 7 | yes | [0, 2, 0, 5, 0] |
+| 8 | no | [2, 0, 7, 0, 5] |
+answer ways[0] = 2
+```
+
+Reserved positions push every row up one balance. The last row leaves two matched rows.
 
 ## Code
 
-Input is read once and parsed with a digit scanner.
+**Input and scanner.** One buffer holds the data set, and a digit scanner walks it.
 
 ```nim
 const firstDigitValue = 48
@@ -56,9 +116,11 @@ proc nextInt(data: string, i: var int): int =
   return value
 ```
 
-Every input number is positive, so the scanner needs no sign branch. Parsing one number visits each digit once.
+Every input number is positive, so the scanner needs no sign branch.
+Reading into one string avoids a read call per line.
+Parsing one integer visits each digit once.
 
-The driver marks fixed positions and runs the balance DP.
+**Buffered output.** One string collects the answers and flushes in blocks.
 
 ```nim
 var outputBuffer = ""
@@ -68,7 +130,15 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+The block size is 256 KiB.
+`setLen 0` reuses the allocation instead of creating a new string.
+Each data set adds one line.
+
+**Balance sweep.** The driver swaps two tally rows at every position.
+
+```nim
 let dataSetCount = nextInt(inputData, i)
 for j in 0..<dataSetCount:
   let pairCount = nextInt(inputData, i)
@@ -97,8 +167,29 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The `mustOpen` array is indexed by one-based position, matching the statement. Each balance contributes to at most two entries of the next row. The answer is the count at balance zero. Output is written in blocks, not once per data set.
+`mustOpen` has `2 * pairCount + 1` slots, so index `2n` is valid.
+The inner loop spans balances `0..pairCount`, which is `n + 1` entries.
+The answer is `ways[0]` after the last position.
 
 ## Complexity
 
-Marking fixed positions costs O(k). The balance table costs O(n²) time and O(n) space per data set. Output costs O(1) per data set. Total time is O(n² + k) per data set and total space is O(n) plus the input buffer. Enumerating all strings would cost O(4ⁿ).
+The program performs one sweep of `2n` positions with a small balance table.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Fixed position marks | O(k) | O(n) for `mustOpen` |
+| Balance sweep | O(n²) per data set | O(n) for two tally rows |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per data set | O(n²) | O(n) |
+
+At `n = 19` the sweep visits about 720 balance cells.
+
+The asymptotic bounds follow from the table:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n²) per data set, O(d × n²) overall |
+| Space | O(n) per data set, plus buffers |
+
+Enumerating all `2^(2n)` bracket strings grows far faster than the quadratic sweep.

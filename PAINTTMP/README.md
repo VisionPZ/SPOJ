@@ -1,58 +1,85 @@
+# PAINTTMP — Paint Templates (SPOJ)
+<https://www.spoj.com/problems/PAINTTMP/>
+
 ## Problem
 
-Read a test count. Each case gives a matrix size n, a right shift x, and an up shift y.
+A studio stamps two fractal templates onto canvas and paints every hole that lines up. The count grows fast with the template size.
 
-A matrix of size n has 2^n rows and 2^n columns with a fractal pattern of holes. Two copies overlap after the shift. Print the number of cells where both copies have a hole.
+The input starts with the case count. Each case gives matrix size `n` and two shifts `x` and `y`. Print the number of yellow stains.
 
-The bounds are:
+The judge bounds are:
 
-| Quantity | Bound |
+| Item | Bound |
 | --- | --- |
-| Matrix size n | 0 to 100 |
-| Right shift x | 0 to 2^n |
-| Up shift y | 0 to 2^n |
-| Time limit | 3000 ms |
-| Memory limit | 1536 MB |
+| Cases | separated by blank lines |
+| Matrix size `n` | 0 to 100 |
+| Shifts `x`, `y` | 0 to 2^n |
+| Judge time | 3000 ms |
+| Memory | 1536 MB |
+| Source size | 50000 B |
 
-The grid is far too large to build, so the answer must come from the bits of x and y.
+The answer can reach 3^100, so it needs big integers.
+
+Sample input and output:
+
+Input:
+
+```
+1
+2
+2
+2
+```
+
+Output:
+
+```
+3
+```
 
 ## Idea
 
-A cell (r,c) is a hole when the bitwise OR of r and c sets all n bits. A digit DP, a scan over bits with a small state, applies that rule to both copies at once. It passes the carry of r+y and the borrow of c-x from the low bit to the high bit.
+Decide the hole pattern one bit at a time. Think of stamping two lace doilies and checking their holes row by row.
 
-The count reaches 3^n, since each of the n bits has three choices, so the program adds big integers held in eight limbs.
+The program runs a digit dynamic program (state-by-state counting) over the `n` bits of each coordinate. A state holds a carry and a borrow from binary arithmetic. Four states cover every choice. Counts use big integers held in base-10^9 limbs (fixed-size digit blocks). Listing all 2^n cells would be impossible at `n = 100`.
 
-Cost per bit: four states, three hole pairs, and one big-integer addition for each live state.
+Takeaway: bitwise structure replaces a huge grid.
 
 ## Why It Works
 
-Each matrix of size n splits into four squares. The top-left square has no holes. The other three squares are copies of size n-1.
+The fractal hole rule depends only on coordinate bits.
 
-A hole (r,c) in the lower copy meets a hole (r+y, c-x) in the upper copy. Both bit rules then hold: r OR c sets all n bits, and (r+y) OR (c-x) sets all n bits.
+1. A cell is a hole when its column index is a submask (bitwise subset) of its row index.
+2. Shifting the upper template adds `x` to columns and `y` to rows.
+3. Each bit then produces a sum bit and a difference bit.
+4. `carryIn` and `borrowIn` carry those effects to the next bit.
+5. A state with both prime bits zero cannot form a hole pair and is dropped.
 
-The update at bit i is:
+The terms are:
 
-- Lower hole: r_i OR c_i = 1 for every bit i.
-- Added row: r'_i = (r_i + y_i + carryIn) mod 2, with carryOut = (r_i + y_i + carryIn) div 2.
-- Subtracted column: c'_i = c_i - x_i - borrowIn, plus 2 and borrowOut = 1 when the result is negative.
-- Upper hole: r'_i OR c'_i = 1 for every bit i.
-- Valid end: carryOut = 0 and borrowOut = 0 after the last bit.
-
-A shift of 2^n pushes a copy off the grid, so it gives zero.
-
-gen.py enumerates the nine holes of size 2 and lists the agreements:
-
-| Lower cell | Upper cell |
+| Term | Meaning |
 | --- | --- |
-| (0,3) | (2,1) |
-| (1,2) | (3,0) |
-| (1,3) | (3,1) |
+| `Big` | Integer stored in base-10^9 limbs |
+| `carryIn` | Carry from the previous bit |
+| `borrowIn` | Borrow from the previous bit |
+| `dp` | Counts for the four bit states |
 
-Three cells agree, which matches the sample output.
+Eight limbs hold the largest answer.
+
+A script enumerated holes for small sizes:
+
+| Size | Holes | Shift (0, 0) | Shift (2, 2) |
+| --- | --- | --- | --- |
+| 0 | 1 | 1 | 0 |
+| 1 | 3 | 3 | 0 |
+| 2 | 9 | 9 | 3 |
+| 3 | 27 | 27 | 12 |
+
+The sample case gives three stains.
 
 ## Code
 
-The big integer stores base-10^9 limbs and adds them with a carry:
+**Big integer type and constants.**
 
 ```nim
 const firstDigitValue = 48
@@ -65,7 +92,13 @@ const flushBlockBytes = 1 shl 18
 type Big = object
   limb: array[0..limbCapacity-1, int]
   used: int
+```
 
+A limb stores nine decimal digits. Eight limbs cover the maximum count. Four states cover carry and borrow.
+
+**Big addition and number scan.**
+
+```nim
 proc bigAdd(dst: var Big, src: Big) =
   if src.used == 0: return
   var carry = 0
@@ -84,9 +117,9 @@ proc bigAdd(dst: var Big, src: Big) =
   if k > dst.used: dst.used = k
 ```
 
-The loop ends when the source limbs and the carry are both done. The used field keeps stale limbs out of each sum. One addition touches at most eight limbs.
+`bigAdd` adds one big value into another with a carry. `scanNumber` converts decimal text into limbs.
 
-The scanner reads decimal tokens, and the divider turns them into bits:
+**Bit extraction.**
 
 ```nim
 proc scanNumber(data: string, position: var int): seq[int] =
@@ -119,9 +152,9 @@ proc numberBits(limbs: seq[int], bitTotal: int): seq[int] =
     result[i] = remainder
 ```
 
-scanNumber parses a token into base-10^9 limbs. Shifts reach 2^100, so a plain integer would overflow. numberBits halves the limbs once per bit, which costs O(n) work per shift.
+`numberBits` halves a big value repeatedly and records each remainder. The top bit detects an impossible shift.
 
-The program reads all of stdin before the loops and reuses both state arrays:
+**Input and formatting helpers.**
 
 ```nim
 var inputData = ""
@@ -137,13 +170,7 @@ var dp: array[0..stateCount-1, Big]
 var nextDp: array[0..stateCount-1, Big]
 var outputBuffer = ""
 var answerLine = ""
-```
 
-The read loop runs once per line and fills a single buffer. The scanner then walks that buffer once. Both state arrays survive every case.
-
-The printer writes limbs as decimal digits and flushes in blocks:
-
-```nim
 proc appendBig(dst: var string, value: Big) =
   if value.used == 0:
     dst.add '0'
@@ -165,11 +192,12 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+
 ```
 
-appendBig prints the top limb without padding and each lower limb with nine digits. Its loop bound is the used limb count. appendOutput flushes once per 256 KiB block.
+The program joins input lines into one buffer. `appendBig` writes limbs from high to low with zero padding.
 
-The main loop scans the bits and counts the agreements:
+**Bit dynamic program.**
 
 ```nim
 for caseIndex in 0..<caseCount:
@@ -221,14 +249,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The case loop runs once per case and the bit loop runs n times. The state loop visits four carry and borrow pairs, and the inner loop visits three hole pairs.
-
-Skipping zero states avoids needless additions. The final write flushes the remaining bytes.
+Each case expands the count across `matrixSize` bits. Three choices update each state. The final state zero holds the answer.
 
 ## Complexity
 
-Input parsing reads each token once and converts each shift to bits in O(n) time. Each case runs 4n transitions and at most 12 big-integer additions.
+Bits and limbs set the cost.
 
-A big integer holds eight limbs, so one case costs O(n) time and O(1) space. Total time is O(t*n) for t cases, and total space is O(1) besides the input and output buffers.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input | O(Total digits) | O(Input size) |
+| Bit conversion | O(n * limbs) | O(n) |
+| Digit DP | O(n * 4 * 3 * limbs) | O(4 * limbs) |
+| Output | O(limbs) per case | O(1) |
 
-The naive form builds 3^n holes and tests each one, which costs O(3^n) time and cannot run at n=100.
+The limb count stays at eight or fewer.
+
+| Measure | Bound |
+| --- | --- |
+| Time | O(n) per case with a fixed limb count |
+| Space | O(n + limbs) |
+
+One hundred bits take a few hundred operations.
+
+Enumerating 2^n template cells would be impossible for large sizes.

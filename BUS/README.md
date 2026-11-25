@@ -1,36 +1,76 @@
+# BUS — Bus (SPOJ)
+<https://www.spoj.com/problems/BUS/>
+
 ## Problem
 
-Read a sequence of bus networks from one input stream. Each bus follows a fixed circular list of stations and takes one minute per hop. Drivers share every piece of news when they meet at a station, including at minute zero when their start stations match. Print the minute when all drivers know all news, or print NEVER when that never happens.
+Bus drivers in Buscelona chat whenever they meet at a stop. Each driver starts with news that only he knows. Find the minute when every driver knows all news, or print NEVER.
+
+Input holds many networks separated by blank lines. Each network starts with a bus count n, and n is zero at the end. Each following line gives a stop count s and then s station numbers, starting from the first station. Output one time in minutes or the word NEVER per network.
 
 The bounds and judge limits are:
 
 | Quantity | Bound |
 | --- | --- |
-| Bus lines in one case | 1 to 49 |
-| Stops on one line | 1 to 49 |
-| Test cases | until a line holds 0 |
+| Bus lines per case | 1 to 49 |
+| Stops per line | 1 to 49 |
+| Test cases | until the count is zero |
 | Time limit | 7000 ms |
 | Memory limit | 1536 MB |
 
-Both counts stay small, so a pairwise scan fits the time limit.
+Both counts stay small, so a pairwise scan fits the limit.
+
+The sample input and output:
+
+```
+3
+3 1 2 3
+3 2 3 1
+4 2 3 4 5
+
+2
+2 1 2
+2 5 8
+0
+```
+
+```
+12
+NEVER
+```
+
+The first network needs 12 minutes; the second has no shared station.
 
 ## Idea
 
-Model a meeting as a channel that passes news instantly in both directions. For each bus pair, list the meeting minutes inside their least common multiple (the first shared return to both start stations). Simulating every minute of the whole network takes far longer, so we propagate one source's earliest arrival minute across the bus pairs.
+Treat a meeting as a channel that passes news both ways. For each bus pair, list the meeting minutes inside one least common multiple of the route lengths. That period is the first time both buses return to their start stations. Then propagate the earliest news arrival across the pairs. Think of passing a rumor along a chain of friends: the first time each friend hears it is all that matters.
 
-Each bus pair costs at most 2352 minute checks, and each propagation step costs one binary search.
+Each pair checks at most 2401 minutes, and each propagation step costs one binary search. Simulating every minute of the whole network would run far longer.
+
+Takeaway: precompute pair meetings, then spread earliest arrival times.
 
 ## Why It Works
 
-A bus stands at station route[t mod s] at minute t, where s is its stop count. A pair repeats its meetings every l minutes, where l is the least common multiple of the two stop counts. If the pair never meets inside one period of length l, the pair never exchanges news.
+1. A bus stands at station route[t mod s] at minute t, where s is its stop count.
+2. A pair repeats its meetings every l minutes, the least common multiple of the two stop counts.
+3. A pair with no meeting in one period never exchanges news.
+4. The earliest arrival at a bus is enough, since a later arrival cannot help that bus inform others.
+5. `nextMeetingTime` uses binary search to find the first meeting at or after the current minute.
+6. A shortest chain visits each bus at most once, so at most n - 1 hops are needed.
 
-News travels along a chain of meetings. The earliest arrival at a bus is enough, since a later arrival cannot help that bus inform others. A shortest chain visits each bus once at most, so at most busCount - 1 hops are needed.
+The propagation uses these terms.
 
-The next meeting after minute t uses withinPeriod = t mod periodLength. A meeting time at or after withinPeriod occurs at t - withinPeriod plus that meeting time. Otherwise it occurs in the next cycle, at t - withinPeriod plus periodLength plus the first meeting time.
+| Term | Meaning |
+| --- | --- |
+| `periodLength` | least common multiple of two route lengths |
+| `meetingTimes` | sorted minutes inside one period |
+| `arrivalTimes[j][k]` | earliest minute bus j learns bus k's news |
+| `infiniteTime` | stand-in for a bus not yet informed |
+
+The largest arrival is the answer; infinity becomes NEVER.
 
 The sample network gives these meeting lists:
 
-| Bus pair | Combined cycle | Meeting minutes in one cycle |
+| Bus pair | Cycle | Meeting minutes |
 | --- | --- | --- |
 | 0 and 1 | 3 | none |
 | 0 and 2 | 12 | 4, 5 |
@@ -38,21 +78,10 @@ The sample network gives these meeting lists:
 
 Bus 0 meets bus 2 at minute 4, and bus 1 hears that news at minute 12.
 
-The resulting arrival minutes are:
-
-| Source | Bus 0 | Bus 1 | Bus 2 |
-| --- | --- | --- | --- |
-| 0 | 0 | 12 | 4 |
-| 1 | 4 | 0 | 0 |
-| 2 | 4 | 0 | 0 |
-
-The largest entry is 12, which is the sample answer.
-
 ## Code
 
-The scanner advances one index over one input buffer, which avoids per-line reads. The divisor loop ends after O(log stopCount) steps. Cost is linear in input digits plus pairs.
-
-```
+**Constants, types, and helpers.**
+```nim
 const infiniteTime = 1000000000
 const flushBlockBytes = 1 shl 17
 
@@ -79,11 +108,7 @@ proc greatestCommonDivisor(firstValue, secondValue: int): int =
     leftValue = rightValue
     rightValue = remainder
   return leftValue
-```
 
-Binary search keeps each lookup at O(log meetingTimes.len). The last line wraps into the next cycle when no meeting remains. Cost is one lookup per propagation step.
-
-```
 proc nextMeetingTime(meetingTimes: seq[int], periodLength, currentTime: int): int =
   let withinPeriod = currentTime mod periodLength
   var i = 0
@@ -98,10 +123,10 @@ proc nextMeetingTime(meetingTimes: seq[int], periodLength, currentTime: int): in
     return currentTime - withinPeriod + meetingTimes[i]
   return currentTime - withinPeriod + periodLength + meetingTimes[0]
 ```
+`BusPair` stores two bus indices, a period, and meeting minutes. `greatestCommonDivisor` supplies the least common multiple. `nextMeetingTime` binary searches the first meeting at or after a minute.
 
-Route reading ends after stopCount tokens. The pair loop visits each unordered pair once. The minute loop runs exactly periodLength times, which is at most 2352. Empty meeting lists stay out of pairList.
-
-```
+**Input and routes.**
+```nim
 var inputData: string
 var inputLine: string
 while readLine(stdin, inputLine):
@@ -121,6 +146,11 @@ while true:
     for k in 0 .. stopCount - 1:
       route.add nextInt(inputData, i)
     routes.add route
+```
+The buffer gathers lines, and `nextInt` walks digits. Each network reads its bus count and routes; count zero ends the run.
+
+**Pair meetings and propagation.**
+```nim
   var pairList: seq[BusPair] = @[]
   for j in 0 .. busCount - 1:
     for k in j + 1 .. busCount - 1:
@@ -135,11 +165,6 @@ while true:
       if meetingTimes.len > 0:
         pairList.add BusPair(firstBus: j, secondBus: k,
                              periodLength: periodLength, meetingTimes: meetingTimes)
-```
-
-The propagation loop runs busCount + 1 times at most and stops early when nothing changes. The guards skip buses that have not learned the source yet. One final pass prints the largest arrival or NEVER. Output flushes every flushBlockBytes bytes.
-
-```
   var arrivalTimes = newSeq[seq[int]](busCount)
   for j in 0 .. busCount - 1:
     arrivalTimes[j] = newSeq[int](busCount)
@@ -167,6 +192,11 @@ The propagation loop runs busCount + 1 times at most and stops early when nothin
             arrivalTimes[rightBus][k] = candidate
             changed = true
     if not changed: break
+```
+The code builds one `BusPair` per pair with a shared station. `arrivalTimes` starts at zero on the diagonal and infinity elsewhere. Repeated relaxation spreads news until a full pass changes nothing.
+
+**Answer and output.**
+```nim
   var latestArrival = 0
   for j in 0 .. busCount - 1:
     for k in 0 .. busCount - 1:
@@ -182,18 +212,24 @@ The propagation loop runs busCount + 1 times at most and stops early when nothin
     outputBuffer.setLen 0
 stdout.write outputBuffer
 ```
+The largest arrival becomes the answer, or NEVER when it stays at infinity. The buffer flushes at the block boundary.
 
 ## Complexity
 
-The table gives the cost of each phase, with n for busCount and L for the largest pair cycle:
+Bus and stop counts are both below 50.
 
-| Phase | Time | Extra space |
+| Phase | Time | Space |
 | --- | --- | --- |
-| Input and routes | O(total stops) | O(total stops) |
-| Meeting lists | O(n^2 L) | O(n^2 L) worst case |
-| Propagation | O(n^4 log L) | O(n^2) |
-| Output | O(number of cases) | O(flush block) |
+| Input scan | one pass over input bytes | input bytes |
+| Pair meeting lists | O(n squared times lcm) | O(n squared) |
+| Propagation | O(n cubed) worst case | n squared integers |
+| Output | one write per block | flushBlockBytes |
 
-The meeting lists and propagation dominate, and both stay small for n at most 49.
+The least common multiple stays at most 2401, so list building is cheap.
 
-Total time is O(n^2 L + n^4 log L + input + output), and total space is O(n^2 L + n^2). A minute-by-minute simulation walks the whole network cycle, which can be much larger than these bounds.
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(n cubed plus n squared times lcm) |
+| Space per case | O(n squared) |
+
+Simulating every minute up to the answer could run for thousands of steps, while meeting lists jump straight to the next exchange.

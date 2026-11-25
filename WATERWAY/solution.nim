@@ -37,49 +37,49 @@ proc appendOutput(text: string) =
 
 type SegmentTree = object
   size: int
-  mx: seq[int64]
-  lz: seq[int64]
+  maxVal: seq[int64]
+  lazyAdd: seq[int64]
 
 proc initTree(values: seq[int64]): SegmentTree =
   var size = 1
   while size < values.len: size = size shl 1
   result.size = size
-  result.mx = newSeq[int64](size shl 1)
-  result.lz = newSeq[int64](size shl 1)
-  for i in 0..<size shl 1: result.mx[i] = negInf
-  for i in 0..<values.len: result.mx[size + i] = values[i]
-  for i in countdown(size - 1, 1):
-    result.mx[i] = max(result.mx[i shl 1], result.mx[i shl 1 + 1])
+  result.maxVal = newSeq[int64](size shl 1)
+  result.lazyAdd = newSeq[int64](size shl 1)
+  for idx in 0..<size shl 1: result.maxVal[idx] = negInf
+  for idx in 0..<values.len: result.maxVal[size + idx] = values[idx]
+  for idx in countdown(size - 1, 1):
+    result.maxVal[idx] = max(result.maxVal[idx shl 1], result.maxVal[idx shl 1 + 1])
 
 proc apply(tree: var SegmentTree, node: int, value: int64) =
-  tree.mx[node] += value
-  tree.lz[node] += value
+  tree.maxVal[node] += value
+  tree.lazyAdd[node] += value
 
 proc push(tree: var SegmentTree, node: int) =
-  let value = tree.lz[node]
+  let value = tree.lazyAdd[node]
   if value != 0:
     tree.apply(node shl 1, value)
     tree.apply(node shl 1 + 1, value)
-    tree.lz[node] = 0
+    tree.lazyAdd[node] = 0
 
-proc rangeAdd(tree: var SegmentTree, node, left, right, ql, qr: int, value: int64) =
-  if qr < left or right < ql: return
-  if ql <= left and right <= qr:
+proc rangeAdd(tree: var SegmentTree, node, left, right, queryLeft, queryRight: int, value: int64) =
+  if queryRight < left or right < queryLeft: return
+  if queryLeft <= left and right <= queryRight:
     tree.apply(node, value)
     return
   tree.push(node)
   let mid = (left + right) shr 1
-  tree.rangeAdd(node shl 1, left, mid, ql, qr, value)
-  tree.rangeAdd(node shl 1 + 1, mid + 1, right, ql, qr, value)
-  tree.mx[node] = max(tree.mx[node shl 1], tree.mx[node shl 1 + 1])
+  tree.rangeAdd(node shl 1, left, mid, queryLeft, queryRight, value)
+  tree.rangeAdd(node shl 1 + 1, mid + 1, right, queryLeft, queryRight, value)
+  tree.maxVal[node] = max(tree.maxVal[node shl 1], tree.maxVal[node shl 1 + 1])
 
-proc rangeMax(tree: var SegmentTree, node, left, right, ql, qr: int): int64 =
-  if qr < left or right < ql: return negInf
-  if ql <= left and right <= qr: return tree.mx[node]
+proc rangeMax(tree: var SegmentTree, node, left, right, queryLeft, queryRight: int): int64 =
+  if queryRight < left or right < queryLeft: return negInf
+  if queryLeft <= left and right <= queryRight: return tree.maxVal[node]
   tree.push(node)
   let mid = (left + right) shr 1
-  return max(tree.rangeMax(node shl 1, left, mid, ql, qr),
-             tree.rangeMax(node shl 1 + 1, mid + 1, right, ql, qr))
+  return max(tree.rangeMax(node shl 1, left, mid, queryLeft, queryRight),
+             tree.rangeMax(node shl 1 + 1, mid + 1, right, queryLeft, queryRight))
 
 proc addLinear(array0, array1: var seq[int64], left, right: int, coef0, coef1: int64) =
   if left > right or left < 0 or right >= array0.len - 2: return
@@ -88,226 +88,223 @@ proc addLinear(array0, array1: var seq[int64], left, right: int, coef0, coef1: i
   array0[right + 1] -= coef0
   array1[right + 1] -= coef1
 
-proc solveCase(text: openArray[char], start: int, n: int): int64 =
+proc solveCase(text: openArray[char], start: int, cityCount: int): int64 =
   var countA = 0
   var countC = 0
-  for k in 0..<n:
-    if text[start + k] == 'A': countA += 1
-    elif text[start + k] == 'C': countC += 1
+  for idx in 0..<cityCount:
+    if text[start + idx] == 'A': countA += 1
+    elif text[start + idx] == 'C': countC += 1
   if countA == 0 and countC == 0:
-    return int64(n) * int64(n) div 4
+    return int64(cityCount) * int64(cityCount) div 4
   if countA == 0 or countC == 0:
     var runLengths = newSeq[int]()
     var currentRun = 0
-    for k in 0..<n:
-      if text[start + k] == 'B':
+    for idx in 0..<cityCount:
+      if text[start + idx] == 'B':
         currentRun += 1
       elif currentRun > 0:
         runLengths.add currentRun
         currentRun = 0
     if currentRun > 0:
-      if runLengths.len > 0 and text[start] == 'B' and text[start + n - 1] == 'B':
+      if runLengths.len > 0 and text[start] == 'B' and text[start + cityCount - 1] == 'B':
         runLengths[0] += currentRun
       else:
         runLengths.add currentRun
     if runLengths.len == 0:
-      return int64(n) * int64(n - 1) div 2
+      return int64(cityCount) * int64(cityCount - 1) div 2
     var pairTotal = 0'i64
     var bestBalance = 0'i64
     var capacities = newSeq[int64](runLengths.len)
-    for k in 0..<runLengths.len:
-      let len = int64(runLengths[k])
-      pairTotal += len * (len + 1) div 2
-      capacities[k] = (len + 1) * (len + 1) div 4
+    for runIdx in 0..<runLengths.len:
+      let runLen = int64(runLengths[runIdx])
+      pairTotal += runLen * (runLen + 1) div 2
+      capacities[runIdx] = (runLen + 1) * (runLen + 1) div 4
     for runIndex in 0..<runLengths.len:
       var outside = -1'i64
       for other in 0..<runLengths.len:
         if other != runIndex: outside = max(outside, capacities[other])
-      let len = int64(runLengths[runIndex])
+      let runLen = int64(runLengths[runIndex])
       for take in 1..runLengths[runIndex]:
-        let tk = int64(take)
-        let base = tk * (len - tk + 1)
+        let takeVal = int64(take)
+        let base = takeVal * (runLen - takeVal + 1)
         if outside >= 0: bestBalance = max(bestBalance, base + outside)
-        bestBalance = max(bestBalance, tk * tk div 4 + base)
+        bestBalance = max(bestBalance, takeVal * takeVal div 4 + base)
         if take < runLengths[runIndex]:
-          var vertex = (len + 1 + tk) div 2
-          var valueAt = max(tk + 1, min(len, vertex))
-          bestBalance = max(bestBalance, valueAt * (len + 1 + tk - valueAt) - tk * tk)
+          var vertex = (runLen + 1 + takeVal) div 2
+          var valueAt = max(takeVal + 1, min(runLen, vertex))
+          bestBalance = max(bestBalance, valueAt * (runLen + 1 + takeVal - valueAt) - takeVal * takeVal)
           vertex += 1
-          valueAt = max(tk + 1, min(len, vertex))
-          bestBalance = max(bestBalance, valueAt * (len + 1 + tk - valueAt) - tk * tk)
-    return int64(n) * int64(n - 1) div 2 - pairTotal + bestBalance
+          valueAt = max(takeVal + 1, min(runLen, vertex))
+          bestBalance = max(bestBalance, valueAt * (runLen + 1 + takeVal - valueAt) - takeVal * takeVal)
+    return int64(cityCount) * int64(cityCount - 1) div 2 - pairTotal + bestBalance
 
-  var fwd = newSeq[int](n)
+  var fwdSpan = newSeq[int](cityCount)
   var run = 0
-  for p in countdown(2 * n - 1, 0):
-    if text[start + (p mod n)] == 'B' or text[start + (p mod n)] == 'C':
+  for stepIdx in countdown(2 * cityCount - 1, 0):
+    if text[start + (stepIdx mod cityCount)] == 'B' or text[start + (stepIdx mod cityCount)] == 'C':
       run += 1
     else:
       run = 0
-    if p < n and run > 0:
-      fwd[p] = min(run, n)
+    if stepIdx < cityCount and run > 0:
+      fwdSpan[stepIdx] = min(run, cityCount)
 
-  var back = newSeq[int](n)
-  for p in 0..<2 * n:
-    let u = p mod n
-    let prev = (u - 1 + n) mod n
+  var backSpan = newSeq[int](cityCount)
+  for stepIdx in 0..<2 * cityCount:
+    let pos = stepIdx mod cityCount
+    let prev = (pos - 1 + cityCount) mod cityCount
     if text[start + prev] == 'A' or text[start + prev] == 'B':
-      back[u] = min(back[prev] + 1, n)
+      backSpan[pos] = min(backSpan[prev] + 1, cityCount)
     else:
-      back[u] = 0
+      backSpan[pos] = 0
 
-  var diff0 = newSeq[int64](n + 2)
-  var diff1 = newSeq[int64](n + 2)
-  for u in 0..<n:
-    let dC = min(fwd[u], n - back[u] - 1)
-    if dC >= 1:
-      let lo = min(dC - 1, n - 1 - u)
-      addLinear(diff0, diff1, u, u + lo, int64(u + dC), -1)
-      if dC - 1 > lo:
-        addLinear(diff0, diff1, 0, dC - 1 - lo - 1, int64(u + dC - n), -1)
-    let eAhi = min(back[u], n - fwd[u] - 1)
-    if eAhi >= 1:
-      let lo = min(eAhi, u)
-      if lo >= 1:
-        addLinear(diff0, diff1, u - lo, u - 1, int64(eAhi + 1 - u), 1)
-      if eAhi > lo:
-        addLinear(diff0, diff1, n + u - eAhi, n - 1, int64(eAhi + 1 - u - n), 1)
-  var forced = newSeq[int64](n)
-  var c0 = 0'i64
-  var c1 = 0'i64
-  for p in 0..<n:
-    c0 += diff0[p]
-    c1 += diff1[p]
-    forced[p] = c0 + int64(p) * c1
+  var diff0 = newSeq[int64](cityCount + 2)
+  var diff1 = newSeq[int64](cityCount + 2)
+  for pos in 0..<cityCount:
+    let fwdLimit = min(fwdSpan[pos], cityCount - backSpan[pos] - 1)
+    if fwdLimit >= 1:
+      let directSpan = min(fwdLimit - 1, cityCount - 1 - pos)
+      addLinear(diff0, diff1, pos, pos + directSpan, int64(pos + fwdLimit), -1)
+      if fwdLimit - 1 > directSpan:
+        addLinear(diff0, diff1, 0, fwdLimit - 1 - directSpan - 1, int64(pos + fwdLimit - cityCount), -1)
+    let backLimit = min(backSpan[pos], cityCount - fwdSpan[pos] - 1)
+    if backLimit >= 1:
+      let directBack = min(backLimit, pos)
+      if directBack >= 1:
+        addLinear(diff0, diff1, pos - directBack, pos - 1, int64(backLimit + 1 - pos), 1)
+      if backLimit > directBack:
+        addLinear(diff0, diff1, cityCount + pos - backLimit, cityCount - 1, int64(backLimit + 1 - pos - cityCount), 1)
+  var forced = newSeq[int64](cityCount)
+  var constAcc = 0'i64
+  var slopeAcc = 0'i64
+  for pos in 0..<cityCount:
+    constAcc += diff0[pos]
+    slopeAcc += diff1[pos]
+    forced[pos] = constAcc + int64(pos) * slopeAcc
 
-  var diff2 = newSeq[int64](n + 2)
-  var diffA0 = newSeq[int64](n + 2)
-  var diffA1 = newSeq[int64](n + 2)
+  var diffA0 = newSeq[int64](cityCount + 2)
+  var diffA1 = newSeq[int64](cityCount + 2)
   proc addRange(base: var seq[int64], left, right: int, value: int64) =
-    if left > right or left < 0 or right >= n: return
+    if left > right or left < 0 or right >= cityCount: return
     base[left] += value
     base[right + 1] -= value
-  proc addT(u, tlo, thi: int, a, b: int64) =
-    if tlo > thi: return
-    let tl = u + tlo
-    let tr = u + thi
-    if tr < n:
-      addLinear(diffA0, diffA1, tl, tr, a, b)
-    elif tl >= n:
-      addLinear(diffA0, diffA1, tl - n, tr - n, a + b * int64(n), b)
+  proc addArcLinear(origin, offsetLow, offsetHigh: int, coef0, coef1: int64) =
+    if offsetLow > offsetHigh: return
+    let rangeLeft = origin + offsetLow
+    let rangeRight = origin + offsetHigh
+    if rangeRight < cityCount:
+      addLinear(diffA0, diffA1, rangeLeft, rangeRight, coef0, coef1)
+    elif rangeLeft >= cityCount:
+      addLinear(diffA0, diffA1, rangeLeft - cityCount, rangeRight - cityCount, coef0 + coef1 * int64(cityCount), coef1)
     else:
-      addLinear(diffA0, diffA1, tl, n - 1, a, b)
-      addLinear(diffA0, diffA1, 0, tr - n, a + b * int64(n), b)
+      addLinear(diffA0, diffA1, rangeLeft, cityCount - 1, coef0, coef1)
+      addLinear(diffA0, diffA1, 0, rangeRight - cityCount, coef0 + coef1 * int64(cityCount), coef1)
 
-  var loD = newSeq[int](n)
-  var hiD = newSeq[int](n)
-  var arcsU = newSeq[int]()
-  var arcsR = newSeq[int]()
-  for u in 0..<n:
-    let lo = max(1, n - back[u])
-    let hi = min(fwd[u], n - 1)
-    if lo <= hi:
-      loD[u] = lo
-      hiD[u] = hi
-      addT(u, 0, lo - 1, int64(hi - lo + 1), 0)
-      addT(u, lo, hi - 1, int64(hi + u), -1)
-      for d in lo..hi:
-        arcsU.add(u)
-        arcsR.add(u + d)
-  var cover = newSeq[int64](n)
-  var cur = 0'i64
-  var ca0 = 0'i64
-  var ca1 = 0'i64
-  for p in 0..<n:
-    cur += diff2[p]
-    ca0 += diffA0[p]
-    ca1 += diffA1[p]
-    cover[p] = cur + ca0 + int64(p) * ca1
-  var totalCover = newSeq[int64](n)
-  for i in 0..<n: totalCover[i] = forced[i] + cover[i]
+  var arcMinLen = newSeq[int](cityCount)
+  var arcMaxLen = newSeq[int](cityCount)
+  var arcStart = newSeq[int]()
+  var arcEnd = newSeq[int]()
+  for pos in 0..<cityCount:
+    let minLen = max(1, cityCount - backSpan[pos])
+    let maxLen = min(fwdSpan[pos], cityCount - 1)
+    if minLen <= maxLen:
+      arcMinLen[pos] = minLen
+      arcMaxLen[pos] = maxLen
+      addArcLinear(pos, 0, minLen - 1, int64(maxLen - minLen + 1), 0)
+      addArcLinear(pos, minLen, maxLen - 1, int64(maxLen + pos), -1)
+      for arcLen in minLen..maxLen:
+        arcStart.add(pos)
+        arcEnd.add(pos + arcLen)
+  var cover = newSeq[int64](cityCount)
+  var arcConstAcc = 0'i64
+  var arcSlopeAcc = 0'i64
+  for pos in 0..<cityCount:
+    arcConstAcc += diffA0[pos]
+    arcSlopeAcc += diffA1[pos]
+    cover[pos] = arcConstAcc + int64(pos) * arcSlopeAcc
+  var totalCover = newSeq[int64](cityCount)
+  for pos in 0..<cityCount: totalCover[pos] = forced[pos] + cover[pos]
 
-  var g1 = newSeq[int64](n)
-  if hiD[0] >= loD[0]:
-    for j in 0..<n:
-      var cnt = 0'i64
-      for d in loD[0]..hiD[0]:
-        if d > j: cnt += 1
-      g1[j] = cnt
-  var diff3 = newSeq[int64](n + 2)
-  for u in 0..<n:
-    if hiD[u] >= loD[u]:
-      let rlo = u + loD[u]
-      let rhi = u + hiD[u]
-      let cnt = max(0, rhi - max(rlo, n + 1) + 1)
-      if cnt > 0:
-        addRange(diff3, u, n - 1, int64(cnt))
-  var g2 = newSeq[int64](n)
-  cur = 0
-  for p in 0..<n:
-    cur += diff3[p]
-    g2[p] = cur
-  var endCount = newSeq[int64](2 * n + 2)
-  for idx in 0..<arcsU.len:
-    endCount[arcsR[idx]] += 1
-  var g3 = newSeq[int64](n)
-  var suff = 0'i64
-  for r in countdown(2 * n + 1, 0):
-    suff += endCount[r]
-    let idx = r - n - 1
-    if idx >= 0 and idx < n: g3[idx] = suff
+  var wrapFromZero = newSeq[int64](cityCount)
+  if arcMaxLen[0] >= arcMinLen[0]:
+    for pos in 0..<cityCount:
+      var count = 0'i64
+      for arcLen in arcMinLen[0]..arcMaxLen[0]:
+        if arcLen > pos: count += 1
+      wrapFromZero[pos] = count
+  var wrapDiff = newSeq[int64](cityCount + 2)
+  for pos in 0..<cityCount:
+    if arcMaxLen[pos] >= arcMinLen[pos]:
+      let endLow = pos + arcMinLen[pos]
+      let endHigh = pos + arcMaxLen[pos]
+      let wrapCount = max(0, endHigh - max(endLow, cityCount + 1) + 1)
+      if wrapCount > 0:
+        addRange(wrapDiff, pos, cityCount - 1, int64(wrapCount))
+  var wrapStartBefore = newSeq[int64](cityCount)
+  var runningWrap = 0'i64
+  for pos in 0..<cityCount:
+    runningWrap += wrapDiff[pos]
+    wrapStartBefore[pos] = runningWrap
+  var endCount = newSeq[int64](2 * cityCount + 2)
+  for idx in 0..<arcStart.len:
+    endCount[arcEnd[idx]] += 1
+  var wrapEndAfter = newSeq[int64](cityCount)
+  var suffixSum = 0'i64
+  for endPos in countdown(2 * cityCount + 1, 0):
+    suffixSum += endCount[endPos]
+    let idx = endPos - cityCount - 1
+    if idx >= 0 and idx < cityCount: wrapEndAfter[idx] = suffixSum
 
-  var values = newSeq[int64](n)
-  for j in 0..<n:
-    values[j] = totalCover[j] + cover[0] - 2 * g1[j] - 2 * g2[j] - 2 * g3[j]
+  var values = newSeq[int64](cityCount)
+  for pos in 0..<cityCount:
+    values[pos] = totalCover[pos] + cover[0] - 2 * wrapFromZero[pos] - 2 * wrapStartBefore[pos] - 2 * wrapEndAfter[pos]
 
-  type ArcEvent = tuple[typ, u, r: int]
-  var events = newSeq[seq[ArcEvent]](2 * n + 2)
-  for idx in 0..<arcsU.len:
-    let u = arcsU[idx]
-    let r = arcsR[idx]
-    events[u].add((0, u, r))
-    events[r].add((1, u, r))
-    if r > n: events[r - n].add((2, u, r))
+  type ArcEvent = tuple[kind, startPos, endPos: int]
+  var events = newSeq[seq[ArcEvent]](2 * cityCount + 2)
+  for idx in 0..<arcStart.len:
+    let startPos = arcStart[idx]
+    let endPos = arcEnd[idx]
+    events[startPos].add((0, startPos, endPos))
+    events[endPos].add((1, startPos, endPos))
+    if endPos > cityCount: events[endPos - cityCount].add((2, startPos, endPos))
 
   var tree = initTree(values)
   var answer = 0'i64
-  for f in 0..<n: answer = max(answer, forced[f])
-  for gpos in 0..<n:
-    if gpos > 0:
-      let mv = tree.rangeMax(1, 0, tree.size - 1, 0, gpos - 1)
-      let cand = (forced[gpos] + mv + 1) div 2
-      if cand > answer: answer = cand
-    let p = gpos + 1
-    if p < events.len:
-      for event in events[p]:
-        let typ = event.typ
-        let u = event.u
-        let r = event.r
-        let hi1 = min(n - 1, r - 1)
-        var hi2 = -1
-        if r > n: hi2 = min(n - 1, r - n - 1)
-        let compLo = if hi2 >= 0: hi2 + 1 else: 0
-        let compHi = u - 1
-        let tailLo = if r <= n: r else: n
-        if typ == 0:
-          if u <= hi1: tree.rangeAdd(1, 0, tree.size - 1, u, hi1, -1)
-          if hi2 >= 0: tree.rangeAdd(1, 0, tree.size - 1, 0, hi2, -1)
-          if compLo <= compHi and compLo < n:
-            tree.rangeAdd(1, 0, tree.size - 1, compLo, min(n - 1, compHi), 1)
-          if tailLo < n: tree.rangeAdd(1, 0, tree.size - 1, tailLo, n - 1, 1)
-        elif typ == 1:
-          if u <= hi1: tree.rangeAdd(1, 0, tree.size - 1, u, hi1, 1)
-          if hi2 >= 0: tree.rangeAdd(1, 0, tree.size - 1, 0, hi2, 1)
-          if compLo <= compHi and compLo < n:
-            tree.rangeAdd(1, 0, tree.size - 1, compLo, min(n - 1, compHi), -1)
-          if tailLo < n: tree.rangeAdd(1, 0, tree.size - 1, tailLo, n - 1, -1)
+  for pos in 0..<cityCount: answer = max(answer, forced[pos])
+  for cutPos in 0..<cityCount:
+    if cutPos > 0:
+      let maxPrev = tree.rangeMax(1, 0, tree.size - 1, 0, cutPos - 1)
+      let candidate = (forced[cutPos] + maxPrev + 1) div 2
+      if candidate > answer: answer = candidate
+    let eventPos = cutPos + 1
+    if eventPos < events.len:
+      for event in events[eventPos]:
+        let kind = event.kind
+        let startPos = event.startPos
+        let endPos = event.endPos
+        let firstHi = min(cityCount - 1, endPos - 1)
+        var wrapHi = -1
+        if endPos > cityCount: wrapHi = min(cityCount - 1, endPos - cityCount - 1)
+        let compLo = if wrapHi >= 0: wrapHi + 1 else: 0
+        let compHi = startPos - 1
+        let tailLo = if endPos <= cityCount: endPos else: cityCount
+        if kind == 0:
+          if startPos <= firstHi: tree.rangeAdd(1, 0, tree.size - 1, startPos, firstHi, -1)
+          if wrapHi >= 0: tree.rangeAdd(1, 0, tree.size - 1, 0, wrapHi, -1)
+          if compLo <= compHi and compLo < cityCount:
+            tree.rangeAdd(1, 0, tree.size - 1, compLo, min(cityCount - 1, compHi), 1)
+          if tailLo < cityCount: tree.rangeAdd(1, 0, tree.size - 1, tailLo, cityCount - 1, 1)
+        elif kind == 1:
+          if startPos <= firstHi: tree.rangeAdd(1, 0, tree.size - 1, startPos, firstHi, 1)
+          if wrapHi >= 0: tree.rangeAdd(1, 0, tree.size - 1, 0, wrapHi, 1)
+          if compLo <= compHi and compLo < cityCount:
+            tree.rangeAdd(1, 0, tree.size - 1, compLo, min(cityCount - 1, compHi), -1)
+          if tailLo < cityCount: tree.rangeAdd(1, 0, tree.size - 1, tailLo, cityCount - 1, -1)
         else:
-          let upto = r - n - 1
-          if upto >= 0 and upto < n: tree.rangeAdd(1, 0, tree.size - 1, 0, upto, 1)
-          if r - n <= u - 1 and r - n < n:
-            tree.rangeAdd(1, 0, tree.size - 1, r - n, min(n - 1, u - 1), -1)
-          if u < n: tree.rangeAdd(1, 0, tree.size - 1, u, n - 1, 1)
+          let wrapLimit = endPos - cityCount - 1
+          if wrapLimit >= 0 and wrapLimit < cityCount: tree.rangeAdd(1, 0, tree.size - 1, 0, wrapLimit, 1)
+          if endPos - cityCount <= startPos - 1 and endPos - cityCount < cityCount:
+            tree.rangeAdd(1, 0, tree.size - 1, endPos - cityCount, min(cityCount - 1, startPos - 1), -1)
+          if startPos < cityCount: tree.rangeAdd(1, 0, tree.size - 1, startPos, cityCount - 1, 1)
   return answer
 
 let caseCount = nextInt(inputData, scanPos)

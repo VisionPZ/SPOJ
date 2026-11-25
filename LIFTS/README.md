@@ -1,46 +1,92 @@
+# LIFTS — Lifts (SPOJ)
+
+<https://www.spoj.com/problems/LIFTS/>
+
 ## Problem
 
-Read t test cases. Each case gives n lifts, each with lowest height li, highest height ui, starting height si, and start direction di. Both chasm edges sit at height zero. Print the fewest whole seconds for the hero to cross, or -1 when no crossing exists.
+A hero crosses a chasm by stepping between lifts that rise and fall. Two neighboring lifts line up only at certain moments.
+
+Read `t` cases. Each case gives `n` lifts, each with a low height, a high height, a start height, and a start direction. Both chasm edges sit at height zero.
+
+Print the fewest whole seconds for the crossing, or `-1` when no crossing exists.
+
+The bounds and judge limits:
 
 | Quantity | Bound |
 | --- | --- |
-| Test cases | t, not bounded in the statement |
-| Lifts per case | n ≤ 100 |
-| Heights and start | -100 ≤ li ≤ si ≤ ui ≤ 100, and li < ui |
+| Test cases `t` | not bounded in the statement |
+| Lifts per case `n` | at most 100 |
+| Heights and start | `-100 <= li <= si <= ui <= 100`, with `li < ui` |
 | Time limit | 3000 ms |
 | Memory limit | 1536 MB |
 
 The small height range keeps every lift period short.
 
+The sample case:
+
+```
+1
+
+4
+-1 2 1 -1
+0 3 0 1
+-4 0 0 -1
+-2 1 0 -1
+
+```
+
+```
+29
+```
+
 ## Idea
 
-Work in half-metres and half-seconds so every lift height and meeting time stays a whole number. Precompute each lift's height across one period, then use the Chinese remainder theorem (CRT) to find the first shared time of two adjacent lifts. A step-by-step scan would repeat up to 160000 steps for one pair.
+Measure heights in half-metres and time in half-seconds, so every position and meeting stays a whole number.
 
-Cost per adjacent pair: O(P) time and O(P) space, with P ≤ 800.
+Think of each lift as a clock face that repeats its heights. Instead of watching every tick, compare the two clocks with the Chinese remainder theorem (CRT, a method for solving paired clock congruences). Precompute one period of heights and two residue tables per lift.
+
+Then solve for the first shared time of each adjacent pair.
+
+Each pair costs O(P) time and O(P) space, with `P <= 800`. A step-by-step scan repeats up to 160000 half-seconds for one pair. CRT jumps straight to the first meeting.
 
 ## Why It Works
 
-The two edges act as fixed platforms at height zero. Each edge gets period 1 and one residue at height zero. A lift climbs from its low point to its high point and back, so its period is 4*(ui-li) half-seconds. Its height at time t depends only on t mod P.
+Five facts prove the meeting times exact.
 
-A lift reaches any height at most twice per period. The residue tables store those two positions for each height. Two lifts meet when their heights match at the same time.
+1. Both chasm edges act as fixed platforms at height zero. Each edge gets period 1 and one residue at height zero.
+2. A lift climbs to its high point and returns, so its half-second period is `2 * (high - low)` in half-metres. The bound of 100 keeps that period at most 800.
+3. A lift reaches any height at most twice per period. `firstResidue` and `secondResidue` store both times for each height.
+4. CRT solves `t = r1 (mod P1)` and `t = r2 (mod P2)`. A solution exists when `(r1 - r2) mod g` is zero, with `g` the gcd of the two periods. Solutions repeat every `lcm(P1, P2)` half-seconds.
+5. After a meeting the hero walks 4 half-seconds across the next lift. The last step adds 2 half-seconds to reach the far edge. Dividing the final time by 2 gives whole seconds.
 
-CRT solves the pair of congruences t ≡ r1 (mod P1) and t ≡ r2 (mod P2). A solution exists when (r1 - r2) mod g equals zero, with g the gcd of the two periods. The solution repeats every lcm(P1, P2) half-seconds.
+The arrays and their roles:
 
-After a meeting the hero walks 4 half-seconds across the next lift. The final meeting adds 2 half-seconds to reach the finish. Dividing the last time by 2 gives the answer in seconds.
-
-A helper in the generator prints the trace for the sample's first pair. The table below holds that verified output.
-
-| Step | Value |
+| Term | Meaning |
 | --- | --- |
-| Edge | period 1, height 0 at every residue |
-| Lift 1 | period 12, heights 2 1 0 -1 -2 -1 0 1 2 3 4 3 |
-| Shared height 0 | residues 2 and 6 of lift 1 |
-| First common time | 2 half-seconds |
-| After 4 half-seconds | time 6 |
+| `periods` | half-second cycle length of each platform |
+| `positions` | height at each time inside one period |
+| `firstResidue` | first time a height occurs in the period |
+| `secondResidue` | second time that height occurs |
+| `inverseValue` | modular inverse used by CRT |
+| `currentTime` | earliest half-second the hero can stand ready |
 
-The first meeting happens at the edge before any waiting is needed.
+These tables let one pair search test at most two residues per height.
+
+A helper in the generator traces the sample's first pair:
+
+```
+edge: period 1, height 0 at every residue
+lift 1: period 12, heights 2 1 0 -1 -2 -1 0 1 2 3 4 3
+shared height 0: residues 2, 6 of lift 1
+first common time at or after 2: 2 half-seconds
+after 4 half-seconds of walking the hero reaches time 6
+```
+
+The first meeting happens at the edge before any waiting. Residue 2 is the first time lift 1 reaches height zero.
 
 ## Code
+
+**Setup and scanner.** One buffer holds the input, and the scanner keeps negative signs.
 
 ```nim
 const firstDigitValue = 48
@@ -71,6 +117,8 @@ proc nextInt(data: string, pos: var int): int =
 ```
 
 The read loop runs until the input ends. The scanner keeps the sign, which negative lift heights need. Parsing costs one pass over the input bytes.
+
+**Number theory helpers.** Euclid gives the gcd, and an extended run gives the modular inverse.
 
 ```nim
 proc gcdValues(aValue, bValue: int): int =
@@ -103,7 +151,9 @@ proc inverseModulo(aValue, modulus: int): int =
   return answerValue
 ```
 
-The Euclid loop ends when the remainder reaches zero. The early return handles a modulus of one, where every residue fits. Each inverse call costs O(log P) time.
+The Euclid loop ends when the remainder reaches zero. The early return handles a modulus of one. Each inverse call costs O(log P) time.
+
+**Buffered output.** A single string collects every answer line.
 
 ```nim
 var outputBuffer = ""
@@ -115,7 +165,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The flush runs when the buffer passes 256 KiB. The program writes in large blocks and reuses the same string. Appending costs one pass over the answer text.
+The flush runs when the buffer passes 256 KiB. The program reuses the same string for every block. Appending costs one pass over the answer text.
+
+**Lift period tables.** One loop fills heights and both residue tables for each platform.
 
 ```nim
 let testCount = nextInt(inputData, scanPos)
@@ -170,7 +222,9 @@ for testIndex in 0..<testCount:
     secondResidue[platformIndex] = secondSeq
 ```
 
-The outer loop covers all platforms, including both edges. Each lift fills one period of heights and two residue tables. The edge test keeps period 1 and avoids division by zero. The work is at most 800 steps per platform.
+The outer loop covers every platform, including both edges. The edge test keeps period 1 and avoids division by zero. The inner loop takes at most 800 steps per platform.
+
+**CRT meeting search.** Each adjacent pair resolves to the first shared time.
 
 ```nim
   var currentTime = 2
@@ -212,12 +266,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The outer loop visits each adjacent pair once. The inner loop tests both residues of each height exactly once. `currentTime` jumps by 4 half-seconds, or 2 for the last step. The search costs O(P) time per pair.
+The outer loop visits each adjacent pair once. The inner loop tests both residues of each shared height. `currentTime` jumps by 4 half-seconds, or 2 for the last step.
 
 ## Complexity
 
-Reading costs O(B) time for an input of B bytes. Precomputation costs O(P) time and space per platform, with P ≤ 800. The CRT search costs O(P) time per adjacent pair.
+Precomputation and meeting search both scale with the period length.
 
-Each case uses O(n*P) time and O(n*P) space. Across the run the time is O(T*n*P) for T cases. Space stays O(n*P) at any moment.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(input bytes) | input buffer |
+| Period tables | O(P) per platform | O(P) per platform |
+| CRT pair search | O(P) per adjacent pair | O(1) extra |
+| Output | O(t) | one output block |
 
-A direct scan over time would cost O(T*n*L), with L the least common multiple of two periods. The largest L here is about 159200, so that scan repeats many cycles.
+Here `P` is at most 800 because heights stay inside `[-100, 100]`.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n P) per case, O(T n P) overall |
+| Space | O(n P) at any moment |
+
+A direct scan over time costs O(T n L), with `L` the least common multiple of two periods. The largest `L` here is about 159200.

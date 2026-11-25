@@ -38,42 +38,42 @@ proc dominoIndex(low: int, high: int): int =
   return low * labelTotal + high - (low * (low + 1)) div 2
 
 proc prepareStatic() =
-  for p in 0 ..< cellTotal:
-    cellMask[p] = 1 shl p
-    allCellsMask = allCellsMask or cellMask[p]
-  for d in 0 ..< dominoTotal:
-    dominoMask[d] = 1 shl d
-  for p in 0 ..< cellTotal:
-    let row = p div rowWidth
-    let col = p mod rowWidth
+  for cellIdx in 0 ..< cellTotal:
+    cellMask[cellIdx] = 1 shl cellIdx
+    allCellsMask = allCellsMask or cellMask[cellIdx]
+  for dominoIdx in 0 ..< dominoTotal:
+    dominoMask[dominoIdx] = 1 shl dominoIdx
+  for cellIdx in 0 ..< cellTotal:
+    let row = cellIdx div rowWidth
+    let col = cellIdx mod rowWidth
     var count = 0
     if col + 1 < rowWidth:
-      neighborCell[p][count] = p + 1
+      neighborCell[cellIdx][count] = cellIdx + 1
       count += 1
     if row + 1 < rowTotal:
-      neighborCell[p][count] = p + rowWidth
+      neighborCell[cellIdx][count] = cellIdx + rowWidth
       count += 1
     if col > 0:
-      neighborCell[p][count] = p - 1
+      neighborCell[cellIdx][count] = cellIdx - 1
       count += 1
     if row > 0:
-      neighborCell[p][count] = p - rowWidth
+      neighborCell[cellIdx][count] = cellIdx - rowWidth
       count += 1
-    neighborCount[p] = count
-    for k in 0 ..< count:
-      let q = neighborCell[p][k]
-      neighborMask[p][k] = cellMask[p] or cellMask[q]
+    neighborCount[cellIdx] = count
+    for neighborIdx in 0 ..< count:
+      let adjCell = neighborCell[cellIdx][neighborIdx]
+      neighborMask[cellIdx][neighborIdx] = cellMask[cellIdx] or cellMask[adjCell]
 
 proc prepareLabels() =
-  for p in 0 ..< cellTotal:
-    for k in 0 ..< neighborCount[p]:
-      let q = neighborCell[p][k]
-      let low = cellLabel[p]
-      let high = cellLabel[q]
+  for cellIdx in 0 ..< cellTotal:
+    for neighborIdx in 0 ..< neighborCount[cellIdx]:
+      let adjCell = neighborCell[cellIdx][neighborIdx]
+      let low = cellLabel[cellIdx]
+      let high = cellLabel[adjCell]
       if low <= high:
-        neighborDomino[p][k] = dominoIndex(low, high)
+        neighborDomino[cellIdx][neighborIdx] = dominoIndex(low, high)
       else:
-        neighborDomino[p][k] = dominoIndex(high, low)
+        neighborDomino[cellIdx][neighborIdx] = dominoIndex(high, low)
 
 var answerCount: int64
 
@@ -83,29 +83,29 @@ proc search(covered: int, usedDomino: int) =
     return
   var bestCell = -1
   var bestCount = maxNeighbors + 1
-  for p in 0 ..< cellTotal:
-    if (covered and cellMask[p]) != 0:
+  for cellIdx in 0 ..< cellTotal:
+    if (covered and cellMask[cellIdx]) != 0:
       continue
     var count = 0
-    for k in 0 ..< neighborCount[p]:
-      if (covered and cellMask[neighborCell[p][k]]) != 0:
+    for neighborIdx in 0 ..< neighborCount[cellIdx]:
+      if (covered and cellMask[neighborCell[cellIdx][neighborIdx]]) != 0:
         continue
-      if (usedDomino and dominoMask[neighborDomino[p][k]]) == 0:
+      if (usedDomino and dominoMask[neighborDomino[cellIdx][neighborIdx]]) == 0:
         count += 1
     if count < bestCount:
       bestCount = count
-      bestCell = p
+      bestCell = cellIdx
       if count == 0:
         break
   if bestCount == 0:
     return
-  for k in 0 ..< neighborCount[bestCell]:
-    let q = neighborCell[bestCell][k]
-    if (covered and cellMask[q]) != 0:
+  for neighborIdx in 0 ..< neighborCount[bestCell]:
+    let adjCell = neighborCell[bestCell][neighborIdx]
+    if (covered and cellMask[adjCell]) != 0:
       continue
-    let used = dominoMask[neighborDomino[bestCell][k]]
+    let used = dominoMask[neighborDomino[bestCell][neighborIdx]]
     if (usedDomino and used) == 0:
-      search(covered or neighborMask[bestCell][k], usedDomino or used)
+      search(covered or neighborMask[bestCell][neighborIdx], usedDomino or used)
 
 var outputBuffer = ""
 
@@ -118,14 +118,14 @@ proc appendOutput(text: string) =
 prepareStatic()
 let caseCount = nextInt(inputData, scanPos)
 for caseIdx in 0 ..< caseCount:
-  for p in 0 ..< cellTotal:
-    cellLabel[p] = nextInt(inputData, scanPos)
+  for cellIdx in 0 ..< cellTotal:
+    cellLabel[cellIdx] = nextInt(inputData, scanPos)
   var labelCount: array[labelTotal, int]
-  for p in 0 ..< cellTotal:
-    labelCount[cellLabel[p]] += 1
+  for cellIdx in 0 ..< cellTotal:
+    labelCount[cellLabel[cellIdx]] += 1
   var possible = true
-  for l in 0 ..< labelTotal:
-    if labelCount[l] != perLabelCount:
+  for labelIdx in 0 ..< labelTotal:
+    if labelCount[labelIdx] != perLabelCount:
       possible = false
   if not possible:
     appendOutput("0")

@@ -1,42 +1,91 @@
+# CAVE — Cave Exploration (SPOJ)
+<https://www.spoj.com/problems/CAVE/>
+
 ## Problem
 
-Read several cave maps. Each map lists horizontal and vertical corridor segments and one entry point with a heading. The explorer walks the corridors, prefers a left turn, then goes straight, then turns right, then turns back. He stops on reaching the entry point again. Print the number of corridors he never visited, one answer per map.
+An explorer walks cave corridors with a fixed rule: turn left if possible, else go straight, else turn right, else turn back. He stops on reaching the entry point again. Count the corridors he never touched.
+
+Input starts with a map count T. Each map gives a corridor count N, then N corridor lines. Each line starts with V or H and holds three coordinates: one fixed line coordinate and two bounds. The last line gives the entry x, entry y, and heading N, E, S, or W. Output the unvisited corridor count per map.
+
+The map limits are these:
 
 | Quantity | Bound |
 | --- | --- |
 | Maps | 20 |
-| Corridors per map | 1000, at most 500 of each direction |
-| Coordinate magnitude | 32767 |
+| Corridors per map | 1000, at most 500 each direction |
+| Coordinate magnitude | 32,767 |
 | Time limit | 3000 ms |
 | Memory limit | 1536 MB |
 
-The corridor count stays small, so precomputation per map costs little.
+The corridor count stays small, so per-map setup costs little.
+
+The sample input and output:
+
+```
+2
+6
+H 0 6 0
+H 2 1 6
+V 1 0 4
+V 5 3 0
+V 3 0 2
+H 1 2 4
+6 0 W
+1
+V 0 -5 5
+0 0 S
+```
+
+```
+1
+0
+```
+
+The first map leaves one corridor unvisited; the second visits its only corridor.
 
 ## Idea
 
-The turn rule walks one face boundary of the corridor graph, so every visited point matters. A corridor counts as visited when the walk reaches any point on it, including a crossing. The program splits corridors at crossings and endpoints into sorted node lists and walks node to node.
+Split every corridor at crossings and endpoints, then walk from node to node. The turn rule follows one face boundary of the corridor graph, so each directed piece leads to exactly one successor. Think of tracing a maze with your left hand on the wall: you return to the start after walking one connected boundary.
 
-Each step costs O(log 500) to find a node on the new corridor. Building all lists costs O(V · H) per map.
+Each step finds the next node by binary search, O(log 500), and building the node lists costs O(V times H) per map. Stepping unit by unit and rechecking geometry at every point would be slower and harder to keep exact.
+
+Takeaway: turn corridors into node lists, then follow the successor rule.
 
 ## Why It Works
 
-At a node, at most one vertical and one horizontal corridor meet. So at most four outgoing directions exist, and the program stores them in a four-slot table. The successor rule visits left, straight, right, back in that order. This rule permutes the directed pieces, so the walk must return to its start. Standing on a crossing touches both corridors, so the program marks both.
+1. No two vertical corridors share a point, and no two horizontal corridors do either.
+2. At a node, at most one vertical and one horizontal corridor meet, so at most four exits exist.
+3. The successor order left, straight, right, back permutes the directed pieces, so the walk must return to its start.
+4. Standing on a crossing touches both corridors, so the program marks both as visited.
+5. A vertical corridor's node list holds its two endpoints and every horizontal line that crosses it.
+6. `findIndex` binary searches that sorted list, and a north move steps to node index k + 1, a south move to k - 1.
 
-A vertical corridor at x holds its two endpoints in the node list. It also holds every horizontal y with hLo ≤ x ≤ hHi and vLo ≤ y ≤ vHi. A north move steps from node index k to k + 1. A south move steps to k − 1. A turn onto a horizontal corridor finds the shared x by binary search, then steps ±1 from that index.
+The walk uses these terms.
 
-The Python oracle walks one grid unit at a time and checks corridor geometry at every point. The first sample map gives this trace:
+| Term | Meaning |
+| --- | --- |
+| `vNodes[k]` | sorted y values along vertical corridor k |
+| `hNodes[k]` | sorted x values along horizontal corridor k |
+| `vCrossH`, `hCrossV` | crossing corridor at each node, or -1 |
+| `canGo` | four flags for exits in that direction |
+| `wasVisited` | marks corridors already touched |
 
-> sample corridors: 6
-> visited ids: [0, 1, 2, 3, 4]
-> unvisited ids: [5]
-> turn points (x, y, from, to): [(0, 0, 'W', 'E'), (1, 0, 'E', 'N'), (1, 4, 'N', 'S'), (1, 2, 'S', 'E'), (5, 2, 'E', 'N'), (5, 3, 'N', 'S'), (5, 2, 'S', 'E'), (6, 2, 'E', 'W'), (5, 2, 'W', 'S'), (5, 0, 'S', 'E')]
+A turn onto another corridor finds the shared coordinate, then steps one node past it.
 
-Only the corridor at input index 5 stays unvisited, so the answer is 1.
+A script walked the first sample map:
+
+| Quantity | Value |
+| --- | --- |
+| Sample corridors | 6 |
+| Visited ids | 0, 1, 2, 3, 4 |
+| Unvisited ids | 5 |
+| Answer | 1 |
+
+Only the horizontal corridor at input index 5 stays untouched, so the answer is 1.
 
 ## Code
 
-The input buffer, hand scanner, and output buffer handle all input in one pass.
-
+**Constants, scanners, and helpers.**
 ```nim
 import std/algorithm
 
@@ -93,11 +142,7 @@ proc nextUpper(data: string, pos: var int): char =
   let letter = data[pos]
   pos += 1
   return letter
-```
 
-The scanner keeps ASCII and Unicode minus signs, so negative coordinates survive. The loop reads every line once. The output buffer flushes once at 256 KiB.
-
-```nim
 proc cmpInt(firstValue, secondValue: int): int =
   if firstValue < secondValue: return -1
   if firstValue > secondValue: return 1
@@ -135,9 +180,9 @@ proc appendOutput(text: string) =
     stdout.write outputBuffer
     outputBuffer.setLen 0
 ```
+`isDashStart` recognizes both ASCII and Unicode minus signs. `nextInt` and `nextUpper` read coordinates and headings. `findIndex` and `sortedUnique` maintain the node lists. `appendOutput` flushes in blocks.
 
-Each node list is sorted and deduplicated once. Binary search runs in O(log 500) on the longest list.
-
+**Map input and start point.**
 ```nim
 let caseCount = nextInt(inputData, scanPos)
 for caseIdx in 0..<caseCount:
@@ -177,10 +222,62 @@ for caseIdx in 0..<caseCount:
         hHi[hCount] = secondNum
       hGlobal[hCount] = i
       hCount += 1
+  vX.setLen(vCount)
+  vLo.setLen(vCount)
+  vHi.setLen(vCount)
+  vGlobal.setLen(vCount)
+  hY.setLen(hCount)
+  hLo.setLen(hCount)
+  hHi.setLen(hCount)
+  hGlobal.setLen(hCount)
+
+  let startX = nextInt(inputData, scanPos)
+  let startY = nextInt(inputData, scanPos)
+  let startLetter = nextUpper(inputData, scanPos)
+  var startDir = northDir
+  if startLetter == 'E': startDir = eastDir
+  elif startLetter == 'S': startDir = southDir
+  elif startLetter == 'W': startDir = westDir
+
+  var startKind = verticalKind
+  var startIndex = 0
+  var found = false
+  if startDir == eastDir or startDir == westDir:
+    for k in 0..<hCount:
+      if hY[k] == startY and startX >= hLo[k] and startX <= hHi[k]:
+        startKind = horizontalKind
+        startIndex = k
+        found = true
+        break
+  else:
+    for k in 0..<vCount:
+      if vX[k] == startX and startY >= vLo[k] and startY <= vHi[k]:
+        startKind = verticalKind
+        startIndex = k
+        found = true
+        break
+  if not found:
+    for k in 0..<hCount:
+      if hY[k] == startY and startX >= hLo[k] and startX <= hHi[k]:
+        startKind = horizontalKind
+        startIndex = k
+        found = true
+        break
+  if not found:
+    for k in 0..<vCount:
+      if vX[k] == startX and startY >= vLo[k] and startY <= vHi[k]:
+        startKind = verticalKind
+        startIndex = k
+        found = true
+        break
+  if not found:
+    appendOutput("0")
+    outputBuffer.add '\n'
+    continue
 ```
+The code splits corridors into vertical and horizontal arrays, then sorts their bounds. It locates the start corridor, preferring the direction of the heading and falling back to any corridor through the point.
 
-The loop runs once per corridor, so the parsing cost is O(corridorCount). Horizontal lines read their fixed coordinate first. Swapping endpoints keeps every range ordered.
-
+**Node lists and crossings.**
 ```nim
   var vNodes = newSeq[seq[int]](vCount)
   for k in 0..<vCount:
@@ -201,11 +298,7 @@ The loop runs once per corridor, so the parsing cost is O(corridorCount). Horizo
     if startKind == horizontalKind and startIndex == k:
       nodes.add startX
     hNodes[k] = sortedUnique(nodes)
-```
 
-The nested loops compare every vertical with every horizontal, so the cost is O(V · H). The start point joins its own list before sorting, which makes it a real node.
-
-```nim
   var vCrossH = newSeq[seq[int]](vCount)
   for k in 0..<vCount:
     vCrossH[k] = newSeq[int](vNodes[k].len)
@@ -228,9 +321,9 @@ The nested loops compare every vertical with every horizontal, so the cost is O(
         let nodeIndex = findIndex(hNodes[l], vX[k])
         hCrossV[l][nodeIndex] = k
 ```
+Each corridor gets a sorted node list of endpoints and crossing coordinates. `vCrossH` and `hCrossV` record which other corridor sits at each node.
 
-A −1 link means no perpendicular corridor meets that node. Each crossing fills one slot in each direction, which replaces a scan of all corridors during the walk.
-
+**Walk and output.**
 ```nim
   var wasVisited = newSeq[bool](corridorCount)
   var visitedCount = 0
@@ -284,11 +377,7 @@ A −1 link means no perpendicular corridor meets that node. Each crossing fills
         chosen = candidate
         break
     if chosen == -1: break
-```
 
-The program marks the linked crossing corridor as visited without stepping onto it. The offsets 3, 0, 1, 2 mean left, straight, right, back. The four-slot table avoids a turn test against raw coordinates. One step costs O(1) here.
-
-```nim
     var nextKind = kind
     var nextCorridor = corridorIndex
     var nextNode = nodeIndex
@@ -339,11 +428,25 @@ The program marks the linked crossing corridor as visited without stepping onto 
 stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
-
-A turn crosses to the linked corridor and finds the shared node by binary search. The walk ends on the second arrival at the start point. The final write flushes the whole output buffer once.
+The loop marks the current and crossing corridors, fills `canGo`, and picks the first exit in left, straight, right, back order. It stops at the start point and prints the unvisited count.
 
 ## Complexity
 
-Reading costs O(total tokens). Node lists cost O(V · H log(V + H)) to build, since each list holds up to H crossings. Cross links cost O(V · H log 500). The walk visits at most O(V · H) directed pieces, each in O(log 500). Total time per map is O(V · H log(V + H)); total space is O(V · H).
+Setup cost is bounded by the corridor product.
 
-Walking one grid unit at a time would cost O(coordinate span) per corridor, which has no useful bound here.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | one pass over input bytes | input bytes |
+| Corridor parse | O(N) | O(N) arrays |
+| Node lists | O(V times H) | O(V plus H) nodes |
+| Walk | O(steps times log 500) | O(N) flags |
+| Output | one write per block | flushBlockBytes |
+
+At most 500 corridors per direction keep the product manageable.
+
+| Measure | Big O |
+| --- | --- |
+| Time per map | O(V times H plus steps log N) |
+| Space per map | O(N) |
+
+Rechecking geometry at every unit step would pay for each coordinate twice, while node lists settle each crossing once.

@@ -1,32 +1,94 @@
+# SOPARADE — Soldiers on Parade (SPOJ)
+<https://www.spoj.com/problems/SOPARADE/>
+
 ## Problem
 
-Each province has n soldiers in a row at positions 1 to n. Each soldier has rank 1, 2, 3, or 4. Neighboring soldiers differ by at least two ranks. Each rule names positions that must all have different ranks. Print "approved" when an assignment satisfies every rule, and "rejected" otherwise.
+Soldiers stand in one row with ranks 1 to 4. Neighbors must differ by at least two ranks. Extra rules say that certain sets of positions must all have different ranks. Detect provinces whose rules cannot be satisfied.
 
-| Quantity | Bound |
+Input: an integer t, then t rule sets separated by blank lines. Each set starts with n and p, then p rules. A rule gives a count b and b positions. Output: `approved` when some arrangement exists, and `rejected` otherwise.
+
+The statement sets these bounds.
+
+| Item | Bound |
 | --- | --- |
-| Provinces | t ≤ 10 |
-| Soldiers per province | n ≤ 100000 |
-| Rules per province | p ≤ 100000 |
-| Time limit | 9000 ms |
-| Memory limit | 1536 MB |
+| Test cases t | at most 10 |
+| Soldiers n | at most 100000 |
+| Rules p | at most 100000 |
+| Ranks | 1 to 4 |
+| Judge time limit | 9000 ms |
+| Judge memory limit | 1536 MB |
 
-Both bounds drive the implication graph, so the check stays linear in n and in the total rule size.
+Only four ranks exist, so a rule with more than four positions fails at once.
+
+The sample input:
+
+```
+2
+
+2 1
+2 1 2
+
+5 2
+3 1 3 2
+4 2 3 4 5
+```
+
+The sample output:
+
+```
+approved
+rejected
+```
 
 ## Idea
 
-Reduce the assignment to 2-SAT, clauses of the form "a or b" over true or false variables. Relabel ranks 3, 1, 4, 2 as vertices 0, 1, 2, 3 of a path. Neighboring soldiers take neighboring path vertices, so vertex parity flips at every step. Each position then has two possible ranks; call its binary choice v. Adjacency forbids one pair: v = 0 on an odd position next to v = 1 on an even position. A rule adds an "unequal" clause for each pair of same-parity positions it holds. Cost: O(n + total rule size) clauses, solved by strongly connected components in linear time.
+Turn the parade into yes-or-no questions, like deciding which side of a fence each soldier sits on. Rank choices collapse to one bit per soldier after the neighbor rule. Each extra rule becomes a small clause about two bits.
+
+The program builds a 2-SAT (yes-or-no constraint) implication graph and finds strongly connected components. A variable and its negation in the same component means a contradiction. Reading rules costs O(total positions), and the graph pass costs O(n + p). Brute-force rank assignment would cost 4 to the n, which is impossible for 100000 soldiers.
+
+A bit and a graph replace an exponential assignment search.
 
 ## Why It Works
 
-The allowed rank pairs are (1,3), (1,4), and (2,4). They form the path 3 - 1 - 4 - 2. A step along the row moves one edge along that path, so parity alternates with position. Odd positions use one pair of ranks, and even positions use the other pair. A rule with three positions of one parity fails because only two ranks fit that parity. Two positions of one parity differ exactly when their v values differ.
+Four facts carry the program.
 
-The adjacency clause is (v_odd or not v_even). It gives two implications: odd = 0 forces even = 0, and even = 1 forces odd = 1. Flipping every v turns this clause into the other parity case, so one check covers both cases. Each node has index 2 * position + value, and its negated node flips the last bit.
+1. Neighbors differ by at least two ranks exactly when their rank halves differ. Ranks 1 and 2 form the low half, and ranks 3 and 4 form the high half.
+2. The alternating neighbor constraint forces the half bit to alternate along the row. One free bit therefore fixes every soldier's half.
+3. Same-parity positions share a half, so they must differ in the low bit of the rank. Only two low bits exist, so a rule may name at most two odd positions and two even positions.
+4. Two such same-parity positions give an exclusive-or (different bits) clause. The implication graph encodes it with two opposite implications, and a component check detects any contradiction.
 
-A script in gen.py checks all 32 binary choices for the second sample case and finds zero valid assignments. For the first case, v = (0, 0) gives ranks 3 and 1, which differ by two and are distinct.
+Each term has one job.
+
+| Term | Meaning |
+| --- | --- |
+| `fromList`, `toList` | edge endpoint arrays of the implication graph |
+| `addClause` | adds the two implications of an exclusive-or |
+| `finishOrder` | vertex order from the first depth-first pass |
+| `component` | strongly connected component id per vertex |
+
+The scanner skips blanks, so blank lines between sets need no special case.
+
+A script reduces the second sample case.
+
+```text
+rule 1 positions 1,3,2 -> odd pair (1,3), even position 2
+rule 2 positions 2,3,4,5 -> odd pair (3,5), even pair (2,4)
+neighbor constraints alternate half bits along the row
+the odd-pair and even-pair clauses force a contradiction
+output rejected
+```
+
+The first case has no same-parity pair, so it is approved.
 
 ## Code
 
+**Input and output plumbing.** One buffer and one scanner serve all sets.
+
 ```nim
+{.push checks: off.}
+when not defined(release):
+  {.passC: "-O2".}
+
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 
@@ -46,11 +108,7 @@ proc nextInt(data: string, i: var int): int =
     value = value * 10 + int(data[i]) - firstDigitValue
     i += 1
   return value
-```
 
-The read loop appends one line at a time into one buffer. Blank lines between cases become harmless extra characters. The scanner skips them and parses each integer once. Cost is one pass over the input.
-
-```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -58,7 +116,13 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+`nextInt` skips every non-digit, so blank lines between sets vanish. One output buffer flushes in blocks.
+
+**Clause construction.** Two helpers add one implication each.
+
+```nim
 proc addImplication(fromList: var seq[int], toList: var seq[int], source: int, target: int) =
   fromList.add source
   toList.add target
@@ -70,7 +134,9 @@ proc addClause(fromList: var seq[int], toList: var seq[int], leftVar: int, leftV
   addImplication(fromList, toList, rightNode xor 1, leftNode)
 ```
 
-One output buffer flushes at 256 KiB and is reused after each flush. `addClause` stores both implications of a clause. Each clause adds two edges to the graph.
+Node index is variable times two plus the literal value. The `xor 1` flips a literal, which gives the contrapositive implication.
+
+**Component search.** Two passes find strongly connected components.
 
 ```nim
 proc graphSatisfiable(nodeCount: int, fromList: seq[int], toList: seq[int]): bool =
@@ -97,11 +163,6 @@ proc graphSatisfiable(nodeCount: int, fromList: seq[int], toList: seq[int]): boo
     outCursor[sourceNode] += 1
     inEdge[inCursor[targetNode]] = sourceNode
     inCursor[targetNode] += 1
-```
-
-Counts become offsets in `outStart` and `inStart`. The loops fill the forward and reverse edge arrays once. Cost is linear in nodes plus edges.
-
-```nim
   var visited = newSeq[bool](nodeCount)
   var finishOrder = newSeq[int](nodeCount)
   var orderCount = 0
@@ -150,7 +211,9 @@ Counts become offsets in `outStart` and `inStart`. The loops fill the forward an
   return true
 ```
 
-Two iterative depth-first passes label components without recursion. The final loop rejects a variable whose two nodes share a component. Cost is linear in nodes plus edges.
+An iterative depth-first pass avoids deep recursion at 200000 nodes. The second pass uses the reverse graph. The final loop rejects a variable sharing a component with its negation.
+
+**Driver.** Neighbor clauses come first, then rule clauses.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -216,8 +279,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The first loop adds one clause per neighboring pair, so it runs n - 1 times. Each rule stores two positions per parity and rejects a third. The solver runs once per case, and the final write flushes the buffer.
+Each rule keeps at most two odd and two even positions. A third position of either parity fails the case. Only satisfiable cases add the extra clauses.
 
 ## Complexity
 
-Reading scans I integers once, where I counts all rule positions. Each case builds O(n + total rule size) clauses and twice as many implication edges. Kosaraju visits each node and edge once, so solving costs O(n + edges). Total time is O(I + sum of n and rule sizes over cases). Space is O(n + edges) per case for the graph and its reverse. Trying all 4^n rank assignments takes exponential time.
+Reading and the component pass dominate each case.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | O(B) for B bytes | B bytes |
+| Neighbor clauses | O(n) | O(n) edges |
+| Rule reading | O(total positions) | O(p) edges |
+| Component search | O(n + p) | O(n + p) |
+| Output | O(t) lines | one block |
+
+The graph has 2n vertices, one true and one false vertex per soldier.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n + p + total positions) per case |
+| Space | O(n + p) per case |
+
+Assigning ranks to every soldier would cost O(4 to the n) time.

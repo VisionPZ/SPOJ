@@ -1,43 +1,97 @@
+# POTHOLE — Potholers (SPOJ)
+
+<https://www.spoj.com/problems/POTHOLE/>
+
 ## Problem
 
-Read a cave with chambers numbered from 1 at the top to n at the bottom. Every listed corridor goes from a chamber to a higher-numbered chamber, so routes run from chamber 1 to chamber n. Each speleologist needs a different corridor out of the top and a different corridor into the bottom. Print the largest number of speleologists that can train at once.
+A team of speleologists wants to descend from the top chamber to the bottom chamber together. Each explorer must leave through a different top corridor and enter through a different bottom corridor. Find the largest team that can train at once.
 
-| Quantity | Bound |
-| --- | --- |
-| Test cases | not bounded in the statement |
-| Chambers per cave | 2 to 200 |
-| Corridors from one chamber | 0 to n minus i |
-| Time limit | 7000 ms |
-| Memory limit | 1536 MB |
+Input: `t` cases separated by blank lines. Each case starts with `n`, then `n − 1` lines. Line `i` gives the count of corridors leaving chamber `i`, followed by the higher-numbered chambers they reach. Chamber 1 is the top and chamber `n` is the bottom. Output: one integer per case, the largest team size.
 
-The small chamber count makes one flow computation per case cheap.
+The bounds from the statement:
+
+| Item | Bound |
+|---|---|
+| Chambers `n` | 2 ≤ n ≤ 200 |
+| Corridor direction | from chamber `i` to higher numbers only |
+| Start and finish | chamber 1 and chamber `n` |
+| Judge limit | 7000 ms, 1536 MB |
+
+Interior corridors may be shared, but the first and last corridors may not be shared.
+
+The sample input and output:
+
+```
+1
+12
+4 3 4 2 5
+1 8
+2 9 7
+2 6 11
+1 8
+2 9 10
+2 10 11
+1 12
+2 10 12
+1 12
+1 12
+```
+
+```
+3
+```
 
 ## Idea
 
-Model the cave as a flow network. Each corridor becomes a directed edge toward the higher-numbered chamber. Edges out of chamber 1 carry capacity one, and edges into chamber n carry capacity one. Interior corridors carry infinite capacity because speleologists can share them. Max flow then counts the largest feasible set of routes. Dinic's method builds a level graph, the subgraph of shortest remaining paths, and pushes a blocking flow through it.
+Treat the cave as a downhill plumbing network and push as many routes through it as possible. Each route is one explorer. Imagine water entering through the top pipes and leaving through the bottom pipes.
 
-Each phase costs O(E) time for at most about n squared edges.
+The program builds a directed graph from chamber `i` to each higher-numbered chamber it reaches. Corridors leaving chamber 1 and entering chamber `n` get capacity 1. Every other corridor gets infinite capacity. A maximum flow then counts the routes, and capacity 1 enforces the distinct-corridor rule.
+
+The algorithm is Dinic's max flow (a level-graph blocking-flow method). A breadth-first search builds levels, and a depth-first search pushes flow along level-increasing edges. Each phase exhausts all shortest routes before the next search.
+
+Cost per case: one BFS over all edges per phase, plus one DFS per pushed route. With at most 200 chambers, this stays small. Enumerating route sets by hand would grow exponentially with the number of chambers.
+
+Capacity 1 on the entrance and exit corridors turns the route rule into an ordinary flow problem.
 
 ## Why It Works
 
-Every corridor goes from a smaller chamber number to a larger one, so each route is a path from 1 to n. Capacity one on edges from chamber 1 forces distinct starting corridors. Capacity one on edges into chamber n forces distinct ending corridors. Infinite capacity on interior edges never blocks a shared corridor. Flow is integral, so the maximum equals a whole number of routes.
+Four facts carry the reduction.
 
-Each corridor adds a forward edge and a reverse edge in adjacent slots.
+1. Every corridor goes from a lower number to a higher one. Every path therefore runs from chamber 1 down to chamber `n`.
+2. Capacity 1 on edges out of 1 and into `n` gives each explorer a distinct entrance and a distinct exit. Infinite capacity on interior edges lets several explorers share them.
+3. An integral maximum flow splits into edge-disjoint paths from 1 to `n`. Each unit of flow is one valid explorer.
+4. Dinic's BFS finds all shortest augmenting paths, and the DFS blocking flow saturates them. Repeating this reaches the maximum flow.
 
-- Forward update: `edgeCap[edgeIndex] -= pushed`.
-- Reverse update: `edgeCap[edgeIndex xor 1] += pushed`.
-- The exclusive-or bit selects the other edge of the pair.
+The flow arrays:
 
-The generator computes this trace for the sample cave.
+| Term | Meaning |
+|---|---|
+| `edgeCap` | remaining capacity of one directed corridor |
+| `levelNode` | BFS distance from the source, −1 when unreachable |
+| `iterEdge` | current arc pointer that skips exhausted edges |
+| `infiniteCapacity` | capacity on shared interior corridors |
 
-    path 1: 1 -> 3 -> 9 -> 12  bottleneck 1
-    path 2: 1 -> 4 -> 11 -> 12  bottleneck 1
-    path 3: 1 -> 2 -> 8 -> 12  bottleneck 1
-    total flow: 3
+The integral flow decomposes into paths, so the flow value equals the team size.
 
-Only three paths fit. Corridors through chamber 2 and chamber 5 both need the single exit from chamber 8.
+A script-traced example with the sample cave of 12 chambers:
+
+```
+corridors leaving chamber 1:  1->3, 1->4, 1->2, 1->5   (capacity 1 each)
+corridors entering chamber 12: 8->12, 9->12, 10->12, 11->12 (capacity 1 each)
+
+route 1: 1 -> 3 -> 9  -> 12
+route 2: 1 -> 4 -> 11 -> 12
+route 3: 1 -> 2 -> 8  -> 12
+route 4: 1 -> 5 -> 8  -> 12   collides with route 3 at 8 -> 12
+
+max flow = 3
+```
+
+Three edge-disjoint routes fit, so three speleologists can train together.
 
 ## Code
+
+**Constants and scanner.** The input buffer is read once, and integers are scanned by index.
 
 ```nim
 const firstDigitValue = 48
@@ -62,7 +116,9 @@ proc nextInt(data: string, position: var int): int =
   return value
 ```
 
-The read loop ends at end of input and stores one buffer. The scanner skips blank lines between cases. Digit parsing costs one pass over the input.
+`infiniteCapacity` marks interior corridors as freely shared. `nextInt` skips whitespace and reads each positive integer directly from the buffer.
+
+**Output helper.** Lines collect in one buffer and flush in blocks.
 
 ```nim
 var outputBuffer = ""
@@ -74,7 +130,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The buffer flushes every 256 KiB, never per answer. Reusing it avoids a fresh allocation per flush. Output cost is one write per block.
+The 256 KiB threshold keeps writes rare. `setLen 0` reuses the same string after each flush.
+
+**Graph storage.** Each corridor adds a forward edge and a reverse edge.
 
 ```nim
 var headEdge: seq[int]
@@ -100,7 +158,9 @@ proc addCorridor(fromNode, toNode, capacity: int) =
   edgeCount += 1
 ```
 
-Forward star arrays hold the residual graph in flat memory. The reverse edge sits at the next index, so exclusive-or finds it. A corridor with duplicate numbers simply adds another edge.
+The arrays sit side by side, indexed by edge number. The forward capacity is the given value, and the reverse capacity starts at zero. `edgeNext` chains edges that leave the same chamber.
+
+**Level BFS.** `buildLevels` labels each chamber by distance from the source.
 
 ```nim
 proc buildLevels(sourceNode, sinkNode: int): bool =
@@ -125,7 +185,9 @@ proc buildLevels(sourceNode, sinkNode: int): bool =
   return levelNode[sinkNode] != -1
 ```
 
-Breadth-first search visits each chamber once, so the queue fits in n plus one slots. Ignoring zero-capacity edges keeps the level graph correct after updates. This pass costs O(E).
+The queue holds chambers ready to expand. Only edges with positive capacity and an unlabeled endpoint enter the queue. The function returns true when the sink receives a level.
+
+**Blocking flow.** The DFS pushes flow along level-increasing edges.
 
 ```nim
 proc pushFlow(currentNode, sinkNode, limit: int): int =
@@ -143,7 +205,13 @@ proc pushFlow(currentNode, sinkNode, limit: int): int =
     edgeIndex = edgeNext[edgeIndex]
     iterEdge[currentNode] = edgeIndex
   return 0
+```
 
+`iterEdge` remembers the last tried edge, so each edge is skipped only once per phase. A successful push updates the forward capacity and its reverse twin. A return of zero ends the current phase.
+
+**Max flow loop.** Each BFS phase exhausts its shortest routes.
+
+```nim
 proc maxFlow(sourceNode, sinkNode: int): int =
   result = 0
   while buildLevels(sourceNode, sinkNode):
@@ -156,7 +224,9 @@ proc maxFlow(sourceNode, sinkNode: int): int =
       result += pushed
 ```
 
-The iterator pointer skips exhausted edges, so one phase stays linear in E. The recursion depth stops at n, the number of chambers. Each phase ends when no more flow reaches the sink.
+The outer loop stops when the sink has no level. The inner loop pushes until `pushFlow` returns zero. The running total is the answer.
+
+**Case loop.** Capacities are set from chamber numbers, then flow is computed.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -188,8 +258,28 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The outer loop runs once per case, and the inner loops read exactly the listed corridors. Edge arrays get n squared slots, which covers every possible corridor and its reverse. Capacity one applies only to corridors leaving the top or entering the bottom.
+Edges from chamber 1 and into chamber `n` get capacity 1; all others get `infiniteCapacity`. The edge arrays are sized for a dense graph and reset per case. One answer line goes out per case.
 
 ## Complexity
 
-Reading and parsing cost O(E) time per case and one input buffer of space. The flow arrays use O(n squared) slots per case. A phase costs O(nE) time, and at most n phases run, so one case costs O(n squared E). Since E is at most n times n minus one over two, the total is O(t n to the fourth). Trying every subset of corridors would grow far faster than this flow pass.
+Each case builds a graph, then runs several BFS and DFS phases.
+
+| Phase | Time | Space |
+|---|---|---|
+| Input read | one pass over input bytes | input bytes |
+| Graph build | one pass over corridors | O(E) |
+| Level BFS | one pass over edges per phase | O(V) |
+| Blocking DFS | one pass over edges per phase | O(V) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(V²E) worst-case Dinic | O(V + E) |
+
+With at most 200 chambers, even the worst-case bound is small.
+
+| Measure | Big O |
+|---|---|
+| Time | O(V²E) worst case, V ≤ 200 |
+| Space | O(V + E) for flow arrays and buffers |
+
+The graph is acyclic, so flow algorithms converge quickly in practice.
+
+Listing every set of edge-disjoint routes would grow exponentially with the chamber count. Max flow reaches the same answer in polynomial time.

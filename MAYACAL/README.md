@@ -1,55 +1,105 @@
+# MAYACAL — Calendar of the Maya (SPOJ)
+
+<https://www.spoj.com/problems/MAYACAL/>
+
 ## Problem
 
-Read a Calendar Round date and print every matching Long Count date in baktuns 8 and 9. A date holds a Tzolkin day number and name, then a Haab day number and month name. Print the answers in ascending order, or print 0 when the date cannot occur. The Long Count date 8.0.0.0.0 fell on 9 Ajaw 3 Sip.
+A Calendar Round date repeats every 18,980 days. Find every Long Count date in baktuns 8 and 9 that carries the same day name.
 
-| item | bound |
-|---|---|
-| data sets | 1 to 30 |
+Read `d` data sets. Each gives a Tzolkin day number and name, then a Haab day number and month name. Print how many matching dates lie from 8.0.0.0.0 through 9.19.19.17.19, then one Long Count date per line in ascending order.
+
+Print `0` when the date cannot occur.
+
+The bounds and judge limits:
+
+| Item | Bound |
+| --- | --- |
+| Data sets `d` | 1 to 30 |
 | Tzolkin day number | 1 to 13 |
 | Haab day number | 1 to 20, or 1 to 5 in Wayeb |
 | Long Count range | 8.0.0.0.0 through 9.19.19.17.19 |
-| judge limit | 3000 ms, 1536 MB |
+| Time limit | 3000 ms |
+| Memory limit | 1536 MB |
 
-The range holds 288,000 consecutive days, and every answer must lie inside it.
+The range holds 288000 consecutive days, and every answer must lie inside it.
+
+The sample case:
+
+```
+2
+3 Lamat 6 Pax
+1 Ajaw 9 Chen
+```
+
+```
+15
+8.0.17.17.8
+8.3.10.12.8
+8.6.3.7.8
+8.8.16.2.8
+8.11.8.15.8
+8.14.1.10.8
+8.16.14.5.8
+8.19.7.0.8
+9.1.19.13.8
+9.4.12.8.8
+9.7.5.3.8
+9.9.17.16.8
+9.12.10.11.8
+9.15.3.6.8
+9.17.16.1.8
+0
+```
 
 ## Idea
 
-Both parts of the Calendar Round repeat. The Tzolkin repeats every 260 days, and the Haab repeats every 365 days. Together they repeat every 18,980 days. Turn the query into one position in each cycle. Find the first day where both positions match, then advance by 18,980 days while the day stays in range.
+Picture two wheels with different teeth: one turns every 260 days, the other every 365 days. They line up again after 18,980 days.
 
-Cost per query: test at most 73 candidate starts, then write one line per answer.
+The program converts the query into one position in each wheel. A scan of at most 73 offsets finds the first day where both positions match. From there, each answer sits exactly 18,980 days later.
+
+Cost per query: 73 candidate starts at most, then one line per answer. Simulating all 288000 days for each query costs far more.
 
 ## Why It Works
 
-The Tzolkin position fixes the day name modulo 20 and the day number modulo 13. Because 2 is the inverse of 20 modulo 13, the formula below returns the only position in 0 through 259. The Haab position counts days from the start of the year. Month starts sit 20 days apart, and Wayeb starts at day 360.
+Five facts prove the alignment exact.
 
-| term | meaning |
-|---|---|
-| `tzolkinNameIndex` | day name, numbered from 0 |
-| `modNorm((tzolkinNumber - 1 - tzolkinNameIndex) * 2, 13)` | offset into this name run |
-| `haabMonthStarts[haabMonthIndex] + haabNumber - 1` | day counted from the year start |
-| `referenceResidue` | position gap of the known reference date |
+1. The Tzolkin position fixes the day name modulo 20 and the day number modulo 13. Because 2 is the inverse of 20 modulo 13, the formula returns the only position from 0 through 259.
+2. The Haab position counts days from the year start. Month starts sit 20 days apart, and Wayeb starts at day 360.
+3. The two wheels agree only when their positions differ by 2 modulo 5. The reference positions are 99 and 42, and the gap of 57 leaves remainder 2. A different gap makes the date illegal.
+4. Candidate offsets have the form `deltaTzolkin + 260 * stepCount` for `stepCount` from 0 through 72. The one candidate leaving `deltaHaab` modulo 365 gives the first matching day.
+5. Later matches sit 18980 days apart. The count is `(finalDay - firstDay) div 18980 + 1`, with `finalDay` set to 1439999.
 
-The two cycles can agree only when their positions differ by 2 modulo 5. The reference positions are 99 and 42, and their gap is 57, which leaves remainder 2. A query with a different gap is illegal.
+The constants and their roles:
 
-Now find the first matching day. The Tzolkin match fixes the day offset modulo 260. The Haab match fixes it modulo 365. Candidate offsets are `deltaTzolkin + cycleTzolkin * stepCount` for `stepCount` from 0 to 72. The unique candidate that leaves `deltaHaab` modulo 365 gives the first day. Later matches sit exactly 18,980 days apart.
+| Term | Meaning |
+| --- | --- |
+| `cycleTzolkin` | 260-day name and number wheel |
+| `cycleHaab` | 365-day month wheel |
+| `cycleCalendarRound` | 18980-day alignment of both wheels |
+| `referenceDay` | absolute day of 8.0.0.0.0 |
+| `finalDay` | absolute day of 9.19.19.17.19 |
+| `referenceResidue` | required gap of 2 modulo 5 |
+| `modNorm` | remainder helper keeping results non-negative |
 
-This trace uses the sample date 3 Lamat 6 Pax.
+These constants let one query resolve with a few arithmetic steps.
 
-| quantity | value |
-|---|---|
-| Lamat index, Pax index | 7, 15 |
-| Tzolkin position, Haab position | 67, 305 |
-| position gap modulo 5 | 2 |
-| `deltaTzolkin`, `deltaHaab` | 228, 263 |
-| `stepCount` | 24 |
-| first day | 1,158,468 |
-| answer count | 15 |
+A script traces the first sample date, 3 Lamat 6 Pax:
 
-The first day is 8.0.17.17.8, and the last is 9.17.16.1.8.
+```
+Lamat index, Pax index    : 7, 15
+Tzolkin, Haab positions   : 67, 305
+position gap modulo 5     : 2
+deltaTzolkin, deltaHaab   : 228, 263
+stepCount                 : 24
+first day                 : 1158468
+answer count              : 15
+```
+
+The first day is 8.0.17.17.8 and the last is 9.17.16.1.8. The second sample date cannot occur, so its count is zero.
 
 ## Code
 
-**Constants and name lookup.**
+**Constants and lookup.** Fixed tables describe both wheels and the range.
 
 ```nim
 const
@@ -87,9 +137,9 @@ proc findNameIndex(names: openArray[string], word: string): int =
       return
 ```
 
-`referenceDay` is 8 times 144,000. `modNorm` keeps remainders non-negative for negative inputs. Name lookup scans at most 20 names.
+`referenceDay` is 8 times 144000. `modNorm` keeps remainders non-negative for negative inputs. Name lookup scans at most 20 names.
 
-**Byte readers.**
+**Byte readers.** Numbers and words are read straight from the buffer.
 
 ```nim
 proc skipSeparators(inputData: string, i: var int) =
@@ -115,9 +165,9 @@ proc scanWord(inputData: string, i: var int, wordBuffer: var string) =
     inc i
 ```
 
-Each reader stops at the first byte outside its class. The word reader reuses its buffer, so it allocates no token strings. Cost: one pass over the bytes each call skips.
+Each reader stops at the first byte outside its class. The word reader reuses its buffer, so it allocates no token strings. Cost is one pass over the bytes each call skips.
 
-**Long Count writer.**
+**Long Count writer.** Five divisions split an absolute day into place values.
 
 ```nim
 proc appendLongCountDate(outputBuffer: var string, dayNumber: int) =
@@ -133,9 +183,9 @@ proc appendLongCountDate(outputBuffer: var string, dayNumber: int) =
   outputBuffer.add($baktunCount & "." & $katunCount & "." & $tunCount & "." & $winalCount & "." & $kinCount & "\n")
 ```
 
-Five divisions split the absolute day into place values. The writer builds one line and appends it to the shared buffer. Cost: one formatted line per answer.
+The writer builds one line and appends it to the shared buffer. Cost is one formatted line per answer.
 
-**One query.**
+**One query.** Validation, alignment, and the candidate scan resolve a date.
 
 ```nim
   let tzolkinNumber = scanNumber(inputData, i)
@@ -163,9 +213,9 @@ Five divisions split the absolute day into place values. The writer builds one l
             occurrenceCount = (finalDay - firstDay) div cycleCalendarRound + 1
 ```
 
-The first two conditions reject numbers and names outside the spec. The residue check rejects impossible Calendar Round pairs. The loop has 73 steps because 18,980 divided by 260 is 73.
+The first two conditions reject numbers and names outside the spec. The residue check rejects impossible pairs. The loop has 73 steps because 18980 divided by 260 is 73.
 
-**Driver and buffered output.**
+**Driver and buffered output.** The case loop writes the count and every date.
 
 ```nim
 var inputData = ""
@@ -183,7 +233,9 @@ var j = 0
 while j < caseCount:
 ```
 
-The read loop reaches the end of input, so one pass loads all bytes. The buffer keeps at most one block before a write.
+The read loop reaches end of input, so one pass loads all bytes. The buffer keeps at most one block before a write.
+
+**Answer lines.** The count and every date leave through one shared buffer.
 
 ```nim
   outputBuffer.add $occurrenceCount
@@ -200,22 +252,24 @@ if outputBuffer.len > 0:
   stdout.write outputBuffer
 ```
 
-The loop adds 18,980 days per answer and stops at the last legal day. `setLen(0)` reuses the buffer after each flush. The final write covers the tail.
+The loop adds 18980 days per answer and stops at the last legal day. `setLen(0)` reuses the buffer after each flush. The final write covers the tail.
 
 ## Complexity
 
-| phase | time | space |
-|---|---|---|
-| input read | one pass over the input bytes | input bytes |
-| one query | at most 73 candidate steps | constant |
-| output | one write per 256 KiB block | 256 KiB |
-| all data sets | O(73 times the set count plus the answer count) | input plus one block |
+Work grows with the answer count, not with the Long Count range.
 
-Work grows with the number of answers, not with the size of the Long Count range.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over the input bytes | input bytes |
+| One query | at most 73 candidate steps | constant |
+| Output | one write per 256 KiB block | one output block |
+| All data sets | O(73 * d + answer count) | input plus one block |
 
-| measure | form |
-|---|---|
-| time | O(d) for d data sets and their answers |
-| space | O(1) working storage |
+Here `d` is the number of data sets.
 
-Simulating all 288,000 days for each query costs O(288,000 times d) time and gives the same answers.
+| Measure | Big O |
+| --- | --- |
+| Time | O(d + answer count) |
+| Space | O(1) working storage |
+
+Simulating all 288000 days for each query costs O(288000 * d) time and gives the same answers.

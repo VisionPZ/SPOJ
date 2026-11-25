@@ -1,54 +1,92 @@
+# CODE1 — Secret Code (SPOJ)
+
+<https://www.spoj.com/problems/CODE1/>
+
 ## Problem
 
-The program decrypts a complex-base code. Each case gives a complex number X and a complex base B. The program prints the digits of X in base B, highest digit first and separated by commas. Here |B| is the modulus sqrt(Br² + Bi²), and each digit a satisfies 0 <= a < |B|. The program prints `The code cannot be decrypted.` when no valid digit sequence exists.
+A spy writes numbers as strings of digits in a strange complex-number base. The code hides a Gaussian integer (a number with a real part and an imaginary part) inside another complex number.
 
-The judge bounds every case as follows.
+Input: one integer for the case count, then four integers per case. The first two give X, and the last two give base B.
 
-| Quantity | Bound |
-|---|---|
+Output: the digits of X in base B, highest digit first and separated by commas. Print `The code cannot be decrypted.` when no valid digit string exists.
+
+The judge bounds every case as follows:
+
+| Item | Bound |
+| --- | --- |
 | Test cases T | about 100000 |
-| Components of X | |Xr|,|Xi| <= 1000000 |
-| Components of B | |Br|,|Bi| <= 16 |
-| Modulus of B | |B| > 1 |
-| Highest digit index n | n <= 100 |
+| Parts of X | absolute value at most 1000000 |
+| Parts of B | absolute value at most 16 |
+| Modulus of B | greater than 1 |
+| Highest digit index n | at most 100 |
 | Time limit | 5 s |
 | Memory limit | 1536 MB |
 
 The digit bound comes from the modulus, and the base stays small.
 
+The sample input and output:
+
+```
+4
+-935 2475 -11 -15
+1 0 -3 -2
+93 16 3 2
+191 -192 11 -12
+```
+
+```
+8,11,18
+1
+The code cannot be decrypted.
+16,15
+```
+
 ## Idea
 
-The program uses repeated division in a Gaussian-integer numeral system. Each step picks the digit a that makes X - a divisible by B, then replaces X with (X - a)/B. A brute-force search over digit strings would grow exponentially with the digit count.
+Convert the number by repeated division, like rewriting a decimal number in a new base. Here the base is a point on a grid, so each division tests candidate digits until one makes the remainder divisible.
 
-Each case costs O(log|X|) integer tests.
+The program picks a digit a that makes `X - a` divisible by B, records it, and divides by B. Each step tests at most 23 digits because the modulus is at most 23.
+
+Each division shrinks the magnitude of X, so the process ends after O(log |X|) steps. Guessing whole digit strings would grow exponentially with the digit count.
+
+Repeated division finds the unique digit at each step.
 
 ## Why It Works
 
-For a trial digit a, put u = Xr - a. The quotient (X - a)/B has two parts:
+A digit works exactly when both parts of the quotient are integers.
 
-realPart = (u*Br + Xi*Bi) / N
+1. Write N for `Br² + Bi²`, the squared modulus (size squared) of the base.
+2. For a trial digit a, the real part is `(u × Br + Xi × Bi) / N`, with `u = Xr - a`.
+3. The imaginary part is `(Xi × Br - u × Bi) / N`, with the same u.
+4. The digit works when N divides both numerators. The program tests digits from 0 upward and stops at the first hit.
 
-imagPart = (Xi*Br - u*Bi) / N
+The uniqueness argument uses a common factor g:
 
-Here N = Br² + Bi². The digit works exactly when N divides both numerators. The program tests each digit in the allowed range and stops at the first one that works.
+| Term | Meaning |
+| --- | --- |
+| `N` | `Br² + Bi²`, the squared modulus |
+| `largestDigit` | largest square strictly below N |
+| `g` | gcd (greatest common divisor) of `|Br|` and `|Bi|` |
+| smallest divisible real integer | `g × (b² + c²)`, at least the modulus |
+| `maxDigitCount` | cap of 101 digits |
 
-Write g = gcd(|Br|,|Bi|) and B = g*(b + i*c), where gcd(|b|,|c|) = 1. The smallest positive real integer divisible by B equals g*(b² + c²). This value is at least |B|. Every allowed digit is strictly below |B|, so two different digits cannot both work. The search therefore finds the unique digit whenever one exists. If no digit works, no representation exists, since every representation must supply such a first digit.
+Every allowed digit is below the modulus, so two digits cannot both work. When no digit works, no representation exists.
 
-Each division divides the magnitude of X by |B| > 1, so the process reaches zero. When X is nonzero and the quotient is zero, the final digit equals X and is nonzero. The 101-digit cap enforces n <= 100.
+A script traces the first sample case with base `-11 -15`:
 
-The first sample case gives the following divisions.
+| Step | X | Digit | Next X |
+| --- | --- | --- | --- |
+| 1 | `(-935, 2475)` | 18 | `(-77, -120)` |
+| 2 | `(-77, -120)` | 11 | `(8, 0)` |
+| 3 | `(8, 0)` | 8 | `(0, 0)` |
 
-| Step | X | Chosen digit | Next X |
-|---|---|---|---|
-| 1 | (-935, 2475) | 18 | (-77, -120) |
-| 2 | (-77, -120) | 11 | (8, 0) |
-| 3 | (8, 0) | 8 | (0, 0) |
-
-Reading the digits from last to first gives 8,11,18.
+Reading the digits from last to first gives `8,11,18`, the sample answer.
 
 ## Code
 
-```
+**Scanner and constants.** The scanner keeps a leading minus sign, so negative coordinates survive.
+
+```nim
 const flushBlockBytes = 1 shl 17
 const firstDigitValue = 48
 const maxDigitCount = 101
@@ -67,9 +105,11 @@ proc nextInt(inputData: string, i: var int): int =
   return value
 ```
 
-`nextInt` reads an optional sign, so negative input survives. The scanner walks `inputData` once by index. The cost is linear in the input length.
+The digit value comes from the constant 48. The scan walks the buffer once by index. Each case reads exactly four integers.
 
-```
+**Case setup.** The digit range follows from the squared modulus, and zero gets one digit.
+
+```nim
 var inputData: string
 var line: string
 while readLine(stdin, line):
@@ -94,9 +134,11 @@ for j in 1 .. caseCount:
     digitCount = 1
 ```
 
-The read loop keeps a last line without a newline. `largestDigit` stops at the largest square below `baseNorm`. The zero case stores one digit. The cost is one pass over the input.
+The read loop keeps a last line that lacks a newline. `largestDigit` stops at the largest square below `baseNorm`. The zero case stores a single digit and skips division.
 
-```
+**Division loop.** Each trial digit is tested against both divisibility conditions.
+
+```nim
     while true:
       var chosenDigit = -1
       var chosenReal = 0
@@ -122,9 +164,11 @@ The read loop keeps a last line without a newline. `largestDigit` stops at the l
       currentImag = chosenImag
 ```
 
-This loop runs at most `maxDigitCount` times. The two `mod` tests compare against zero, so negative numerators cause no error. Each step tests at most 23 digits.
+The loop runs at most `maxDigitCount` times. The two `mod` tests compare against zero, so negative numerators cause no error. Each step tests at most 23 digits.
 
-```
+**Output.** Digits print from the highest index down to zero.
+
+```nim
   if failed:
     outputBuffer.add "The code cannot be decrypted.\n"
   else:
@@ -140,8 +184,27 @@ This loop runs at most `maxDigitCount` times. The two `mod` tests compare agains
 stdout.write outputBuffer
 ```
 
-`k` walks from the highest digit down to zero. The buffer flushes every `flushBlockBytes` bytes, which caps memory. The cost is linear in the output size.
+Index k walks from the last recorded digit down to zero. The comma check avoids a separator after the final digit. The buffer flushes every 128 KiB.
 
 ## Complexity
 
-Reading takes O(T) time and space linear in the input size. Each case divides at most about 50 times. Each division tests at most 23 digits. The arithmetic takes O(T log|X|) time with a small constant. The output buffer holds one flush block, so extra space stays constant. A brute-force search over digit strings would take exponential time in the digit count.
+Each division tries a bounded set of digits and shrinks the number.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Digit range | O(1) trial squares | O(1) |
+| Division steps | O(log \|X\|) steps per case | O(1) per step |
+| Output | one write per 128 KiB block | 128 KiB |
+| Total per case | O(log \|X\| × modulus) | O(101) digits |
+
+At the largest base, the digit loop tests at most 23 values.
+
+The asymptotic bounds are as follows:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(T × log \|X\| × \|B\|) for T cases |
+| Space | O(1) working space |
+
+Guessing complete digit strings would take exponential time in the digit count.

@@ -1,38 +1,96 @@
+# HIGH — Highways (SPOJ)
+<https://www.spoj.com/problems/HIGH/>
+
 ## Problem
 
-Read several undirected graphs with at most 12 vertices. Count how many subsets of the given edges form a spanning tree: every vertex connected and exactly one path between any two vertices. Print one count per graph. A graph with one city has answer one.
+A country lists the city pairs that may get highways. It asks how many networks connect every city with exactly one path between any pair. Each network is a different subset of the listed links.
 
-| Quantity | Bound |
+The input starts with a test count of about 1000. Each case gives a city count n from 1 to 12 and a link count, then one link per line. City numbers run from 1 to n, and a blank line separates cases. Print one count per case, which fits a signed 64-bit integer. A single city has answer 1.
+
+The judge limits are:
+
+| Item | Value |
 | --- | --- |
 | Test cases | about 1000 |
-| Cities `n` | 1 to 12 |
+| Cities n | 1 to 12 |
 | Answer | fits a signed 64-bit integer |
-| Time limit | 7000 ms |
+| Time limit | 7 s |
 | Memory limit | 1536 MB |
 
-A blank line separates consecutive test cases.
+The small city count makes a matrix method practical.
+
+The sample input reads:
+
+```text
+4
+4 5
+3 4
+4 2
+2 3
+1 2
+1 3
+
+2 1
+2 1
+
+1 0
+
+3 3
+1 2
+2 3
+3 1
+
+```
+
+The sample output reads:
+
+```text
+8
+1
+1
+3
+```
 
 ## Idea
 
-Apply the matrix-tree theorem. Delete one row and column from the graph Laplacian; the remaining determinant equals the number of spanning trees. Compute that determinant modulo two large primes, then reconstruct the exact value with the Chinese remainder theorem.
-
-Each determinant costs O(n³) modular operations, so the cost per graph is O(n³). Enumerating all edge subsets would cost O(2ᵐ).
+Turn the link list into a degree-and-minus-one matrix, like copying a wiring diagram into a table. The matrix-tree theorem (a rule linking determinants to spanning trees) says one determinant of that matrix counts the networks. Compute the determinant modulo two large primes. Combine the remainders with the Chinese remainder theorem (rebuilding a number from two remainders). Each determinant costs O(n³) operations. Enumerating all link subsets would cost O(2^m). Takeaway: build the matrix, take two determinants, and rebuild the exact answer.
 
 ## Why It Works
 
-The Laplacian has degree on the diagonal and minus one for each edge. Its cofactor counts spanning trees because each spanning tree contributes exactly one to the determinant expansion. The answer is below both primes' product, so two residues determine it uniquely.
+1. The matrix has each city's degree on the diagonal and minus one wherever a link meets another city.
+2. Deleting one row and column gives a cofactor whose determinant counts spanning trees.
+3. Each spanning tree contributes exactly one to the determinant expansion.
+4. Modular Gaussian elimination (row reduction inside a prime modulus) computes the determinant without huge integers.
+5. Fermat inversion gives each pivot's inverse because both moduli are prime, and a row swap flips the determinant's sign.
+6. The answer is below the product of the two primes, so two remainders determine it uniquely.
+7. The reconstruction uses `difference = r2 - r1 (mod m2)`, `multiplier = difference * m1^-1 (mod m2)`, and `answer = r1 + m1 * multiplier`.
 
-The reconstruction rule is:
+The table defines the terms.
 
-- `difference = r2 − r1 (mod m2)`
-- `multiplier = difference · m1⁻¹ (mod m2)`
-- `answer = r1 + m1 · multiplier`
+| Term | Meaning |
+| --- | --- |
+| cofactor | matrix with one row and column removed |
+| `firstModulus` | prime 1000000007 |
+| `secondModulus` | prime 1000000009 |
+| `modPower` | fast modular exponentiation for inverses |
 
-Modular Gaussian elimination uses Fermat inversion because both moduli are prime. Row swaps flip the sign of the determinant.
+These four terms describe the reconstruction.
+
+A script computed the first sample case, with four cities and five links.
+
+| Quantity | Value |
+| --- | --- |
+| Determinant mod 1000000007 | 8 |
+| Determinant mod 1000000009 | 8 |
+| Difference | 0 |
+| Multiplier | 0 |
+| Reconstructed answer | 8 |
+
+The program prints 8, which matches the sample.
 
 ## Code
 
-Input is read once and parsed with a digit scanner that skips the blank lines.
+**Input and scanner.** The program reads all input once and skips blank lines while parsing.
 
 ```nim
 const firstDigitValue = 48
@@ -59,9 +117,9 @@ proc nextInt(data: string, i: var int): int =
   return value
 ```
 
-Every input number is non-negative, so the scanner needs no sign branch. Parsing one number visits each digit once.
+Every input number is non-negative, so the scanner needs no sign branch. Blank lines contain no digits and are skipped automatically. Parsing one number visits each digit once.
 
-Fermat inversion and modular elimination form the first determinant.
+**Modular determinant.** Fermat inversion and elimination form one determinant.
 
 ```nim
 proc modPower(baseValue: int64, exponentValue: int64, modulus: int64): int64 =
@@ -110,9 +168,9 @@ proc determinantModulo(matrix: array[maxCities, array[maxCities, int64]],
   return result
 ```
 
-Reduction happens after every subtraction, so no intermediate value exceeds the modulus squared. A zero column makes the determinant zero. Row swaps track the sign.
+Reduction happens after every subtraction, so no intermediate value exceeds the modulus squared. A zero column makes the determinant zero. Row swaps track the sign. Exponentiation scans the bits of the exponent.
 
-The two residues combine into the exact answer.
+**Reconstruction.** Two remainders combine into the exact answer.
 
 ```nim
 proc spanningTreeCount(matrix: array[maxCities, array[maxCities, int64]],
@@ -126,9 +184,9 @@ proc spanningTreeCount(matrix: array[maxCities, array[maxCities, int64]],
   return firstRemainder + firstModulus * multiplier
 ```
 
-The inverse is taken modulo the second prime, and the multiplier multiplies the first prime. Swapping those two would produce a large meaningless value.
+The inverse is taken modulo the second prime, and the multiplier scales the first prime. Swapping those two would produce a large meaningless value. Both determinants use the same cofactor matrix.
 
-The driver builds the Laplacian cofactor and writes the answers.
+**Driver.** The loop builds the cofactor and writes buffered answers.
 
 ```nim
 var outputBuffer = ""
@@ -168,8 +226,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Edges touching the last city still raise that city's degree, but its row and column are absent from the cofactor. The matrix is rebuilt per case because sizes differ. Output is written in blocks.
+Links to the deleted last city are dropped from the cofactor. The matrix is rebuilt per case because sizes differ. A single city takes the direct answer branch. Output is written in blocks.
 
 ## Complexity
 
-Building the cofactor costs O(m). Each modular determinant costs O(n³ log p) for exponent bit length log p, and two are computed. Total time is O(m + n³ log p) per case and space is O(n²). Enumerating edge subsets would cost O(2ᵐ).
+| Phase | Time | Space |
+| --- | --- | --- |
+| Build cofactor | O(m) | O(n²) |
+| One determinant | O(n³ log p) | O(n²) |
+| Reconstruct answer | O(log p) | O(1) |
+
+Elimination dominates one case.
+
+The exponent bit length log p is at most 31 for these primes.
+
+| Measure | Bound |
+| --- | --- |
+| Per case | O(m + n³ log p) time |
+| Per case | O(n²) space |
+| Determinants | two per case |
+
+Enumerating link subsets would cost O(2^m) per case and quickly becomes impossible.

@@ -1,59 +1,86 @@
+# PERMUT1 — Permutations (SPOJ)
+<https://www.spoj.com/problems/PERMUT1/>
+
 ## Problem
 
-An inversion of a permutation is a pair of positions where the earlier value is larger. Read `d` datasets, each holding integers `n` and `k`. Print the number of `n`-element permutations with exactly `k` inversions. Each answer occupies one line.
+An inversion is a pair of entries out of order: aᵢ > aⱼ with i < j. Count how many permutations of n numbers have exactly k inversions.
 
-The judge fixes these bounds:
+You receive several n-k pairs. The counts can be large, so print the exact integer, not a floating-point estimate.
 
-| quantity | limit |
+Input: the first integer is d, the number of data sets. Each following line gives n and k. Output: one line per data set with the number of n-permutations having k inversions.
+
+These are the bounds and the judge limits:
+
+| Item | Bound |
 | --- | --- |
-| datasets `d` | 1 .. 10 |
-| `n` in the statement | 1 .. 12 |
-| `n` in judge data | up to 20 |
-| `k` | 0 .. 98 |
-| time limit | 3000 ms |
-| memory limit | 1536 MB |
+| Data sets d | 1 to 10 |
+| Permutation size n | 1 to 12 |
+| Inversion count k | 0 to 98 |
+| Time limit | 3000 ms |
+| Memory limit | 1536 MB |
 
-The larger `n` matters because `20!` exceeds 32 bits but stays inside 64 bits.
+The sample asks for four-element permutations with one inversion:
+
+```
+1
+4 1
+```
+
+```
+3
+```
+
+The three answers are 2134, 1324, and 1243.
 
 ## Idea
 
-Add the largest element last, so element `i` creates `x` new inversions for each `x` from zero through `i - 1`. A table fills from short permutations to long ones. Counts use base-one-billion limbs, because they can exceed 64 bits.
+Insert the largest number last and count how many smaller numbers it passes. Picture adding one new book to a sorted shelf: sliding it past t books creates exactly t new out-of-order pairs.
 
-Cost: at most `min(j, i-1) + 1` limb additions per cell, and one table lookup per dataset instead of enumerating permutations.
+The program uses dynamic programming. Entry `dp[j][inv]` counts permutations of j numbers with inv inversions. Inserting the new largest value j lets it pass `added` smaller values, where added ranges from 0 to j − 1. So `dp[j][inv]` is the sum of `dp[j − 1][inv − added]` over that range.
+
+Counts can exceed machine integers, so each value is a big integer stored as base-10⁹ limbs. Addition walks limbs with a carry; printing goes from the most significant limb down.
+
+The table costs O(maxN × maxK × maxN) big-integer additions once, then each query is O(1). Listing all n! permutations costs factorial time.
+
+Takeaway: one insertion recurrence and a limb-based big integer answer every query at once.
 
 ## Why It Works
 
-When element `i` joins a shorter permutation, it is larger than every element there. The elements placed after it become its inversions. That number `x` ranges from zero to `i - 1`.
+Four facts prove the recurrence.
 
-Two different values of `x` lead to different final permutations. So the counts for all choices of `x` add up without overlap.
+1. Insert the largest value j into any permutation of the other j − 1 values. If it ends up past `added` smaller values, it creates exactly `added` new inversions.
+2. The value `added` ranges from 0 to j − 1. Every final permutation has one insertion history, so summing over added counts each permutation once.
+3. The seed `dp[0][0] = 1` is the empty permutation. For every j, `dp[j][0] = 1`, the fully sorted order.
+4. Base-10⁹ limbs keep each limb below 2³¹, so limb sums with a carry fit in int64. Printing the top limb first, then nine-digit groups, reconstructs the exact value.
 
-The recurrence is:
+These are the parts of one DP row:
 
-`count(i, j) = sum(count(i - 1, j - x))` for `x` from 0 to `min(j, i - 1)`.
-
-Each term has a fixed role:
-
-- `i` is the current permutation length.
-- `j` is the inversion count wanted.
-- `x` is the number of shorter elements placed after the largest one.
-- `count(i - 1, j - x)` counts shorter permutations that supply the remaining inversions.
-
-An empty permutation has one arrangement with zero inversions. A sorted permutation of any positive length also has one arrangement with zero inversions. Those two facts seed the table.
-
-A script computed the counts for lengths one through four.
-
-| length | counts by inversion number |
+| Term | Meaning |
 | --- | --- |
-| 1 | 1 |
-| 2 | 1 1 |
-| 3 | 1 2 2 1 |
-| 4 | 1 3 5 6 5 3 1 |
+| `dp[j][inv]` | permutations of j numbers with inv inversions |
+| `added` | smaller values passed by the newly inserted largest value |
+| `upperAdded` | min(inv, j − 1), the largest possible added count |
+| `total` | running sum of big integers for one cell |
+| `limbBase` | 10⁹, the value of one stored limb |
 
-The last row sums to 24, which is four factorial. For length four and one inversion, the recurrence gives `count(3, 1) + count(3, 0) = 2 + 1 = 3`.
+A script prints the small DP table built by the recurrence:
+
+```
+n\k     0     1     2     3     4     5     6
+ 0      1     0     0     0     0     0     0
+ 1      1     0     0     0     0     0     0
+ 2      1     1     0     0     0     0     0
+ 3      1     2     2     1     0     0     0
+ 4      1     3     5     6     5     3     1
+
+dp[4][1] = dp[3][1]+dp[3][0] = 2 + 1 = 3
+```
+
+The last line matches the sample. Values stay exact because every step uses integer limbs.
 
 ## Code
 
-The program reads the whole input once, then scans characters by index.
+**Input.** The whole stream goes into one buffer, and big integers get a limb type.
 
 ```nim
 const flushBlockBytes = 1 shl 18
@@ -67,11 +94,7 @@ var lineBuffer: string
 while readLine(stdin, lineBuffer):
   inputData.add lineBuffer
   inputData.add '\n'
-```
 
-The line loop ends at EOF, so it runs once per input line. The added newline keeps adjacent numbers apart. The cost is one append per line.
-
-```nim
 proc nextInt(data: string, i: var int): int =
   while i < data.len and (data[i] < '0' or data[i] > '9'):
     i += 1
@@ -81,7 +104,9 @@ proc nextInt(data: string, i: var int): int =
     i += 1
 ```
 
-The skip loop crosses separators and the digit loop crosses each number. Non-digits never reach the value, so blank lines cause no error. The cost is one pass over the input buffer.
+`BigInt` is a sequence of base-10⁹ limbs, least significant first. The scanner walks one shared buffer. Cost is one pass over the input bytes.
+
+**Big integers.** Addition carries across limbs; printing pads every lower limb to nine digits.
 
 ```nim
 proc addBig(left, right: BigInt): BigInt =
@@ -102,11 +127,7 @@ proc addBig(left, right: BigInt): BigInt =
     i += 1
   result[maxLen] = carry
   if carry == 0: result.setLen(maxLen)
-```
 
-The loop runs for `max(left.len, right.len)` limbs. The final trim drops a zero carry limb, which would print a leading zero. The cost is one add per limb.
-
-```nim
 proc appendBig(output: var string, value: BigInt) =
   if value.len == 0:
     output.add char(firstDigitValue)
@@ -121,7 +142,9 @@ proc appendBig(output: var string, value: BigInt) =
       j = j div 10
 ```
 
-The outer loop runs once per limb below the top. The inner loop writes nine digits and pads lower limbs with zeros. The cost is one pass over the value's digits.
+The loop bound is the longer operand. At most one carry propagates from each limb, so the sum stays exact. The empty case prints `0`. Each operation costs O(number of limbs).
+
+**Driver.** The program sizes the table from the largest query, then fills and answers it.
 
 ```nim
 var i = 0
@@ -137,11 +160,7 @@ for j in 0..<datasetCount:
   queryK[j] = currentK
   if currentN > maxN: maxN = currentN
   if currentK > maxK: maxK = currentK
-```
 
-The loop runs exactly `datasetCount` times. It records the largest `n` and `k`, so the table stays small. The cost is one scan of the parsed numbers.
-
-```nim
 var dp = newSeq[seq[BigInt]](maxN + 1)
 for j in 0..maxN:
   dp[j] = newSeq[BigInt](maxK + 1)
@@ -154,11 +173,7 @@ for j in 1..maxN:
     for added in 0..upperAdded:
       total = addBig(total, dp[j - 1][invCount - added])
     dp[j][invCount] = total
-```
 
-The length loop runs `maxN` times and the inversion loop runs `maxK` times. An empty sequence denotes zero, so no special case exists. The cost is the sum of the inner loop bounds.
-
-```nim
 var outputBuffer = ""
 for j in 0..<datasetCount:
   appendBig(outputBuffer, dp[queryN[j]][queryK[j]])
@@ -169,12 +184,25 @@ for j in 0..<datasetCount:
 stdout.write outputBuffer
 ```
 
-The loop runs once per dataset and flushes at `flushBlockBytes`. The final write flushes the tail shorter than one block. The cost is one lookup and one limb conversion per dataset.
+`upperAdded = min(invCount, j − 1)` avoids negative indices and useless terms. The table is built once for the largest n and k in the input. Each query then reads one cell; the final write flushes the tail.
 
 ## Complexity
 
-Reading costs O(input bytes) time and O(input bytes) space. The table holds `(maxN + 1) * (maxK + 1)` cells of at most three limbs at these bounds. Filling costs O(`maxN * maxK * min(maxN, maxK)`) limb additions. Output costs O(datasets times digits) time inside one buffered string.
+Table building carries the cost.
 
-Total time is O(`input bytes + maxN * maxK * min(maxN, maxK) + output bytes`). Total space is O(`input bytes + maxN * maxK * digits + flushBlockBytes`).
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(total tokens) | O(input size) |
+| Table build | O(maxN × maxK × min(maxN, maxK)) limb additions | O(maxN × maxK) big integers |
+| Query answer | O(limbs of answer) | O(1) |
+| Output | O(datasets) | O(block size) |
 
-A naive method enumerates every permutation and counts its inversions. That costs O(`n! * n^2`) per dataset, while this table answers each dataset with one lookup.
+The build dominates once, at roughly 12 × 98 × 12 additions here.
+
+| Measure | Big O |
+| --- | --- |
+| Precomputation | O(maxN × maxK × min(maxN, maxK)) |
+| Time per query | O(number of output limbs) |
+| Working space | O(maxN × maxK) |
+
+Enumerating permutations takes O(n!) time, while the DP reaches the same counts through repeated sums.

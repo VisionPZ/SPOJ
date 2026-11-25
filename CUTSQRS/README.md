@@ -1,63 +1,99 @@
+# CUTSQRS — Cutting off Squares (SPOJ)
+<https://www.spoj.com/problems/CUTSQRS/>
+
 ## Problem
 
-Two players cut squares from a rectangle with sides a and b, where a is at most b.
-Each turn removes one or more squares of side a that touch three sides of the current rectangle.
-The player who removes the last piece wins.
-Michael records the number of possible game sequences, the number where the first player wins, and the word first or second.
-Print the character count of those three records, without spaces.
+Two players trim squares from a rectangle, and a bored spectator counts the characters in the game log.
+The program must predict that count without playing the game.
 
-The input bounds and judge limits are:
+Two players cut squares from a rectangle with sides `a` and `b`, where `a` is at most `b`.
+Each turn removes at least one square of side `a` touching three sides of the current rectangle.
+The player removing the last piece wins.
+Michael records the number of possible move sequences, the number of winning sequences for the first player, and the word `first` or `second`.
+Print the total character count of those three records, with spaces excluded.
+
+Read `t` test cases, then `t` lines each holding `a` and `b`.
+
+The judge bounds follow.
 
 | Item | Bound |
 | --- | --- |
-| Test cases | t ≤ 10000 |
+| Test cases `t` | up to 10000 |
 | Rectangle sides | 1 ≤ a ≤ b ≤ 10^9 |
 | Time limit | 3000 ms |
 | Memory limit | 1536 MB |
 
 Large quotients make the sequence count far too big to print.
 
+The sample input and expected output follow verbatim.
+
+```
+2
+1 1
+2 3
+```
+
+```
+7
+8
+```
+
+A square prints 7 characters and the 2 by 3 case prints 8.
+
 ## Idea
 
-Every turn removes a whole number of squares, so the side lengths follow the Euclidean algorithm.
-One step with quotient q, meaning b div a, adds q − 1 to an exponent.
-The sequence count is 2 raised to that exponent, and exactly half of the sequences have odd length.
-We compute only the decimal digit counts of those powers with high-precision logarithms.
+Every turn follows the Euclidean algorithm (repeated division by remainders), like trading a rectangle for a smaller one.
+Let `q` be `b div a`.
+Each chain step with quotient `q` adds `q - 1` to an exponent.
+The sequence count is 2^sum and the winning count is 2^(sum - 1).
+
+The program computes only decimal digit counts of those powers.
+It uses a high-precision product of the exponent and log10(2).
 The winner depends on the starting run of quotients equal to one.
 
-Each case costs one Euclidean chain and two digit counts, so the time is O(log b).
+Cost per case is one Euclidean chain of O(log b) steps plus two digit counts.
+Counting digits of the powers replaces building the powers themselves.
 
 ## Why It Works
 
-A turn that removes k squares leaves sides a and b − k*a.
-Let q be b div a and r be b mod a.
-Removing q squares ends the game when r is zero, and otherwise it leaves the smaller state (r, a).
-The q − 1 smaller choices each lead to a state with half the parent count.
-The exponent grows by q − 1.
+Four facts prove the method.
 
-The answer has three terms:
+1. A turn removing `k` squares leaves sides `a` and `b - k*a`.
+   Removing `q` squares ends the game when the remainder is zero.
+2. The `q - 1` smaller choices each halve the sequences reaching the smaller state.
+   The exponent therefore grows by `q - 1`.
+3. Half of the sequences have odd length, so the winning count is 2^(sum - 1).
+4. The winner flips once per leading quotient equal to one.
+   It stops flipping at the first larger quotient.
 
-answer = digits(2^sum) + digits(2^(sum - 1)) + wordLength
+The answer combines three character counts.
 
-- The first term counts characters of the total sequence count.
-- The second term counts characters of the winning count.
-- The third term adds five for first or six for second.
+| Term | Meaning |
+| --- | --- |
+| `quotientSum` | sum of `q - 1` over the Euclidean chain |
+| `powerOfTwoDigitCount` | decimal digits of 2^exponent from log10(2) |
+| `leadingOnes` | count of leading quotients equal to one |
+| `wordLength` | 5 for `first` and 6 for `second` |
 
-The winner flips once per leading quotient equal to one, then stops flipping at the first larger quotient.
+The answer adds those three counts.
 
-A script-generated example for the starting sides 43 and 100:
+A script walks the chain for starting sides 43 and 100 and prints each value.
 
-- start (43, 100)
-- quotients 2, 3, 14
-- sum (2-1) + (3-1) + (14-1) = 16
-- sequences 2^16 = 65536, 5 digits
-- winning 2^15 = 32768, 5 digits
-- word first, 5 characters
-- answer 5 + 5 + 5 = 15
+```
+start (43, 100)
+quotients 2 3 14
+sum (2-1) + (3-1) + (14-1) = 16
+sequences 2^16 = 65536 -> 5 digits
+winning  2^15 = 32768 -> 5 digits
+word first -> 5 characters
+answer 5 + 5 + 5 = 15
+```
+
+The script never materializes the enormous power of two.
 
 ## Code
 
-The constants fix the scanner radix, the flush size, and the logarithm words:
+**Constants.**
 
 ```nim
 import math
@@ -70,9 +106,9 @@ const
   logTenTwoLow = -2.8037281277851704e-18
 ```
 
-The scanner walks the whole input buffer.
-Its loops end at `dataLength`, the buffer length.
-It never allocates a token and costs O(input bytes).
+The split factor comes from the Dekker 53-bit split. The two logarithm constants store log10(2) with an error term. The output block holds 256 KiB.
+
+**Integer scanner.**
 
 ```nim
 proc nextInt(inputData: string, i: var int): int =
@@ -85,9 +121,9 @@ proc nextInt(inputData: string, i: var int): int =
     inc i
 ```
 
-The split keeps the exact product and its error apart.
-The split factor comes from Dekker's 53-bit split.
-This step costs constant time.
+The first loop stops at the next digit. The second loop consumes the remaining digits. The scanner touches each input byte once and allocates nothing.
+
+**High-precision product.**
 
 ```nim
 proc splitDouble(value: float): tuple[highPart, lowPart: float] =
@@ -106,9 +142,9 @@ proc highPrecisionProduct(factorLeft, factorRight: float): tuple[product, error:
                    leftParts.lowPart * rightParts.lowPart
 ```
 
-The digit count adds the error term before taking the floor.
-A plain float product loses the fractional part near large exponents.
-This step costs constant time.
+splitDouble separates a float into a high part and a low part. highPrecisionProduct recovers the rounding error of the product. Both procedures cost constant time.
+
+**Digit count.**
 
 ```nim
 proc powerOfTwoDigitCount(exponent: int): int =
@@ -119,9 +155,9 @@ proc powerOfTwoDigitCount(exponent: int): int =
   result = int(wholePart) + int(floor(fractionalPart + correction)) + 1
 ```
 
-The Euclidean loop ends when `shorterSide` reaches zero.
-That chain has O(log b) steps.
-The code never builds the enormous power of two.
+The exponent is multiplied by log10(2) in high precision. The error term corrects the fractional part before the floor. The result is the decimal digit count of a power of two.
+
+**Euclidean chain.**
 
 ```nim
 proc solveCase(sideLeft, sideRight: int): int =
@@ -149,9 +185,9 @@ proc solveCase(sideLeft, sideRight: int): int =
   result = sequenceDigits + winningDigits + wordLength
 ```
 
-The driver loops `caseCount` times, once per test case.
-It accumulates answers and writes one block at a time.
-The final flush handles a short tail and costs O(output bytes).
+The loop ends when shorterSide reaches zero. It accumulates the exponent and counts leading quotients equal to one. The chain has O(log b) steps. A square returns 7 directly.
+
+**Driver.**
 
 ```nim
 var inputData = ""
@@ -177,22 +213,25 @@ if outputBuffer.len > 0:
   stdout.write outputBuffer
 ```
 
+The driver loops once per test case. Each answer is appended to one output buffer. The final write handles a short tail.
+
 ## Complexity
 
-Input scanning takes O(input bytes).
-Each case walks one Euclidean chain and computes two digit counts.
-Output flushing takes O(output bytes).
+The phases and their costs follow.
 
-Total time is O(input bytes + output bytes + t log b).
-Total space is O(input bytes + block bytes).
-A naive method that builds the count as a big integer would need 2^sum bits and cannot fit.
-
-The cost splits into three phases.
-
-| Phase | Time | Extra space |
+| Phase | Time | Space |
 | --- | --- | --- |
 | Input scan | O(input bytes) | one input buffer |
 | Per case | O(log b) | constant |
 | Output flush | O(output bytes) | one output block |
 
-The program never materializes the enormous count.
+The exponent never grows beyond a few billion, so each digit count stays cheap.
+
+The Big O summary follows.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(input bytes + output bytes + t log b) |
+| Space | O(input bytes + block bytes) |
+
+A naive method that builds 2^sum as a big integer needs 2^sum bits and cannot fit.

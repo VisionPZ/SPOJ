@@ -1,75 +1,84 @@
+# BOOKS1 — Copying Books (SPOJ)
+<https://www.spoj.com/problems/BOOKS1/>
+
 ## Problem
 
-Read several cases. Each case gives book page counts and a number of scribes. Print the page counts split into that many continuous groups, with a slash between groups.
+Before printing, scribes copied books by hand. Split m books among k scribes so each gets a continuous block, and make the busiest scribe's work as small as possible. Print the page counts with slashes at the split points.
 
-The statement and judge table give these bounds.
+Input starts with a case count. Each case gives m and k, then m page counts on one line. Output one line per case, with spaces between books and ` / ` between scribes' blocks.
 
-| item | bound |
-|---|---|
-| cases | about 200 |
-| books and scribes | 1 <= k <= m <= 500 |
-| pages per book | positive, less than 10 000 000 |
-| judge limit | 5000 ms, 1536 MB |
+The statement and judge table give these bounds:
 
-Page totals reach 5 * 10^9, so the search uses 64-bit integers.
+| Item | Bound |
+| --- | --- |
+| Cases | about 200 |
+| Books and scribes | 1 ≤ k ≤ m ≤ 500 |
+| Pages per book | positive, below 10,000,000 |
+| Time limit | 5000 ms |
+| Memory limit | 1536 MB |
+
+Page totals reach 5 times 10^9, so the search uses 64-bit integers.
+
+The sample input and output:
+
+```
+2
+9 3
+100 200 300 400 500 600 700 800 900
+5 4
+100 100 100 100 100
+```
+
+```
+100 200 300 400 500 / 600 700 / 800 900
+100 / 100 / 100 / 100 100
+```
+
+The first case needs a maximum load of 1700 pages.
 
 ## Idea
 
-Binary search the largest group sum, called the load. For a trial load, pack books greedily from left to right and count the scribes used. If that count fits the budget, try a smaller load, otherwise raise it.
+Binary search the largest block sum, called the load. For a trial load, pack books greedily from left to right and count the scribes used. If that count fits the budget, try a smaller load; otherwise raise it. Think of judging a row of boxes by one weight limit, then lowering the limit until the boxes no longer fit.
 
-Cost per case: O(m log totalPages) page tests, plus one O(m) pass to place the slashes.
+Once the optimal load is known, place the slashes from right to left so early scribes carry the least work they can.
+
+The search costs O(m log totalPages) per case, plus one O(m) pass to place the slashes. Enumerating all split points would choose k - 1 cuts among m - 1 gaps, which is exponential.
+
+Takeaway: search the answer, then greedily lay out the cuts.
 
 ## Why It Works
 
-Feasibility is monotone. If a load works, every larger load also works.
-
-The greedy pack uses the fewest scribes for a fixed load, so its count gives the correct test. The search starts between the heaviest book and the total pages.
-
-The right-to-left pass gives early scribers the least work they can take, which matches the tie rule.
+1. Feasibility is monotone: if a load works, every larger load also works.
+2. The greedy pack uses the fewest scribes for a fixed load, so its count gives the correct test.
+3. The search starts between the heaviest book and the total pages, which bracket the answer.
+4. The right-to-left pass fills the last scribe first, so earlier scribes take the smallest possible prefix.
+5. `partFirstBook` records the first book of each scribe, which the output pass uses to place slashes.
 
 These terms drive the search.
 
-| term | meaning |
-|---|---|
-| `loadLow = heaviestBook` | no group can hold less than the largest book |
+| Term | Meaning |
+| --- | --- |
+| `loadLow = heaviestBook` | no block can hold less than the largest book |
 | `loadHigh = totalPages` | one scriber can hold every book |
 | `scribesUsed <= scribeCount` | the trial load is feasible, so search lower |
+| `optimalLoad` | the smallest feasible load found |
 
-Each guess halves the remaining load range.
+Each guess halves the remaining range.
 
-This trace uses the first sample case, with nine books and three scribes.
+A script traced the first sample case, with nine books and three scribes:
 
-| low | high | guess | scribes used | branch |
-|---|---|---|---|---|
-| 900 | 4500 | 2700 | 2 | lower high |
-| 900 | 2700 | 1800 | 3 | lower high |
-| 900 | 1800 | 1350 | 5 | raise low |
-| 1351 | 1800 | 1575 | 4 | raise low |
-| 1576 | 1800 | 1688 | 4 | raise low |
-| 1689 | 1800 | 1744 | 3 | lower high |
-| 1689 | 1744 | 1716 | 3 | lower high |
-| 1689 | 1716 | 1702 | 3 | lower high |
-| 1689 | 1702 | 1695 | 4 | raise low |
-| 1696 | 1702 | 1699 | 4 | raise low |
-| 1700 | 1702 | 1701 | 3 | lower high |
-| 1700 | 1701 | 1700 | 3 | lower high |
+| Guess | Feasible? | Branch |
+| --- | --- | --- |
+| 2700 | yes | lower the high bound |
+| 1350 | no | raise the low bound |
+| 1700 | yes | lower the high bound |
+| 1699 | no | raise the low bound |
 
-The search settles on a load of 1700 pages.
-
-The program then fills scribes from the last one back.
-
-| scriber | first book | books taken | group sum |
-|---|---|---|---|
-| 2 | 8 | 2 | 1700 |
-| 1 | 6 | 2 | 1300 |
-| 0 | 1 | 5 | 1500 |
-
-The answer line joins the groups: 100 200 300 400 500 / 600 700 / 800 900.
+The bounds meet at 1700, matching the printed first line.
 
 ## Code
 
-**Setup and input.**
-
+**Input and scanner.**
 ```nim
 const flushBlockBytes = 1 shl 17
 
@@ -80,13 +89,7 @@ while readLine(stdin, lineReadBuffer):
   inputData.add '\n'
 
 var i = 0
-```
 
-`flushBlockBytes` is 128 KiB. The read loop runs to EOF and appends each line. Cost: one pass over the input bytes.
-
-**Digit scanner.**
-
-```nim
 proc nextInt(): int64 =
   while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
     i = i + 1
@@ -95,40 +98,23 @@ proc nextInt(): int64 =
     scannedValue = scannedValue * 10 + int64(int(inputData[i]) - 48)
     i = i + 1
   return scannedValue
-```
 
-The scanner skips non-digit bytes and builds the value by index. `int64` holds sums that exceed 32 bits. Cost: one pass over each number's digits.
-
-**Case header.**
-
-```nim
 var caseCount = int(nextInt())
-var outputBuffer: string
+```
+The line loop gathers all input, and `nextInt` returns an int64. `caseCount` drives the outer loop. `flushBlockBytes` caps each output block.
 
+**Load search.**
+```nim
 for _ in 1 .. caseCount:
   var bookCount = int(nextInt())
   var scribeCount = int(nextInt())
   var bookPages = newSeq[int64](bookCount)
   var heaviestBook: int64 = 0
   var totalPages: int64 = 0
-```
-
-`bookCount` and `scribeCount` open each case. `bookPages` holds the page counts, and the two totals start at zero. Cost: three allocations per case.
-
-**Page read.**
-
-```nim
   for j in 0 .. bookCount - 1:
     bookPages[j] = nextInt()
     if bookPages[j] > heaviestBook: heaviestBook = bookPages[j]
     totalPages = totalPages + bookPages[j]
-```
-
-`j` runs from 0 to `bookCount - 1`. `heaviestBook` and `totalPages` set the two search bounds. Cost: one read per book.
-
-**Load search.**
-
-```nim
   var loadLow = heaviestBook
   var loadHigh = totalPages
   while loadLow < loadHigh:
@@ -147,11 +133,9 @@ for _ in 1 .. caseCount:
       loadLow = loadGuess + 1
   var optimalLoad = loadLow
 ```
+The loop halves the range between `loadLow` and `loadHigh`. `scribesUsed` counts blocks for a guess. `optimalLoad` holds the smallest feasible value.
 
-The loop runs while `loadLow < loadHigh`. The test `runningSum + bookPages[j] > loadGuess` starts a new scriber. `scribesUsed <= scribeCount` picks the lower half of the range. Cost: O(m) page tests per guess.
-
-**Slash placement.**
-
+**Slash placement and output.**
 ```nim
   var partFirstBook = newSeq[int](scribeCount)
   var booksRemaining = bookCount
@@ -164,13 +148,6 @@ The loop runs while `loadLow < loadHigh`. The test `runningSum + bookPages[j] > 
       takenCount = takenCount + 1
     partFirstBook[j] = booksRemaining - takenCount
     booksRemaining = partFirstBook[j]
-```
-
-`countdown(scribeCount - 1, 0)` fills scribes from the last one back. `partFirstBook` records the first book of each part. The while loop stops before it would leave a scriber empty. Cost: O(m) over all scribes.
-
-**Answer line.**
-
-```nim
   var currentPart = 0
   for j in 0 .. bookCount - 1:
     if j > 0:
@@ -186,29 +163,25 @@ The loop runs while `loadLow < loadHigh`. The test `runningSum + bookPages[j] > 
     outputBuffer.setLen 0
 stdout.write outputBuffer
 ```
-
-`j` runs over every book. The test `currentPart + 1 < scribeCount` avoids reading past the last part. The buffer flushes every 128 KiB. Cost: one line per case.
+A right-to-left pass fills `partFirstBook` for each scribe. The output pass inserts ` / ` when `j` reaches the next scribe's first book. The final write flushes the buffer tail.
 
 ## Complexity
 
-Costs by phase:
+Book count sets the work per case.
 
-| phase | time | space |
-|---|---|---|
-| input read | one pass over all lines | input bytes |
-| one case, load search | O(m log totalPages) | m page counts |
-| one case, slash placement | O(m) | k part starts |
-| output | one write per 128 KiB block | 128 KiB |
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | one pass over input bytes | input bytes |
+| Load search | O(m log totalPages) | O(m) |
+| Slash placement | O(m) | k integers |
+| Output | one write per block | flushBlockBytes |
+| Total per case | O(m log totalPages) | O(m) |
 
-The binary search dominates the run.
+Logarithmic search keeps the page tests few.
 
-Big O terms:
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(m log totalPages) |
+| Space per case | O(m) |
 
-| measure | form |
-|---|---|
-| time | O(m log P) per case, for page total P |
-| space | O(m + k) per case |
-
-Both measures stay small at m <= 500.
-
-Placing k - 1 slashes by brute force costs O(m^k) time. A dynamic program over parts and books costs O(k m^2) time and O(k m) space.
+Trying every split set would be exponential, while binary search settles the same assignment in a few dozen passes.

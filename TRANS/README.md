@@ -1,63 +1,98 @@
+# TRANS — Transformation (SPOJ)
+
+<https://www.spoj.com/problems/TRANS/>
+
 ## Problem
 
-Each test case gives a source sequence X, a target sequence Y, and replacement rules. A rule replaces one number by two or three numbers in one step. Print the fewest steps that turn X into Y, or print -1 when no transformation exists.
+A linguist rewrites symbols in a sentence. Each step replaces one symbol with two or three new symbols, and the goal is to turn one sentence into another.
 
-The judge fixes these bounds.
+Input: `t` cases. Each case gives `N M U V`.
+
+Then come sequence `X` of length `N` and sequence `Y` of length `M`. The case ends with `U` two-output rules and `V - U` three-output rules.
+
+Output: `-1` when no transformation exists, otherwise the fewest steps.
+
+The statement gives these bounds:
 
 | Item | Bound |
 | --- | --- |
-| Test cases | at most 30 |
-| Source length N | at most 50 |
-| Target length M | at most 50 |
-| Rules per case | at most 30 |
-| Number values | 1 to 30 |
-| Time limit | 1076 ms |
-| Memory limit | 1536 MB |
+| Source length `N` | 1 to 50 |
+| Target length `M` | 1 to 50 |
+| Symbol values | positive, at most 30 |
+| Judge limit | 1076 ms, 1536 MB |
 
-The target length bounds every substring table in the program.
+The target length caps every interval table at 50 by 50 cells.
+
+The sample input and output:
+
+```
+1
+3 10 2 3
+2 3 1
+2 1 1 2 2 1 2 1 2 1
+3 1 2
+3 3 3
+3 1 3 2
+```
+
+```
+6
+```
 
 ## Idea
 
-The program gives each source number a derivation tree. Its leaves form one contiguous block of the target. A bottom-up table stores the cheapest derivation of every target substring from every number. A pair table shares the work of two-output rules with three-output rules. A second table splits the target into one block per source number.
+Fit the target sentence like a jigsaw, solving short pieces before longer ones. Each rewrite rule acts as a piece shape that can cover a stretch of the target.
 
-One target substring costs O(V × M) steps, where V is the rule count and M is the target length.
+The program uses interval dynamic programming in the style of CYK (a chart parser over substrings). It records the cheapest way for each symbol to produce each target interval.
+
+A final pass stitches source symbols to consecutive target prefixes. The interval stage costs `O(V × M³)` and the stitching stage `O(N × M²)`.
+
+Rewriting the source forward explores unboundedly long sentences. Working backward over fixed target intervals keeps every state finite.
+
+Shortest intervals first means every piece fit uses costs already computed.
 
 ## Why It Works
 
-Every expansion keeps the order of the numbers it leaves behind. Each original number therefore owns one contiguous, nonempty block of the target. One derivation of a substring uses one rule at its root.
+Five facts prove the interval recurrence.
 
-For a two-output rule a -> b c and a substring Y[low..high]:
+1. Each rewrite expands one symbol, so the target sentence is the leaf list of a derivation tree.
+2. A two-output rule splits one interval into two consecutive intervals. A three-output rule splits it into a pair interval and a third interval.
+3. Filling intervals by increasing length puts both child costs in the table before the parent is computed.
+4. `deriveCost[a, low, high]` then holds the fewest rewrites turning symbol `a` into the target stretch from `low` to `high`.
+5. The last pass combines source symbols with consecutive target prefixes. `unreachableCost` marks states with no derivation, so a final value at that sentinel means `-1`.
 
-- The first output takes Y[low..split], and the second takes Y[split + 1..high].
-- pairCost(b, c, low, high) minimizes the sum of their costs over every split.
-- deriveCost(a, low, high) adds one step to that pair cost.
+The flat tables used by the program:
 
-For a three-output rule a -> b c d:
+| Term | Meaning |
+| --- | --- |
+| `areaSize` | `M × M`, one square of interval slots |
+| `spanIndex` | flat slot for interval `[lowPos, highPos]` |
+| `deriveCost` | best cost for a value over every interval |
+| `pairCost` | best cost for an output pair over every interval |
+| `previousMatch` | best cost for a source prefix over a target prefix |
 
-- The first pair takes Y[low..split], and the last output takes Y[split + 1..high].
-- deriveCost(a, low, high) minimizes pairCost(b, c, low, split) + deriveCost(d, split + 1, high) + 1.
-- The split runs from low + 1 to high - 1.
+Rule outputs are numbered once, so the same pair reuses one chart.
 
-The program fills substrings by increasing length. Each shorter part is finished before the current substring starts.
+A script trace of the sample case:
 
-The outer table uses this formula:
+```
+source [2, 3, 1]
+target [2, 1, 1, 2, 2, 1, 2, 1, 2, 1]
+| symbol | target span | min steps |
+| 2 | [0,0] = [2] | 0 |
+| 1 | [1,1] = [1] | 0 |
+| 3 | [1,4] = [1, 1, 2, 2] | 2 |
+| 3 | [1,8] = [1, 1, 2, 2, 1, 2, 1, 2] | 6 |
+answer 6
+```
 
-- previousMatch[p] holds the cost after earlier source numbers fill Y[0..p-1].
-- currentMatch[j] takes the minimum of previousMatch[p] + deriveCost(X[i-1], p, j-1) over every p below j.
-
-The generator prints this cost for the middle number 3 in the sample.
-
-| Source number | Target span | Cost |
-| --- | --- | --- |
-| 3 | 1..8 | 6 |
-
-The first and last source numbers each match one target number at zero cost. The sample answer is 6.
+The source symbol 2 covers the first target cell, symbol 3 covers eight cells in six steps, and symbol 1 covers the last cell.
 
 ## Code
 
-The reader collects one input buffer, and the scanner walks it by index.
+**Input and helpers.** One buffer holds the stream, and a digit scanner reads every integer.
 
-```
+```nim
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 const maxSymbolValue = 30
@@ -89,11 +124,61 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The scanner stops at the first non-digit, so one call handles any whitespace. The writer flushes every `flushBlockBytes` bytes, so no per-number write reaches the stream. Reading and writing cost time linear in the input size.
+All values are positive, so the scanner needs no sign branch.
+`unreachableCost` is `1 shl 25`, large enough to dominate any real step count.
+The output helper flushes at 256 KiB.
 
-This block builds the pair table and fills every substring cost.
+**Case data.** The driver reads both sequences and all rewrite rules.
 
+```nim
+let caseCount = nextInt(inputData, scanPos)
+
+for caseIndex in 0..<caseCount:
+  let sourceLength = nextInt(inputData, scanPos)
+  let targetLength = nextInt(inputData, scanPos)
+  let twoRuleCount = nextInt(inputData, scanPos)
+  let ruleCount = nextInt(inputData, scanPos)
+
+  var sourceSeq = newSeq[int](sourceLength)
+  for sourcePos in 0..<sourceLength:
+    sourceSeq[sourcePos] = nextInt(inputData, scanPos)
+
+  var targetSeq = newSeq[int](targetLength)
+  for targetPos in 0..<targetLength:
+    targetSeq[targetPos] = nextInt(inputData, scanPos)
+
+  var ruleLeft = newSeq[int](ruleCount)
+  var ruleFirstOut = newSeq[int](ruleCount)
+  var ruleSecondOut = newSeq[int](ruleCount)
+  var ruleThirdOut = newSeq[int](ruleCount)
+  for rulePos in 0..<ruleCount:
+    ruleLeft[rulePos] = nextInt(inputData, scanPos)
+    ruleFirstOut[rulePos] = nextInt(inputData, scanPos)
+    ruleSecondOut[rulePos] = nextInt(inputData, scanPos)
+    if rulePos < twoRuleCount:
+      ruleThirdOut[rulePos] = 0
+    else:
+      ruleThirdOut[rulePos] = nextInt(inputData, scanPos)
 ```
+
+The first `twoRuleCount` rules get a zero third output.
+Later rules read a fourth integer.
+Keeping rules in parallel arrays avoids one object per rule.
+
+**Value range and pair ids.** The program sizes flat tables from the largest symbol seen.
+
+```nim
+  var valueLimit = maxSymbolValue
+  for sourcePos in 0..<sourceLength:
+    valueLimit = max(valueLimit, sourceSeq[sourcePos])
+  for targetPos in 0..<targetLength:
+    valueLimit = max(valueLimit, targetSeq[targetPos])
+  for rulePos in 0..<ruleCount:
+    valueLimit = max(valueLimit, ruleLeft[rulePos])
+    valueLimit = max(valueLimit, ruleFirstOut[rulePos])
+    valueLimit = max(valueLimit, ruleSecondOut[rulePos])
+    valueLimit = max(valueLimit, ruleThirdOut[rulePos])
+
   let areaSize = targetLength * targetLength
   let slotWidth = valueLimit + 1
   var pairSlot = newSeq[int](slotWidth * slotWidth)
@@ -119,7 +204,15 @@ This block builds the pair table and fills every substring cost.
   var pairCost = newSeq[int](pairCount * areaSize)
   for costPos in 0..<pairCost.len:
     pairCost[costPos] = unreachableCost
+```
 
+`valueLimit` covers symbols in the sequences and in the rules.
+`pairSlot` maps an ordered output pair to one compact id.
+Both cost tables start at `unreachableCost`.
+
+**Interval chart.** Spans grow from length one up to the full target.
+
+```nim
   for spanLength in 1..targetLength:
     for lowPos in 0..(targetLength - spanLength):
       let highPos = lowPos + spanLength - 1
@@ -161,11 +254,13 @@ This block builds the pair table and fills every substring cost.
           deriveCost[symbolBase + spanIndex] = bestCost
 ```
 
-The span loop runs once per length from 1 to `targetLength`. Equal symbols cost zero steps at length one. The pair table removes the second split loop from every three-output rule. This block fills O(M²) costs in O(V × M³) steps.
+A length-one span costs zero only when the target symbol matches.
+Each longer span tries every split position.
+Two-output rules add one step to the pair cost; three-output rules add one step to a pair plus tail cost.
 
-This block matches source numbers against consecutive target blocks.
+**Source stitching and output.** The last pass walks source symbols against target prefixes.
 
-```
+```nim
   var previousMatch = newSeq[int](targetLength + 1)
   var currentMatch = newSeq[int](targetLength + 1)
   for matchPos in 0..targetLength:
@@ -202,12 +297,30 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The outer loop runs once per source number. The inner loops try every possible block boundary. Two reused rows replace an N by M table. This block costs O(N × M²) steps and O(M) space.
+`previousMatch[0]` starts at zero and all other slots at the sentinel.
+Each source symbol splits the target prefix into a head and a derived tail.
+The final value at `targetLength` is the answer.
 
 ## Complexity
 
-Reading costs time linear in the input size. The substring tables visit O(M²) spans, and each span scans O(V) rules with O(M) splits. One case therefore costs O(V × M³) time. The matching table adds O(N × M²) time.
+The interval chart dominates the cost for each case.
 
-The two cost tables hold O((S + P) × M²) integers, where S counts distinct symbols and P counts distinct output pairs. With the stated bounds the tables stay under a few megabytes.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Pair numbering | O(V + valueLimit²) | O(valueLimit²) |
+| Interval chart | O(V × M³) | O(valueLimit × M² + V × M²) |
+| Source stitching | O(N × M²) | O(M) for two rows |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(V × M³ + N × M²) | O(valueLimit × M²) |
 
-A search over all intermediate sequences grows past a billion states at length 50. The substring tables replace that search.
+At `M = 50` the chart holds 2,500 interval slots per value.
+
+The asymptotic bounds follow from the table:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(V × M³ + N × M²) per case |
+| Space | O(valueLimit × M²) per case, plus buffers |
+
+Forward rewriting has no bound on sentence length. Interval dynamic programming fixes the work to a polynomial in `M`.

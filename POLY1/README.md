@@ -1,38 +1,93 @@
+# POLY1 — Polygon (SPOJ)
+<https://www.spoj.com/problems/POLY1/>
+
 ## Problem
 
-Read a convex polygon with vertices numbered clockwise and one triangulation of it. Choose three polygon vertices and form their triangle. Print the largest number of triangulation triangles whose interiors meet that triangle's interior.
+A convex polygon is cut into elementary triangles. Choose one more triangle whose corners are polygon vertices. How many triangles of the given triangulation can it intersect?
 
-| Quantity | Bound |
+Two triangles intersect when their interiors share a point. You need the largest possible count over all choices of the three corners.
+
+Input: the first integer is t, the number of cases; cases are separated by a blank line. Each case gives n and then n − 2 triangles, each as three vertex numbers. Output: one integer per case, the maximum intersection count.
+
+These are the bounds and the judge limits:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | not bounded in the statement |
-| Vertices per polygon | 3 to 1000 |
+| Test cases t | from the input |
+| Vertices n | 3 to 1000 |
+| Triangulation triangles | n − 2 |
+| Vertex numbering | 0 to n − 1, clockwise |
 | Time limit | 5000 ms |
 | Memory limit | 1536 MB |
 
-The vertex bound drives the design, since the number of vertex triples grows cubically.
+The sample uses a hexagon with four triangles:
+
+```
+1
+6
+0 1 2
+2 3 4
+0 4 5
+0 2 4
+```
+
+```
+4
+```
+
+The elementary triangle with corners 1, 3, and 5 intersects all four.
 
 ## Idea
 
-Treat an elementary triangle as three cuts on the polygon boundary. Those cuts split the polygon into three closed arcs. A triangulation triangle misses the chosen triangle only when all its vertices lie in one arc. Count those confined triangles for every arc, then pick the three cuts with the smallest confined total.
+Count the triangles a chosen triangle misses, then subtract from the total. Picture drawing a triangle on a pie chart and counting the slices wholly tucked inside its three arcs.
 
-The program builds one arc-count table in O(n²) and scans all triples in O(n³).
+The program first builds a table `arcCounts`. Entry (j, k) counts triangulation triangles whose vertices all lie on the clockwise arc from vertex j to vertex k. Each input triangle adds one unit to three row intervals, and a prefix pass turns those differences into counts.
+
+For every triple a < b < c, the hidden triangles are `arcCounts[a][b] + arcCounts[b][c] + arcCounts[c][a]`. Minimizing that sum maximizes intersections; the answer is (n − 2) minus the minimum.
+
+Building the table costs O(n²), and the triple loop costs O(n³) with early breaks. Checking every elementary triangle against every triangulation triangle costs O(n⁴).
+
+Takeaway: a prefix-sum table reduces each triple to three integer lookups.
 
 ## Why It Works
 
-The vertices lie in convex position. Two triangles from this polygon have disjoint interiors in one case only. One vertex triple lies inside a closed arc between consecutive vertices of the other. The three arcs of the chosen triangle cover the whole boundary. Each triangulation triangle therefore either lies in one arc or meets the chosen triangle. Subtracting the confined count from n - 2 gives the number met.
+Four facts justify the subtraction.
 
-For a triangle with sorted vertices u < v < w and a start vertex x, rotate positions by (vertex - x) mod n. The triangle fits arc [x,y] exactly when the largest rotated position is at most (y - x) mod n. The program fills a table f[x,y] with those counts using a difference row per start x.
+1. An elementary triangle with corners a < b < c splits the polygon into three arcs: a → b, b → c, and c → a. These regions cover the polygon and meet only on the triangle edges.
+2. A triangulation triangle misses the chosen triangle exactly when all three of its vertices lie in one arc. Otherwise its interior crosses a side of the chosen triangle.
+3. `arcCounts[j][k]` counts the triangles inside arc j → k. The difference updates mark intervals of rows, and the prefix pass converts each row of differences into exact counts.
+4. For a triple, the three arc counts add without overlap, so their sum is the number of hidden triangles. Minimizing it over all triples maximizes the intersected count.
 
-| Elementary triangle | Confined in [a,b] | Confined in [b,c] | Confined in [c,a] | Triangles met |
-| --- | --- | --- | --- | --- |
-| (1,3,5) | none | none | none | 4 |
-| (0,1,3) | none | none | (0,4,5) | 3 |
+These are the quantities in one triple check:
 
-The sample polygon has six vertices and four triangulation triangles, so the first row reaches the full count of four.
+| Term | Meaning |
+| --- | --- |
+| `triMin`, `triMid`, `triMax` | sorted corners of an input triangle |
+| `stride` | row width, n + 1 |
+| `arcCounts[j][k]` | triangles wholly inside the arc from j to k |
+| `fixedCost` | arcCounts[a][b] for the current triple |
+| `partialCost` | fixedCost plus arcCounts[b][c] |
+| `confined` | partialCost plus arcCounts[c][a] |
+| `bestConfined` | smallest confined value found |
+
+A script evaluates triples for the sample triangulation:
+
+```
+triangles: [(0, 1, 2), (2, 3, 4), (0, 4, 5), (0, 2, 4)]
+  (1,3,5): arc[a][b]=0 arc[b][c]=0 arc[c][a]=0 total=0
+  (0,2,4): arc[a][b]=1 arc[b][c]=1 arc[c][a]=1 total=3
+  (0,1,2): arc[a][b]=0 arc[b][c]=0 arc[c][a]=3 total=3
+  (2,3,4): arc[a][b]=0 arc[b][c]=0 arc[c][a]=3 total=3
+  (0,4,5): arc[a][b]=3 arc[b][c]=0 arc[c][a]=0 total=3
+  (0,1,3): arc[a][b]=0 arc[b][c]=0 arc[c][a]=1 total=1
+bestConfined=0 answer=4
+```
+
+The triple 1, 3, 5 hides nothing, so all four triangles are intersected. No geometry with floating point is needed.
 
 ## Code
 
-The pragmas keep the program fast in a build without release flags. The input pass reads every line into one buffer and scans integers by digit. Blank lines between cases need no special handling.
+**Input.** One buffer holds the cases, and the scanner skips blank lines.
 
 ```nim
 {.push optimization: speed.}
@@ -57,7 +112,13 @@ proc nextInt(data: string, position: var int): int =
     value = value * 10 + int(data[position]) - firstDigitValue
     position += 1
   return value
+```
 
+The scanner treats blank lines like any other separator. Vertex triples are read in input order. Cost is one pass over the input bytes.
+
+**Output.** One buffer collects answer lines.
+
+```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -67,11 +128,13 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The output buffer flushes after 256 KiB, so one case never causes many writes. The scanner skips every non-digit byte.
+The flush triggers every `flushBlockBytes` bytes. No write occurs during the triple loop. The cost is one pass over the answer text.
 
-Sorting each triangle puts its three vertices in clockwise order for the arc updates.
+**Driver.** Each case builds the arc table, then searches all triples.
 
 ```nim
+let caseCount = nextInt(inputData, scanPos)
+for caseIndex in 0..<caseCount:
   let vertexCount = nextInt(inputData, scanPos)
   let triangleCount = vertexCount - 2
   var triMin = newSeq[int](triangleCount)
@@ -96,13 +159,7 @@ Sorting each triangle puts its three vertices in clockwise order for the arc upd
     triMin[i] = firstVertex
     triMid[i] = secondVertex
     triMax[i] = thirdVertex
-```
 
-The loop reads exactly n - 2 triangles. Three comparisons sort three values without a library call.
-
-Each start vertex x can sit in any of the three gaps between u, v and w. The four ranges cover those gaps and the wrap around vertex n - 1.
-
-```nim
   let stride = vertexCount + 1
   var arcCounts = newSeq[int](vertexCount * stride)
   for i in 0..<triangleCount:
@@ -128,26 +185,14 @@ Each start vertex x can sit in any of the three gaps between u, v and w. The fou
       if j > 0:
         arcCounts[rowBase] += 1
         arcCounts[rowBase + j] -= 1
-```
 
-The extra column holds the wrap marker. Omitting the first two gaps undercounts arcs that wrap past vertex n - 1.
-
-A running sum turns each difference row into f[x,y]. The table uses one stride of n + 1 integers per row.
-
-```nim
   for j in 0..<vertexCount:
     let rowBase = j * stride
     var running = 0
     for k in 0..<vertexCount:
       running += arcCounts[rowBase + k]
       arcCounts[rowBase + k] = running
-```
 
-The loop visits every cell once. Prefix sums over one row cost O(n).
-
-The scan tries each cut pair a and b, then each third cut c. Arc counts never fall below zero, so the two breaks are safe.
-
-```nim
   var bestConfined = high(int)
   for a in 0..<vertexCount:
     let rowA = a * stride
@@ -163,12 +208,35 @@ The scan tries each cut pair a and b, then each third cut c. Arc counts never fa
         let confined = partialCost + arcCounts[c * stride + a]
         if confined < bestConfined:
           bestConfined = confined
+
+  appendOutput($(triangleCount - bestConfined))
+  outputBuffer.add '\n'
+
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-The loops cover C(n,3) triples. Each step does two table reads, one add and one comparison.
+Sorting each triangle's three corners makes the arc ranges well defined. `arcCounts[rowBase + vertexCount]` is a sentinel column for wrapping intervals. Both `break` statements prune triples that cannot beat the best value.
 
 ## Complexity
 
-Building the arc table reads n - 2 triangles and touches O(n) start positions per triangle, then prefix sums n rows. The scan visits O(n³) triples. Output costs one line per case.
+Table building and triple scanning carry the work.
 
-The table holds n rows of n + 1 integers, so space is O(n²). The whole solution runs in O(n² + n³) time and O(n²) space per case. A geometric check of every triangle pair against every vertex triple costs O(n⁴) instead.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(total tokens) | O(input size) |
+| Sort triangle corners | O(n) | O(n) |
+| Difference updates | O(n²) total | O(n²) |
+| Prefix pass | O(n²) | O(n²) |
+| Triple search | O(n³) worst case | O(1) |
+| Output | O(cases) | O(block size) |
+
+The triple search dominates with O(n³) time; the table costs O(n²) space.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(n³) |
+| Total time | O(sum of n³ over cases) |
+| Working space | O(n²) |
+
+Checking each candidate triangle against every triangulation triangle costs O(n⁴) time.

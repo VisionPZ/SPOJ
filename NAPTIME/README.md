@@ -1,36 +1,75 @@
+# NAPTIME — Naptime (SPOJ)
+<https://www.spoj.com/problems/NAPTIME/>
+
 ## Problem
 
-Each case gives N periods in a circle and a bed budget B. Every period has a utility. Choose exactly B periods to maximize the total utility, and print that total for each case.
+Goneril the cow wants as much sleep as her busy day allows. She may spend only B of the N periods in bed.
 
-A stay in bed pays no utility for its first period. A stay that runs from period N into period 1 pays period 1's utility.
+She chooses the periods herself. A stretch in bed pays no utility for its first period. A stretch crossing period N into period 1 pays period 1's utility. Find the largest total utility.
 
-| Quantity | Bound |
+Input: the first integer is t, the number of cases. Each case gives N and B, then N utilities on separate lines. Output: one line per case with the maximum total utility.
+
+These are the bounds and the judge limits:
+
+| Item | Bound |
 | --- | --- |
-| Periods per case | 3 to 3830 |
-| Periods in bed | 2 to N − 1 |
+| Test cases | t from the input |
+| Periods N | 3 to 3830 |
+| Bed periods B | 2 to N − 1 |
 | Utility per period | 0 to 200000 |
 | Time limit | 1000 ms |
 | Memory limit | 1536 MB |
 
-The two size bounds set the work for each case.
+The sample has five periods and three bed periods:
+
+```
+1
+5 3
+2
+0
+3
+1
+4
+```
+
+```
+6
+```
+
+The answer of 6 comes from periods 4, 5, and 1 in that order.
 
 ## Idea
 
-Dynamic programming over periods and the bed budget finds the best choice. A state records whether the previous period is in bed, because that fact decides whether the current period pays utility. Two runs cover the circle. One run pays no utility for period 1. The other run pays that utility and ends with period N in bed. The larger answer wins.
+Try both ways around the circle and keep the better answer. Picture a string of beads laid flat, then taped into a loop.
 
-Each state takes constant work. The two runs visit about 2 × N × B states per case.
+The program uses dynamic programming (DP, a table of best answers for smaller subproblems). A state holds the period, the bed count used, and whether the previous period is in bed. Entering bed adds nothing; staying in bed adds that period's utility.
+
+The plain run leaves period 1 unpaid. The wrapped run credits period 1 at the start and ends with period N in bed. Each run visits about N × B states, so both cost O(N × B). Listing every set of B periods costs C(N, B), which explodes near N = 3830.
+
+Takeaway: two linear DP runs settle the circle for the price of one extra pass.
 
 ## Why It Works
 
-Utility at period i arrives only when both i − 1 and i are in bed. Utility at period 1 arrives only when both N and 1 are in bed. The plain run leaves period 1 unpaid, so it covers every choice that earns no wrap utility. The wrapped run adds period 1's utility at the start and ends with period N in bed, which makes the wrap real. Every valid choice belongs to one of the two runs.
+Four facts prove the method.
 
-The update has three parts:
+1. A period pays utility only when the period before it is also in bed. The "inside" state captures exactly that condition.
+2. Moving from outside to inside adds no utility. Moving from inside to inside adds `utilities[i]`.
+3. When period 1 is outside, the plain run counts every paid period. It misses only choices where period 1 is in bed.
+4. When period 1 is inside, it pays only if period N is inside. The wrapped run forces that condition and credits `utilities[1]` up front.
 
-- `bestOutside` takes the larger previous value, since staying out pays nothing.
-- `bestInside` compares falling asleep from outside, which adds nothing, with staying asleep from inside, which adds `utilities[i]`.
-- `previousTop` caps the bed count at the number of periods already seen.
+The two runs cover every valid choice, so the larger answer is the optimum.
 
-The script prints the winning sample choice period by period:
+These are the pieces of one DP state:
+
+| Term | Meaning |
+| --- | --- |
+| `prevOutside[j]` | best utility so far with j bed periods, current period outside |
+| `prevInside[j]` | best utility so far with j bed periods, current period inside |
+| `utilities[i]` | utility earned by sleeping in period i |
+| `previousTop` | largest bed count reachable after i − 1 periods |
+| `impossibleValue` | marker for a state that cannot occur |
+
+A script traces the winning sample choice around the circle:
 
 ```
 period 4: utility 1, gain 0
@@ -39,11 +78,11 @@ period 1: utility 2, gain 2
 total 6
 ```
 
-Period 4 is the falling-asleep period, so its gain is zero.
+Period 4 is the falling-asleep period, so it pays nothing. Period 1 follows period 5 across the wrap, so it pays in full.
 
 ## Code
 
-The program reads all input into one buffer. The scanner walks it once and builds integers from digits.
+**Input.** The whole stream goes into one buffer, and the scanner walks it by index.
 
 ```nim
 {.push optimization: speed.}
@@ -70,9 +109,9 @@ proc nextInt(data: string, scanPos: var int): int =
   return value
 ```
 
-The scan stops at the end of the buffer. No token objects are built. The cost is one pass over the input bytes.
+The scanner stops at the buffer end and builds each integer from digits. No token objects are allocated. The cost is one pass over the input bytes.
 
-One output buffer collects answers and writes them in blocks.
+**Output.** One buffer collects answers and writes them in blocks.
 
 ```nim
 var outputBuffer = ""
@@ -84,9 +123,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The flush happens every `flushBlockBytes` bytes. No write occurs inside the case loop. The cost is one pass over the answer text.
+The flush triggers every `flushBlockBytes` bytes. No write happens inside the case loop. The cost is one pass over the answer text.
 
-The DP keeps two rows for each run and swaps them after every period.
+**DP run.** Two rows per state track the outside and inside cases.
 
 ```nim
 proc solveRun(utilities: seq[int], periodCount: int, bedCount: int,
@@ -134,9 +173,9 @@ proc solveRun(utilities: seq[int], periodCount: int, bedCount: int,
   return if outsideAnswer > insideAnswer: outsideAnswer else: insideAnswer
 ```
 
-The outer loop runs from period 2 to `periodCount`. The inner loop stops at `previousTop`, the largest reachable bed count. The skipped write at `j = bedCount` keeps counts inside the budget. One run updates about N × B states.
+The outer loop covers periods 2 through `periodCount`. The inner loop stops at `previousTop`, the largest reachable bed count. Skipping the write at `j = bedCount` keeps counts inside the budget. One run costs O(N × B) time and O(B) space.
 
-The driver reads each case and calls both runs.
+**Driver.** Each case calls both runs and prints the winner.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -156,16 +195,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The utility loop reads exactly `periodCount` values. Both runs are called once per case. The final flush writes the remaining buffer bytes.
+The utility loop reads exactly `periodCount` values. Both runs execute once per case. The final write flushes the remaining bytes.
 
 ## Complexity
 
-Input reading scans each token once. The DP keeps four rows of length `bedCount + 1` and swaps them each period. Output appends one line per case.
+Input, DP, and output each add a pass.
 
 | Phase | Time | Space |
 | --- | --- | --- |
-| Input | O(total tokens) | O(input size) |
-| DP per case | O(N × B) | O(B) |
+| Input scan | O(total tokens) | O(input size) |
+| One DP run | O(N × B) | O(B) |
+| Both runs | O(2 × N × B) | O(B) |
 | Output | O(cases) | O(block size) |
 
-The DP dominates, and each case costs O(N × B) time with O(B) extra space. Trying every set of B periods would take exponential time.
+The DP dominates, with O(N × B) time and O(B) extra space per case.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(N × B) |
+| Total time | O(sum of N × B over cases) |
+| Working space | O(B) |
+
+Listing all sets of B periods takes C(N, B) time, which is far larger than O(N × B).

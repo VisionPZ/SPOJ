@@ -1,54 +1,87 @@
+# SCALES — Balancing the Stone (SPOJ)
+<https://www.spoj.com/problems/SCALES/>
+
 ## Problem
 
-A stone of weight W rests on one pan of a balance. You own N weights with masses 1, 2, 4, up to 2^(N-1). Count the placements that put each weight on a pan or aside and balance the stone. W arrives as a binary string of L characters. Print the count modulo D, one line per case.
+A stone of weight W rests on one pan of a balance. You own N weights with masses 1, 2, 4, up to 2 raised to N minus 1. Each weight can go on either pan or stay aside. Count the placements that balance the stone, modulo D.
 
-| Quantity | Bound |
+Input: an integer t, then t cases. Each case gives N, L and D on one line, followed by a line holding exactly L binary digits for W. Output: one integer per case, the count modulo D.
+
+The bounds come from the statement.
+
+| Item | Bound |
 | --- | --- |
-| Weights N | 1 to 1 000 000 |
+| Weights N | 1 to 1000000 |
 | Binary length L | 1 to N |
 | Modulus D | 2 to 100 |
-| Test cases | bounded by the input size |
-| Time limit | 7000 ms |
-| Memory limit | 1536 MB |
+| Test cases | bounded by input size |
+| Judge time limit | 7000 ms |
+| Judge memory limit | 1536 MB |
 
 Only two carry states matter, so each bit costs a few additions.
 
+The sample input:
+
+```
+2
+6 4 6
+1000
+6 6 100
+100110
+```
+
+The sample output:
+
+```
+3
+5
+```
+
 ## Idea
 
-Give each weight a signed digit: +1 for the left pan, -1 for the right pan, 0 for aside. Balancing then means the signed binary sum equals W. A carry runs from the low bit upward and holds only 0 or -1. Two counters track the placements that reach each carry, which replaces the 3^N placements a brute-force search would try.
+Treat each weight like a signed digit and carry the leftover into the next column, the way you carry in paper addition. The signed digits are minus 1, 0 and 1, one per weight. Balancing means the signed binary sum equals W.
 
-Cost per bit: one comparison and one modular addition, plus one modular product for the omitted high bits.
+The program walks W from its low bit to its high bit. Two counters hold how many placements reach each carry state. A one bit updates one counter, and a zero bit updates the other. The leftover high bits are all zero, so one multiplication folds them in. Each bit costs one comparison and a few modular additions, while a search over all placements would try 3 to the N options.
+
+Two counters replace an exponential search.
 
 ## Why It Works
 
-After i bits, the partial signed sum differs from the low i bits of W by c times 2^i. Here c is the carry. Choosing digit d at bit i gives a new carry.
+Four facts carry the program.
 
-| term | meaning |
+1. Give each weight a signed digit: plus 1 for the left pan, minus 1 for the right pan, 0 for aside. The signed sum of digit times power of two must equal W.
+2. After i low bits, the partial signed sum differs from the low i bits of W by c times 2 to the i. Here c is the carry, and c stays 0 or minus 1.
+3. For a zero bit, the two counters merge into `countZero`. For a one bit, they merge into `countOne`. Each merge is one modular addition.
+4. The N minus L high bits of W are zero. Each such bit adds `countOne` to `countZero`, so the program uses one product.
+
+Each term has one job.
+
+| Term | Meaning |
 | --- | --- |
-| c' = (c + d - w_i) / 2 | carry after choosing digit d for binary digit w_i |
-| w_i = 0 | carry 0 stays 0; carry -1 goes to 0 or -1 |
-| w_i = 1 | carry 0 goes to 0 or -1; carry -1 stays -1 |
+| `countZero` | number of placements reaching carry 0 |
+| `countOne` | number of placements reaching carry minus 1 |
+| `bitLength` | number of supplied binary digits L |
+| `weightCount` | total weights N |
 
-The equation closes because d lies in -1, 0, 1 and w_i lies in 0, 1. The quotient stays 0 or -1, so two counters hold every reachable state.
+Every counter stays below the modulus because each update takes a remainder.
 
-A one bit adds the two counters into countOne and leaves countZero. A zero bit adds the two counters into countZero and leaves countOne. The high N - L bits of W are zero. Each adds countOne to countZero, so k such bits add k times countOne in one step.
+A script walks the string 1000 from the low bit toward the high bit.
 
-A script walks the string "1000" from its last character, the low bit, toward its first character:
-
-```
+```text
 start (countZero, countOne) = (1, 0)
-bit 3 = 0: (1, 0)
-bit 2 = 0: (1, 0)
+bit 0 = 0: (1, 0)
 bit 1 = 0: (1, 0)
-bit 0 = 1: (1, 1)
-two trailing zero bits: (3, 1)
+bit 2 = 0: (1, 0)
+bit 3 = 1: (1, 1)
+two folded high bits: (3, 1)
+answer 3 mod 6 = 3
 ```
 
-The first sample case counts 3 placements, and 3 modulo 6 is 3.
+The answer is 3, which matches the first sample case. Modular reduction at every step keeps values small.
 
 ## Code
 
-The first block reads the whole input once and converts digits by hand.
+**Constants and input buffer.** One loop collects the whole stream.
 
 ```nim
 const firstDigitValue = 48
@@ -61,9 +94,9 @@ while readLine(stdin, inputLine):
   inputData.add '\n'
 ```
 
-The loop ends at EOF, so no case triggers a read. The scan costs one pass over the input bytes.
+The loop stops at end of file, so no case triggers a read. Added newlines preserve token boundaries. The cost is one pass over the input bytes.
 
-The scanner keeps one position in that single buffer.
+**Integer scanner and space skipper.** Both use one scan position.
 
 ```nim
 var scanPos = 0
@@ -83,9 +116,9 @@ proc skipSpace(data: string, position: var int) =
     position += 1
 ```
 
-nextInt skips past the newline before a binary string. skipSpace then lands on the first character of that string. Both use scanPos, so no token is allocated.
+`nextInt` skips the newline before a binary string. `skipSpace` then lands on the first digit. No token is copied, so parsing allocates nothing.
 
-One output buffer collects the answers.
+**Output helper.** One buffer collects every answer.
 
 ```nim
 var outputBuffer = ""
@@ -97,9 +130,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-flushBlockBytes is 256 KiB. The buffer reuses its storage after each flush.
+The flush threshold is 256 KiB. `setLen 0` reuses the same storage after each write.
 
-The case loop reads three numbers and walks the binary string from the low bit.
+**Case loop.** The bit walk runs from the low bit upward.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -122,19 +155,33 @@ for caseIndex in 0..<caseCount:
   outputBuffer.add '\n'
 ```
 
-The loop runs caseCount times. Index j falls to scanPos at the last character, so no bit is missed. The product folds all N - L high zero bits into one update.
+Index `j` starts at the last character and falls to `scanPos`, so no bit is missed. The loop runs `bitLength` times. The final product folds all N minus L high zero bits into one update.
 
-A final write clears the tail.
+**Final write.** The tail leaves the buffer here.
 
 ```nim
 stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-No stream write happens inside the bit loop.
+No stream write happens inside the bit loop. One final write emits the remaining bytes.
 
 ## Complexity
 
-Reading costs O(total input bytes) time and space for inputData. Each case costs O(L) time and O(1) extra space, since the two counters never grow. The output buffer adds O(flushBlockBytes) space. The whole run costs O(total input bytes) time, because the bit lengths sum to at most the input size.
+Reading dominates the input side, and the bit walk dominates each case.
 
-A brute-force search tries 3^N placements per case and cannot finish for large N.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over B bytes | B bytes |
+| One case | O(L) bit steps | O(1) counters |
+| Output | one write per 256 KiB block | one block |
+| Total | O(B), since L sums to at most B | O(B) |
+
+B is the number of input bytes, and L is at most 1 000 000.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(B) overall, O(L) per case |
+| Space | O(B) for input, O(1) working state |
+
+A search over 3 to the N placements cannot finish for large N.

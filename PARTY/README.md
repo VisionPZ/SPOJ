@@ -1,33 +1,96 @@
+# PARTY — Party Schedule (SPOJ)
+<https://www.spoj.com/problems/PARTY/>
+
 ## Problem
 
-Read several party budgets and lists of parties. Each party has an entrance fee and a fun value. Choose parties so that total fun is as large as possible without exceeding the budget. Print the smallest fee that reaches the best fun, followed by that fun.
+A tight budget and a list of parties: each party costs an entrance fee and delivers some fun. You want the most fun without overspending.
 
-| Quantity | Bound |
+When several plans give the same fun, spend the least money. Report the chosen cost and its fun for each budget list.
+
+Input: each case starts with budget and party count. Then come that many fee-fun pairs. A case of `0 0` ends the input. Output: two integers per case, the cheapest cost and the maximum fun.
+
+These are the bounds and the judge limits:
+
+| Item | Bound |
 | --- | --- |
 | Budget | at most 500 |
 | Parties per case | at most 100 |
-| Fee | 5 to 25 |
-| Fun | 0 to 10 |
+| Entrance fee | 5 to 25 francs |
+| Fun value | 0 to 10 |
+| Terminator | `0 0` |
 | Time limit | 3000 ms |
 | Memory limit | 1536 MB |
 
-Input ends with a line containing `0 0`. The budget need not be spent exactly.
+The sample has one case with ten parties:
+
+```
+50 10
+12 3
+15 8
+16 9
+16 6
+10 2
+21 9
+18 4
+12 4
+17 8
+18 9
+0 0
+```
+
+```
+49 26
+```
+
+The best plan spends 49 francs and earns 26 fun.
 
 ## Idea
 
-Use a one-dimensional knapsack table. `bestFun[k]` is the largest fun reachable with exactly that much spent. Visit parties one by one and walk k downwards so each party is used once. After all parties, take the largest table value and the smallest spent amount that reaches it.
+Fill a budget table one party at a time, and keep the smallest cost that reaches the top fun. Picture packing a knapsack with tickets: each ticket exists once, and you maximize enjoyment under a weight limit.
 
-Each party updates at most `budget` entries, so the cost per case is O(n · budget). Enumerating all subsets would cost O(2ⁿ).
+The program uses 0/1 knapsack (each item chosen at most once) dynamic programming. Entry `bestFun[k]` holds the most fun affordable within cost k. For each party, the program walks k downward and tries adding that party's fun.
+
+Walking downward matters: it reads last party's values, so no party is used twice. After all parties, the program scans for the highest fun and the lowest cost achieving it.
+
+Each case costs O(n × budget) time and O(budget) space. Trying all 2ⁿ subsets costs exponential time.
+
+Takeaway: one budget-sized row replaces an exponential search over party sets.
 
 ## Why It Works
 
-When a party with fee `fee` and fun `fun` is considered, any solution spending `k` either skips it, keeping `bestFun[k]`, or uses it, gaining `bestFun[k − fee] + fun`. Walking downwards guarantees the new value cannot be reused within the same party.
+Four facts justify the update.
 
-The maximum table entry is the best achievable fun. Several amounts may reach it, so the final scan picks the least expensive one. The sample budget 50 and ten parties give best fun 26 at cost 49.
+1. Before a party is processed, `bestFun[k − fee]` is the best fun using earlier parties within that smaller cost.
+2. Adding the current party gives candidate `bestFun[k − fee] + fun`. Walking k downward leaves `bestFun[k − fee]` unchanged by this party, so the party appears once.
+3. Taking the maximum keeps `bestFun[k]` as the best fun within cost k. The array is nondecreasing in k, so the global best is simply its maximum.
+4. Scanning k upward and accepting the first `bestFun[k] == topFun` yields the cheapest cost with maximum fun. That matches the spending rule.
+
+These are the values in the knapsack loop:
+
+| Term | Meaning |
+| --- | --- |
+| `budget` | largest allowed total fee |
+| `fee`, `fun` | entrance cost and fun of one party |
+| `bestFun[k]` | best fun using processed parties within cost k |
+| `candidate` | fun from taking the current party at cost k |
+| `topFun` | highest fun over all costs |
+| `cheapest` | smallest cost that reaches `topFun` |
+
+A script traces a small case with budget 10:
+
+```
+start: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+after fee 5 fun 2: [0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2]
+after fee 6 fun 4: [0, 0, 0, 0, 0, 2, 4, 4, 4, 4, 4]
+after fee 10 fun 5: [0, 0, 0, 0, 0, 2, 4, 4, 4, 4, 5]
+top fun: 5 cheapest cost: 10
+```
+
+The last row keeps cost 6 with fun 4, yet chooses cost 10 because fun 5 is higher. Cost 7 through 9 also hold fun 4, so they lose to cost 10.
 
 ## Code
 
-Input is read once and parsed with a digit scanner.
+**Input.** A single buffer holds all cases, and the scanner walks it once.
 
 ```nim
 const firstDigitValue = 48
@@ -52,9 +115,9 @@ proc nextInt(data: string, i: var int): int =
   return value
 ```
 
-The `maxBudget` constant records the stated upper bound but the table is sized from the actual input value. Every number is non-negative, so the scanner needs no sign branch.
+The scanner skips whitespace and stops at the buffer end. The `maxBudget` constant documents the largest legal cost. The cost is one pass over the input bytes.
 
-The driver fills the knapsack table and prints the tie-broken answer.
+**Output.** Answers collect in a block-flushed buffer.
 
 ```nim
 var outputBuffer = ""
@@ -64,7 +127,13 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+The flush happens every `flushBlockBytes` bytes. No write occurs while processing a party. The cost is one pass over the answer text.
+
+**Driver.** Each case runs the knapsack and prints the best pair.
+
+```nim
 while true:
   let budget = nextInt(inputData, i)
   let partyCount = nextInt(inputData, i)
@@ -95,8 +164,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The countdown loop keeps each party to one use. The two final scans find the best fun and then the least cost that reaches it. Output is written in blocks, not once per case.
+The `countdown(budget, fee)` bound stops before k drops below the fee. The zero pair ends the loop before any table is built. The final write flushes the tail.
 
 ## Complexity
 
-Filling the table costs O(n · budget) time and O(budget) space per case. The two final scans cost O(budget). Output costs O(1) per case. Total time is O(n · budget) and total space is O(budget) plus the input buffer. Enumerating subsets would cost O(2ⁿ).
+The party loop carries the cost.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(total tokens) | O(input size) |
+| Knapsack per case | O(n × budget) | O(budget) |
+| Best-cost scan | O(budget) | O(1) |
+| Output | O(cases) | O(block size) |
+
+The knapsack dominates, with at most 100 × 500 updates per case.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(n × budget) |
+| Total time | O(sum of n × budget over cases) |
+| Working space | O(budget) |
+
+Trying all subsets of parties takes O(2ⁿ) time, which grows far faster than the budget table.

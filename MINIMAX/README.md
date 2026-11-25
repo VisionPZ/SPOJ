@@ -1,51 +1,94 @@
+# MINIMAX — Minimizing maximizer (SPOJ)
+
+<https://www.spoj.com/problems/MINIMAX/>
+
 ## Problem
 
-Read `t` cases. Each case gives `n` inputs and `m` sorters. A sorter `(i, j)` sorts positions `i` through `j` in nondecreasing order and leaves other positions unchanged. Keep the fewest sorters, in their original order, so the last output always holds the maximum of all inputs. Print one integer per case.
+A row of sorters can rearrange a prefix of the input. Keep enough of them so the last position always holds the maximum.
+
+Read `t` cases. Each gives `n` inputs and `m` sorters. A sorter `(i, j)` sorts positions `i` through `j` in nondecreasing order and leaves other positions fixed.
+
+Keep the fewest sorters in their original order so the last output holds the maximum of all inputs. Print one integer per case.
 
 The judge bounds set the size of the work:
 
 | Quantity | Bound |
 | --- | --- |
-| Inputs `n` | 2 to 50,000 |
-| Sorters `m` | 1 to 500,000 |
-| Time limit | 1,500 ms |
-| Memory limit | 1,536 MB |
+| Inputs `n` | 2 to 50000 |
+| Sorters `m` | 1 to 500000 |
+| Time limit | 1500 ms |
+| Memory limit | 1536 MB |
 
-The sorter count drives the run time; the input count sizes the tree.
+The sorter count drives the run time, and the input count sizes the tree.
+
+The sample case:
+
+```
+1
+40 6 
+20 30 
+1 10 
+10 20 
+20 30 
+15 25 
+30 40 
+```
+
+```
+4
+```
 
 ## Idea
 
-bestCosts[x] is the fewest sorters that put the maximum of inputs `1` through `x` at position `x`. A sorter `(i, j)` moves that collected maximum to `j` when `i` is at most `x` and `x` is at most `j`. Each sorter sets bestCosts[j] to one plus the smallest earlier cost in [i, j], using a tree that answers the smallest value in a range. Each sorter costs `O(log n)`. Rescanning the whole range for every sorter would cost `O(mn)`.
+Track the cheapest way to deliver the maximum of inputs `1..x` to position `x`.
+
+Think of a baton passed through relay stations. A sorter hands the baton forward only when its range includes the current position. A segment tree (a tree holding the minimum value of each range) finds the cheapest earlier baton in that range.
+
+Each sorter costs one range query and one point update, both O(log n). Rescanning the whole range for every sorter costs O(mn), which fails at 500000 sorters.
 
 ## Why It Works
 
-A sorter places the largest value of its window at the right edge. The value bestCosts[x] means the maximum of inputs `1` through `x` sits at position `x` after a certain number of sorters. Every sorter used for that state ends no later than `x`, so positions `1` through `x` hold exactly inputs `1` through `x`.
+Five facts prove the cost recurrence.
 
-When leftEdge <= x <= rightEdge, the sorter window contains that collected maximum. The window also contains inputs x + 1 through `rightEdge` at their own positions. The window maximum is then the maximum of inputs `1` through `rightEdge`, and it lands at `rightEdge`.
+1. A sorter places the largest value of its window at the right edge of that window.
+2. `bestCosts[x]` means the maximum of inputs `1..x` sits at position `x` after some sorters. Every sorter used for that state ends no later than `x`, so positions `1..x` hold inputs `1..x`.
+3. When `leftEdge <= x <= rightEdge`, the window contains that collected maximum and inputs `x + 1..rightEdge` at their own positions. The window maximum is then the maximum of inputs `1..rightEdge`, and it lands at `rightEdge`.
+4. The update is `bestCosts[rightEdge] = min(bestCosts[x]) + 1` over every `x` from `leftEdge` to `rightEdge`.
+5. The tree stores the smaller child at each parent. A query visits at most two nodes per level, and an update stops when a parent keeps its value.
 
-The update formula is bestCosts[rightEdge] = min(bestCosts[x]) + 1 over every position `x` from `leftEdge` to `rightEdge`.
+The arrays and their roles:
 
-Three tree rules make the query and the update fast:
+| Term | Meaning |
+| --- | --- |
+| `bestCosts` | fewest sorters placing the prefix maximum at each position |
+| `baseSize` | smallest power of two above `n` |
+| `tree` | segment tree of range minimums |
+| `bestEarlier` | smallest cost found inside a sorter window |
+| `largeSentinel` | value standing for an unreachable position |
+| `leftEdge` | first position of the current sorter |
 
-- `tree[baseSize + k]` stores the cost for position `k`.
-- `baseSize` is the smallest power of two larger than `n`.
-- Each parent stores the smaller value of its two children.
+One leaf of `tree` mirrors one entry of `bestCosts`.
 
-The following trace uses six inputs and five sorters.
+A script traces the sample through all six sorters:
 
-| Sorter | Smallest earlier cost in range | Cost at right edge after the sorter |
-| --- | --- | --- |
-| (5, 6) | unreachable | unreachable |
-| (1, 3) | 0 | 1 |
-| (2, 4) | 1 | 2 |
-| (3, 5) | 1 | 2 |
-| (4, 6) | 2 | 3 |
+```
+initial: best[1]=0, others INF
+sorter (20,30): min in range=unreachable, best[30]=unreachable
+sorter (1,10): min in range=0, best[10]=1
+sorter (10,20): min in range=1, best[20]=2
+sorter (20,30): min in range=2, best[30]=3
+sorter (15,25): min in range=2, best[25]=3
+sorter (30,40): min in range=3, best[40]=4
+answer: 4
+```
 
-The last sorter reaches position six with three sorters.
+The last sorter reaches position 40 with four sorters, which matches the sample.
 
 ## Code
 
-```
+**Scanner and constants.** One read loads the stream, and a hand scanner parses tokens.
+
+```nim
 {.push checks: off.}
 
 const firstDigitValue = 48
@@ -63,9 +106,11 @@ proc nextInt(inputData: string, i: var int): int =
   return numberValue
 ```
 
-The scanner skips every non-digit byte, so spaces and line breaks need no special case. It visits each digit once.
+The scanner skips every non-digit byte, so spaces and line breaks need no special case. It visits each digit once. `largeSentinel` leaves unreachable positions unchanged.
 
-```
+**Tree setup.** A power-of-two base gives every leaf a slot.
+
+```nim
 let inputData = readAll(stdin)
 var i = 0
 let caseCount = nextInt(inputData, i)
@@ -92,9 +137,11 @@ for j in 0 ..< caseCount:
   bestCosts[1] = 0
 ```
 
-`baseSize` is the first power of two above `inputCount`, so every leaf fits inside the tree. The initial zero at `tree[baseSize + 1]` gives position one zero sorters.
+`baseSize` is the first power of two above `inputCount`, so every leaf fits. The zero at `tree[baseSize + 1]` gives position one zero sorters. Its ancestors also start at zero.
 
-```
+**Sorter loop.** Each sorter queries its window, then updates one leaf.
+
+```nim
   for l in 0 ..< sorterCount:
     let leftEdge = nextInt(inputData, i)
     let rightEdge = nextInt(inputData, i)
@@ -130,9 +177,11 @@ for j in 0 ..< caseCount:
         k = k shr 1
 ```
 
-The query visits at most two nodes per level, so its bound is `2 log baseSize`. The update stops when a parent keeps its value and touches one root-to-leaf path. The sentinel leaves `bestCosts[rightEdge]` unchanged while the range is unreachable.
+The query visits at most two nodes per level, so its bound is `2 log baseSize`. The update touches one root-to-leaf path. The sentinel keeps an unreachable window from producing a cost.
 
-```
+**Output.** One answer leaves the buffer in large blocks.
+
+```nim
   outputBuffer.add $bestCosts[inputCount]
   outputBuffer.add '\n'
   if outputBuffer.len >= flushBlockBytes:
@@ -144,10 +193,24 @@ stdout.write outputBuffer
 {.pop.}
 ```
 
-Output leaves the buffer in blocks of `flushBlockBytes` bytes.
+The program prints the cost at the final position. Output leaves the buffer in blocks of `flushBlockBytes` bytes. The final write flushes the tail.
 
 ## Complexity
 
-Reading the input takes `O(total tokens)` and stores the bytes once. Building a tree costs `O(n)` per case. Each of the `m` sorters costs `O(log n)` for the query and the update. Writing the answers costs `O(t)`.
+Building the tree and processing sorters dominate each case.
 
-Total time is `O(sum of n + sum of m log n)` over all cases. Space is `O(n)` per case plus the input buffer. A rescan of the whole range for every sorter would cost `O(mn)`.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | O(total tokens) | one input buffer |
+| Tree and cost setup | O(n) | O(n) tree and cost arrays |
+| One sorter | O(log n) query and update | O(1) extra |
+| Output | O(t) | one output block |
+
+The power-of-two tree keeps every query logarithmic.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(sum of n + sum of m log n) |
+| Space | O(n) per case plus the input buffer |
+
+A rescan of the whole window for every sorter costs O(mn) instead of O(m log n).

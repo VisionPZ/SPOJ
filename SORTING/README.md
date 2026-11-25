@@ -1,52 +1,77 @@
+# SORTING — Sorting is easy (SPOJ)
+<https://www.spoj.com/problems/SORTING/>
+
 ## Problem
 
-Read one line of at most 1000 uppercase letters from standard input. Print the same letters in non-descending order, with a trailing newline. The judge page lists BF as the only allowed language.
+A line of uppercase letters arrives scrambled. Print the same letters in alphabetical order. The judge restricts submission to an esoteric language, but exact output bytes are all that matter.
 
-The statement and judge page give these bounds.
+Input: one line of at most 1000 uppercase letters, ended by a newline. Output: the same letters in nondecreasing order, followed by a newline.
 
-| Quantity | Bound |
+The statement sets these bounds.
+
+| Item | Bound |
 | --- | --- |
-| Line length | at most 1000 letters |
+| Line length | at most 1000 uppercase letters |
 | Alphabet | A through Z |
-| Time limit | 1000 ms |
-| Memory limit | 1536 MB |
+| Input ending | one newline |
+| Judge time limit | 1000 ms |
+| Judge memory limit | 1536 MB |
 
-The line length sets the whole workload; the other bounds never bind.
+The alphabet has only 26 letters, so counting beats comparison sorting.
+
+The sample input:
+
+```
+BRAINFUCK
+```
+
+The sample output:
+
+```
+ABCFIKNRU
+```
 
 ## Idea
 
-Count how often each of the 26 letters appears. Write the letters from A to Z, each repeated its counted number of times. Counting reads each character once, while a comparison sort spends O(n log n) comparisons on the same line.
+Count the letters like tally marks on a sheet, then rewrite the alphabet from A to Z. You never move a letter more than once. That is counting sort, and it fits the 26-letter alphabet perfectly.
 
-Cost per input character: one array increment. Cost per output character: one buffer append.
+The program scans the input once and increments one of 26 counters. It then writes each letter as many times as its counter says. Counting costs O(N) for N input characters, and writing costs O(N) again. A comparison sort costs O(N log N) and still handles only 1000 letters.
+
+Twenty-six counters replace a comparison sort.
 
 ## Why It Works
 
-Only 26 characters can appear, so one counter per letter captures the whole line. Letter order is fixed, so emitting the counters in order produces the sorted line.
+Three facts carry the program.
 
-`ch` is the current input character.
-`int(ch) - firstUpperValue` maps A to slot 0 and Z to slot 25.
-`letterCounts` holds one count for each letter.
-`char(i + firstUpperValue)` turns a slot index back into a letter.
+1. Each uppercase letter maps to a counter index by subtracting the code of A. The index runs from 0 through 25.
+2. Counting preserves multiplicity, so writing counters in index order produces sorted output. Equal letters stay together automatically.
+3. Non-uppercase bytes are ignored, so the trailing newline never becomes a letter. The output always ends with one newline.
 
-The generator prints this trace for the sample:
+Each term has one job.
 
+| Term | Meaning |
+| --- | --- |
+| `letterCounts` | 26 tallies, one per uppercase letter |
+| `firstUpperValue` | character code of A |
+| `letterKinds` | size of the alphabet, 26 |
+| `appendLetter` | writes one byte through the output buffer |
+
+No numeric rounding appears because the program handles only characters.
+
+A script tallies the sample word BRAINFUCK.
+
+```text
+letters: B R A I N F U C K
+tallies: A=1 B=1 C=1 F=1 I=1 K=1 N=1 R=1 U=1
+write A B C F I K N R U
+output ABCFIKNRU
 ```
-input: BRAINFUCK
-A 1
-B 1
-C 1
-F 1
-I 1
-K 1
-N 1
-R 1
-U 1
-output: ABCFIKNRU
-```
 
-Writing every letter its counted number of times gives the answer line.
+Every letter appears once, so the sorted word has nine characters.
 
 ## Code
+
+**Reader and tallies.** One pass counts uppercase bytes only.
 
 ```nim
 {.passC: "-O2".}
@@ -61,11 +86,7 @@ var inputLine = ""
 while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
-```
 
-The read loop runs once per input line and fills one buffer. It restores the newline that `readLine` strips. One read pass costs time linear in the input size.
-
-```nim
 var letterCounts: array[0..letterKinds - 1, int]
 var scanPos = 0
 while scanPos < inputData.len:
@@ -75,7 +96,9 @@ while scanPos < inputData.len:
   scanPos += 1
 ```
 
-The index `scanPos` walks every byte once and skips characters outside A to Z. The range test keeps the array index inside its 26 slots. The pass costs one step per input byte.
+The read loop collects the whole stream into one buffer. The `if` test excludes the newline. The cost is one pass over the input bytes.
+
+**Buffered writer.** Each letter goes into one output buffer.
 
 ```nim
 var outputBuffer = ""
@@ -87,7 +110,9 @@ proc appendLetter(letter: char) =
     outputBuffer.setLen 0
 ```
 
-The flush fires once per 256 KiB of answer text, not once per letter. Reusing the buffer avoids an allocation on every flush. The cost is one write per full block.
+`setLen 0` reuses one allocation after each flush. No write happens per letter unless the buffer fills.
+
+**Sorted output.** Counters are read in alphabetical order.
 
 ```nim
 for i in 0..<letterKinds:
@@ -101,10 +126,24 @@ outputBuffer.setLen 0
 {.pop.}
 ```
 
-The first index walks the 26 letters in order; the second repeats each letter its counted number of times. The final append adds the required trailing newline. One last write emits the bytes left below `flushBlockBytes`.
+The outer loop has exactly 26 steps. The inner loop runs once per occurrence of one letter. The final call adds the required newline.
 
 ## Complexity
 
-Counting takes O(n) time for n input characters and uses 26 counters. Output takes O(n) time and stays under one block for this problem.
+Counting and writing each scan the input once.
 
-Total time is O(n) and total space is O(1). A comparison sort takes O(n log n) time for contrast.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | O(N) for N bytes | N bytes |
+| Letter tally | O(N) | 26 counters |
+| Sorted write | O(N) | one block |
+| Total | O(N) | O(N) |
+
+N is at most 1000, so the run is tiny.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(N) |
+| Space | O(N) input plus constant counters |
+
+A comparison sort costs O(N log N) and needs extra work to move letters around.

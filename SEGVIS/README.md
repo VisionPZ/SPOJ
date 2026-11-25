@@ -1,62 +1,93 @@
+# SEGVIS — Horizontally Visible Segments (SPOJ)
+<https://www.spoj.com/problems/SEGVIS/>
+
 ## Problem
 
-Read `d` datasets. Each dataset lists `n` disjoint vertical segments as a low y, a high y and an x. Two segments are horizontally visible when a horizontal line joins them without touching any other segment. Count triples where every pair is visible, and print one count per dataset.
+Vertical segments stand side by side on a plane. Two segments are visible when a horizontal line joins them without crossing any other segment. Three segments form a triangle when every pair is visible. Count the triangles.
+
+Input: an integer d, then d datasets. Each dataset starts with segment count n, then n lines with low y, high y and x. Output: one integer per dataset, the triangle count.
 
 Here are the judge limits.
 
 | Item | Value |
 | --- | --- |
-| Datasets | 1 to 20 |
+| Datasets d | 1 to 20 |
 | Segments per dataset | 1 to 8000 |
-| y endpoints | 0 to 8000, low < high |
+| y endpoints | 0 to 8000, low below high |
 | x coordinate | 0 to 8000 |
-| Time | 3250 ms |
-| Memory | 1536 MB |
+| Judge time limit | 3250 ms |
+| Judge memory limit | 1536 MB |
 
-The segment count and coordinate range drive the cost; the output stays tiny.
+The segment count and coordinate range drive the cost, while output stays tiny.
+
+The sample input:
+
+```
+1
+5
+0 4 4
+0 3 1
+3 4 2
+0 2 2
+0 2 3
+```
+
+The sample output:
+
+```
+1
+```
 
 ## Idea
 
-Sweep segments from left to right and keep the nearest segment seen at every y position. A new segment sees the distinct stored segments covering its span; record each pair as one bit in a bitset. One tree update per segment and one bit pass per pair replace the naive test of every pair and every triple.
+Sweep the segments from left to right, like sliding a curtain across a row of posts. Keep the nearest post seen at every height. A new segment sees exactly the posts still showing through its span. That gives one visibility edge per pair.
+
+The program stores the nearest segment in a coverage tree over doubled y slots. Doubling captures both integer points and gaps between them. Each segment takes one tree update and one query. A bitset then holds the graph, and common-neighbor counts give triangles. Testing every pair and every triple would be far slower than one sweep.
+
+One sweep replaces a quadratic pile of visibility tests.
 
 ## Why It Works
 
-Every endpoint is an integer, so the real y axis splits into integer points `k` and open gaps `(k, k + 1)`. Doubling maps those pieces to integer slots `2 * k` and `2 * k + 1`. A segment from `y1` to `y2` owns every slot from `2 * y1` to `2 * y2`. Two spans share a slot exactly when some horizontal line meets both spans.
+Four facts carry the program.
 
-The tree stores one value per slot. Zero means no segment owns the slot. Minus one means a node range holds several values, so the query walks into its children.
+1. Every endpoint is an integer, so the y axis splits into integer points k and open gaps between k and k plus 1. Doubling maps those pieces to slots `2 * k` and `2 * k + 1`.
+2. A segment from y1 to y2 owns every slot from `2 * y1` through `2 * y2`. Two spans share a slot exactly when a horizontal line meets both.
+3. The sweep keeps the processed segment with the largest x at each slot. A stored segment sharing a slot with the new one has no blocker between them, so the pair is visible.
+4. For an edge between i and j, the AND of their bit rows marks every common neighbor. Summing over edges counts each triangle three times, so the answer is divided by three.
 
-At slot `p`, the sweep keeps the processed segment with the largest x that owns `p`. When segment B arrives, a stored segment A at a shared slot has no segment between A and B that owns that slot. Such a segment would have been processed before B and would be stored instead. So A and B are visible. The reverse also holds. If A and B are visible, a shared slot has no blocker, and A is still stored there when B arrives. The collected set is therefore exact.
+Each term has one job.
 
-For an edge between segments `i` and `j`, the AND of their two bit rows marks every common neighbor `k`. Summing those counts over all edges counts each triangle three times, once per edge, so the program divides by three.
+| Term | Meaning |
+| --- | --- |
+| `coverTree` | nearest segment id stored per slot range |
+| `adjacency` | visibility graph as rows of 64-bit words |
+| `seenStamp` | stamp that drops repeated ids per segment |
+| `wordCount` | number of 64-bit words per graph row |
 
-The index formula has one term per piece of the geometry.
+The tree stores ids one-based, so zero means an empty slot.
+
+The index formula has one term per piece of geometry.
 
 ```text
-endpoint k        -> slot 2 * k
-gap (k, k + 1)    -> slot 2 * k + 1
-segment [y1, y2]  -> slots 2 * y1 through 2 * y2
+endpoint k       -> slot 2 * k
+gap (k, k+1)     -> slot 2 * k + 1
+segment [y1, y2] -> slots 2*y1 through 2*y2
 ```
 
-The sample gives this trace. The pairs come from an independent interval check, not from the tree sweep.
+A script traces the sample through an interval check.
 
 ```text
-Input segments (low, high, x):
-  1: 0 4 4
-  2: 0 3 1
-  3: 3 4 2
-  4: 0 2 2
-  5: 0 2 3
-
-Visible pairs: (1,2) (1,3) (1,5) (2,3) (2,4) (4,5)
-Triangle: (1,2,3)
-Answer: 1
+segments: 1:(0,4,4) 2:(0,3,1) 3:(3,4,2) 4:(0,2,2) 5:(0,2,3)
+visible pairs: (1,2) (1,3) (1,5) (2,3) (2,4) (4,5)
+common neighbors sum: 3
+triangles: 3 / 3 = 1
 ```
 
-Segments 2 and 3 meet only at y = 3, and no segment blocks that point, so the pair counts.
+Segments 2 and 3 meet at y = 3 with no blocker, so the pair counts.
 
 ## Code
 
-The tree spans slots from 0 to `doubledLimit`, and each node covers one contiguous range of slots.
+**Constants and working arrays.** The tree spans 16001 doubled slots.
 
 ```nim
 const
@@ -87,7 +118,9 @@ var
   wordCount = 0
 ```
 
-A node array of four times the slot count holds the tree. The bitset uses 64 bits per word. The output buffer flushes after 256 KiB.
+A node array four times the slot count holds the tree. The graph uses 64 bits per word. The output buffer flushes after 256 KiB.
+
+**Input reader.** One loop collects the whole stream.
 
 ```nim
 proc loadInput() =
@@ -97,7 +130,9 @@ proc loadInput() =
     inputData.add '\n'
 ```
 
-The loop reads the whole stream once into one buffer, so scanning never calls the stream layer.
+The loop reads the stream once into one buffer. Parsing never calls the stream layer again.
+
+**Integer scanner.** Values are nonnegative, so no sign branch appears.
 
 ```nim
 proc nextInteger(): int =
@@ -110,7 +145,9 @@ proc nextInteger(): int =
   result = numberValue
 ```
 
-The scanner skips whitespace and reads digits by index. Input values are never negative, so no sign branch is needed. It runs once per number.
+The first loop skips whitespace, and the second reads digits. The cost is one pass per number.
+
+**Output helper.** A large answer needs 64 bits.
 
 ```nim
 proc appendResult(answerValue: int64) =
@@ -121,7 +158,9 @@ proc appendResult(answerValue: int64) =
     outputBuffer.setLen 0
 ```
 
-The buffer holds at most one block plus one answer. A large answer needs 64 bits.
+The buffer holds one block plus one answer. Flushing bounds memory at the block size.
+
+**Tree update.** A uniform node takes one assignment.
 
 ```nim
 proc assignCover(i: int, leftBound: int, rightBound: int,
@@ -144,7 +183,9 @@ proc assignCover(i: int, leftBound: int, rightBound: int,
     coverTree[i] = -1
 ```
 
-A full node takes one assignment. A partial node pushes its uniform value to both children before the recursion, which avoids stale children. The work per segment is O(log 16001).
+A partial node pushes its value to both children first, which avoids stale children. The work per segment is O(log 16001).
+
+**Tree query.** A uniform node adds one id and stops.
 
 ```nim
 proc collectCovers(i: int, leftBound: int, rightBound: int,
@@ -163,7 +204,19 @@ proc collectCovers(i: int, leftBound: int, rightBound: int,
   collectCovers(i * 2 + 1, middle + 1, rightBound, queryLeft, queryRight, collected)
 ```
 
-A uniform node adds one id and stops. A mixed node splits until uniform pieces appear. Each visible pair appears at least once in the list.
+A mixed node splits until uniform pieces appear. Every visible pair appears at least once in the list.
+
+**Edge write.** Each edge sets one bit in two rows.
+
+```nim
+proc addEdge(firstId: int, secondId: int) =
+  let i = firstId * wordCount + (secondId shr wordShift)
+  adjacency[i] = adjacency[i] or (1'u64 shl (secondId and wordMask))
+```
+
+The shift picks the word, and the mask picks the bit. Setting both directions makes later AND tests symmetric.
+
+**Sweep and bitset build.** Counting by x replaces a sort.
 
 ```nim
 proc solveDataset(segmentCount: int): int64 =
@@ -204,7 +257,9 @@ proc solveDataset(segmentCount: int): int64 =
     assignCover(1, 0, doubledLimit, lowPosition, highPosition, currentId + 1)
 ```
 
-Counting by x replaces sorting with one pass over 8001 buckets. The stamp array drops repeated ids without clearing an array per segment. The sweep loop runs exactly `segmentCount` times.
+One pass over 8001 buckets orders segments by x. The stamp drops repeated ids without clearing an array. The sweep loop runs exactly `segmentCount` times.
+
+**Triangle count.** Each edge is visited once.
 
 ```nim
   var triangleSum = 0'i64
@@ -226,7 +281,9 @@ Counting by x replaces sorting with one pass over 8001 buckets. The stamp array 
   result = triangleSum div 3'i64
 ```
 
-The loop visits each edge once by testing `toId > fromId`. Each edge costs `wordCount` bit operations. The final division removes the three-way count.
+`toId > fromId` visits each edge once. Each edge costs `wordCount` bit operations. The division removes the three-way count.
+
+**Driver.** Fixed arrays serve every dataset.
 
 ```nim
 proc main() =
@@ -252,19 +309,25 @@ proc main() =
 main()
 ```
 
-The arrays are allocated once for the largest legal dataset. A final write emits the last partial block.
+The arrays hold at most 8000 segments, so main allocates them once. The final write clears the tail. Each dataset costs one sweep.
 
 ## Complexity
 
-Let C be 16001 slots, E the number of visible pairs, and n the segment count.
+The sweep and the edge pass dominate each dataset.
 
 | Phase | Time | Space |
 | --- | --- | --- |
-| Input and x buckets | O(n + 8001) | O(n) |
-| Tree sweep | O((n + E) log C) | O(C) |
-| Triangle count | O(E * n / 64) | O(n^2 / 64) |
-| Total per dataset | O((n + E) log C + E * n / 64) | O(C + n^2 / 64) |
+| Input read | O(B) for B bytes | B bytes |
+| Bucket order | O(8001 + n) | O(n) |
+| Tree sweep | O(n log 16001) | O(16001 * 4) |
+| Triangle pass | O(n squared times words) | O(n times words) |
+| Total | O(n squared times words) per dataset | O(n squared) bits |
 
-For n = 8000 the bitset holds 125 words per segment, about 8 MB. The sweep and triangle count stay well below the 3250 ms limit.
+Words is n divided by 64, rounded up, and n is at most 8000.
 
-The naive method checks each pair against all other segments, then scans all triples. That takes O(n^3) time per dataset, which is far too slow at the largest size.
+| Measure | Big O |
+| --- | --- |
+| Time | O(n squared / 64) per dataset |
+| Space | O(n squared / 8) for the bitset |
+
+Testing every pair and triple would cost O(n cubed) time.

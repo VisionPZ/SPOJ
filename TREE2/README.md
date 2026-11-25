@@ -1,64 +1,85 @@
+# TREE2 — Which is Next (SPOJ)
+
+<https://www.spoj.com/problems/TREE2/>
+
 ## Problem
 
-Read a count, then that many integer identifiers, each describing one binary tree. Each identifier is an integer between 0 and 2^30.
+A library shelves every binary tree of a fixed size in dictionary order. Given one tree's catalog number, find the number of the next tree on the shelf.
 
-Print the identifier of the successor tree, the next tree in sorted order among trees with the same node count. The order wraps from the largest tree to the smallest.
+Input starts with the test count `t`. Each of the next `t` lines holds one integer identifier `n` with `0 ≤ n ≤ 2^30`. Output one integer per line: the successor identifier in the same size class. The order wraps from the largest tree back to the smallest.
 
-Let m be the node count and N(t) the statement's identifier formula. The judge applies these limits.
+The judge applies these limits.
 
-| Quantity | Value |
+| Item | Bound |
 | --- | --- |
-| Identifier n | 0 to 2^30 |
-| Node count m | odd, at most 29 for valid input |
+| Identifier `n` | 0 to 2^30 |
+| Bit length of an identifier | at most 31 |
+| Test count `t` | given on the first line |
 | Time limit | 1000 ms |
 | Memory limit | 1536 MB |
 
-The identifier range keeps every test case small enough for a fixed bit scan.
+The bit-length bound keeps every case inside a fixed array.
+
+The sample input and output follow verbatim.
+
+```
+1
+20
+```
+
+```
+24
+```
 
 ## Idea
 
-The identifier is the tree's preorder bitstring: 1 for an internal node, 0 for a leaf. For trees with m nodes, tree order matches numeric order of the m-bit strings, so the successor is the next larger valid bitstring. Flip the lowest zero bit that still allows a valid ending, then write the smallest ending; with no such bit, wrap to the smallest tree.
+Treat each tree as a word and flip the rightmost zero that still allows a valid ending. Think of a phone book: to reach the next name, you change the last position that can still increase.
 
-Each case scans at most 31 bits, which beats listing every tree of that size, a list that grows into the millions.
+The identifier is the tree's preorder bitstring, with `1` for an internal node and `0` for a leaf. All trees of one size have bitstrings of equal length, so dictionary order equals numeric order. The successor is therefore the next valid bitstring above the given one. The program scans at most 31 bits, computes open slots, flips one zero, and writes the smallest valid tail.
+
+Listing every tree of that size costs Catalan growth, roughly 2.7 million trees at 31 bits. Testing each larger integer also loses, because gaps can span millions. The scan wins with a few dozen steps.
+
+A fixed-size scan always beats rebuilding the whole family.
 
 ## Why It Works
 
-The statement's formula N(t1, t2) = 2^(|t1|+|t2|) + 2^(|t2|) * N(t1) + N(t2) lays the tree out in bits.
+Four facts prove the scan.
 
-- The term 2^(|t1|+|t2|) sets the leading bit at position m-1 and marks the root as internal.
-- The term 2^(|t2|) * N(t1) writes the left subtree in the next |t1| bits.
-- The term N(t2) writes the right subtree in the low |t2| bits.
+1. The formula `N(t1, t2) = 2^(|t1|+|t2|) + 2^(|t2|)·N(t1) + N(t2)` lays the tree out in bits. The leading bit marks the root, the next bits hold the left subtree, and the low bits hold the right subtree.
+2. Tree order compares left subtrees before right subtrees, recursively. That is lexicographic order of the bitstrings, which equals numeric order when all strings share a length.
+3. Read bits from the top with `slots` starting at one. A `1` adds a slot and a `0` removes one. Every prefix keeps a positive count, and the last bit leaves zero.
+4. The scan flips bit `j` only when `j >= currentHeight` and `j - currentHeight` is even. Those conditions leave enough low bits to close every open slot. If no bit works, the answer wraps to the smallest tree.
 
-The order compares left subtrees before right subtrees, and it does so recursively. That is lexicographic order of the bitstrings. All bitstrings for a fixed m have the same length m, so lexicographic order is numeric order.
+The table names the values used in the scan.
 
-A valid bitstring starts with 1, ends with 0, and keeps one rule. Read bits from the top with `slots` starting at 1; a 1 adds a slot, and a 0 removes one. Every prefix must keep at least one slot, and the last bit removes the final slot.
+| Term | Meaning |
+| --- | --- |
+| `identifier` | preorder bitstring of the tree |
+| `nodeCount` | bit length of the identifier |
+| `slotHeights[j]` | open slots after reading bit `j` |
+| `currentHeight` | open slots after flipping bit `j` to one |
+| `remainingDownSteps` | down steps still needed to close the slots |
+| `smallestCode` | identifier of the smallest tree of this size |
 
-The scan of `nextIdentifier` uses three facts.
+Every scan step is an integer test, so it never allocates memory.
 
-- `slotHeights[j + 1] + 1` is the slot count after a flipped zero becomes one.
-- `j >= currentHeight` leaves enough low bits to remove every open slot.
-- An even value of `j - currentHeight` lets the last bit remove the final slot.
-
-When no bit works, `smallestCode` writes ones at even positions 2, 4, ..., m-1. That bitstring is 1010...100, the smallest valid tree of size m.
-
-A worked example for identifier 88 follows, generated by the generator script.
+A trace of the sample identifier `20` shows the arithmetic.
 
 | Step | Value |
 | --- | --- |
-| Identifier | 88, bitstring 1011000, m = 7 |
-| Slot heights, top to bottom | 2, 1, 2, 3, 2, 1, 0 |
-| Flipping bit 0 | currentHeight 2, no low bits left, impossible |
-| Flipping bit 1 | currentHeight 3, one low bit left, impossible |
-| Flipping bit 2 | currentHeight 4, two low bits left, impossible |
-| Flipping bit 5 | currentHeight 3, five low bits left, valid |
-| Fill bits 4 down to 1 | 0, 0, 1, 0; bit 0 stays 0 |
-| Result | 1100100, which is 100 |
+| Identifier in binary | `10100`, so `nodeCount = 5` |
+| Slot heights, top to bottom | 2, 1, 2, 1, 0 |
+| Flip bit 0 | height 2, no low bits, rejected |
+| Flip bit 1 | height 3, no low bits, rejected |
+| Flip bit 3 | height 3, two low bits, accepted |
+| Assemble the result | `(20 shr 4) shl 4` gives 16, then set bit 3 to get 24 |
+| Successor | `24`, matching the sample output |
 
-The next tree after 88 therefore has identifier 100.
+The wrap branch writes ones at even positions 2, 4, and so on. That pattern is the smallest valid tree.
 
 ## Code
 
-The successor routine performs the bit scan and the wrap-around construction.
+**Successor routine.** The successor routine performs the height pass, the flip scan, and the wrap construction.
 
 ```nim
 proc nextIdentifier(identifier: int64): int64 =
@@ -103,9 +124,9 @@ proc nextIdentifier(identifier: int64): int64 =
   return smallestCode
 ```
 
-The first loop reads exactly m bits, because m is the position of the highest one plus one. Starting `slots` at 1 avoids counting the root twice and keeps every height correct. The scan visits at most m-1 positions and the fill visits at most m-2 positions, so the routine costs O(m).
+The first loop reads `nodeCount` bits, the position of the highest one plus one. Starting `slots` at one avoids counting the root twice. The scan visits at most `nodeCount - 1` bits, so the routine costs `O(m)`.
 
-The scanner turns the single input buffer into integers.
+**Digit scanner.** The digit scanner turns the single input buffer into integers.
 
 ```nim
 proc nextInt(inputData: string, i: var int): int =
@@ -118,9 +139,9 @@ proc nextInt(inputData: string, i: var int): int =
   return value
 ```
 
-The loop stops at the first non-digit, so it never reads past one number. Character arithmetic with 48 converts a digit without a parsing library. Each call advances `i` once and costs O(digits).
+The loop stops at the first non-digit, so it never reads past one number. Character arithmetic with 48 converts a digit without a parsing library. Each call costs time proportional to the digit count.
 
-The driver reads all input at once and flushes output in blocks.
+**Input and driver.** The driver reads all input at once and flushes output in blocks.
 
 ```nim
 var inputData: string
@@ -143,12 +164,25 @@ for _ in 1 .. caseCount:
 stdout.write outputBuffer
 ```
 
-The loop runs exactly `caseCount` times because the first integer gives the count. Block flushing at `flushBlockBytes` keeps the write cost low and caps the buffer. One read pass and one final write cost O(input bytes + output bytes).
+The loop runs exactly `caseCount` times, since the first integer gives the count. Block flushing keeps write calls rare and caps the buffer. One read pass costs `O(input bytes)`.
 
 ## Complexity
 
-Reading the input costs O(input bytes) time and O(input bytes) space for `inputData`. Each case uses O(m) time for the height table, the bit scan, and the fill, with m at most 31. The whole run costs O(input bytes + t * log n) time.
+Each phase has a fixed bound per case.
 
-Writing costs O(output bytes) time and uses at most `flushBlockBytes` plus one line of space. The height table uses 61 integers. Total extra space stays under a few megabytes, far below the 1536 MB limit.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | O(input bytes) | one input string |
+| Successor scan | O(m), with m at most 31 | 61 integers |
+| Output | O(output bytes) | one flush block |
 
-A naive method lists every tree with m nodes, sorts the list, and looks up the next identifier. That list holds Catalan(m/2 minus one) trees, about 2.7 million for m = 29. Another naive method tests each larger integer until one is valid, and gaps can reach 2^27. Both are much slower than the 31-step scan used here.
+The height table never grows, so space stays constant per case.
+
+The overall bounds depend on the test count.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(input bytes + t · 31) |
+| Space | O(input bytes + flush block) |
+
+Building and sorting all trees of a size takes about 2.7 million steps at 31 bits. The bit scan needs a few dozen.

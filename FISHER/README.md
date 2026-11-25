@@ -1,50 +1,86 @@
+# FISHER — Fishmonger (SPOJ)
+<https://www.spoj.com/problems/FISHER/>
+
 ## Problem
 
-Read a list of test cases. Each case starts with `n` states and a time budget `t`, followed by two `n` by `n` tables of travel times and tolls. State 0 is the port and state `n - 1` is the market. Print the smallest total toll of a route that reaches the market within `t`, followed by that route's travel time.
+A fishmonger drives fish from the port to the market through many small states. Every border crossing costs a toll, and the fish spoil after a fixed number of minutes.
 
-| Quantity | Bound |
+Each case starts with two integers n and t. State 0 is the port and state n-1 is the market. Next come n rows of travel times, then n rows of tolls, each row holding n integers. A blank line separates tables, and the pair `0 0` ends the stream. Print the smallest total toll, then a space, then that route's travel time.
+
+The judge limits are:
+
+| Item | Value |
 | --- | --- |
-| Number of states `n` | 3 to 50 |
-| Time budget `t` | less than 1000 |
-| Judge time limit | 3000 ms |
-| Judge memory limit | 1536 MB |
+| States n | 3 to 50 |
+| Time budget t | less than 1000 |
+| Time limit | 3 s |
+| Memory limit | 1536 MB |
 
-The toll is the primary goal. The travel time of the chosen route is reported second.
+The toll comes first, so time is a constraint rather than the goal.
+
+The sample input reads:
+
+```text
+4 7
+0 5 2 3
+5 0 2 3
+3 1 0 2
+3 3 2 0
+
+0 2 2 7
+2 0 1 2
+2 2 0 5
+7 2 5 0
+
+0 0
+```
+
+The sample output reads:
+
+```text
+6 6
+```
 
 ## Idea
 
-Treat each pair of a state and an elapsed time as one node of an expanded graph. A shortest-path relaxation finds the least toll for every arrival time, and the answer takes the earliest such time. Listing every route would grow exponentially, so the expanded graph keeps the search small.
+Treat each state and each elapsed minute as one stop, like adding time rows to a timetable. This expanded graph (one node per state-time pair) lets a shortest-path search minimize tolls while respecting the deadline. Each edge relaxation costs one arithmetic step, and each expanded node has n outgoing edges. Listing every route would grow exponentially, because routes may revisit states. Takeaway: add time to the node, then relax edges.
 
 ## Why It Works
 
-An expanded node is a pair of a state and an elapsed time. The program stores it as one integer so that every table stays flat.
+1. An expanded node packs a state and an arrival time into one integer.
+2. The stride `timeLimit + 1` gives one slot per time from 0 through t.
+3. Node `targetNode * timeStride + arrivalTime` names the state after one crossing.
+4. An edge is skipped when its arrival time exceeds the budget.
+5. Relaxation keeps only a strictly smaller toll for each expanded node.
+6. The final scan walks arrival times upward and keeps the first least toll, so it reports the earliest time.
 
-The packing has three parts:
+The table names each quantity in the packing.
 
-- The state number multiplied by `timeStride` selects the block for one state.
-- `timeStride` is the budget plus one, so it gives one slot per time from 0 to `t`.
-- `elapsedTime` picks the slot inside that block.
+| Term | Meaning |
+| --- | --- |
+| timeStride | budget plus one, the size of one state's time block |
+| currentState | packed node, split by division and modulo |
+| rowOffset | `currentNode * stateCount`, the start of one table row |
+| candidateToll | toll so far plus the crossed border's toll |
 
-From an expanded node, the program follows each outgoing edge. The next node is `targetNode`, the next time is `currentTime + travelTimes[rowOffset + targetNode]`, and the added cost is `tollAmounts[rowOffset + targetNode]`. An edge is skipped when its arrival time passes `timeLimit`. The row offset `currentNode * stateCount` points at the current state's row in both flat tables.
+These four quantities define one packed node.
 
-The relaxation updates a node only when it finds a strictly smaller toll. Each update pushes the node once into a queue, so the process ends with the least toll for every reachable expanded node. The final scan walks arrival times from 0 upward and updates only on a strict improvement. That scan returns the earliest time among all routes with the least toll.
+A script replayed the relaxation for the sample. The market's least toll at each exact arrival time is:
 
-The sample has four states and a budget of 7. The table below lists the least toll for each state at each exact arrival time, with a dash for unreachable pairs. It comes from a small script that replays the same relaxation.
+| Arrival time | 3 | 4 | 5 | 6 | 7 |
+| --- | --- | --- | --- | --- | --- |
+| Least toll | 7 | 7 | not reached | 6 | 10 |
 
-| State | t=0 | t=1 | t=2 | t=3 | t=4 | t=5 | t=6 | t=7 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 0 | - | - | - | - | 4 | 14 | 14 |
-| 1 | - | - | - | 4 | - | 2 | 7 | 9 |
-| 2 | - | - | 2 | - | - | 5 | 12 | 3 |
-| 3 | - | - | - | 7 | 7 | - | 6 | 10 |
-
-At the market, state 3, the least toll is 6 and it first appears at time 6. The program prints `6 6`.
+The smallest toll is 6, and it first appears at time 6. The program prints `6 6`.
 
 ## Code
 
-The scanner reads the whole input buffer once and walks it by index. It accepts an optional minus sign, although the problem uses non-negative values.
+**Scanner and buffers.** The code reads the whole input once and parses integers by index.
 
 ```nim
+const infiniteToll = high(int) div 4
+const flushBlockBytes = 1 shl 18
+
 proc nextInt(inputData: string, i: var int): int =
   let dataLength = inputData.len
   while i < dataLength and inputData[i] != '-' and
@@ -59,13 +95,7 @@ proc nextInt(inputData: string, i: var int): int =
     numberValue = numberValue * 10 + (int(inputData[i]) - 48)
     i += 1
   return signValue * numberValue
-```
 
-The digit loop runs once per input character, so its cost equals the input length. Skipping separators lets blank lines between cases need no special handling.
-
-The input accumulates in one string through line reads. The output buffer holds completed lines and flushes only after 256 KiB.
-
-```nim
 var inputData = ""
 var inputLine: TaintedString = ""
 while readLine(stdin, inputLine):
@@ -74,19 +104,19 @@ while readLine(stdin, inputLine):
 
 var outputBuffer = ""
 var i = 0
+```
 
+The digit loop visits each input character once. Skipping separators lets blank lines between cases need no special branch. The sign branch preserves negative values even though the statement uses non-negative ones. Both buffers keep their capacity across cases.
+
+**Case header and tables.** The driver reads the two flat tables until it meets `0 0`.
+
+```nim
 while true:
   let stateCount = nextInt(inputData, i)
   let timeLimit = nextInt(inputData, i)
   if stateCount == 0 and timeLimit == 0:
     break
-```
 
-The `0 0` pair ends the stream, so the loop has no separate counter. Both buffers keep their capacity across cases.
-
-Each case reads two flat tables of `stateCount * stateCount` cells and prepares one slot per expanded node.
-
-```nim
   let tableSize = stateCount * stateCount
   var travelTimes = newSeq[int](tableSize)
   var tollAmounts = newSeq[int](tableSize)
@@ -94,7 +124,13 @@ Each case reads two flat tables of `stateCount * stateCount` cells and prepares 
     travelTimes[j] = nextInt(inputData, i)
   for j in 0 .. tableSize - 1:
     tollAmounts[j] = nextInt(inputData, i)
+```
 
+The `0 0` pair ends the stream, so the loop needs no separate case counter. Each table loop has `stateCount` squared iterations. Storing tables flat avoids a nested sequence per row.
+
+**Expanded node setup.** The program reserves one slot per state-time pair.
+
+```nim
   let timeStride = timeLimit + 1
   let totalStates = stateCount * timeStride
   let queueCapacity = totalStates + 1
@@ -104,13 +140,7 @@ Each case reads two flat tables of `stateCount * stateCount` cells and prepares 
   for j in 0 .. totalStates - 1:
     minTolls[j] = infiniteToll
     queuePresent[j] = false
-```
 
-The two table loops have `tableSize` iterations each. The queue capacity is `totalStates + 1` because the presence flag allows at most one queued entry per expanded node.
-
-The start node is the port at time 0, with toll 0. All other expanded nodes begin unreachable.
-
-```nim
   var queueHead = 0
   var queueTail = 0
   stateQueue[queueTail] = 0
@@ -119,9 +149,9 @@ The start node is the port at time 0, with toll 0. All other expanded nodes begi
   minTolls[0] = 0
 ```
 
-Circular queue indices wrap with `mod`, so the queue never reallocates. The single seed node is `0` under the packing formula.
+The queue holds at most one entry per expanded node, so its capacity is `totalStates + 1`. The seed node is `0` under the packing formula. Circular indices wrap with modulo, so the queue never reallocates. All unvisited nodes start at `infiniteToll`.
 
-The relaxation loop drains the queue and tries every outgoing edge of each expanded node.
+**Relaxation.** The queue drains expanded nodes and tries every outgoing crossing.
 
 ```nim
   while queueHead != queueTail:
@@ -146,9 +176,9 @@ The relaxation loop drains the queue and tries every outgoing edge of each expan
           queueTail = (queueTail + 1) mod queueCapacity
 ```
 
-The division and modulo recover the two parts of a packed state. The inner loop has `n` iterations, and each expanded node can improve several times, so the loop costs O(n² t) per case in total.
+Division and modulo recover the two halves of a packed state. The inner loop has n iterations, one per target state. The presence flag prevents duplicate queue entries. Each improvement costs constant arithmetic.
 
-The answer scan and the buffered write finish the case.
+**Answer and flush.** The final scan picks the earliest least-toll arrival.
 
 ```nim
   let destinationBase = (stateCount - 1) * timeStride
@@ -172,10 +202,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The scan has `t + 1` iterations and uses a strict comparison to keep the earliest time. The final write flushes any remaining bytes after the last case.
+The scan has `t + 1` iterations and updates only on a strict improvement. That strict rule keeps the earliest time among equal tolls. The final write flushes any bytes left below the block size.
 
 ## Complexity
 
-Reading a case costs O(n²) because both tables have `n²` cells. The relaxation relaxes `n` edges per expanded node, so it costs O(n² t) per case. The answer scan costs O(t). Total time per case is O(n² t), and total space is O(n t) for the flat distance and queue arrays.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Read two tables | O(n²) | O(n²) |
+| Relax expanded nodes | O(n² t) | O(n t) |
+| Scan answer times | O(t) | O(1) |
 
-Enumerating every route would take time exponential in `n`, because routes may revisit states. The expanded graph reduces that to a polynomial number of states.
+The relaxed search dominates each case.
+
+Each expanded node relaxes n edges, so the search dominates a case.
+
+| Measure | Bound |
+| --- | --- |
+| Per case | O(n² t) time |
+| Per case | O(n t) space |
+| Queue operations | O(1) amortized each |
+
+Listing every route takes time exponential in n, because routes may revisit states. The expanded graph reduces the search to a polynomial number of states.

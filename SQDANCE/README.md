@@ -1,46 +1,100 @@
+# SQDANCE — Square dance (SPOJ)
+
+<https://www.spoj.com/problems/SQDANCE/>
+
 ## Problem
 
-Read T test cases. Each case gives P prime indices and R relations. Each relation names two indices. Relations arrive in order. Keep a relation when it adds no square subproduct. Count the squares that appear and print one count per case.
+A codebreaker collects pairs of prime factors in a notebook. Sometimes a new pair completes a product that is a perfect square, and the codebreaker counts that moment.
 
-| Quantity | Bound |
+Input: `T` test cases. Each case starts with `P` prime indices and `R` relations.
+
+Each of the next `R` lines holds two indices `i j`. Output: one line per case with the number of squares formed.
+
+The statement gives these bounds:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | 30 |
-| Prime indices per case | 100000 |
-| Relations per case | 100000 |
-| Time limit | 5000 ms |
-| Memory limit | 1536 MB |
+| Test cases `T` | at most 30 |
+| Prime indices `P` | at most 100,000 |
+| Relations `R` | at most 100,000 |
+| Judge limit | 5000 ms, 1536 MB |
 
-The relation total drives the work because each arrival needs one check.
+The relation count drives the work, since each arrival needs one check.
+
+The sample input and output:
+
+```
+2
+6 7
+1 2
+3 5
+2 4
+1 4
+3 5
+1 6
+4 6
+2 3
+1 2
+1 2
+1 2
+```
+
+```
+3
+2
+```
 
 ## Idea
 
-Treat each relation as an edge between two prime indices. A product of relations is a square when every index appears an even number of times. That happens exactly when the new edge closes a cycle among the stored edges.
+A square appears when a new pair joins two primes already linked by earlier pairs. Think of relations as strings between numbered posts. A string inside one connected bunch closes a loop.
 
-Union-find holds the components of the stored edges in one array. It tests each arrival and merges two components when needed. Nothing gets rebuilt between arrivals.
+The program tracks those bunches with union-find (a structure that merges sets and finds each set's representative). Each relation costs `O(α(P))` amortized time, where α is the inverse Ackermann function. That function grows slower than any logarithm.
 
-Each relation costs O(α(P)) amortized time and O(1) extra space.
+Testing every subset of relations would explore exponentially many products. The online check settles each arrival once.
+
+Counting loops as they form turns an exponential search into one near-constant check per relation.
 
 ## Why It Works
 
-A subproduct is a square exactly when each prime index has even total degree. Stored edges never contain a cycle, so each component is a tree. A new edge inside one tree creates one even-degree cycle, hence one square. A new edge between two trees joins them and creates no square.
+Four facts justify the online count.
 
-The union steps number P - C, where C is the final component count. The counted squares therefore number R - (P - C).
+1. A product of relations is a square when every prime index appears an even number of times.
+2. The stored relations never contain a loop, so each component is a tree.
+3. A new relation inside one tree closes one loop. That loop is one square, and the relation stays out of the collection.
+4. A new relation between two trees merges them. No square appears, so the program stores it.
 
-The table traces the first sample case. Roots use the final parent array after path compression.
+The terms used by the program:
 
-| Step | Pair | Roots | Action | Squares |
+| Term | Meaning |
+| --- | --- |
+| `parent` | representative index of one set |
+| `componentSize` | number of prime indices in that set |
+| `leftRoot`, `rightRoot` | representatives of the two relation endpoints |
+| `squareCount` | loops closed so far |
+| `R - P + C` | closed form of the count, with `C` components |
+
+Union by size keeps each tree shallow, so repeated lookups stay cheap.
+
+A script trace of the first sample case, using representatives after path compression:
+
+```
+| relation | roots before | action | squares | roots after |
 | --- | --- | --- | --- | --- |
-| 1 | 1,2 | 1,2 | store | 0 |
-| 2 | 3,5 | 3,5 | store | 0 |
-| 3 | 2,4 | 2,4 | store | 0 |
-| 4 | 1,4 | 4,4 | count | 1 |
-| 5 | 3,5 | 5,5 | count | 2 |
-| 6 | 1,6 | 4,6 | store | 2 |
-| 7 | 4,6 | 6,6 | count | 3 |
+| 1,2 | 1,2 | merge | 0 | 1,1 |
+| 3,5 | 3,5 | merge | 0 | 3,3 |
+| 2,4 | 1,4 | merge | 0 | 1,1 |
+| 1,4 | 1,1 | count square | 1 | 1,1 |
+| 3,5 | 3,3 | count square | 2 | 3,3 |
+| 1,6 | 1,6 | merge | 2 | 1,1 |
+| 4,6 | 1,1 | count square | 3 | 1,1 |
+check R - P + C = 7 - 6 + 2 = 3
+```
 
-Step 7 closes the last cycle and gives the answer 3.
+The third and fifth rows show repeated pairs. Both close a loop and raise the count.
 
 ## Code
+
+**Bulk input and scanner.** The reader grows one buffer, and the scanner walks it by index.
 
 ```nim
 const firstDigitValue = 48
@@ -57,11 +111,9 @@ while true:
   if bytesRead == 0: break
   totalRead += bytesRead
 inputData.setLen(totalRead)
-```
 
-The loop ends at the first empty read. The buffer doubles only when full, so one bulk copy holds the whole stream. `setLen` trims the string to the bytes read.
+var i = 0
 
-```nim
 proc nextInt(data: string, i: var int): int =
   while i < data.len and (data[i] < '0' or data[i] > '9'):
     i += 1
@@ -72,7 +124,11 @@ proc nextInt(data: string, i: var int): int =
   return value
 ```
 
-The scanner skips separators and reads digits into an integer. It allocates no token objects. It assumes non-negative input, which the statement guarantees.
+The buffer doubles only when full, so the read loop runs once per chunk.
+The scanner skips non-digits and needs no sign branch.
+Parsing one integer visits each digit once.
+
+**Set representative.** Two walks find the root and then compress the path to it.
 
 ```nim
 proc findRoot(parent: var seq[int], i: int): int =
@@ -87,7 +143,27 @@ proc findRoot(parent: var seq[int], i: int): int =
   return j
 ```
 
-The first walk finds the root. The second walk compresses the path in place. Both walks stop at a root, so the loop bound is the tree height, kept short by size merging.
+The first walk stops at the root.
+The second walk rewires every node on the path to that root.
+Both walks visit at most the tree height, which stays small under union by size.
+
+**Buffered output.** One buffer collects answers and flushes in large blocks.
+
+```nim
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+```
+
+`flushBlockBytes` fixes the block size at 256 KiB.
+`setLen 0` reuses the same allocation for the next block.
+A case writes one line, never one write per digit.
+
+**Driver.** Each relation either closes a loop or merges two sets.
 
 ```nim
 let caseCount = nextInt(inputData, i)
@@ -120,10 +196,29 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The outer loop runs once per case and the inner loop once per relation. The `parent` array uses index 0 as unused space. Merging the smaller tree into the larger one keeps lookups fast. The output buffer flushes in blocks through `appendOutput`.
+The initialization loop runs `primeCount + 1` times, one slot per index plus index zero.
+`findRoot` returns both roots before any merge, so a loop is detected correctly.
+The final write covers the tail of the buffer.
 
 ## Complexity
 
-Bulk input takes O(B) time and O(B) space for B input bytes. Each case spends O(P) time initializing two arrays and O(R α(P)) time on relations. The arrays use O(P) space.
+Each phase does one pass over the input or over one small set of arrays.
 
-Total time is O(T(P + R) α(P)) and peak space is O(B + P). A subset-enumeration approach would take O(2^R) time per case.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Set initialization | O(P) | O(P) for two arrays |
+| One relation | O(α(P)) amortized | O(1) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O((P + R) α(P)) | O(P) |
+
+The inverse Ackermann factor stays below five for any realistic input.
+
+The asymptotic bounds follow from the table:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O((P + R) α(P)) per case |
+| Space | O(P) per case, plus buffers |
+
+Trying every subproduct takes exponential time and cannot handle `R = 100,000`. The union-find scan handles each relation once.

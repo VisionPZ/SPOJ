@@ -1,50 +1,95 @@
+# MAP — The Map (SPOJ)
+<https://www.spoj.com/problems/MAP/>
+
 ## Problem
 
-Read the populations of regions in Byteland for each test case. Split the regions into m colors so regions with similar populations share a color. Each color uses a representative population A with at least half of its regions on either side. Print the smallest sum of absolute differences for each case.
+A map maker must color regions using only a few colors. Regions with similar populations should share a color. The goal is the smallest total coloring error.
 
-The statement and judge page give these bounds.
+The input starts with the case count. Each case gives a region count, a color count, and one population per region. Print the minimum cumulative error.
 
-| Quantity | Bound |
+The judge bounds are:
+
+| Item | Bound |
 | --- | --- |
-| Test cases t | not specified |
-| Regions n | 10 < n < 3000 |
-| Colors m | 2 ≤ m ≤ 10 |
-| Population | at most 2^30 |
-| Time limit | 7000 ms |
-| Memory limit | 1536 MB |
+| Regions `n` | 10 < n < 3000 |
+| Colors `m` | 2 to 10 |
+| Population | below 2^30 |
+| Judge time | 7000 ms |
+| Memory | 1536 MB |
+| Source size | 50000 B |
 
-The region count and color count set the table size; populations only widen the arithmetic.
+The bounds allow an ordered sweep with dynamic programming.
+
+Sample input and output:
+
+Input:
+
+```
+1
+11
+3
+21
+14
+6
+18
+10
+2
+15
+12
+3
+2
+2
+```
+
+Output:
+
+```
+15
+```
 
 ## Idea
 
-Sort the populations and give each color one contiguous block of the sorted list. Prefix sums make the cost of any block a constant-time lookup, so dynamic programming can try every split point for each color and prefix. Enumeration of all colorings is exponential, while this table is quadratic.
+Sort the populations first, then cut the sorted list into color groups. Think of slicing a row of houses into contiguous blocks and marking each block with one number.
 
-Cost per transition: constant time. Total transitions: about m·n²/2.
+The best value for a group is its median (the middle population). The program computes each block cost from prefix sums. Dynamic programming (a table of best costs) then tries every split. A block costs O(1), and one case costs O(m * n^2). Trying every coloring of every region would be exponential.
+
+Takeaway: sorting turns colors into contiguous slices.
 
 ## Why It Works
 
-Two facts make this correct. In sorted order, blocks never cross: exchanging a larger value for a smaller one across two colors cannot raise the error. The best representative of a block is a median, which puts at least half of the values on each side.
+An optimal coloring never crosses populations in the sorted order.
 
-`medianIndex = (leftIndex + rightIndex) div 2` picks a median position in the sorted block.
-`leftCount = medianIndex - leftIndex + 1` counts the values at or below the median.
-`leftSum = prefixSums[medianIndex + 1] - prefixSums[leftIndex]` adds those values.
-`int64(leftCount) * medianValue - leftSum` is the deviation on the left side.
-`rightSum - int64(rightCount) * medianValue` is the deviation on the right side.
-`blockCost` returns the sum of those two deviations as the cost of one color.
+1. Sort the populations, so each color owns a contiguous block.
+2. The median minimizes the sum of absolute deviations in a block.
+3. Prefix sums give that sum in constant time.
+4. `previousCosts[j]` holds the best cost for the first `j` regions.
+5. The inner loop tries every split point and keeps the minimum.
 
-The generator prints this trace for the sample:
+The terms are:
 
-```
-sorted: [2, 2, 2, 3, 6, 10, 12, 14, 15, 18, 21]
-block [0,4] median 2 cost 5
-block [5,7] median 12 cost 4
-block [8,10] median 18 cost 6
-total: 15
-```
+| Term | Meaning |
+| --- | --- |
+| `sortedValues` | Populations in increasing order |
+| `prefixSums` | Running totals of sorted values |
+| `medianValue` | Middle value of a block |
+| `blockCost` | Sum of median deviations in a block |
 
-The three block costs add to 15, the sample answer.
+Prefix sums remove repeated additions from each split test.
+
+A script checked the sample case:
+
+| Quantity | Value |
+| --- | --- |
+| Sorted populations | 2, 2, 2, 3, 6, 10, 12, 14, 15, 18, 21 |
+| Regions | 11 |
+| Colors | 3 |
+| Minimum error | 15 |
+
+The three-color split reaches the sample answer.
 
 ## Code
+
+**Compiler pragmas and constants.**
 
 ```nim
 {.passC: "-O2".}
@@ -55,7 +100,13 @@ const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 const maxRegionCount = 3000
 const infiniteCost = int64.high div 4
+```
 
+Checks are disabled for speed. `maxRegionCount` fixes the table size. `infiniteCost` marks states that are not reachable.
+
+**Input and output helpers.**
+
+```nim
 var inputData = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
@@ -72,11 +123,7 @@ proc nextInt(data: string, scanPos: var int): int =
     value = value * 10 + int(data[scanPos]) - firstDigitValue
     scanPos += 1
   return value
-```
 
-The read loop runs once per input line and fills one buffer. The scanner stops on any non-digit, so blank lines between cases need no special branch. Each scan walks forward once, at a cost linear in the input size.
-
-```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -86,7 +133,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The flush fires once per 256 KiB of answer text, not once per answer. The size test avoids a write on every line. The cost is one write per full block.
+All lines join one buffer. The hand scanner reads integers without splitting strings. Answers collect in one buffer and flush in blocks.
+
+**Cost tables and block cost.**
 
 ```nim
 var sortedValues: seq[int64] = @[]
@@ -104,7 +153,9 @@ proc blockCost(leftIndex, rightIndex: int): int64 =
   return int64(leftCount) * medianValue - leftSum + rightSum - int64(rightCount) * medianValue
 ```
 
-`leftIndex` and `rightIndex` bound one sorted block; `medianIndex` is its median. The extra prefix slot covers a block ending at the last region. One call costs constant time and runs once per split point.
+Two cost rows hold the dynamic program. `blockCost` reads a median and two prefix sums. One call costs constant time.
+
+**Dynamic program.**
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -137,7 +188,9 @@ for i in 0..<caseCount:
   outputBuffer.add '\n'
 ```
 
-`i` walks cases, `j` walks prefix lengths, and `k` walks split points. Starting each split at `colorIndex - 1` keeps every color nonempty; `infiniteCost` discards unreachable states. Two rolling rows replace a full m by n table, so the loop runs about m·n²/2 times with linear storage.
+The first row costs one color. Each new color fills the next row by trying split points. Rows swap after every color, so memory stays fixed.
+
+**Final flush.**
 
 ```nim
 stdout.write outputBuffer
@@ -145,10 +198,26 @@ outputBuffer.setLen 0
 {.pop.}
 ```
 
-One final write emits the bytes left under `flushBlockBytes`. Without it the last answer would stay in memory. The flush costs one write and ends the run.
+One write emits the remaining answers. The closing pragma restores default checks.
 
 ## Complexity
 
-Sorting costs O(n log n) per case and the prefix pass costs O(n). The DP costs O(m n²) time and holds two rows of n costs plus the prefix sums.
+Sorting and the table fill dominate each case.
 
-Total time is O(m n²) and total space is O(n). Direct enumeration of colorings costs O(m^n).
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input | O(Total digits) | O(Input size) |
+| Sort | O(n log n) | O(n) |
+| Dynamic program | O(m * n^2) | O(n) |
+| Output | O(T) | O(1) |
+
+The split loop sets the total cost.
+
+| Measure | Bound |
+| --- | --- |
+| Time | O(m * n^2) per case |
+| Space | O(n) per case |
+
+At most 90 million split tests run in one case.
+
+Coloring regions independently would explore far more combinations.

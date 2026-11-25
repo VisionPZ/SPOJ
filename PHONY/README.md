@@ -1,53 +1,87 @@
+# PHONY — Phony Primes (SPOJ)
+<https://www.spoj.com/problems/PHONY/>
+
 ## Problem
 
-Read pairs `Nmin Nmax` until `0 0`. For each pair, print every phony prime in the range, one per line. A phony prime is odd and squarefree, with at least three distinct prime factors. For each factor `p`, the value `p - 1` divides `N - 1`. Print `none` when the range holds no phony prime.
+A buggy generator reports composite numbers as primes. Its mistakes are odd, squarefree numbers with at least three prime factors, and every factor p satisfies p − 1 dividing N − 1.
+
+Given about 2000 intervals, list every such fake prime in each one. These numbers are Carmichael numbers in number theory; the example 561 = 3 × 11 × 17 is the smallest.
+
+Input: each line holds Nmin and Nmax; a line `0 0` ends the input. Output: the fake primes in increasing order, one per line, or the single word `none`.
+
+These are the bounds and the judge limits:
 
 | Item | Bound |
 | --- | --- |
+| Interval endpoints | 1 ≤ Nmin < Nmax < 2³¹ |
+| Interval width | Nmax − Nmin < 10⁶ |
 | Test cases | about 2000 |
-| Range width | `Nmax - Nmin < 10^6` |
-| Range top | `Nmax < 2^31` |
+| Source size | 2000 bytes |
 | Time limit | 1200 ms |
 | Memory limit | 1536 MB |
-| Source limit | 2000 B |
 
-The source ceiling rules out a stored table of answers.
+The sample asks about two intervals:
+
+```
+10 2000
+20000 21000
+0 0
+```
+
+```
+561
+1105
+1729
+none
+```
+
+The first interval contains three fake primes; the second contains none.
 
 ## Idea
 
-The program marks only numbers that can be phony multiples of a small prime. For a phony prime `n` and a prime factor `p`, the value `n` equals `p` plus a multiple of `p * (p - 1)`. Each prime therefore gives one sparse arithmetic progression instead of all of its multiples. The sieve counts factors on those positions, and one pass over the window finishes the test.
+Mark numbers by a congruence for each small prime, then test only the marked ones. Picture walking down a street. Put a sticker on each door whose number fits a pattern for prime 3, then prime 5. Doors with three or more distinct stickers are the suspects.
 
-Marking touches about 0.3 times the window width. The final scan touches the window width once.
+The program sieves primes up to 46341, the square root of 2³¹. For each odd prime p, it steps through numbers N with N ≡ p mod p(p − 1). That single pattern enforces both p | N and p − 1 | N − 1.
+
+Each mark raises a factor counter and multiplies a product of distinct factors. A number qualifies when it has at least three factors, is squarefree, and any leftover cofactor is prime and satisfies the same divisibility rule.
+
+Sieving costs O(√2³¹ log log) once. A query costs O(π(√Nmax) × steps + width), with width under 10⁶. Trial division on every number would cost O(width × √Nmax).
+
+Takeaway: congruence stepping visits only plausible candidates, so a million-wide window stays cheap.
 
 ## Why It Works
 
-Write `n = p * k` for a prime factor `p`. Now `p` is one more than a multiple of `p - 1`. The value `n - 1` leaves the same remainder as `k - 1` modulo `p - 1`.
+Four facts make the scan correct.
 
-The congruence gives the marker step:
+1. If p | N and p − 1 | N − 1, then N ≡ p mod p(p − 1). The number p itself is 0 mod p and 1 mod p − 1, and adding p(p − 1) preserves both conditions.
+2. Starting the step at max(p², low) skips p itself and all smaller multiples where p would not be a proper factor. The first legal value is computed with one ceiling division.
+3. A marked number collects each distinct prime factor once in `prods` and once in `marks`. The bit 128 in `marks` records that p² divides N, which rejects non-squarefree numbers.
+4. After dividing out the collected product, the leftover `rest` must be prime and satisfy (N − 1) mod (rest − 1) = 0. With at least three factors total, the number is a phony prime.
+
+These are the pieces of one query:
+
+| Term | Meaning |
+| --- | --- |
+| `limit` | 46341, the largest prime needed for the sieve |
+| `step` | p × (p − 1), the spacing of candidates for prime p |
+| `marks[index]` | factor count for a value, with bit 128 set when not squarefree |
+| `prods[index]` | product of the distinct factors found |
+| `rest` | leftover cofactor after dividing out that product |
+| `total` | number of distinct prime factors |
+
+A script checks the three sample numbers:
 
 ```
-n = p * k
-n - 1 = p * k - 1 = k - 1  (mod p - 1)
-k = 1 + t * (p - 1)
-n = p + t * p * (p - 1)
+561 = 3*11*17; squarefree=True; k=3; (N-1)/(p-1)=[280, 56, 35]
+1105 = 5*13*17; squarefree=True; k=3; (N-1)/(p-1)=[276, 92, 69]
+1729 = 7*13*19; squarefree=True; k=3; (N-1)/(p-1)=[288, 144, 96]
 ```
 
-The step `p * (p - 1)` replaces the usual step `p`.
-
-A square factor is caught when `k` is a multiple of `p`. After the sieve, the multiplied primes divide `n`. The leftover is one or a single prime, since two primes above the square root would multiply past the range top. That leftover must divide `n - 1` after subtracting one, and it must be prime. Three factors in total finish the test.
-
-A script checked the first phony prime:
-
-```
-p = 3  step = 6   progression 3, 9, 15, ..., 561  hit
-p = 11 step = 110 progression 11, 121, 231, ..., 561  hit
-p = 17 step = 272 progression 17, 289, 561  hit
-marked product = 561, leftover = 1, factors = 3
-```
-
-All three prime factors land on their own progressions, and the leftover is one.
+Every quotient is an integer, so each number passes the divisibility rule. The factor count reaches exactly three in each case.
 
 ## Code
+
+**Input.** Lines go into one buffer, and a small scanner returns integers.
 
 ```nim
 var data = ""
@@ -65,7 +99,9 @@ proc getNum(): int =
   return value
 ```
 
-The scanner skips every non-digit byte and stops at the `0 0` pair. It reads the whole stream once. The cost is one pass over the input bytes.
+The scanner advances `pos` past non-digits, then builds each number. The `0 0` terminator is handled in the main loop. Cost is one pass over the input.
+
+**Sieve.** A small sieve lists primes up to the square root bound.
 
 ```nim
 const limit = 46341
@@ -81,7 +117,9 @@ for i in 2..limit:
         j += i
 ```
 
-The sieve runs over candidates up to the square root of the range top. The inner loop starts at the square of the prime. The table serves both the window sieve and the leftover primality test.
+Crossing off starts at i × i, so each composite is marked once. The bound 46341 exceeds √2³¹, enough for every factorization below 2³¹. This runs once at O(limit log log limit).
+
+**Primality.** The leftover cofactor needs a prime check.
 
 ```nim
 proc isPrime(value: int): bool =
@@ -91,7 +129,9 @@ proc isPrime(value: int): bool =
   return value > 1
 ```
 
-Trial division stops at the square root of the value. The return checks the value itself, so one is not prime. The loop uses the stored prime table.
+Trials stop at √value, so at most a few dozen divisions occur. The `value > 1` guard rejects zero and one. Cost is O(π(√value)) per candidate that survives marking.
+
+**Query scan.** Each interval is marked, checked, and printed.
 
 ```nim
 var marks = newSeq[byte](1100000)
@@ -116,11 +156,6 @@ while true:
       marks[index] += 1
       if (value div prime) mod prime == 0: marks[index] = marks[index] or 128'u8
       value += step
-```
-
-The outer loop stops at primes whose square passes `high`. Skipping prime two avoids marking even numbers. The marker starts at the first progression value inside the window, and bit seven flags a square factor. The cost is about 0.3 marks per window position.
-
-```nim
   var found = false
   for index in 0..<width:
     let mark = int(marks[index])
@@ -143,14 +178,26 @@ The outer loop stops at primes whose square passes `high`. Skipping prime two av
 stdout.write ob
 ```
 
-The scan clears each mark as it reads it, so the next case needs no clearing pass. A mark below two or with bit seven set cannot pass. The last check rejects a composite leftover, and the buffer flushes in blocks. The cost is one pass over the window.
+The ceiling division computes the first candidate at or above `max(prime × prime, low)`. Both arrays grow only when a wider interval appears. The second loop clears every `marks` entry, so no state leaks into the next case. Output is flushed in blocks.
 
 ## Complexity
 
-The prime sieve takes `O(L log log L)` time and `O(L)` memory for `L = 46341`.
+Sieving runs once; each interval costs marking plus a width scan.
 
-For a window of width `W`, marking takes `sum(W / (p * (p - 1)))` steps over odd primes, which is `O(W)`. The final scan takes `O(W)` time and `O(W)` scratch memory.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(total tokens) | O(input size) |
+| Prime sieve | O(46341 log log 46341) | O(46341) |
+| Marking one interval | O(π(√Nmax) + marked values) | O(width) |
+| Decision scan | O(width) | O(width) |
+| Output | O(results) | O(block size) |
 
-Total time is `O(L log log L + sum of all W)`. Total memory is `O(L + maximum W)`.
+The marking and decision passes dominate, with O(width) work per interval.
 
-Factoring every odd number in every window by trial division would take `O(sum of W times sqrt of the range top)` time.
+| Measure | Big O |
+| --- | --- |
+| Precomputation | O(√Nmax log log Nmax) |
+| Time per interval | O(width + marked values) |
+| Working space | O(width) |
+
+Trial dividing every value in the window costs O(width × √Nmax), far more than stepping through congruence classes.

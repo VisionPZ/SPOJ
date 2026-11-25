@@ -1,54 +1,103 @@
+# PROPKEY — The Proper Key (SPOJ)
+
+<https://www.spoj.com/problems/PROPKEY/>
+
 ## Problem
 
-Read T test cases. Each case gives a key and a lock. The key is an R by C grid of '#' wood and '.' holes. The lock is a D by W grid of '#' wood and '.' free cells. The key falls down and slides left or right, but never turns. Print the deepest depth it reaches, or say that it falls through. Depth counts rows from the lock top down to the key bottom.
+An Egyptian lock takes a flat wooden key shaped like a Tetris piece. The key falls into a grid of slots and may slide sideways, but never rotates. Report how deep it can go, or say it falls through.
 
-| Value | Range |
-| --- | --- |
-| R, C | 1 to 100 |
-| D | 1 to 10000 |
-| W | 1 to 1000 |
-| Time limit | 1000 ms |
-| Memory limit | 1536 MB |
+Input: `T` cases. Each starts with `R C`, then `R` rows of `#` (wood) and `.` (empty) for the key. Next come `D W`, then `D` such rows for the lock. Output: `The key falls to depth X.` when it stops, or `The key can fall through.` when it exits the bottom.
 
-One case can hold ten million lock cells, so the program scans those cells only a few times.
+The bounds from the statement:
+
+| Item | Bound |
+|---|---|
+| Key rows and columns | 1 ≤ R, C ≤ 100 |
+| Lock depth `D` | 1 ≤ D ≤ 10000 |
+| Lock width `W` | 1 ≤ W ≤ 1000 |
+| Judge limit | 1000 ms, 1536 MB |
+
+Depth counts from the bottom of the key to the top of the lock, so a key that cannot enter has depth 0.
+
+The sample input and output:
+
+```
+4
+2 4
+#.##
+###.
+3 6
+#....#
+#....#
+#..###
+2 3
+##.
+.##
+2 7
+#.#.#.#
+.#.#.#.
+1 1
+#
+1 10
+###....###
+3 2
+##
+.#
+.#
+1 5
+#.#.#
+```
+
+```
+The key falls to depth 2.
+The key falls to depth 0.
+The key can fall through.
+The key falls to depth 2.
+```
 
 ## Idea
 
-Mark the blocked depths first, then walk them with a reachability pass. At depth X, key row r sits in lock row X - R + r. That pair depends only on the difference l - r, called the diagonal. An offset is the number of columns the key shifts right, from 0 to W - C. For each offset, build one bit set over diagonals. A bit is set when any wood column of a key row meets wood in the matching lock row. Depth X then needs one bit read.
+Model the fall as a sequence of sideways slides, like dropping a cookie cutter into a tray of slots. If a slot is free, the key can slide there and keep going down.
 
-A pass over depths tracks which offsets stay reachable. After each step, every run of side-by-side valid offsets becomes reachable at once.
+The program first stores each lock column as bitsets (arrays of 64-bit words, one bit per depth row). For every key row it builds a fail mask: the offsets where that key row hits lock wood. A sweep over depth then tracks which offsets stay reachable.
 
-Marking costs one word operation per wood column, per offset, per key row. The depth pass costs one bit read per depth and offset.
+Between rows the key may slide sideways. Reachable offsets therefore spread across each contiguous run of valid offsets. Bitset words test 64 offsets at once, and the sweep touches a few words per row. Cell-by-cell simulation would cost `R × D × W` per case.
+
+Bitsets collapse the sideways sliding into a handful of word operations per row.
 
 ## Why It Works
 
-A key row r at depth X meets lock row l = X - R + r. Rearrange this to X = l - r + R. The pair (r, l) fixes the depth, so only l - r matters. One diagonal bit per offset covers every depth.
+Four facts carry the simulation.
 
-A key row fits a lock row when each wood column lands on a free cell. For one offset, the blocked lock rows are the union of the rows where those lock columns hold wood. The program stores one bit set per lock column and ORs the sets of the wood columns.
+1. An offset is valid at a given depth exactly when no key wood cell lands on a lock wood cell. The `#` marks in both grids define those cells.
+2. The key slides sideways between rows, so every offset joined to a reachable one through a run of valid offsets stays reachable.
+3. One 64-bit word holds 64 offsets. `orShiftedAt` aligns a key row's blocked columns onto each diagonal, building fail masks for many offsets in parallel.
+4. The sweep stops when no offset remains reachable. If the key crosses all `D` rows, it falls through.
 
-The shift by R - 1 - r moves row l to diagonal index l - r + R - 1. That index equals X - 1. So depth X reads bit X - 1.
+The bitsets that drive the sweep:
 
-Sliding is free between side-by-side valid offsets, since each offset in the run avoids wood. If one offset in a run is reachable, the whole run is reachable. The key falls through when an offset stays reachable down to depth D + R.
+| Term | Meaning |
+|---|---|
+| `blockedCol` | bitset of wooden rows in one lock column |
+| `diagonalFail` | fail bits for every offset and diagonal |
+| `previousReach` | offsets reachable before the current row |
+| `currentValid` | offsets where the key meets no lock wood |
 
-The sample key has rows "#.##" and "###.". The sample lock has rows "#....#", "#....#", and "#..###". The three offsets give these diagonal bits, one column per depth from 1 to 5.
+The runs of valid offsets implement the free sideways slide.
 
-| offset | depths 1 to 5 |
-| --- | --- |
-| 0 | 11110 |
-| 1 | 00110 |
-| 2 | 01110 |
+A script-traced example uses sample case 3, a one-cell key and lock row `###....###`:
 
-A one marks a blocked depth. The depth pass reads those bits and closes reachable runs after each step.
+```
+key:   #                 free lock columns: 3,4,5,6
+lock:  ###....###        valid offsets: 3,4,5,6 (four in a row)
+depth 1 is crossed with a reachable offset -> "The key can fall through."
+```
 
-| depth | valid offsets | reachable offsets |
-| --- | --- | --- |
-| 1 | 011 | 011 |
-| 2 | 010 | 010 |
-| 3 | 000 | 000 |
-
-Reachability becomes empty at depth 3, so the answer is 2.
+Sample case 2 shows the opposite. Key row `##.` needs two adjacent free cells, but lock row `#.#.#.#` has none. No offset fits at depth 0, so the answer is depth 0.
 
 ## Code
+
+**Input helpers.** Grid rows are copied straight from the buffered stream.
 
 ```nim
 const flushBlockBytes = 1 shl 18
@@ -64,7 +113,13 @@ proc nextInteger(inputData: string, i: var int): int =
   while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
     result = result * 10 + (ord(inputData[i]) - firstDigitValue)
     i += 1
+```
 
+`skipWhitespace` advances past separators, including blank lines. `nextInteger` reads one positive value by index.
+
+**Grid reader.** One row of characters lands in a flat cell array.
+
+```nim
 proc readGridRow(inputData: string, i: var int, cells: var string, cellOffset: int, rowWidth: int) =
   skipWhitespace(inputData, i)
   for j in 0 ..< rowWidth:
@@ -72,7 +127,9 @@ proc readGridRow(inputData: string, i: var int, cells: var string, cellOffset: i
   i += rowWidth
 ```
 
-The scanner walks one buffer and allocates no tokens. The row reader copies exactly rowWidth cells. Both loops stop at the buffer end.
+`cellOffset` points at the first cell of the row, so the key and lock share one reader. The index advances by exactly `rowWidth` characters.
+
+**Bit operations.** These helpers set, clear, copy, intersect, and shift 64-bit words.
 
 ```nim
 proc bitIsSet(bits: seq[uint64], i: int): bool =
@@ -113,7 +170,9 @@ proc orShiftedAt(dest: var seq[uint64], destBase: int, src: seq[uint64], srcBase
           dest[destBase + i + wordShift + 1] or (value shr (64 - bitShift))
 ```
 
-Each bit set is a sequence of 64-bit words. The shifted OR carries overflow into the next word. Every operation works on whole words.
+`bitIsSet` extracts one offset from a word. `orShiftedAt` handles both whole-word and partial-word shifts, keeping the diagonal alignment exact.
+
+**Input.** The program reads both grids for every test case.
 
 ```nim
 var inputData = ""
@@ -139,7 +198,13 @@ for j in 0 ..< caseCount:
   lockCells.setLen(lockDepth * lockWidth)
   for k in 0 ..< lockDepth:
     readGridRow(inputData, i, lockCells, k * lockWidth, lockWidth)
+```
 
+`keyCells` and `lockCells` hold one character per cell. A key wider than the lock skips the simulation entirely and reports depth 0.
+
+**Failure masks.** Each key row contributes blocked diagonals for every offset.
+
+```nim
   var answerDepth = 0
   var fellThrough = false
 
@@ -167,11 +232,7 @@ for j in 0 ..< caseCount:
         if keyCells[k * keyCols + l] == '#':
           woodCols.add l
     woodStart[keyRows] = woodCols.len
-```
 
-One bit set per lock column records where that column holds wood. The wood columns of each key row are collected once. The row loops run keyRows and lockDepth times.
-
-```nim
     for k in 0 ..< keyRows:
       let shiftAmount = diagonalBase - k
       let wordShift = shiftAmount shr 6
@@ -186,7 +247,9 @@ One bit set per lock column records where that column holds wood. The wood colum
                     rowWords, wordShift, bitShift)
 ```
 
-The outer loop runs keyRows times and the inner loop runs offsetCount times. The shift maps a lock row to its diagonal. The OR merges all wood columns of the row.
+`blockedCol` packs each lock column into words. `woodStart` and `woodCols` list only the wooden columns of a key row. `orShiftedAt` places those blocked columns onto the right diagonal for each offset.
+
+**Reachability sweep.** Each depth row updates the set of live offsets.
 
 ```nim
     let wordCount = (offsetCount + 63) div 64
@@ -236,14 +299,16 @@ The outer loop runs keyRows times and the inner loop runs offsetCount times. The
         stopped = true
         break
       copyBits(previousReach, nextReach)
-
-    if not stopped:
-      fellThrough = true
 ```
 
-The depth loop runs lockDepth + keyRows times. One bit per offset tells whether the key fits. The run scan closes over all side-by-side offsets. An empty nextReach ends the search.
+`currentValid` copies offsets that meet no wood. Intersecting with `previousReach` keeps only offsets reachable from above. Each contiguous run containing a candidate becomes reachable for the next row.
+
+**Output.** The final verdict prints one sentence.
 
 ```nim
+    if not stopped:
+      fellThrough = true
+
   if fellThrough:
     outputBuffer.add "The key can fall through.\n"
   else:
@@ -257,12 +322,28 @@ The depth loop runs lockDepth + keyRows times. One bit per offset tells whether 
 stdout.write outputBuffer
 ```
 
-The answer prints as one line per case. The buffer flushes every flushBlockBytes bytes. The final write emits any remainder.
+`stopped` means some row blocked every offset. The answer depth is the last row the key reached. Output flushes at 256 KiB blocks.
 
 ## Complexity
 
-Building column bit sets costs O(D · W). Marking diagonals costs one word operation per wood column, per offset, per key row. The depth pass costs one bit read per depth and offset.
+Each case packs bitsets, builds fail masks, then sweeps depth once.
 
-Total time is O(D · W + R · C · W · D / 64 + (D + R) · W). Column bit sets use O(W · D / 64) words. Diagonal fail sets use O((W - C + 1) · (D + R) / 64) words.
+| Phase | Time | Space |
+|---|---|---|
+| Input read | one pass over input bytes | input bytes |
+| Blocked columns | O(W × D / 64) word writes | O(W × D / 64) |
+| Fail masks | O(R × offsets × rowWords) | O(offsets × diagonals) |
+| Reachability sweep | O((D + R) × offsetWords) | O(offsetWords) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O((D + R) × W × R / 64) word ops | O(W × D / 64 + W × R / 64) |
 
-A naive check compares every key cell with every lock cell at every offset and depth. That costs O(D · W · R · C) and is much slower.
+A word covers 64 offsets, so the wide lock costs little.
+
+| Measure | Big O |
+|---|---|
+| Time | O((D + R) × ceil(W / 64) × ceil(R / 64 + 1)) word ops |
+| Space | O(W × D / 64 + W × R / 64) words |
+
+The bit-parallel factor is what keeps the 1000 ms limit comfortable.
+
+Testing every cell at every offset and depth would cost `R × D × W` per case. Bitset words divide that by 64.

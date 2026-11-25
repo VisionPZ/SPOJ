@@ -1,32 +1,93 @@
+# HASHIT — Hash it! (SPOJ)
+<https://www.spoj.com/problems/HASHIT/>
+
 ## Problem
 
-Read several series of operations on a hash table of 101 slots. Each operation adds or deletes a string key. Two keys can collide, so the table uses quadratic probing with twenty candidate slots. After each series, print the number of stored keys, then one `index:key` line for every occupied slot, ordered by index.
+A club keeps member names in a small hash table with 101 slots and wants to see the table after a series of edits. Collisions are resolved by a fixed probing rule, so the exact slot of every name matters.
 
-| Quantity | Bound |
+The first line holds a test count t of at most 100. Each series starts with an operation count of at most 1000, then one operation per line: `ADD:string` or `DEL:string`. Keys use at most 15 letters from ASCII 'A' through 'z'. Print the stored key count, then one `index:key` line per occupied slot in index order.
+
+The judge limits are:
+
+| Item | Value |
 | --- | --- |
 | Series per file | at most 100 |
 | Operations per series | at most 1000 |
 | Key length | at most 15 characters |
-| Time limit | 3000 ms |
+| Time limit | 3 s |
 | Memory limit | 1536 MB |
 
-A new empty table is used for every series.
+Each series starts from an empty table.
+
+The sample input reads:
+
+```text
+1
+11
+ADD:marsz
+ADD:marsz
+ADD:Dabrowski
+ADD:z
+ADD:ziemii
+ADD:wloskiej
+ADD:do
+ADD:Polski
+DEL:od
+DEL:do
+DEL:wloskiej
+```
+
+The sample output reads:
+
+```text
+5
+34:Dabrowski
+46:Polski
+63:marsz
+76:ziemii
+96:z
+```
 
 ## Idea
 
-Store the table as two flat arrays: one for keys and one for occupancy flags. For each operation, compute the start slot from the key and try the twenty probe slots in order. Add the first empty slot, delete a matching key, and ignore keys that are absent or already present.
-
-Each operation examines at most twenty slots, so the cost per operation is constant. Rebuilding the table with a dictionary would hide the required probing order.
+Treat the table like a parking lot of 101 spaces. Park each key by a weighted address, like assigning a locker from its letters. A hash table (a fixed array indexed by a computed key) stores the string plus an occupancy flag. Quadratic probing (trying slots at square-growing offsets) walks at most twenty candidates. Each operation costs O(20 + key length). A language dictionary would hide the required probe order and the slot-by-slot dump. Takeaway: model the table exactly, then print it in slot order.
 
 ## Why It Works
 
-The hash value is `19 · Σ ASCII(aᵢ)·i mod 101`, counting positions from one. Probe step `j` tests slot `(hash + j² + 23j) mod 101`. The program uses steps zero through nineteen, which matches the twenty examined entries in the statement.
+1. The hash is `19 * sum(ASCII(ai) * i) mod 101`, counting positions from one.
+2. Probe step j tests slot `(hash + j*j + 23*j) mod 101`, for steps 0 through 19.
+3. Step 0 is the initial hash slot, so twenty entries get examined in total.
+4. Insertion stops at the first empty slot and ignores a key already present.
+5. Deletion marks a slot empty without moving other keys.
+6. Lookup scans all twenty slots, so a gap left by deletion cannot hide a key.
+7. The output loop walks slots from 0 upward, so the lines are already sorted.
 
-Deletion marks a slot as empty without moving other keys. A lookup therefore scans the whole probe sequence instead of stopping at the first empty slot, so it still finds a key stored behind a gap. Keys print in index order because the output loop walks the table from slot zero.
+The table defines the terms.
+
+| Term | Meaning |
+| --- | --- |
+| `tableKeys` | string stored in each slot |
+| `tableUsed` | occupancy flag for each slot |
+| `hashKey` | weighted address computed from the key |
+| `probeIndex` | slot reached after a given probe step |
+
+These four terms describe the table and its probes.
+
+A script computed the sample hashes. The first probe slot equals the hash for each key.
+
+| Key | Weighted sum | Hash | First slot |
+| --- | --- | --- | --- |
+| marsz | 1715 | 63 | 63 |
+| Dabrowski | 1794 | 34 | 34 |
+| z | 122 | 96 | 96 |
+| ziemii | 1506 | 76 | 76 |
+| Polski | 1146 | 46 | 46 |
+
+The duplicate `marsz` is ignored, and three deletions remove `do`, `wloskiej`, and the absent `od`. Five keys remain, which matches the sample.
 
 ## Code
 
-Input is read once and split into lines by a small scanner.
+**Reader and line scanner.** The code reads all input once, then parses integers and operation lines.
 
 ```nim
 import std/strutils
@@ -63,9 +124,9 @@ proc nextLine(data: string, i: var int): string =
   return result
 ```
 
-The integer scanner leaves the cursor on the newline, so the driver consumes that newline once before reading operation lines. Parsing one line visits its characters once.
+`nextInt` leaves the cursor on the newline, so the driver consumes that newline before reading operations. Parsing one line visits its characters once. One input buffer holds the whole file.
 
-Hashing and probing are pure arithmetic on small integers.
+**Hash and lookup.** The hash and probe functions are pure arithmetic on small integers.
 
 ```nim
 proc hashKey(keyText: string): int =
@@ -89,9 +150,9 @@ proc findKey(keyText: string): int =
   return -1
 ```
 
-The weighted sum counts from one, as the statement defines. All twenty probe slots are examined on lookup, which keeps deleted gaps from hiding a key.
+The weighted sum counts from one, as the statement defines. All twenty probe slots are examined, which keeps deleted gaps from hiding a key. The two flat arrays reuse their capacity across series.
 
-The add and delete operations use the same probe sequence.
+**Add and delete.** Both operations use the same probe sequence.
 
 ```nim
 proc insertKey(keyText: string) =
@@ -112,9 +173,9 @@ proc deleteKey(keyText: string) =
     tableKeys[i] = ""
 ```
 
-An insertion stops at the first free slot and ignores a key already present. A full probe sequence leaves the key out. Deletion only changes the two arrays at the found slot.
+Insertion stops at the first free slot and ignores a key already present. A full probe sequence leaves the key out. Deletion only changes the two arrays at the found slot. Each call costs at most twenty probes.
 
-The driver resets the table per series and emits the sorted contents.
+**Driver and output.** The table resets per series, then prints occupied slots in order.
 
 ```nim
 var outputBuffer = ""
@@ -159,8 +220,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The reset loop clears both arrays in 101 steps. The output loop visits slots in increasing order, so the lines are already sorted. The buffer flushes in blocks, not once per line.
+The reset loop clears both arrays in 101 steps. `substr(4)` drops the four-character operation prefix. The output loop visits slots in increasing order, so no extra sort is needed. The buffer flushes in blocks, not once per line.
 
 ## Complexity
 
-Hashing a key costs O(L) for length L. Each operation probes at most twenty slots, so it costs O(L) time. Printing one series costs O(101 + K) for K stored keys. Total time is O(total input characters + output lines) and space is O(101) for the table plus the input buffer.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Hash one key | O(L) for length L | O(1) |
+| One add, find, or delete | O(L + 20) | O(1) |
+| Print one series | O(101 + K) for K stored keys | O(101) |
+
+Each edit stays short in practice.
+
+The probe count is a fixed twenty, so each edit stays constant apart from the key length.
+
+| Measure | Bound |
+| --- | --- |
+| Total time | O(total input characters + output lines) |
+| Total space | O(101) for the table plus input |
+| Reset per series | O(101) |
+
+A dictionary could answer membership faster, but it would not reproduce the required probe slots or the ordered table dump.

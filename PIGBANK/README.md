@@ -12,7 +12,7 @@ exactly; print `The minimum amount of money in the piggy-bank is X.` or
 
 Unbounded knapsack: `best[t]` is the cheapest price that weighs exactly `t` grams.
 Fill it coin by coin, and for one coin walk `t` upward from its own weight, so the
-value just written for a smaller weight is already usable. That upward walk is what
+value written for a smaller weight is already usable. That upward walk is what
 makes an unlimited number of copies of the coin possible. Cost per coin is one
 pass over the target weight, so O(N F) work per test case.
 

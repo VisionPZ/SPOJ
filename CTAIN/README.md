@@ -1,8 +1,18 @@
+# CTAIN — Containers (SPOJ)
+
+<https://www.spoj.com/problems/CTAIN/>
+
 ## Problem
 
-Each case gives up to four containers that start full. It gives each capacity and each requested final amount. Print the fewest moves that reach the request, or NO when no sequence exists. A move pours a whole content into a roomy container, fills a container from another, or empties one into a drain.
+A warehouse starts with up to four containers full of water. A worker pours, fills, and drains them to reach a requested set of amounts in as few moves as possible.
 
-| Quantity | Bound |
+Input: one integer for the case count, a blank line, then one case per block. Each case gives the container count, the capacities, and the requested final amounts, with a blank line between cases.
+
+Output: the fewest moves that reach the request, or `NO` when no sequence works.
+
+The statement and judge give these bounds:
+
+| Item | Bound |
 | --- | --- |
 | Test cases | at most 20 |
 | Containers | 1 to 4 |
@@ -13,42 +23,74 @@ Each case gives up to four containers that start full. It gives each capacity an
 
 The capacity bound of 49 keeps every state in one fixed array.
 
+The sample input and output:
+
+```
+2
+
+3
+3 5 5
+0 0 4
+
+2
+20 25
+10 16
+
+```
+
+```
+6
+NO
+```
+
 ## Idea
 
-Breadth-first search over water amounts finds the fewest moves. One integer index in base 50 holds all four amounts, so a state is one array slot. A move changes that index by one fixed product, and the search expands each state once.
+Search states in order of moves, like finding the fewest transfers between jars by walking a map of every possible fill. Breadth-first search visits each state once and keeps its first distance.
 
-Searching move sequences repeats states. Breadth-first search visits each state once and keeps its first distance.
+The program packs all four amounts into one integer index in base 50. Each legal move changes that index by a fixed product, so generating neighbours costs constant work.
 
-Cost per state: at most four drains and twelve pours, each in constant time.
+Each state expands at most four drains and twelve pours. Searching move sequences without storing visited states repeats work and grows with the move count.
+
+The base-50 index makes the whole search one array walk.
 
 ## Why It Works
 
-Every amount is an integer from 0 to its capacity. Base 50 gives each four-amount tuple a unique index below 50^4. The stride of container i is 50^(3-i).
+Every amount is an integer from zero to its capacity.
 
-Two index updates generate every allowed move:
+1. Base 50 gives each four-amount tuple a unique index below `50^4`, because every capacity is below 50.
+2. The stride of container i is `50^(3-i)`, so changing one amount changes the index by a multiple of that stride.
+3. A drain subtracts `amount × stride`. A pour moves the smaller of the amount and the free room, then adds the moved volume times the stride difference.
+4. The first visit to a state uses the fewest moves, so the stored distance is already minimal.
 
-- Drain i: subtract amount_i times stride_i.
-- Pour i to j: move the smaller of amount_i and room_j, where room_j is capacity_j minus amount_j. Add the moved amount times (stride_j minus stride_i).
+The index formulas are as follows:
 
-Both updates keep the index inside the array. The pour update covers both named pours. When amount_i fits in the room, it pours the whole content. Otherwise it fills container j to the top and leaves a remainder in container i.
+| Term | Meaning |
+| --- | --- |
+| `strides` | `[125000, 2500, 50, 1]`, the base-50 place values |
+| drained index | `currentState - amountI × strides[i]` |
+| room | `capacities[j] - amounts[j]` |
+| poured index | `currentState - moved × strides[i] + moved × strides[j]` |
+| `distances` | moves plus one, so zero marks an unused slot |
 
-The first visit to a state uses the fewest moves. The distance array stores moves plus one, so zero marks an unused slot. After each case, the program clears only the slots it used.
+After each case, the program clears only the slots it visited.
 
-A script in gen.py prints the shortest path for the sample case:
+A script finds the shortest path for the first sample case:
 
 ```
-start (3, 5, 5)
-1 drain 1 -> (0, 5, 5)
-2 fill 1 from 2 -> (3, 2, 5)
-3 drain 1 -> (0, 2, 5)
-4 pour 2 into 1 -> (2, 0, 5)
-5 fill 1 from 3 -> (3, 0, 4)
-6 drain 1 -> (0, 0, 4)
+start (3,5,5)
+1 drain 1        -> (0,5,5)
+2 pour 2 to 1    -> (3,2,5)
+3 drain 1        -> (0,2,5)
+4 pour 2 to 1    -> (2,0,5)
+5 pour 3 to 1    -> (3,0,4)
+6 drain 1        -> (0,0,4)
 ```
 
 The sixth move reaches the request, which matches the sample answer.
 
 ## Code
+
+**Input and buffers.** One buffer holds the stream, and the output flushes in blocks.
 
 ```nim
 const firstDigitValue = 48
@@ -82,7 +124,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The read loop ends at end of file. The scanner skips blank lines and spaces. The buffer flushes only after 256 KiB.
+The read loop runs once per input line and ends at the end of the file. The scanner skips the blank lines between cases. The buffer flushes only after 256 KiB.
+
+**Search arrays and breadth-first search.** Decoding divides by 50 four times, and clearing touches only visited slots.
 
 ```nim
 var distances = newSeq[int](stateSpaceSize)
@@ -153,7 +197,9 @@ proc minimalMoves(targets: array[4, int], capacities: array[4, int], containerCo
   return answer
 ```
 
-The search loop runs at most once per reachable state. Decoding divides by 50 four times. Clearing only visited slots keeps the cases independent.
+The search loop runs once per reachable state. Each neighbour is one drain or one pour, and both updates stay inside the array. The clear loop restores only the slots this case touched.
+
+**Case driver.** Missing containers keep a capacity of zero, so the same arrays serve every case.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -176,12 +222,28 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The loop runs once per case, at most 20 times. Missing containers keep capacity zero. One final write flushes the buffer.
+The loop runs once per case, at most 20 times. A negative answer prints `NO`. One final write flushes the buffer.
 
 ## Complexity
 
-Reading and scanning take O(input size) time and space for one buffer.
+The search visits each reachable state once and generates a bounded neighbour set.
 
-Each search takes O(S) time and O(S) space, where S is the number of reachable states. S never exceeds 50^4, or 6,250,000 states. The array uses that bound, so the space stays fixed. Total time is O(20 * S) and total space is O(50^4).
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| State encode | O(4) per case | O(1) |
+| Breadth-first search | O(S) per case | O(S) arrays |
+| Neighbour generation | O(1) per neighbour | O(1) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(S) | O(6250000) |
+
+Here S is the number of reachable states, never more than `50^4`.
+
+The asymptotic bounds are as follows:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(20 × S) across all cases |
+| Space | O(50^4) fixed |
 
 Searching move sequences without storing visited states repeats work and grows with the move count.

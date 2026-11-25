@@ -1,53 +1,81 @@
+# CRYPTO1 — The Bytelandian Cryptographer (Act I) (SPOJ)
+
+<https://www.spoj.com/problems/CRYPTO1/>
+
 ## Problem
 
-Read encrypted numbers from standard input. Each number is a timestamp squared modulo 4000000007. Print the GMT date and time it hides, in standard 26-character form.
+A cryptographer hides timestamps by squaring them modulo a large prime. The encrypted numbers look random, yet each one still encodes an ordinary GMT date and time.
 
-The statement and judge table give these bounds.
+Input: one encrypted integer per line, continuing to the end of the stream.
 
-| item | bound |
-|---|---|
-| encrypted values | one or more lines of input |
-| modulus | 4000000007, a prime |
-| true timestamps | between 1970 and 2030 |
-| guard value | 1 900 000 000 seconds |
-| judge limit | 1000 ms, 1536 MB |
+Output: the hidden GMT date and time in the 26-character form, one line per value.
 
-The guard value sits past the year 2030.
+The statement and judge give these bounds:
+
+| Item | Bound |
+| --- | --- |
+| Encrypted values | one or more lines |
+| Modulus | 4000000007, a prime |
+| True timestamps | between 1970 and 2030 |
+| Guard value | 1900000000 seconds |
+| Time limit | 1000 ms |
+| Memory limit | 1536 MB |
+
+The guard value sits past the year 2030, so it separates the two square roots.
+
+The sample input and output:
+
+```
+1749870067
+```
+
+```
+Sun Jun 13 16:20:39 2004
+```
 
 ## Idea
 
-Undo the square with a modular square root. The modulus is prime and leaves remainder 3 when divided by 4, so one exponentiation gives a root. The real timestamp is that root or its complement to the modulus, and the date window picks the right one.
+Undo the square with a modular square root, like opening a padlock with the one key that fits. The modulus is prime and leaves remainder 3 when divided by 4, so one exponentiation finds a root.
 
-Cost per value: about 30 exponent bits and 30 doubling steps each, under a thousand modular operations.
+The program raises each encrypted value to the power `(p + 1) / 4` modulo p. That gives one root r, and the other is `p - r`. The date window selects the real timestamp.
+
+Each value costs O(log² p) modular operations, well under a thousand steps. Trying every second from 1970 to 2030 would cost about 1.9 billion trials.
+
+Exponentiation replaces the whole search.
 
 ## Why It Works
 
-For a prime p with p mod 4 = 3, the value a^((p+1)/4) is a square root of a modulo p. Squaring that exponent gives (p+1)/2, and Euler's criterion turns a^((p-1)/2) into 1.
+The prime has a special shape that makes square roots easy.
 
-The two roots are r and p - r. Only one lands in the 1970 to 2030 window. Products of two residues can exceed 64 bits, so `multiplyMod` doubles under the modulus instead of multiplying.
+1. For a prime p with `p mod 4 = 3`, the value `a^((p+1)/4)` is a square root of a modulo p.
+2. Squaring that exponent gives `(p + 1) / 2`, and Euler's criterion turns `a^((p-1)/2)` into 1.
+3. The two roots are r and `p - r`. Only one lands inside the 1970 to 2030 window.
+4. Products of two residues can exceed 64 bits, so multiplication adds under the modulus by repeated doubling.
 
-These constants form the root step.
+The constants and helpers are as follows:
 
-| term | meaning |
-|---|---|
-| `4000000007` | prime modulus p, with p mod 4 = 3 |
-| `1000000002` | the exponent (p+1)/4 |
-| `cipherModulus - rootValue` | the other root, used when the first is too large |
+| Term | Meaning |
+| --- | --- |
+| `4000000007` | prime modulus p, with `p mod 4 = 3` |
+| `1000000002` | the exponent `(p + 1) / 4` |
+| `cipherModulus - rootValue` | the other root |
+| `lastPossibleSecond` | guard value 1900000000 |
+| `clockLine` | converts seconds since 1970 to a date string |
 
-Only one root falls inside the date window.
+The year loop steps forward from 1970, and the month loop steps within that year.
 
-This trace uses the sample encrypted value 1749870067.
+A script checks both roots of the sample value 1749870067:
 
-| candidate | timestamp | GMT date | in range |
-|---|---|---|---|
-| root | 2912856368 | Fri Apr 21 14:46:08 2062 | no |
-| p - root | 1087143639 | Sun Jun 13 16:20:39 2004 | yes |
+| Candidate | Timestamp | GMT date | In range |
+| --- | --- | --- | --- |
+| r | 2912856368 | Fri Apr 21 14:46:08 2062 | no |
+| p - r | 1087143639 | Sun Jun 13 16:20:39 2004 | yes |
 
 The program prints the 2004 date.
 
 ## Code
 
-**Constants.**
+**Constants and tables.** The modulus, exponent, and calendar words are fixed values.
 
 ```nim
 import strutils
@@ -56,21 +84,15 @@ const flushBlockBytes = 1 shl 17
 const cipherModulus: int64 = 4000000007
 const rootExponent: int64 = 1000000002
 const lastPossibleSecond: int64 = 1900000000
-```
 
-`rootExponent` is (p+1)/4, and `lastPossibleSecond` bounds the date. These values are fixed, not read per case. Cost: no work at run time.
-
-**Calendar tables.**
-
-```nim
 var weekdayName = ["Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed"]
 var monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 var monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 ```
 
-`weekdayName` and `monthName` turn small indices into words. `monthLength` holds the common-year lengths. Cost: constant space.
+`rootExponent` is `(p + 1) / 4`. The three arrays map small indexes to words and month lengths. These values cost no work at run time.
 
-**Input.**
+**Input.** The whole stream is read into one string before any decoding.
 
 ```nim
 var inputData: string
@@ -81,9 +103,9 @@ while readLine(stdin, line):
 var i = 0
 ```
 
-The read loop runs to EOF, so all values land in one string. `i` tracks the current byte. Cost: one pass over the input.
+The loop runs to the end of the file. The index i tracks the current byte. One pass over the input supplies every value.
 
-**Digit scanner.**
+**Digit scanner.** The scanner builds a 64-bit integer by index.
 
 ```nim
 proc nextInt(): int64 =
@@ -95,9 +117,9 @@ proc nextInt(): int64 =
   return value
 ```
 
-The scanner skips spacing and builds an `int64` by index. No substring or parse call runs here. Cost: one pass over each value's digits.
+No substring or parse call runs here. The leading skip absorbs spaces and newlines. Each value costs one pass over its digits.
 
-**Modular product.**
+**Modular arithmetic.** Multiplication doubles under the modulus, and power walks the exponent bits.
 
 ```nim
 proc multiplyMod(firstValue: int64, secondValue: int64): int64 =
@@ -110,13 +132,7 @@ proc multiplyMod(firstValue: int64, secondValue: int64): int64 =
     doublingValue = (doublingValue + doublingValue) mod cipherModulus
     walker = walker shr 1
   return runningValue
-```
 
-The loop runs while `walker > 0`, so it takes about 30 doublings. Each addition reduces under `cipherModulus`, which avoids a 64-bit overflow. Cost: O(log p).
-
-**Modular power.**
-
-```nim
 proc powerMod(baseValue: int64): int64 =
   var multiplier = baseValue
   var answer: int64 = 1
@@ -128,9 +144,9 @@ proc powerMod(baseValue: int64): int64 =
   return answer
 ```
 
-`powerMod` walks the bits of `rootExponent`. Each set bit calls `multiplyMod` to keep products in range. Cost: O(log p) modular products.
+`multiplyMod` runs about 30 doublings and reduces after each addition. `powerMod` walks about 30 exponent bits. Each set bit calls `multiplyMod`, so the pair costs O(log² p).
 
-**Calendar helpers.**
+**Calendar helpers.** Leap years and month lengths turn a day count into a date.
 
 ```nim
 proc leapFlag(year: int64): int64 =
@@ -149,21 +165,15 @@ proc isLeapYear(year: int64): bool =
   return leapFlag(year) == 1
 ```
 
-`leapFlag` applies the 4, 100, and 400 rules. `daysInYearOf` and `daysInMonthOf` turn a year and month into lengths. Cost: constant work per call.
+`leapFlag` applies the 4, 100, and 400 rules. `daysInYearOf` and `daysInMonthOf` return lengths. Each call costs constant work.
 
-**Two-digit format.**
+**Two-digit format and date line.** The date line assembles the 26-character string.
 
 ```nim
 proc padTwo(numberValue: int64): string =
   if numberValue < 10: return "0" & $numberValue
   return $numberValue
-```
 
-`padTwo` adds a leading zero below ten. The value still comes from a plain integer. Cost: one short string.
-
-**Date line.**
-
-```nim
 proc clockLine(timeStamp: int64): string =
   var dayCount = timeStamp div 86400
   var secondsOfDay = timeStamp mod 86400
@@ -207,9 +217,9 @@ proc clockLine(timeStamp: int64): string =
   return result
 ```
 
-The year loop walks forward from 1970, then the month loop walks within that year. `weekdayName[int(dayCount mod 7)]` picks the day name. `dayOfMonth` adds one because the remaining days start at zero. Cost: about 60 year steps.
+`padTwo` adds a leading zero below ten. The year loop walks forward from 1970, then the month loop walks within that year. `dayOfMonth` adds one because remaining days start at zero.
 
-**Driver.**
+**Driver.** Each value yields a root, a timestamp, and one date line.
 
 ```nim
 var outputBuffer: string
@@ -228,28 +238,27 @@ while true:
 stdout.write outputBuffer
 ```
 
-The outer loop runs until the input is spent. `cipherModulus - rootValue` selects the root inside the date window. The buffer flushes every 128 KiB. Cost: one date line per value.
+The outer loop runs until the input is spent. `cipherModulus - rootValue` selects the root inside the date window. The buffer flushes every 128 KiB.
 
 ## Complexity
 
-Costs by phase:
+Each value pays for one modular exponentiation and one calendar conversion.
 
-| phase | time | space |
-|---|---|---|
-| input read | one pass over all lines | input bytes |
-| one root | O(log p) doublings per bit | constant |
-| one date line | about 60 year steps | constant |
-| output | one write per 128 KiB block | 128 KiB |
-
-The two nested loops cost O(log^2 p) per value.
-
-Big O terms:
-
-| measure | form |
-|---|---|
-| time | O(log^2 p) per encrypted value |
-| space | O(1) per value |
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| One root | O(log² p) modular operations | O(1) |
+| One date line | about 60 year steps | O(1) |
+| Output | one write per 128 KiB block | 128 KiB |
+| Total per value | O(log² p) | O(1) |
 
 Work per value does not depend on the number of values.
 
-Trying each second from 0 to 2030 and squaring it costs about 1.9 * 10^9 trial multiplications. One exponentiation replaces that scan.
+The asymptotic bounds are as follows:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(log² p) per encrypted value |
+| Space | O(1) per value |
+
+Trying every second from 1970 to 2030 would cost about 1.9 billion trial multiplications.

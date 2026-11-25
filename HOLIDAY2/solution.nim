@@ -19,13 +19,13 @@ proc nextInt(data: string, pos: var int): int64 =
   value
 
 proc gcdOf(left: int64, right: int64): int64 =
-  var a = left
-  var b = right
-  while b != 0:
-    let rest = a mod b
-    a = b
-    b = rest
-  a
+  var first = left
+  var second = right
+  while second != 0:
+    let rest = first mod second
+    first = second
+    second = rest
+  first
 
 type ValueSet = object
   slots: seq[int64]
@@ -79,8 +79,8 @@ for caseIndex in 0 ..< caseCount:
   let holidayCount = int(nextInt(inputData, scanPos))
   let removeCount = int(nextInt(inputData, scanPos))
   var periods = newSeq[int64](holidayCount)
-  for i in 0 ..< holidayCount:
-    periods[i] = nextInt(inputData, scanPos)
+  for idx in 0 ..< holidayCount:
+    periods[idx] = nextInt(inputData, scanPos)
   let keepCount = holidayCount - removeCount
   var seen: ValueSet
   seen.slots = newSeq[int64](1024)
@@ -90,8 +90,8 @@ for caseIndex in 0 ..< caseCount:
       seen.addSet(value)
       candidates.add value
     let before = candidates.len
-    for j in 0 ..< before:
-      let common = gcdOf(candidates[j], value)
+    for idx in 0 ..< before:
+      let common = gcdOf(candidates[idx], value)
       if not seen.inSet(common):
         seen.addSet(common)
         candidates.add common
@@ -109,15 +109,15 @@ for caseIndex in 0 ..< caseCount:
       bestRhythm = rhythm
   var removed = newSeq[int]()
   var kept = 0
-  for i in 0 ..< holidayCount:
-    if periods[i] mod bestRhythm == 0 and kept < keepCount:
+  for idx in 0 ..< holidayCount:
+    if periods[idx] mod bestRhythm == 0 and kept < keepCount:
       kept += 1
     else:
-      removed.add i + 1
-  for j in 0 ..< removed.len:
-    if j > 0:
+      removed.add idx + 1
+  for idx in 0 ..< removed.len:
+    if idx > 0:
       appendOutput " "
-    appendOutput $(removed[j])
+    appendOutput $(removed[idx])
   appendOutput "\n"
 
 stdout.write outputBuffer

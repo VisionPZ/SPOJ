@@ -1,36 +1,29 @@
+# ROADNET — Road net (SPOJ)
+
+<https://www.spoj.com/problems/ROADNET/>
+
 ## Problem
 
-Read a table of shortest distances between towns. Print every pair of neighbouring towns. Two towns are neighbouring when no third town lies on a shortest path between them. Each pair uses the smaller town number first. Pairs appear in increasing order, and a blank line separates consecutive test cases.
+A roadmap comes with a table of shortest distances between every pair of towns. Two towns count as neighbours when no third town lies on a shortest route between them. List all such pairs.
 
-| Quantity | Bound |
-| --- | --- |
-| Towns per case | 1 to 200 |
-| Distance entry | 0 to 200 |
-| Test cases | not bounded by the statement |
-| Time limit | 5000 ms |
-| Memory limit | 1536 MB |
+Input: `t` cases separated by blank lines. Each starts with `n`, followed by `n` rows of `n` distances. Output: all neighbouring pairs, one per line, with the smaller town first. Consecutive cases get a blank line between them.
 
-With 200 towns, a case has at most 19,900 candidate pairs.
+The bounds from the statement:
 
-## Idea
+| Item | Bound |
+|---|---|
+| Towns `n` | 1 ≤ n ≤ 200 |
+| Distances | non-negative integers ≤ 200 |
+| Pair order | increasing inside a pair, sorted across pairs |
+| Judge limit | 5000 ms, 1536 MB |
 
-Test each town pair against the distance table. A third town lies on a shortest path when its two distances add up to the direct distance. The program checks each pair once and stops at the first such town. The table already holds shortest distances, so no path search is needed. Cost: at most n − 2 towns checked per pair, which is O(n³) work per case.
+The table already holds shortest distances, so the road graph never needs rebuilding.
 
-## Why It Works
-
-For towns i, j and k, equality in the sum below means k lies on a shortest path from i to j. The table holds shortest distances, so that equality is the whole test. The code skips k = i and k = j, because d[i][i] = 0 makes the equality true for every pair. One intermediate town rejects a pair; none accepts it. The loops visit i and then j in increasing order, so the printed pairs are sorted.
+The sample input and output:
 
 ```
-d[i][k]    distance from town i to town k
-d[k][j]    distance from town k to town j
-d[i][j]    direct distance from town i to town j
-```
-
-Each line describes one term of the tested equality.
-
-The generator writes this sample case and checks its exact output:
-
-```
+1
+3
 0 1 2
 1 0 3
 2 3 0
@@ -41,11 +34,59 @@ The generator writes this sample case and checks its exact output:
 1 3
 ```
 
-The pair 2 3 is absent because town 1 splits its distance into 1 + 2 = 3.
+## Idea
+
+Use the distance table as the map: a town sits between two others when the direct distance equals the sum through it. Think of checking whether a stop lies on the way, not merely near the route.
+
+The program reads the matrix, then tests every pair against every third town. If `dist[i][k] + dist[k][j] == dist[i][j]` for some `k`, town `k` lies on a shortest route, so the pair is not neighbouring. Otherwise the pair prints.
+
+The triple loop costs O(n³), about 8 × 10^6 integer operations at `n = 200`. Enumerating every shortest path would blow up far more quickly.
+
+The triangle equality in the table decides each pair without rebuilding any roads.
+
+## Why It Works
+
+Four facts carry the test.
+
+1. The statement guarantees that equality `dist[A][B] = dist[A][C] + dist[C][B]` means `C` lies on a shortest A-to-B route.
+2. A neighbouring pair has no such town, so scanning all `k` settles the question.
+3. The loops use `i < j`, which prints each pair once and keeps the numbers increasing. Row-major order makes the output sorted.
+4. Cases after the first get one leading blank line, matching the required separator byte for byte.
+
+The values the program uses:
+
+| Term | Meaning |
+|---|---|
+| `distances` | flat `n × n` matrix of shortest distances |
+| `directDistance` | the candidate distance from town `i` to town `j` |
+| `hasIntermediate` | true when some town lies on a shortest route |
+| `appendPair` | writes one sorted neighbour pair |
+
+The equality test is the whole decision rule.
+
+A script-traced example with the sample matrix:
+
+```
+       1   2   3
+  1    0   1   2
+  2    1   0   3
+  3    2   3   0
+
+pair (1,2): k=3 -> 2 + 3 = 5 != 1  -> neighbour
+pair (1,3): k=2 -> 1 + 3 = 4 != 2  -> neighbour
+pair (2,3): k=1 -> 1 + 2 = 3 == 3  -> town 1 is on the route -> skip
+
+output: 1 2
+        1 3
+```
 
 ## Code
 
+**Setup and scanner.** The input is read once into one buffer.
+
 ```nim
+{.push checks: off.}
+
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 
@@ -67,7 +108,9 @@ proc nextInt(data: string, position: var int): int =
   return value
 ```
 
-The read loop ends at end of input. The scanner skips every non-digit, so blank lines between cases cost nothing. Parsing is linear in the number of digits.
+`nextInt` walks the buffer by index and skips blank lines between cases. The matrix is stored flat, so row `i` starts at `i * nodeCount`.
+
+**Output helpers.** A flush helper, a text helper, and a pair writer share one buffer.
 
 ```nim
 var outputBuffer = ""
@@ -90,7 +133,9 @@ proc appendPair(leftTown, rightTown: int) =
     flushOutput()
 ```
 
-The flush bound is 256 KiB. One buffer serves all pairs, so the program writes once per block instead of once per pair. The cost is one appended string per pair.
+`appendPair` writes the two town numbers and a newline. Each helper flushes at 256 KiB, keeping writes rare.
+
+**Case loop.** Each pair tests every third town, then prints if none qualifies.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -118,10 +163,26 @@ for caseIndex in 0..<caseCount:
 flushOutput()
 ```
 
-The pair loop starts at i + 1, so each pair is printed once. Skipping k = i and k = j avoids a false intermediate town. The nested loops cost O(n³) per case, and the final flush releases the last block.
+The matrix read costs O(n²). The `k` loop skips the two endpoints and breaks on the first witness. A blank line precedes every case except the first. The final flush covers the tail.
 
 ## Complexity
 
-Reading and parsing take time linear in the input size and use one input buffer. Storing the distance table uses O(n²) space per case. The neighbour search takes O(n³) time per case and adds no other large structure. Writing pairs takes time linear in the pair count and uses one 256 KiB output buffer.
+Each case reads a matrix, then runs three nested loops.
 
-The total is O(t · n³) time and O(n² + input size) space. Enumerating every simple route between two towns would grow exponentially; one addition per town replaces that search.
+| Phase | Time | Space |
+|---|---|---|
+| Input read | O(n²) matrix entries | input bytes + O(n²) |
+| Pair tests | O(n³) triple loop | O(1) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(n³), n ≤ 200 | O(n²) |
+
+At 200 towns the triple loop runs about eight million times.
+
+| Measure | Big O |
+|---|---|
+| Time | O(n³) per case |
+| Space | O(n²) for the distance matrix |
+
+Reconstructing all shortest paths would cost much more than this direct equality test.
+
+Listing every shortest path to decide adjacency can grow exponentially. The triangle equality answers each pair with one short loop.

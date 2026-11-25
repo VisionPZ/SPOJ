@@ -1,59 +1,90 @@
+# SERVERS — Servers (SPOJ)
+<https://www.spoj.com/problems/SERVERS/>
+
 ## Problem
 
-Read a connected network of `n` servers and `m` weighted wires, plus one rank per server. Server W is interesting for server V when no server within distance D(V,W) of V has a rank above r(W). Print the total size of all interesting sets as one integer per test case.
+A network of servers offers services, and each server carries a rank from 1 to 10. A server W interests V when no server at equal or smaller distance from V has a higher rank. Sum the sizes of all interest sets over the network.
 
-The statement sets these limits.
+Input: an integer z, then z cases. Each case gives server count n and wire count m, then n ranks, then m triples a, b, t. Output: one integer per case, the total number of interesting pairs.
 
-| Quantity | Bound |
+The statement sets these bounds.
+
+| Item | Bound |
 | --- | --- |
-| Test cases | not bounded |
-| Servers per case | 1 to 30000 |
-| Wires per case | 1 to 5n |
-| Rank | 1 to 10 |
-| Answer | at most 30n |
-| Time limit | 1335 ms |
-| Memory limit | 1536 MB |
+| Test cases | z from input |
+| Servers n | 1 to 30000 |
+| Wires m | 1 to 5n |
+| Rank r | 1 to 10 |
+| Wire time t | 1 to 1000 ms |
+| Judge time limit | 1335 ms |
+| Judge memory limit | 1536 MB |
 
-The 30n bound keeps the counted work proportional to the answer.
+The builder guarantees the answer stays below 30 times n.
+
+The sample input:
+
+```
+1
+4 3
+2
+3
+1
+1
+1 4 30
+2 3 20
+3 4 20
+```
+
+The sample output:
+
+```
+9
+```
 
 ## Idea
 
-`bestDistance[V]` stores the distance from V to the closest server of strictly higher rank. A server of rank r is interesting for V exactly when its distance from V is below `bestDistance[V]`. Process ranks from high to low and grow one Dijkstra wave from each server of the current rank. The top rank needs one multi-source Dijkstra and one multiplication, because every top-rank server is interesting for every server.
+Count nearby servers by racing waves outward from each rank, like ripples in a pond. The strongest servers interest everyone. A weaker server V becomes interesting only where no stronger or equally strong server has arrived first.
 
-Cost per visited pair: one heap pop and at most 10 edge checks.
+The program runs Dijkstra from all top-rank servers at once. Then it processes lower ranks one level at a time, stopping the wave whenever it reaches a server with a better distance already known. Each server is counted once per rank level. One Dijkstra pass costs O(m log n), and only ten rank levels exist. A separate search from every server would multiply that work by n.
+
+Ten rank waves replace thirty thousand searches.
 
 ## Why It Works
 
-A server W of rank r qualifies when the largest rank within distance D(V,W) of V equals r. That happens exactly when no server of higher rank lies within that distance.
+Four facts carry the program.
 
-The program keeps these three values.
+1. A server with the top rank interests every server, because no other rank exceeds it. Each of the n servers therefore contributes n pairs at the top level.
+2. For a weaker server, a candidate must beat the distance already known from a stronger server. The wave stops at that boundary.
+3. Processing ranks from high to low makes `bestDistance` complete before any lower rank runs. Equal distances are excluded, so ties never add a pair.
+4. The builder bounds the answer by 30 times n, so the total fits comfortably in 64 bits.
 
+Each term has one job.
+
+| Term | Meaning |
+| --- | --- |
+| `bestDistance` | shortest distance from any stronger server |
+| `nextBestDistance` | new distances found at the current rank |
+| `sourcesByRank` | server lists grouped by rank |
+| `totalInteresting` | running sum of all interest pairs |
+
+The `visitGeneration` stamp avoids clearing a visited array per source.
+
+A script traces the sample network with four servers.
+
+```text
+ranks: server1=2 server2=3 server3=1 server4=1
+top rank 3 sources: server2
+top-level pairs: 4 servers times 1 source = 4
+rank 2: server1 at distance 30, only itself before a better node -> 1
+rank 1: server3 reaches server4 at 20, server4 reaches server3 at 20 -> 4
+total 4 + 1 + 4 = 9
 ```
-bestDistance[V]     = min D(V,U) for every U with r(U) > r
-nextBestDistance[V] = min D(V,W) over sources W of rank r
-count increase      = one per popped (source, vertex) pair within bestDistance[V]
-```
 
-`bestDistance[V]` is the higher-rank cutoff for the current rank. `nextBestDistance[V]` becomes the cutoff for the next lower rank. The count rises only for pairs below the cutoff.
-
-A wave must stop at a vertex u once its path distance reaches `bestDistance[u]`. Take a wire of weight w from u to x. The path reaches x at distance at least `bestDistance[u] + w`, and `bestDistance[x]` is at most that value. Therefore x cannot be interesting through u, and the prune is safe.
-
-Every prefix of a shortest path to an interesting vertex also stays below its own cutoff. Otherwise the final distance would reach or exceed `bestDistance` at the target, which is impossible. So the prune never hides a pair that counts.
-
-The sample graph gives these records; an asterisk marks an interesting server, and `r2` means rank 2.
-
-```
-V=1: 1(0,r2)* 4(30,r1) 3(50,r1) 2(70,r3)*  -> 2
-V=2: 2(0,r3)* 3(20,r1) 4(40,r1) 1(70,r2)  -> 1
-V=3: 3(0,r1)* 2(20,r3)* 4(20,r1) 1(50,r2)  -> 2
-V=4: 4(0,r1)* 3(20,r1)* 1(30,r2)* 2(40,r3)*  -> 4
-```
-
-The four counts add to 9, the sample answer.
+The answer is 9, matching the sample. Distances are integers, so no rounding appears.
 
 ## Code
 
-Input and output use one buffer each.
+**Input and output plumbing.** Bulk reads and a binary heap share one buffer.
 
 ```nim
 {.push checks: off.}
@@ -90,9 +121,9 @@ proc appendOutput(text: string) {.inline.} =
     outputBuffer.setLen 0
 ```
 
-The read loop handles every input line once. `nextInt` skips separators, so spaces and blank lines cannot shift the scan. The output buffer flushes at `flushBlockBytes`, which keeps writes in large blocks.
+One line loop fills the buffer, so parsing stays local. The scanner skips non-digits and handles no sign.
 
-The heap holds vertex and distance pairs in flat arrays.
+**Heap push.** The array doubles when full.
 
 ```nim
 var heapDistance = newSeq[int](initialHeapCapacity)
@@ -114,7 +145,13 @@ proc pushHeap(distanceValue: int, vertex: int) {.inline.} =
     i = j
   heapDistance[i] = distanceValue
   heapVertex[i] = vertex
+```
 
+The parent index is `(i - 1) div 2`. Sifting up costs O(log n) per push.
+
+**Heap pop.** The last element sifts down.
+
+```nim
 var poppedDistance = 0
 var poppedVertex = 0
 
@@ -143,9 +180,9 @@ proc popHeap() {.inline.} =
     heapVertex[i] = lastVertex
 ```
 
-`pushHeap` grows the two arrays only when `heapSize` reaches their length. `popHeap` moves the last entry down through the smaller child. Each operation touches one root-to-leaf path and costs O(log n).
+The smaller child wins each step. The smallest distance is always at index zero.
 
-Each case builds adjacency and fills the top-rank cutoff.
+**Top-rank wave.** All strongest sources start together.
 
 ```nim
 var sourcesByRank: array[11, seq[int]]
@@ -209,15 +246,14 @@ for j in 0..<caseCount:
       if candidateDistance < bestDistance[edgeTarget[k]]:
         pushHeap(candidateDistance, edgeTarget[k])
       k = nextEdge[k]
-
-  var totalInteresting: int64 = int64(sourcesByRank[topRank].len * serverCount)
 ```
 
-The rank loop runs at most 10 times, and the edge loop runs `wireCount` times. `edgeHead` stores the newest edge at each vertex, so adjacency stays in flat arrays. One multi-source Dijkstra fills `bestDistance` for the top rank.
+Each wire is stored twice, so both directions are walkable. `edgeHead` starts a linked list per server. The multi-source pass fills `bestDistance` for the top rank.
 
-Lower ranks count their pairs and update the cutoff.
+**Lower-rank waves.** Each weaker rank stops at known better distances.
 
 ```nim
+  var totalInteresting: int64 = int64(sourcesByRank[topRank].len * serverCount)
   var generationStamp = 0
   var k = topRank - 1
   while k >= 1:
@@ -260,17 +296,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The rank loop visits the ranks below `topRank`, and each source starts one wave. `generationStamp` stops one source from counting a vertex twice. The `currentDistance >= bestDistance[currentVertex]` test prunes paths that cannot count.
+The generation stamp replaces a per-source visited clear. Only ranks below the top run this loop. After each rank, better distances update `bestDistance` for the next level.
 
 ## Complexity
 
-The table gives the cost of each phase for one case. A is the number of interesting pairs, and A is at most 30n.
+Heap work dominates each rank wave.
 
 | Phase | Time | Space |
 | --- | --- | --- |
-| Input scan | O(input size) | O(input size) |
-| Case setup | O(n + m) | O(n + m) |
-| Top-rank Dijkstra | O((n + m) log n) | O(n) |
-| Lower-rank waves | O(A * 10 log n) | O(n) |
+| Input scan | O(B) for B bytes | B bytes |
+| Graph build | O(n + m) | O(n + m) |
+| Top-rank Dijkstra | O(m log n) | O(n) |
+| Lower-rank waves | at most 9 times O(m log n) | O(n) |
+| Output | O(z) lines | one block |
 
-Input scan dominates memory, and the waves dominate time when the answer is large. Across all cases the program takes O(input size + A * 10 log n) time and O(input size + n + m) space. A naive run of Dijkstra from every server costs O(n * m log n) per case.
+Ranks run from 10 down to 1, so at most ten waves occur.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(10 times m log n) per case |
+| Space | O(n + m) per case |
+
+A search from every server would cost O(n times m log n) per case.

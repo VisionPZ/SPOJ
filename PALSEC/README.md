@@ -1,58 +1,93 @@
+# PALSEC — Choosing a Palindromic Sequence (SPOJ)
+<https://www.spoj.com/problems/PALSEC/>
+
 ## Problem
 
-Read a test count, then n, then the n words of X and the n words of Y. Choose one word at each position. Print how many choices make the concatenation a palindrome.
+Two word lists offer a choice at every position, and the joined words must form a palindrome. Count the binary choices that work.
 
-The bounds set the size of the count and the comparisons.
+The input starts with the case count. Each case gives the length, then the first word list, then the second. Print the number of valid binary sequences.
 
-| Quantity | Bound |
+The judge bounds are:
+
+| Item | Bound |
 | --- | --- |
-| Words per sequence | 1 to 30 |
-| Word length | 1 to 400 lowercase letters |
-| Test cases | one answer line per case |
-| Time limit | 1272 ms |
-| Memory limit | 1536 MB |
+| Sequence length `n` | 1 to 30 |
+| Word length | 1 to 400 characters |
+| Words | lowercase letters only |
+| Judge time | 1272 ms |
+| Memory | 1536 MB |
+| Source size | 50000 B |
 
-At most 30 positions and 400 letters per word shape the program.
+The word pairs must be compared by content, not by identity.
+
+Sample input and output:
+
+Input:
+
+```
+1
+5
+ab
+a
+a
+ab
+a
+a
+baaaa
+a
+a
+ba
+```
+
+Output:
+
+```
+12
+```
 
 ## Idea
 
-Growing the palindrome from both ends keeps only the word counts and the length difference. Four precomputed substring tables replace repeated character comparisons, so no assignment is rebuilt from scratch. Each state and candidate word costs one bit test.
+Build the palindrome from both ends inward. Think of zipping a jacket: every new tooth must meet the tooth already on the other side.
+
+The program precomputes hash answers for word overlaps, then runs dynamic programming over the left index, right index, and length difference. Each state makes a constant number of transitions. Enumerating all 2^n binary choices would be impossible at length thirty.
+
+Takeaway: hashes reduce word matching to one table lookup.
 
 ## Why It Works
 
-A string is a palindrome when its first half equals the reverse of its second half.
+A palindrome pairs the outer words first.
 
-Let A hold the chosen words from the left. Let B hold the reversed chosen words from the right. The program matches the shorter string as a full prefix of the longer one.
+1. Position `i` from the left meets position `n - 1 - i` from the right.
+2. Each position supplies either its X word or its Y word.
+3. When the two sides differ in length, the overhang must match a prefix or suffix.
+4. Two rolling hashes (numeric fingerprints) test any word segment in constant time.
+5. `waysTable` adds counts for every reachable state and variant.
 
-When A leads by d letters, those letters sit at the end of A. The next right word must mirror them. A shorter right word must match in full. A longer right word needs only its last d letters.
+The terms are:
 
-The case with B leading is symmetric and uses the first letters of the right word. When every word is used, the leftover overhang must be a palindrome by itself.
+| Term | Meaning |
+| --- | --- |
+| `reverseMatch` | Reversed suffix equals another word prefix |
+| `backwardMatch` | Reversed prefix equals another word suffix |
+| `prefixMatch` | One word prefix equals a reversed piece |
+| `diff` | Length difference between the two halves |
 
-Four bitsets hold the match results.
+Two hash bases keep collisions away.
 
-Bit w of `reverseMatch[i][j]` means word i from j begins with the reverse of word w. Bit w of `backwardMatch[i][j]` means word i read backward from j equals word w. Bit w of `prefixMatch[i][l]` means the reversed first l letters of word i equal the first l letters of word w. Bit w of `suffixMatch[i][l]` means the last l letters of word i equal the reversed last l letters of word w. Two rolling hashes build every table entry in constant time.
+A script checked a two-word case:
 
-The update formula has one line per term.
+| Choices | Joined word | Palindrome? |
+| --- | --- | --- |
+| X then X | `ab` | no |
+| X then Y | `aa` | yes |
+| Y then X | `bb` | yes |
+| Y then Y | `ba` | no |
 
-`let diff = k - biasValue` gives the signed length difference. `let nextDiff = diff - rightLength` follows a right word. `let nextDiff = diff + leftLength` follows a left word.
-
-The index proc packs five state fields into one position in the count table.
-
-The script fixes both positions in a two-word case:
-
-```
-00  baaa    not
-01  aaaa    palindrome
-10  bbbb    palindrome
-11  abbb    not
-count = 2
-```
-
-Two rows survive, so the answer is 2.
+The count is two, matching the DP.
 
 ## Code
 
-The read loop runs once per input line. `nextInt` skips separators and stops at the first non-digit. The word scanner reads only letters, so newlines need no special case. Cost is linear in the input size.
+**Constants.**
 
 ```nim
 {.push checks: off.}
@@ -61,9 +96,13 @@ const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 const maxWordsPerCase = 60
 const maxWordSlots = 401
-const hashBaseOne = 1000003'u64
-const hashBaseTwo = 1000033'u64
+```
 
+A case holds at most sixty words, and each word fits a 400-slot row. Hash bases are fixed odd primes.
+
+**Input and output helpers.**
+
+```nim
 var inputData = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
@@ -88,11 +127,7 @@ proc nextWord(data: string, position: var int): string =
   while position < data.len and data[position] >= 'a' and data[position] <= 'z':
     position += 1
   return data[wordStart ..< position]
-```
 
-`appendOutput` flushes after the buffer reaches the block size. One write per block replaces one write per answer. The final flush happens after the case loop.
-
-```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -102,7 +137,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-Two hashes run mod 2^64 and use different bases. `equalSegments` compares one substring from each hash family. A mismatch in the first hash skips the second. Cost is constant per candidate.
+The scanner reads integers and lowercase words from one buffer. Answers collect in one string and flush in blocks.
+
+**Hash arrays and segment tests.**
 
 ```nim
 var prefixHashOne = newSeq[uint64](maxWordsPerCase * maxWordSlots)
@@ -126,18 +163,62 @@ proc equalSegments(firstOne, firstTwo, secondOne, secondTwo: seq[uint64],
   let firstHashTwo = firstTwo[firstBase + firstStart + segmentLength] - firstTwo[firstBase + firstStart] * powerTwo[segmentLength]
   let secondHashTwo = secondTwo[secondBase + secondStart + segmentLength] - secondTwo[secondBase + secondStart] * powerTwo[segmentLength]
   return firstHashTwo == secondHashTwo
+
+var reverseMatch: array[maxWordsPerCase, array[maxWordSlots, uint64]]
+var backwardMatch: array[maxWordsPerCase, array[maxWordSlots, uint64]]
+var prefixMatch: array[maxWordsPerCase, array[maxWordSlots, uint64]]
+var suffixMatch: array[maxWordsPerCase, array[maxWordSlots, uint64]]
+var waysTable = newSeq[int](1)
+
+proc tableIndex(leftUsed, rightUsed, lengthKey, variant, rowWidth, span: int): int =
+  return ((leftUsed * rowWidth + rightUsed) * span + lengthKey) * 2 + variant
+
 ```
 
-The first loop builds forward and reversed prefix hashes for every word. The second loop sets one bit per matching candidate. Bounds guard each lookup before the hash test. Cost is O(60 * 400 * 60) per case.
+Forward and reversed prefix hashes use two bases. `equalSegments` compares two equal-length pieces in constant time.
+
+**Case setup.**
 
 ```nim
+let caseCount = nextInt(inputData, scanPos)
+for caseIndex in 0..<caseCount:
+  let sequenceLength = nextInt(inputData, scanPos)
+  var wordList = newSeq[string](2 * sequenceLength)
+  var maxWordLength = 0
+  for i in 0..<sequenceLength:
+    wordList[2 * i] = nextWord(inputData, scanPos)
+  for i in 0..<sequenceLength:
+    wordList[2 * i + 1] = nextWord(inputData, scanPos)
+  for i in 0..<2 * sequenceLength:
+    if wordList[i].len > maxWordLength:
+      maxWordLength = wordList[i].len
+
+  if sequenceLength == 1:
+    var singleResult = 0
+    for i in 0..1:
+      let singleWord = wordList[i]
+      var isPalindrome = true
+      for k in 0 ..< singleWord.len div 2:
+        if singleWord[k] != singleWord[singleWord.len - 1 - k]:
+          isPalindrome = false
+          break
+      if isPalindrome:
+        singleResult += 1
+    appendOutput($singleResult)
+    outputBuffer.add '\n'
+    continue
+
   for i in 0..<maxWordsPerCase:
     for j in 0..<maxWordSlots:
       reverseMatch[i][j] = 0'u64
       backwardMatch[i][j] = 0'u64
-      prefixMatch[i][j] = 0'u64
-      suffixMatch[i][j] = 0'u64
+```
 
+The two word lists interleave into one array. A single word case is counted directly by a palindrome test.
+
+**Match masks.**
+
+```nim
   for i in 0..<2 * sequenceLength:
     let currentWord = wordList[i]
     let wordBase = i * maxWordSlots
@@ -175,7 +256,9 @@ The first loop builds forward and reversed prefix hashes for every word. The sec
             suffixMatch[i][l] = suffixMatch[i][l] or (1'u64 shl otherIndex)
 ```
 
-The loops cover at most 31 word-count pairs and 801 length keys. `nextVariant` keeps the last word of the longer side. Taking from the left at equal lengths avoids double counting. Each state does at most two candidate tests.
+Every word pair fills four bit masks. A bit marks a valid prefix, suffix, or reversed overlap.
+
+**Palindrome dynamic program.**
 
 ```nim
   let rowWidth = sequenceLength + 1
@@ -237,7 +320,9 @@ The loops cover at most 31 word-count pairs and 801 length keys. `nextVariant` k
               waysTable[nextIndex] += ways
 ```
 
-The result loop reads states where all words are used. It adds matching overhangs from either side. The last line flushes any remaining answer text. Cost is linear in the number of states.
+States advance by consuming a left word or a right word. The sign of `diff` chooses the direction. Hash masks approve each move.
+
+**Result and flush.**
 
 ```nim
   var result = 0
@@ -263,10 +348,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
+Balanced states and self-matching overhangs add to the answer. One write emits the final line.
+
 ## Complexity
 
-Reading input costs O(total input bytes). Hash setup and the four tables cost O((2n)^2 * L) time and O(2n * L) space per case.
+Hash setup and the DP dominate.
 
-The count table holds O(n^2 * L) states. Each state spends O(1) work on at most two candidate words. Total time is O((2n)^2 * L) per case, and total space is O(n^2 * L).
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input | O(Total characters) | O(Input size) |
+| Hash setup | O(n^2 * L) | O(n * L) |
+| Match masks | O(n^2 * L) | O(n^2) |
+| DP | O(n^2 * L) | O(n^2 * L) |
 
-Trying every assignment would cost O(2^n * nL) time.
+L is the longest word length.
+
+| Measure | Bound |
+| --- | --- |
+| Time | O(n^2 * L) per case |
+| Space | O(n^2 * L) |
+
+Thirty words and 400 letters fit the fixed arrays.
+
+Trying every binary sequence would test over a billion choices.

@@ -1,42 +1,80 @@
+# TAUT — Tautology (SPOJ)
+
+<https://www.spoj.com/problems/TAUT/>
+
 ## Problem
 
-Read up to 35 logical expressions in prefix notation. Operators C, D, I, E and N mean and, or, implies, equivalence and not. Variables are lowercase letters, with at most 16 distinct letters per expression. Each expression has at most 111 characters. Print YES when the expression is true for every assignment of its variables, and NO otherwise.
+An algebra student checks whether a logic formula stays true for every choice of its letters. With up to sixteen letters, testing each choice one at a time takes too long.
 
-The statement sets these limits.
+Input: the first line gives the number of expressions, at most 35. Each following line holds one prefix-notation expression using `C`, `D`, `I`, `E`, `N`, and lowercase variables. Output: `YES` if the expression is a tautology, `NO` otherwise.
 
-| Quantity | Bound |
+The statement gives these bounds:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | at most 35 |
-| Expression length | at most 111 characters |
+| Expressions | at most 35 |
 | Distinct variables | at most 16 |
-| Time limit | 3463 ms |
-| Memory limit | 1536 MB |
+| Expression length | at most 111 characters |
+| Judge limit | 3463 ms, 1536 MB |
 
-The 16-variable bound lets one truth table cover every assignment.
+Sixteen variables produce 65,536 truth assignments, so the program evaluates them together.
+
+The sample input and output:
+
+```
+7
+IIpqDpNp
+NCNpp
+Iaz
+NNNNNNNp
+IIqrIIpqIpr
+Ipp
+Ezz
+```
+
+```
+YES
+YES
+NO
+NO
+YES
+YES
+YES
+```
 
 ## Idea
 
-Build one truth table for the whole expression, then inspect every bit of it. Each variable starts as a 65536-bit pattern. Each operator combines two patterns with bitwise word operations. Checking all bits leaves the answer after one pass over 1024 words. Trying assignments one at a time repeats the same evaluation 65536 times per expression.
+Check every assignment at once by flipping whole rows of a truth table, like stamping an entire page instead of writing each word. One bit per assignment packs 64 rows into a single machine word.
 
-Cost per operator: 1024 word operations, regardless of assignment count.
+The program precomputes a truth table for each variable, then scans the prefix expression right to left. A stack of bit tables holds intermediate results. Each operator combines two tables with one bitwise operation per 64-bit word.
+
+Evaluating the expression once per assignment repeats the same work 65,536 times. Bit packing cuts that work by a factor of 64.
+
+Bit-parallel truth tables turn a 65,536-row check into 1,024 word operations per operator.
 
 ## Why It Works
 
-One bit position is reserved for each of the 16 possible variables. Bit index i describes the assignment whose binary digits give the variable values. The table of variable v has bit i set when bit v of i is set.
+Five facts prove the bit-parallel evaluation.
 
-Each operator maps its two operand tables to one result table:
+1. Sixteen variables give `2^16 = 65,536` assignments. At 64 bits per word, the table needs 1,024 words.
+2. `variableTables[k]` has bit `i` set when variable `k` is true in assignment `i`.
+3. Scanning prefix from right to left places each operand on a stack before its operator. `N` complements the top table; a binary operator replaces the top two with their combination.
+4. The operators map to bitwise logic. `C` is AND, `D` is OR, `I` is `(not first) or second`, and `E` is `not (first xor second)`.
+5. The expression is a tautology when all 1,024 words of the final table equal `allOnes`.
 
-| Symbol | Result bit |
+The arrays that hold the computation:
+
+| Term | Meaning |
 | --- | --- |
-| C | first and second |
-| D | first or second |
-| I | (not first) or second |
-| E | not (first xor second) |
-| N | not operand |
+| `variableTables` | precomputed truth table for each of 16 variables |
+| `expressionStack` | stack of intermediate truth tables |
+| `variableIndex` | maps a letter to its table number |
+| `tableWords` | 1,024 words of 64 assignments each |
+| `allOnes` | 64-bit word with every bit set |
 
-A set result bit means the expression holds for that assignment. The scan runs from the last character to the first. A variable pushes its table. The first argument of an operator is on top of the stack, and the second argument sits below it. The result replaces the lower argument, so a binary operator removes one stack slot. The final table is all ones exactly when no assignment makes the expression false.
+The first occurrence of a letter assigns it a table, so repeated letters share one column.
 
-The generator prints the sample expression IIpqDpNp over p and q:
+A generator truth table for the first sample expression:
 
 ```
 p q | I p q | D p N p | whole
@@ -46,13 +84,19 @@ p q | I p q | D p N p | whole
 1 1 |   1   |    1    |   1
 ```
 
-The whole column is 1 for every assignment, so the answer is YES.
+Every row of `whole` is one, so the answer is `YES`.
 
 ## Code
 
-Input and output use one buffer each.
+**Constants and variable tables.** Each variable gets a full 64-bit-packed truth table.
 
 ```nim
+{.push checks: off.}
+{.push overflowChecks: off.}
+{.push rangeChecks: off.}
+{.push boundChecks: off.}
+{.push stackTrace: off.}
+
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 const variableCapacity = 16
@@ -74,7 +118,11 @@ for variableNumber in 0..<variableCapacity:
         variableTables[variableNumber][wordIndex] or (uint64(1) shl bitInWord)
 ```
 
-The loop covers 16 variables and 65536 bit positions, so it runs once at startup. It marks one bit per true assignment and reuses the tables for every case. Startup cost is 524288 bit sets.
+`assignmentCount` is `1 shl 16`, one per assignment.
+`tableWords` is 1,024, since 65,536 divided by 64 is 1,024.
+The setup loop sets one bit per assignment where the variable is true.
+
+**Input and helpers.** One buffer holds the stream, and `nextToken` extracts each expression.
 
 ```nim
 var inputData = ""
@@ -111,7 +159,11 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The line loop reads all input into one string. `nextToken` skips spaces and collects each expression without allocating per operator. `appendOutput` flushes only after 262144 bytes, which 35 cases never reach.
+`nextToken` skips whitespace and returns one contiguous expression.
+The output helper flushes at 256 KiB.
+The scanner reads only the leading case count.
+
+**Expression evaluation.** The driver scans each expression from its last character to the first.
 
 ```nim
 var expressionStack: array[stackCapacity, TruthTable]
@@ -174,8 +226,31 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The outer loop runs caseCount times, and the inner loop runs once per character. `nextInt` skips non-digits, and the statement has no signed numbers. Each operator costs 1024 word operations, and the final check costs the same.
+`variableIndex` is reset to `-1` for all 26 letters before each case.
+`N` flips the top table in place.
+
+A binary operator writes into the second slot and reduces `stackTop` by one. The final loop checks every word against `allOnes`.
 
 ## Complexity
 
-Startup builds 16 tables of 1024 words. It takes O(16 * 2^16) time and 128 KB of space. Each expression scans at most 111 characters and applies at most 55 operators. Each operator touches 1024 words, so the whole run costs O(35 * 111 * 1024) word steps, about 4 million. Space stays at O(2^16) bits for the variable tables. Trying assignments directly would cost 65536 full expression evaluations per case.
+Each operator word is processed a fixed number of times.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Table setup | O(16 × 65,536) | 16 × 1,024 words |
+| Input read | one pass over input bytes | input bytes |
+| One expression | O(length × 1,024) word ops | O(1,024) stack words |
+| Tautology test | O(1,024) word comparisons | O(1) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total, 35 cases | O(35 × 111 × 1,024) | fixed tables plus buffers |
+
+At the length bound the driver performs about 4 million word operations per expression.
+
+The asymptotic bounds follow from the table:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(L × 2^v / 64) per expression, with v ≤ 16 |
+| Space | O(16 × 2^v / 64) for variable tables |
+
+Evaluating each assignment separately costs `O(L × 2^v)` and repeats identical symbol work. The packed version handles 64 assignments per word operation.

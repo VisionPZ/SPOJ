@@ -1,12 +1,22 @@
+# EQBOX — Equipment Box (SPOJ)
+<https://www.spoj.com/problems/EQBOX/>
+
 ## Problem
 
-Read T cases. Each case gives the tile sides A and B and the box sides X and Y, all from 1 to 50000. Rotate the box and place it on one tile without crossing the tile border. Print "Escape is possible." when it fits, and "Box cannot be dropped." when it does not. Touching an edge counts as fitting, so a 10 by 10 box fits a 10 by 10 tile.
+A mechanic crosses a tiled floor carrying a rigid box.
+A single touch on a tile edge springs a trap, so the placement must be exact.
 
-The table lists the input bounds and the judge limits.
+Read `T` cases. Each gives tile sides `A` and `B` and box sides `X` and `Y`.
+The box may rotate.
+Print `Escape is possible.` when the box fits on one tile without crossing its border.
+Print `Box cannot be dropped.` otherwise.
+Touching an edge counts as fitting.
 
-| Quantity | Value |
+The judge bounds follow.
+
+| Item | Bound |
 | --- | --- |
-| Test cases T | about 10000 |
+| Test cases `T` | about 10000 |
 | Each side | 1 to 50000 |
 | Time limit | 5000 ms |
 | Memory limit | 1536 MB |
@@ -14,41 +24,76 @@ The table lists the input bounds and the judge limits.
 
 These bounds keep one case in a few integer variables.
 
+The sample input and expected output follow verbatim.
+
+```
+2
+10 10 8 8
+8 8 10 10
+```
+
+```
+Escape is possible.
+Box cannot be dropped.
+```
+
+An 8 by 8 box fits a 10 by 10 tile, but not the reverse.
+
 ## Idea
 
-Sort each shape's sides so the short side comes first, then compare the box with the tile. If the box cannot lie straight, the program checks one tilted placement using the box diagonal and three angle functions. Each case costs a few comparisons and three math calls, while a scan over trial angles costs far more.
+Sort each shape's sides so the short side comes first, like fitting a book into a sleeve.
+If the box cannot lie straight, test one tilted placement using the box diagonal and three angle functions.
+
+The straight test compares short with short and long with long.
+The tilted test uses arcsin and arccos on the diagonal.
+Each case costs a few comparisons and three math calls.
+Scanning trial angles would multiply the work by the angle count.
+Sort, test straight, then test one tilt.
 
 ## Why It Works
 
-A rectangle fits a tile when its four corners stay inside the tile. The tightest fit touches all four tile sides. If the box short side exceeds the tile short side, no tilt helps. Every straight slice of a rectangle is at least its short side.
+Four facts prove the method.
 
-The tilted check uses the box diagonal and three angles.
+1. A rectangle fits a tile when all four corners stay inside.
+   The tight fit touches all four tile sides.
+2. If the box short side exceeds the tile short side, no tilt helps.
+   Every straight slice of a rectangle is at least its short side.
+3. The box diagonal and three angles describe the tilted placement.
+4. The factor two in the angle test accounts for the two box diagonals.
+   The small tolerance handles rounding at exact edge contact.
 
-- `boxDiagonal` holds the diagonal of the box.
-- `boxAngle` is `arctan` of the short side over the long side.
-- `wideAngle` is `arcsin` of the tile long side over the diagonal.
-- `requiredAngle` is `arccos` of the tile short side over the diagonal.
-- The box fits when `wideAngle - 2.0 * boxAngle >= requiredAngle - 1e-12`.
+The angle terms and their roles follow.
 
-The factor two comes from the two box diagonals. Both diagonals leave the box center at the same angle, so the usable tilt shrinks by twice `boxAngle`. Small rounding error needs the tiny tolerance; exact edge contact still counts as a fit.
+| Term | Meaning |
+| --- | --- |
+| `boxDiagonal` | hypotenuse of the box sides |
+| `boxAngle` | arctan of short over long for the box |
+| `wideAngle` | arcsin of tile long side over the diagonal |
+| `requiredAngle` | arccos of tile short side over the diagonal |
 
-The worked example uses a tile of 100 by 50 and a box of 105 by 9.
+The fit holds when `wideAngle - 2.0 * boxAngle >= requiredAngle - 1e-12`.
 
-> tile 100 by 50, box 105 by 9
-> sorted: tile 50 by 100, box 9 by 105
-> boxDiagonal   = 105.385008
-> boxAngle      = 0.085505
-> wideAngle     = 1.249737
-> requiredAngle = 1.076456
-> wideAngle - 2*boxAngle = 1.078726139
-> requiredAngle          = 1.076456308
-> Escape is possible.
+A script evaluates the forum example with a 100 by 50 tile and a 105 by 9 box.
 
-The left value exceeds the right value by 0.0023, so the box fits.
+```
+tile 100 by 50, box 105 by 9
+sorted: tile 50 by 100, box 9 by 105
+boxDiagonal   = 105.385008
+boxAngle      = 0.085505
+wideAngle     = 1.249737
+requiredAngle = 1.076456
+wideAngle - 2*boxAngle = 1.078726139
+requiredAngle          = 1.076456308
+Escape is possible.
+```
+
+The difference is positive, so the box escapes.
 
 ## Code
 
-```
+**Scanner and constants.**
+
+```nim
 import math
 
 const firstDigitValue = 48
@@ -65,9 +110,11 @@ proc nextInt(inputData: string, i: var int): int =
   return value
 ```
 
-Both loops stop at `dataLength`, the end of the buffer. Skipping non-digits avoids one allocated token per number. The cost is linear in the input bytes.
+firstDigitValue converts a digit byte into its value. The flush threshold is 128 KiB. nextInt stops at both ends of the buffer. No token string is allocated.
 
-```
+**Input setup.**
+
+```nim
 var inputData = ""
 var lineBuffer = ""
 while readLine(stdin, lineBuffer):
@@ -79,9 +126,11 @@ let caseCount = nextInt(inputData, i)
 var outputBuffer = ""
 ```
 
-The loop runs once per input line, so the whole stream stays in memory. Adding a newline keeps two adjacent numbers from merging. Reading costs one pass over the input.
+The read loop stores every input line in one buffer. Adding a newline keeps adjacent numbers apart. The case count is read before the loop.
 
-```
+**Sort and fit test.**
+
+```nim
 var j = 0
 while j < caseCount:
   let tileFirst = nextInt(inputData, i)
@@ -112,9 +161,11 @@ while j < caseCount:
       escapePossible = true
 ```
 
-The loop runs exactly `caseCount` times, once per case. Sorting each pair first removes two later comparisons. The tilted branch runs only when the box is too long to lie straight.
+The loop runs once per case. A pair of swaps sorts each shape. The straight test runs first. The tilted branch runs only when the box is too long to lie flat.
 
-```
+**Write the verdict.**
+
+```nim
   if escapePossible:
     outputBuffer.add "Escape is possible.\n"
   else:
@@ -127,8 +178,25 @@ The loop runs exactly `caseCount` times, once per case. Sorting each pair first 
 stdout.write outputBuffer
 ```
 
-The block flushes when the buffer reaches `flushBlockBytes`. Flushing in blocks avoids one write per case. The final write emits the remaining bytes.
+Each case appends one fixed sentence to the output buffer. A full block is flushed immediately. The final write emits the remaining bytes.
 
 ## Complexity
 
-Reading costs O(N) time and O(N) space, where N is the input byte count. Each case costs O(1) time and O(1) space, with three math calls. Writing costs O(M) time for M output bytes, and the buffer holds at most `flushBlockBytes` bytes. Total time is O(N + M), and total space is O(N). A scan over trial angles would multiply the per-case work by the number of angles.
+The phases and their costs follow.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | O(input bytes) | one input buffer |
+| Per-case test | O(1) with three math calls | O(1) |
+| Output | O(output bytes) | one output block |
+
+Total time is linear in the input size plus the output size.
+
+The Big O summary follows.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(N + M) for N input and M output bytes |
+| Space | O(N) |
+
+A scan over trial angles multiplies the per-case work by the number of angles tried.

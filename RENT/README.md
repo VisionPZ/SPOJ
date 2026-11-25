@@ -1,54 +1,91 @@
+# RENT — Rent your airplane and make money (SPOJ)
+
+<https://www.spoj.com/problems/RENT/>
+
 ## Problem
 
-Each case lists orders for one airplane. An order has a start time, a duration, and a price. Choose orders that never overlap, then print the largest total price on its own line. Two orders fit when the first one ends at or before the second one starts.
+A rental company owns one plane and receives offers from large airlines. Each offer covers a time interval and pays a price. Choose the offers that do not overlap so the company earns the most.
 
-The statement fixes these bounds:
+Input: `T` cases. Each starts with `n`, then `n` lines `st d p`: start time, duration, and price. Output: one line per case, the maximum total price the company can earn.
 
-| Quantity | Bound |
-| --- | --- |
-| Test cases per file | 1 to 30 |
-| Orders per case, n | up to 10000 |
-| Start time | 0 to 999999 |
-| Duration | 1 to 999999 |
-| Price | 1 to 99999 |
-| Time limit | 3000 ms |
-| Memory limit | 1536 MB |
+The bounds from the statement:
 
-The case count times the order count sets an input ceiling of 300000 orders, so each case must stay near linear work.
+| Item | Bound |
+|---|---|
+| Test cases `T` | at most 30 |
+| Orders per case `n` | at most 10000 |
+| Start `st` | 0 ≤ st < 10^6 |
+| Duration `d`, price `p` | 0 < d < 10^6, 0 < p < 100000 |
+| Judge limit | 3000 ms, 1536 MB |
+
+An order ending exactly when another starts is compatible.
+
+The sample input and output:
+
+```
+1
+4
+0 5 10
+3 7 14
+5 9 7
+6 9 8
+```
+
+```
+18
+```
 
 ## Idea
 
-Sort orders by finish time, then walk them once and keep the best total for each prefix. A binary search over finish times counts the earlier orders that end at or before the current start, so one order costs O(log n). Taking adds the price to the best compatible prefix and skipping keeps the current best, while scanning every earlier order would cost O(n squared).
+Treat the offers as jobs on one calendar and decide each one by comparing take against skip. Think of a clerk filling a single booking book, always checking the last free slot.
+
+The program sorts orders by finish time. For order `i`, a binary search finds how many earlier orders finish before its start. The dynamic program then compares taking order `i` plus that prefix's best profit with skipping order `i`.
+
+Sorting costs O(n log n), the searches cost O(n log n), and the DP costs O(n). Enumeration of feasible subsets costs 2^n, which explodes at 10000 orders.
+
+A sorted calendar and a prefix maximum decide each offer in log time.
 
 ## Why It Works
 
-An order occupies the half-open span from its start to its start plus its duration. Two orders fit when the earlier finish is at most the later start, so touching ends are allowed.
+Four facts carry the solution.
 
-Sorting by finish time puts every compatible earlier order before the current order. The value bestProfit at index k is the best total using the first k sorted orders. The search returns compatibleCount, the number of finish times at most the current start.
+1. An order occupies the half-open interval `[st, st + d)`. It fits before another order exactly when its finish time is at most that order's start.
+2. Sorting by finish time turns all compatible earlier orders into a prefix. `lastCompatibleCount` finds that prefix length by binary search.
+3. The DP takes the better of `price + bestProfit[prefix]` and `bestProfit[i]`, where `bestProfit[i]` already solves the first `i` orders.
+4. Profits use 64-bit integers, so summing up to 10000 prices cannot overflow.
 
-Those orders all finish before the current start, so any of their best subsets can pair with the current order. The current order finishes after its own start, so compatibleCount never exceeds its position, and its bestProfit value is already known.
+The values the DP stores:
 
-The update takes the larger of skipping and taking:
+| Term | Meaning |
+|---|---|
+| `finishTime` | start plus duration of one order |
+| `lastCompatibleCount` | count of orders ending by a given start time |
+| `bestProfit` | optimal profit for each prefix of sorted orders |
+| `takeProfit`, `skipProfit` | the two candidates compared in the DP |
 
-takeProfit = price plus bestProfit at compatibleCount
-skipProfit = bestProfit at the current position
-new bestProfit = the larger of those two values
+The prefix search is what makes each decision logarithmic.
 
-The trace script prints these steps for the sample:
+A script-traced example with the four sample orders:
 
 ```
-order 1 finish 5 price 10 compatible 0 take 10 skip 0 best 10
-order 2 finish 10 price 14 compatible 0 take 14 skip 10 best 14
-order 3 finish 14 price 7 compatible 1 take 17 skip 14 best 17
-order 4 finish 15 price 8 compatible 1 take 18 skip 17 best 18
-answer 18
-```
+order  start dur price  finish
+1      0     5   10     5
+2      3     7   14     10
+3      5     9   7      14
+4      6     9   8      15
 
-The last row gives 18, which matches the sample output.
+i  order  compatible prefix  take       skip      best
+1  1       0                  10         0         10
+2  2       0                  14         10        14
+3  3       1 (order 1)        7 + 10=17  14        17
+4  4       1 (order 1)        8 + 10=18  17        18
+
+answer = 18  (orders 1 and 4)
+```
 
 ## Code
 
-The constants cap the digit value and the output block. The object holds one order in three named fields. The read loop appends every input line to one buffer, and the scanner builds integers by hand. The output helper writes only when the buffer reaches the block size.
+**Constants and order type.** One record holds start, finish, and price.
 
 ```nim
 import std/algorithm
@@ -62,7 +99,13 @@ type
     startTime: int
     finishTime: int
     price: int
+```
 
+`flushBlockBytes` sets the output block size. `finishTime` is computed once when reading each order.
+
+**Input and scanner.** The whole stream is read into one buffer.
+
+```nim
 var inputData = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
@@ -79,7 +122,13 @@ proc nextInt(data: string, i: var int): int =
     value = value * 10 + int(data[i]) - firstDigitValue
     i += 1
   return value
+```
 
+`nextInt` skips non-digits and reads each positive value by index. The `var` parameter keeps the scan position between calls.
+
+**Output helper and sort order.** Orders sort by finish time, then by start time.
+
+```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -87,18 +136,18 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
-```
 
-The read loop visits each input line once. The scanner stops at any separator, which keeps the digit loop short. The buffer never grows past one block plus one answer.
-
-The comparator orders jobs by finish time, then by start time for ties. The search keeps a half-open window over the sorted finish times and returns the count of times at most the start.
-
-```nim
 proc compareOrders(left, right: Order): int =
   if left.finishTime != right.finishTime:
     return left.finishTime - right.finishTime
   return left.startTime - right.startTime
+```
 
+`appendOutput` flushes at 256 KiB. `compareOrders` uses finish time first, which the DP requires.
+
+**Binary search.** `lastCompatibleCount` finds the prefix ending by a start time.
+
+```nim
 proc lastCompatibleCount(finishTimes: seq[int], startTime: int): int =
   var i = 0
   var j = finishTimes.len
@@ -111,9 +160,9 @@ proc lastCompatibleCount(finishTimes: seq[int], startTime: int): int =
   return i
 ```
 
-The search runs at most log base two of n iterations. The `<=` test is the trap: it admits an order that ends exactly when the next one starts. That detail decides the sample.
+The loop halves `[0, len]` until it finds the first finish time above `startTime`. It returns a count, which indexes `bestProfit` directly.
 
-solveCase sorts once, copies finish times into a flat array, then walks all n orders. Each step does one search and one comparison, then stores the larger total at the next position.
+**DP solver.** Each order compares taking against skipping.
 
 ```nim
 proc solveCase(orders: var seq[Order], finishTimes: var seq[int], bestProfit: var seq[int64]): int64 =
@@ -135,9 +184,9 @@ proc solveCase(orders: var seq[Order], finishTimes: var seq[int], bestProfit: va
   return bestProfit[orderCount]
 ```
 
-The two loops each run n times, and the profit table has n plus one slots. Storing the finish times separately keeps the search working on plain integers. Profits use int64, which holds the sum of 10000 prices below 100000.
+`orders.sort` fixes the prefix order. `takeProfit` adds the current price to the compatible prefix's profit. `skipProfit` carries the earlier optimum forward. The result is the last prefix value.
 
-The main loop reads one case, reuses the three work arrays, and prints one answer per case. A final write flushes any bytes left in the output buffer.
+**Driver.** Orders are read, solved, and answered once per case.
 
 ```nim
 var orders = newSeq[Order]()
@@ -162,10 +211,28 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The outer loop runs once per case, and the inner loop runs once per order. Reusing the arrays avoids a fresh allocation for every case. The duration is added to the start at read time, so each order stores its finish directly.
+Three reusable sequences avoid per-case allocation of helpers. `startTime + duration` becomes `finishTime` at input time. Each case appends one answer line.
 
 ## Complexity
 
-Reading costs one pass over the input buffer. Sorting one case costs O(n log n), and the walk costs O(n log n) because each order does a binary search. Total time is O(total tokens plus the sum of n log n over all cases).
+Each case sorts orders, searches a prefix, then fills the DP table.
 
-Space is O(n) per case for the orders, the finish times, and the profit table. The naive form compares every earlier order at each step and costs O(n squared) per case.
+| Phase | Time | Space |
+|---|---|---|
+| Input read | one pass over input bytes | input bytes |
+| Sort | O(n log n) | O(n) |
+| Binary searches | O(n log n) total | O(1) |
+| DP fill | O(n) | O(n) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(n log n) | O(n) |
+
+The sort dominates, and `n ≤ 10000` keeps it small.
+
+| Measure | Big O |
+|---|---|
+| Time | O(n log n) per case |
+| Space | O(n) for orders and the profit table |
+
+Visiting every feasible subset would cost 2^n time.
+
+Testing all subsets of non-overlapping orders would take 2^n steps. Binary search plus a prefix maximum reaches the optimum in O(n log n).

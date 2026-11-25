@@ -1,49 +1,88 @@
+# PHRASES — Relevant Phrases of Annihilation (SPOJ)
+<https://www.spoj.com/problems/PHRASES/>
+
 ## Problem
 
-Read several test cases. Each case gives n messages made of lowercase letters. Print the length of the longest string that appears disjointly at least twice in every message. Two occurrences are disjoint when their character ranges do not overlap.
+Your agents intercept several encrypted messages. The cryptographer will read only the fragment that the enemy emphasized most: a phrase appearing twice without overlap in every message.
 
-The judge gives these bounds.
+Find the length of the longest such phrase. A phrase must occur at least twice disjointly in each message, and the same phrase must work across all messages.
 
-| Quantity | Bound |
+Input: the first integer is t, the number of cases. Each case gives n messages, then n lowercase lines. Output: one integer per case, the maximum length.
+
+These are the bounds and the judge limits:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | at most 10 |
-| Messages per case | at most 10 |
-| Message length | 2 to 10000 characters |
+| Test cases t | at most 10 |
+| Messages per case n | at most 10 |
+| Characters per message | 2 to 10000 |
+| Alphabet | lowercase a–z |
 | Time limit | 9000 ms |
 | Memory limit | 1536 MB |
 
-The message length sets the search bound, since two disjoint copies need twice the answer.
+The sample has four messages:
+
+```
+1
+4
+abbabba
+dabddkababa
+bacaba
+baba
+```
+
+```
+2
+```
+
+The phrase `ba` appears twice without overlap in all four messages.
 
 ## Idea
 
-Binary search the answer length. For one candidate length, hash every substring of that length in each message. Keep a hash only when two occurrences start far enough apart to be disjoint. Intersect the kept sets across all messages. A shared hash means some string of that length qualifies everywhere.
+Guess a length, fingerprint every substring of that length, then keep the fingerprints that qualify everywhere. Picture comparing four intercepted letters by underlining every two-letter pair and keeping only pairs underlined twice, far apart, in all of them.
 
-Cost per substring: one constant-time hash and one hash-table probe.
+The program binary searches the answer. For a tested length L, rolling hashes (numbers computed from a string so equal strings give equal numbers) turn each substring into a key. Two 64-bit bases make collisions unlikely.
+
+Each message contributes the smallest and largest start position for every key. A key qualifies when `workMax − workMin ≥ L`, meaning two non-overlapping copies exist. Keys surviving all messages prove L feasible.
+
+One feasibility check costs O(n × messageLength) with O(1) table work; binary search multiplies that by log(messageLength). Comparing all substring pairs costs O(n × messageLength²).
+
+Takeaway: hashing plus binary search turns a repeated-substring hunt into a handful of linear scans.
 
 ## Why It Works
 
-Prefix hashes turn any substring hash into two array reads and one subtraction. The program builds two independent 64-bit hashes, so a collision needs two unlikely matches.
+Four facts justify the check.
 
-For a candidate length, one table stores the smallest and largest start of each substring hash. The gap test `workMax[slot] - workMin[slot] >= length` marks a substring that occurs twice without overlap.
+1. Two occurrences of a length-L substring are disjoint exactly when their start positions differ by at least L. Tracking only the smallest and largest start is enough to detect that.
+2. The rolling hash of a substring comes from two prefix-hash arrays in O(1). Using two independent bases keeps accidental collisions negligible.
+3. `prepareWork` stores a min and max start per key in an open-addressed table. A key passes a message when its spread reaches L.
+4. `feasible` removes any key that fails in a later message. If keys remain, one phrase appears disjointly twice everywhere. Feasibility decreases with L, so binary search finds the maximum.
 
-The largest start and the smallest start give two occurrences. Their distance is at least the length, so they do not overlap. Any qualifying pair implies this inequality, so the test loses no answer.
+These are the parts of one feasibility test:
 
-Feasibility is monotone. A qualifying string of length L has a prefix of length L - 1 that also qualifies at the same starts. Binary search therefore finds the largest feasible length.
-
-The sample script checks each two-letter string in every message.
-
-| Message | Substrings with two disjoint copies |
+| Term | Meaning |
 | --- | --- |
-| abbabba | ab, ba, bb |
-| dabddkababa | ab, ba |
-| bacaba | ba |
-| baba | ba |
+| `HashKey` | pair of 64-bit rolling hashes for one substring |
+| `prefixA`, `prefixB` | running hashes used to extract substring hashes |
+| `powerA`, `powerB` | precomputed base powers for the two hashes |
+| `workMin`, `workMax` | smallest and largest start offset of a key in one message |
+| `commonUsed` | marks keys still valid in every processed message |
+| `tableMask` | bit mask that maps a hash to a table slot |
 
-Only `ba` survives every row. Length 3 fails the same check, so the answer is 2.
+A script checks length 2 on the sample messages:
+
+```
+abbabba     -> ['ab', 'ba', 'bb']
+dabddkababa -> ['ab', 'ba']
+bacaba      -> ['ba']
+baba        -> ['ba']
+```
+
+The intersection keeps only `ba`. The search therefore accepts length 2 and rejects length 3. The upper bound is half the shortest message, since two disjoint copies must fit.
 
 ## Code
 
-**Constants and bulk input.**
+**Input.** The whole stream goes into one buffer, and words are read by offset.
 
 ```nim
 {.push checks: off.}
@@ -62,13 +101,7 @@ var inputLine = ""
 while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
-```
 
-The read loop runs to end of file, so all bytes land in one string. The pragma removes runtime checks from the hot loops. The table holds 32768 slots, which keeps the load below one half.
-
-**Scanners and output helper.**
-
-```nim
 var i = 0
 
 proc nextInt(): int =
@@ -87,7 +120,13 @@ proc nextWord(): string =
   while i < inputData.len and inputData[i] >= 'a' and inputData[i] <= 'z':
     i += 1
   return inputData[startPos .. i - 1]
+```
 
+`nextWord` copies one message, so trailing whitespace never enters a hash. The power arrays are shared across cases. Setup costs O(maxMessageLength).
+
+**Output.** One buffer collects the answer lines.
+
+```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -97,9 +136,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The scanner walks the shared index, so no token object is built. `nextWord` skips trailing whitespace and returns only letters. The output flushes once per 256 KiB block.
+The flush happens every `flushBlockBytes` bytes. No write occurs during a feasibility check. The cost is one pass over the answer text.
 
-**Powers and tables.**
+**Tables.** Three open-addressed tables hold working and common keys.
 
 ```nim
 type HashKey = tuple[firstHash: uint64; secondHash: uint64]
@@ -123,9 +162,9 @@ var commonUsed: array[tableSize, bool]
 var commonCount = 0
 ```
 
-Both power arrays are built once before any test case. The work table is rebuilt per message. The common table holds hashes still shared by every message seen so far.
+The power tables let any substring hash come from two prefix differences. Arrays are allocated once at maximum size, so no case reallocates them. Space is O(tableSize + messageLength).
 
-**Open-addressing probes.**
+**Table operations.** Linear probing stores keys and merges start positions.
 
 ```nim
 proc slotOf(key: HashKey): int =
@@ -162,9 +201,9 @@ proc putCommon(key: HashKey) =
   commonCount += 1
 ```
 
-Linear probing stops at an empty slot or a matching key. A start of -1 marks an empty work slot, which avoids a second occupancy array. Each probe touches one cache-friendly flat array.
+`slotOf` masks the first hash into the table. Probing wraps with `and (tableSize − 1)` because the size is a power of two. Each operation costs O(1) expected time.
 
-**Hash the substrings of one message.**
+**Feasibility.** One length is tested across all messages.
 
 ```nim
 proc prepareWork(message: string, length: int) =
@@ -182,13 +221,7 @@ proc prepareWork(message: string, length: int) =
     let key: HashKey = (prefixA[k + length] - prefixA[k] * powerA[length],
                         prefixB[k + length] - prefixB[k] * powerB[length])
     putWork(key, k)
-```
 
-The loop runs once per start, from 0 to messageLen - length. Prefix hashes make each substring hash constant time. Stale keys from an earlier call stay harmless because the cleared start marks those slots empty.
-
-**Test one length.**
-
-```nim
 proc feasible(length: int): bool =
   prepareWork(messages[0], length)
   for slot in 0 .. (tableSize - 1): commonUsed[slot] = false
@@ -209,9 +242,9 @@ proc feasible(length: int): bool =
   return commonCount > 0
 ```
 
-The first message seeds the common set. Each later message removes hashes that no longer qualify. The scan stops early when the set becomes empty. Cost is one pass over the table per message.
+Clearing `workMin` to −1 resets the table in one pass, which is cheaper than freeing it. The spread test `workMax − workMin ≥ length` enforces disjointness. One check costs O(n × messageLength).
 
-**Binary search and output.**
+**Driver.** Binary search finds the longest feasible length.
 
 ```nim
 let caseCount = nextInt()
@@ -238,27 +271,26 @@ outputBuffer.setLen 0
 {.pop.}
 ```
 
-The upper bound is half the shortest message, since two copies need that much space. Each loop tests the middle length and narrows the range. The final write flushes the remaining answer lines.
+The upper bound `shortest div 2` follows from needing two disjoint copies. The `+ 1` in the middle avoids an infinite loop when two values remain. Each case uses about log(shortest) checks.
 
 ## Complexity
 
-Costs by phase, with S as the total input characters and L as a tested length:
+Binary search repeats linear hash scans.
 
 | Phase | Time | Space |
 | --- | --- | --- |
-| power setup | O(10000) | O(10000) |
-| hash one message | O(L) per start | message length |
-| test one length | O(S + n * 32768) | table size |
-| binary search | O(log 10000) tests | table size |
-| output | one write per block | block size |
+| Input scan | O(total characters) | O(input size) |
+| Power tables | O(maxMessageLength) | O(maxMessageLength) |
+| One feasibility check | O(n × messageLength) | O(messageLength) |
+| Binary search | O(log shortest) checks | O(tableSize) |
+| Output | O(cases) | O(block size) |
 
-The largest table scans dominate, yet they stay fixed at 32768 slots.
+Feasibility dominates, with about log(10000) × n × 10000 hash operations per case.
 
-Big O form:
-
-| Measure | Form |
+| Measure | Big O |
 | --- | --- |
-| Time | O(log M * (S + n * T)) for shortest message M and table size T |
-| Space | O(S + n * 10000 + T) |
+| Time per case | O(n × Lmax × log Lmax) |
+| Total time | O(sum over cases of n × Lmax × log Lmax) |
+| Working space | O(tableSize + Lmax) |
 
-Enumerating every substring and searching it in every message costs far more than one hash pass per start.
+Comparing every substring pair across messages takes O(n × Lmax²) time, far more than hashing.

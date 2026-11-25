@@ -1,56 +1,103 @@
+# SCITIES — Selfish Cities (SPOJ)
+<https://www.spoj.com/problems/SCITIES/>
+
 ## Problem
 
-Each case lists sellers, buyers, and offers of the form seller, buyer, goods. A seller ships to one buyer, and a buyer receives from one seller. Choose the pairs that maximize the total goods shipped, and print one total per case.
+Sellers and buyers in Selfishland each trade with one partner only. Some pairs can move goods, and each pair moves a fixed amount. Choose the pairs that move the most goods in total.
 
-| Quantity | Bound |
+Input: an integer t, then t cases. Each case starts with seller count C1 and buyer count C2. Then come triples seller, buyer, goods, ending with 0 0 0. Output: one integer per case, the maximum goods shipped.
+
+The statement sets these bounds.
+
+| Item | Bound |
 | --- | --- |
-| Test cases | t <= 1000 |
-| Selling cities | C1 <= 100 |
-| Buying cities | C2 <= 100 |
-| Goods per offer | g <= 100 |
-| Time limit | 1371 ms |
-| Memory limit | 1536 MB |
-| Source limit | 50000 B |
+| Test cases | at most 1000 |
+| Selling cities C1 | at most 100 |
+| Buying cities C2 | at most 100 |
+| Goods per offer | at most 100 |
+| Judge time limit | 1371 ms |
+| Judge memory limit | 1536 MB |
 
 The 100-city bound makes a cubic matching pass practical.
 
+The sample input:
+
+```
+3
+3 2
+1 1 10
+2 1 19
+2 2 11
+3 2 1
+0 0 0
+4 4
+1 1 6
+1 2 6
+2 1 8
+2 3 9
+2 4 8
+3 2 8
+4 3 7
+0 0 0
+3 2
+1 1 10
+2 1 21
+2 2 11
+3 2 1
+0 0 0
+```
+
+The sample output:
+
+```
+21
+29
+22
+```
+
 ## Idea
 
-The program solves a maximum-weight bipartite matching as a minimum-cost assignment. It stores `-g` for a real offer and zero for a missing offer. Dummy columns let an unused city cost nothing. Each augmentation fixes one more row and may reassign earlier rows.
+Match partners like guests at a dance, then improve one pairing at a time until no swap helps. The program solves a maximum-weight bipartite matching through minimum-cost assignment. It stores minus the goods for each real offer and zero for a missing offer. The smaller city class supplies the rows, so skewed cases scan fewer cells.
 
-The matrix uses the smaller city class as rows, so skewed cases shrink the inner scan. One POSIX call fills the input buffer, and a hand scanner reads each integer.
+Each augmentation fixes one more row and may reassign earlier rows. One augmentation costs O(row times column) work, and a case runs one augmentation per row. A search over every matching would be factorial, which is impossible at 100 cities.
 
-Cost per case: cubic in the smaller city count, with one matrix cell per possible offer.
+One row at a time builds the best matching.
 
 ## Why It Works
 
-Storing `-g` turns the largest goods total into the smallest cost. An optimal matching leaves no positive offer between two unused cities, so zero-cost padding changes no answer. Transposing a wide case keeps rows no longer than columns.
+Four facts carry the program.
 
-Each term in the update has one job.
+1. Storing minus the goods turns the largest total into the smallest cost. Negating the final cost restores the goods total.
+2. A zero cell for a missing offer acts as a dummy. An unused city therefore costs nothing and never blocks a matching.
+3. Transposing a wide case keeps rows no longer than columns. The inner scan then follows the smaller class.
+4. Potentials keep reduced costs nonnegative. The smallest reduced cost `delta` updates them, so each frontier step stays valid.
 
-`costCells` stores `-g` at the offset `rowIndex * colCount + colIndex` for one offer.
+Each term has one job.
 
-`delta` is the smallest reduced cost on the current frontier.
+| Term | Meaning |
+| --- | --- |
+| `costCells` | minus goods at `rowIndex * colCount + colIndex` |
+| `delta` | smallest reduced cost on the current frontier |
+| `previousCol` | parent chain used to reassign earlier rows |
+| `generation` | stamp that avoids clearing the visited array |
 
-`rowPotential[assignedRow[k]] += delta` and `colPotential[k] -= delta` keep reduced costs nonnegative.
+The trailing exclamation mark stops the scanner after the last token.
 
-The trailing `'!'` stops the scanner after the last token. It sorts after spaces and before digits, so no token is lost.
+A script prints the first sample case as a cost matrix, with padding cells.
 
-A script prints the first sample case as a cost matrix. The last row and column are padding.
-
-```
+```text
 sellers 3 buyers 2 padded size 3
-row 1:  -10    0    0
-row 2:  -19  -11    0
-row 3:    0   -1    0
-best total goods 21
+row 1: -10   0   0
+row 2: -19 -11   0
+row 3:   0  -1   0
+best cost -21, goods 21
 ```
 
-Rows 1 and 2 take costs -10 and -11, so the matching ships 21 goods.
+Rows 1 and 2 take costs minus 10 and minus 11, so the answer is 21. No rounding applies because every cost is an integer.
 
 ## Code
 
-The reader fills one buffer with bulk reads and parses it in place.
+**Bulk reader.** One POSIX call fills a growable buffer in chunks.
 
 ```nim
 {.push checks: off.}
@@ -103,9 +150,9 @@ proc nextInt(data: string, pos: var int): int {.inline.} =
   value
 ```
 
-The buffer doubles only when a chunk would overflow it. The trailing marker ends the scan without a length test per digit. All values are nonnegative, so the scanner needs no sign branch.
+The buffer doubles only when a chunk would overflow it. The sentinel ends the scan without a length test per digit. All values are nonnegative, so no sign branch is needed.
 
-One output buffer collects every answer and flushes in blocks.
+**Output helper.** One buffer flushes in blocks.
 
 ```nim
 var outputBuffer = ""
@@ -117,9 +164,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The flush threshold bounds memory at one block. The program writes at most one thousand short lines, so one final flush is usual.
+The threshold bounds memory at one block. The program writes at most one thousand short lines.
 
-The matching pass uses fixed arrays and potentials.
+**Matching pass.** Potentials guide one augmentation per row.
 
 ```nim
 var costCells: array[0 .. maxCells - 1, int]
@@ -176,9 +223,9 @@ proc maxExchange(rowCount: int, colCount: int): int =
   -totalCost
 ```
 
-The outer loop runs once per row, and each scan visits at most that many columns. The `generation` mark avoids clearing the visited array between rows. The `previousCol` chain reassigns earlier rows after one free column appears.
+The outer loop runs once per row. `generation` avoids clearing the visited array. The `previousCol` chain reassigns earlier rows after a free column appears. The pass costs O(row squared times column).
 
-The driver builds one matrix per case and reads offers until the terminating trio.
+**Driver.** One matrix serves one case.
 
 ```nim
 let caseCount = nextInt(inputData, i)
@@ -213,10 +260,25 @@ outputBuffer.setLen 0
 {.pop.}
 ```
 
-The matrix starts at zero, which is the cost of an unused city. Repeated offers keep the largest goods value in each cell. The bounds check skips a city number outside its class.
+The matrix starts at zero, the cost of an unused city. Repeated offers keep the largest goods value in each cell. The bounds check skips city numbers outside their class.
 
 ## Complexity
 
-Bulk reading costs O(input bytes), and the scanner touches each token once. Matrix construction costs O(offers) per case. The matching pass costs O(R^2 * C) with R rows in the smaller class and C columns in the larger class. Fixed arrays use O(C^2) space.
+Reading and matching are the two dominant stages.
 
-Total time is O(input bytes + t * R^2 * C), and total space is O(input bytes + C^2). A naive search over all matchings costs factorial time, which is impossible at 100 cities.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Bulk read | O(B) for B input bytes | B bytes |
+| Matrix setup | O(offers) per case | 10000 cells |
+| Matching pass | O(R squared times C) per case | fixed arrays |
+| Output | O(t) lines | one block |
+| Total | O(B + t times R squared times C) | O(B + C squared) |
+
+R is the smaller city class and C is the larger one. Both are at most 100.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(t times R squared times C) |
+| Space | O(B + C squared) |
+
+A search over all matchings is factorial and cannot finish at 100 cities.

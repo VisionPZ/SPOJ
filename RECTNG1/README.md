@@ -1,53 +1,93 @@
+# RECTNG1 — Rectangles (SPOJ)
+
+<https://www.spoj.com/problems/RECTNG1/>
+
 ## Problem
 
-Each test case gives n axis-aligned rectangles with integer corners. Two rectangles join one block when their closed regions share a segment of positive length. Print one line per case with the number of separate blocks.
+A draftsman draws many axis-aligned rectangles on one sheet. Two rectangles join when they share a segment of positive length. Count the separate groups of rectangles on the sheet.
 
-The statement fixes two bounds and leaves the test count open.
+Input: `t` cases separated by blank lines. Each starts with `n`, then `n` lines `x1 y1 x2 y2`, the bottom-left and top-right corners. Output: one integer per case, the number of separate blocks.
 
-| Quantity | Bound |
-| --- | --- |
-| Rectangles per case | 7000 |
-| Corner coordinates | 0 to 10000 |
-| Test cases | not bounded |
-| Time limit | 1279 ms |
-| Memory limit | 1536 MB |
+The bounds from the statement:
 
-The rectangle count drives the pair scan; the coordinate bound keeps each value small.
+| Item | Bound |
+|---|---|
+| Rectangles `n` | 1 ≤ n ≤ 7000 |
+| Coordinates | non-negative integers ≤ 10000 |
+| Judge limit | 1279 ms, 1536 MB |
+
+A shared point does not join two rectangles; a shared segment does.
+
+The sample input and output:
+
+```
+1
+9
+0 3 2 6
+4 5 5 7
+4 2 6 4
+2 0 3 2
+5 3 6 4
+3 2 5 3
+1 4 4 7
+0 0 1 4
+0 0 4 1
+```
+
+```
+2
+```
 
 ## Idea
 
-Sort rectangles by their left x edge and scan pairs in that order. A union-find table (parent links that track groups) merges pairs that share a segment. Each pair costs a few comparisons and at most one union, while an unordered scan tests every pair.
+Group rectangles like overlapping rubber stamps, then count the distinct ink islands. Sort by left edge so neighbours sit next to each other in the scan.
+
+For rectangle `i`, walk later rectangles `j` while `rects[j].x1 ≤ rects[i].x2`. Unite `i` and `j` when their y-intervals overlap with positive length, or their x-intervals overlap with positive length. A union-find table (a structure that merges groups and finds their representative) tracks the groups.
+
+Sorting costs O(n log n). The inner scan stops as soon as a rectangle starts right of `i`, so it skips most pairs.
+
+Sorting by left edge gives the overlap search an early exit.
 
 ## Why It Works
 
-The shared region of two rectangles is a closed box with integer corners. It holds a segment when both spans meet and one span overlap is positive. A pair that meets at one point only stays separate, because a point is not a segment.
+Four facts carry the grouping.
 
-The shared span uses four edge values:
+1. Two axis-aligned rectangles share a segment when they overlap in one axis and touch or overlap in the other.
+2. `verticalOverlap = min(y2) − max(y1)` and `horizontalOverlap = min(x2) − max(x1)`. A positive value in either quantity means a shared segment.
+3. Sorting by `x1` makes the inner loop stop once `rects[j].x1 > rects[i].x2`. Rectangles further right cannot meet `i`.
+4. Union-find merges groups in near-constant time. Counting roots after all unions gives the block count.
 
-xlo = max of the left x edges
-xhi = min of the right x edges
-ylo = max of the bottom y edges
-yhi = min of the top y edges
+The fields and helpers:
 
-The code checks `verticalOverlap` and `horizontalOverlap`. `verticalOverlap` is yhi minus ylo, and `horizontalOverlap` is xhi minus xlo. A pair merges when both spans meet and at least one of those values is positive.
+| Term | Meaning |
+|---|---|
+| `Rectangle` | four integer coordinates of one box |
+| `compareRect` | ordering by bottom-left x |
+| `findRoot` | union-find representative of a group |
+| `blockCount` | number of distinct roots |
 
-The sample produces these shared spans.
+A positive overlap in either axis is enough to merge two rectangles.
 
-| Pair | Shared span |
-| --- | --- |
-| 1-7 | x 1..2, y 4..6 |
-| 1-8 | x 0..1, y 3..4 |
-| 2-7 | x 4..4, y 5..7 |
-| 3-5 | x 5..6, y 3..4 |
-| 3-6 | x 4..5, y 2..3 |
-| 4-9 | x 2..3, y 0..1 |
-| 8-9 | x 0..1, y 0..1 |
+A script-traced example with three rectangles:
 
-They form two groups, 1-2-4-7-8-9 and 3-5-6, so the answer is 2.
+```
+A: 0 0 2 2
+B: 2 0 4 2   verticalOverlap = 2, horizontalOverlap = 0 -> shared edge -> unite
+C: 6 0 7 2   B.x2 = 4 < C.x1 = 6 -> inner loop breaks
+
+distinct roots = 2 blocks
+```
+
+The nine sample rectangles form two separate blocks in the same way.
 
 ## Code
 
+**Setup and scanner.** The input is read once into one buffer.
+
 ```nim
+{.passC: "-O3".}
+{.push checks: off.}
+
 import algorithm
 
 const firstDigitValue = 48
@@ -69,7 +109,13 @@ proc nextInt(data: string, position: var int): int =
     value = value * 10 + int(data[position]) - firstDigitValue
     position += 1
   return value
+```
 
+The header lines set up fast execution. `nextInt` scans the buffer by index and skips blank lines between cases.
+
+**Output helper and rectangle order.** Results buffer, and rectangles sort by left edge.
+
+```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -78,11 +124,7 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
-```
 
-The read loop ends at EOF and keeps one input buffer. The scanner skips the blank line between cases, so the sample shape is safe. The output buffer flushes at `flushBlockBytes`, which caps memory use.
-
-```nim
 type Rectangle = object
   x1: int
   y1: int
@@ -93,7 +135,13 @@ proc compareRect(left, right: Rectangle): int =
   if left.x1 < right.x1: result = -1
   elif left.x1 > right.x1: result = 1
   else: result = 0
+```
 
+`appendOutput` adds a newline and flushes at 256 KiB. `compareRect` orders rectangles by `x1`, which drives the early break.
+
+**Union-find.** `findRoot` compresses paths, and `unite` merges by rank.
+
+```nim
 var parents: seq[int]
 var ranks: seq[int]
 
@@ -117,7 +165,9 @@ proc unite(left, right: int) =
   if ranks[rootLeft] == ranks[rootRight]: ranks[rootLeft] += 1
 ```
 
-The rectangle loop reads exactly four integers per rectangle. `findRoot` shortens each path it walks, which keeps chains short. `unite` uses rank to keep trees shallow.
+Ranks keep the trees shallow. The first loop in `findRoot` climbs to the root, and the second rewrites visited pointers. Merging groups costs near-constant time.
+
+**Case loop.** Rectangles are read, sorted, compared, then counted.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -153,10 +203,28 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The outer loop runs once per test case. The break ends a row once the next left edge passes the current right edge. Counting roots in `parents` gives the block count in one pass.
+The inner loop breaks when `rects[j].x1 > rects[i].x2`. Either positive overlap calls `unite(i, j)`. The final pass counts one block per root.
 
 ## Complexity
 
-Reading costs O(total input bytes) time and the same space. Sorting costs O(n log n) time and O(n) space. The pair scan costs O(n²) time in the worst case and O(1) extra space. Counting roots costs O(n) time. The total is O(n²) time and O(n) space per case.
+Each case sorts rectangles, then scans nearby pairs and counts roots.
 
-A full connectivity matrix would use O(n²) space and O(n³) time to close. Union-find keeps only parent links.
+| Phase | Time | Space |
+|---|---|---|
+| Input read | one pass over input bytes | input bytes |
+| Sort | O(n log n) | O(n) |
+| Overlap scan | up to O(n²) pairs, cut by x break | O(n) |
+| Union-find | near-constant per merge | O(n) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(n log n + n²) worst case | O(n) |
+
+At `n = 7000` the worst-case scan still fits the limit.
+
+| Measure | Big O |
+|---|---|
+| Time | O(n²) worst case, O(n log n) when overlaps are sparse |
+| Space | O(n) for rectangles and union-find arrays |
+
+Skipping the sort keeps the same O(n²) bound but removes the early exit.
+
+Checking every pair without sorting touches all n² pairs. Sorting lets most scans stop after a few rectangles.

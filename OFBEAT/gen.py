@@ -71,6 +71,24 @@ def maximal_segments(cells, xs, ys):
         merged.append((lo, hi))
         for a, b in merged:
             vertical.append((xs[k], ys[a], ys[b]))
+    for k in range(1, len(xs) - 2):
+        if xs[k + 1] - xs[k] < 2:
+            continue
+        spans = [(j, j + 1) for i, j in cells if i == k]
+        if not spans:
+            continue
+        spans.sort()
+        lo, hi = spans[0]
+        merged = []
+        for a, b in spans[1:]:
+            if a <= hi:
+                hi = max(hi, b)
+            else:
+                merged.append((lo, hi))
+                lo, hi = a, b
+        merged.append((lo, hi))
+        for a, b in merged:
+            vertical.append((xs[k] + 1, ys[a], ys[b]))
     horizontal = []
     for j in range(1, len(ys) - 1):
         spans = []
@@ -91,6 +109,24 @@ def maximal_segments(cells, xs, ys):
         merged.append((lo, hi))
         for a, b in merged:
             horizontal.append((ys[j], xs[a], xs[b]))
+    for j in range(1, len(ys) - 2):
+        if ys[j + 1] - ys[j] < 2:
+            continue
+        spans = [(i, i + 1) for i, cell_j in cells if cell_j == j]
+        if not spans:
+            continue
+        spans.sort()
+        lo, hi = spans[0]
+        merged = []
+        for a, b in spans[1:]:
+            if a <= hi:
+                hi = max(hi, b)
+            else:
+                merged.append((lo, hi))
+                lo, hi = a, b
+        merged.append((lo, hi))
+        for a, b in merged:
+            horizontal.append((ys[j] + 1, xs[a], xs[b]))
     return vertical, horizontal
 
 
@@ -286,17 +322,14 @@ def write(name, cases):
 
 
 SAMPLE = [2, 2, 2, 2, -4, 2, 1, 2, -3, 2, -2, -8, 4, -2]
+STAIRCASE = [2, 2, -1, 2, -2, 2, -2, 2, -2, 2, -1, -4, 2, -2, 2, -2, 2, -2]
 assert brute_answer(SAMPLE) == 4
 assert brute_answer([1, 1, -1, -1]) == 2
 assert brute_answer([2, 1, -1, 1, -1, -2]) == 2
+assert brute_answer(STAIRCASE) == 5
 
 
 def build():
-    cells = {(0, 0)}
-    edges = [(2, 2, -2, -2),
-             (3, 2, -1, 1, -2, -3),
-             (2, 3, -3, 1, 1, -2, -1),
-             (1, 1, -1, -1)]
     write("2_edges", [[2, 2, -2, -2],
                       [1, 1, -1, -1],
                       [2, 1, -1, 1, -1, -2],
@@ -304,6 +337,7 @@ def build():
                       [100000, 100000, -100000, -100000],
                       [-1, -1, 1, 1],
                       [1, -1, -1, 1],
+                      STAIRCASE,
                       rotate_start([3, 3, -1, -2, -1, 2, -1, -3], 1),
                       rotate_start([3, 3, -1, -2, -1, 2, -1, -3], 3)])
     write("3_wide", [[100000, 100000, -100000, -100000],

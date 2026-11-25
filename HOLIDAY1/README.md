@@ -1,38 +1,74 @@
+# HOLIDAY1 — Getting Rid of the Holidays (Act I) (SPOJ)
+
+<https://www.spoj.com/problems/HOLIDAY1/>
+
 ## Problem
 
-Each holiday occurs on day zero and then every fixed number of days. A party happens on any day when at least one remaining holiday occurs. Remove exactly k holidays so the shortest gap between two consecutive parties is as long as possible. Print the 1-based numbers of the removed holidays in increasing order, one line per test case.
+A company throws a party whenever a holiday returns. Remove some holidays, and the remaining parties spread apart.
+
+Read `t` cases. Each case gives `n`, the count `k` to remove, and `n` periods. Holiday `i` starts on day zero and returns every period `i` days.
+
+Print the removed holiday numbers in increasing order, one line per case.
+
+The bounds set the size of the search:
 
 | Quantity | Bound |
 | --- | --- |
-| Test cases | t ≤ 200 |
-| Holidays | k < n ≤ 30 |
-| Period | ti ≤ 10^18 |
+| Test cases `t` | up to 200 |
+| Holidays `n` | `k < n <= 30` |
+| Period `t_i` | up to 10^18 |
 | Time limit | 6006 ms |
 | Memory limit | 1536 MB |
 
-The small holiday count allows subset search. The large periods rule out simulating days.
+The holiday count stays small, but the periods rule out day-by-day simulation.
+
+The sample case:
+
+```
+1
+5 2
+6 13 10 15 7
+```
+
+```
+2 5
+```
 
 ## Idea
 
-All parties repeat with the least common multiple of the kept periods. Two party days can differ by the greatest common divisor of the periods that produce them. The shortest gap equals the smallest gcd of two kept periods. A single kept holiday gives its own period as the gap.
+Picture metronomes ticking from the same starting beat. The closest pair of periods sets the shortest gap between parties.
 
-Treat each candidate gcd as a graph threshold. An edge joins two holidays when their gcd reaches that level. Keep n - k holidays whose every pair has an edge. That group is a clique.
+Every party day is a multiple of a kept period. The difference of two multiples is a multiple of the gcd (greatest common divisor) of their periods. The shortest gap therefore equals the smallest pairwise gcd among the kept holidays.
 
-Binary search over the sorted pairwise gcds finds the largest level with such a clique. Simulating days is impossible because periods reach 10^18. Brute force over removal sets grows too fast.
+Treat each gcd as a graph threshold. An edge joins two holidays when their gcd reaches that level. Binary search over sorted pairwise gcds finds the largest level with a clique (a set where every pair connects) of the needed size.
 
-Cost per holiday: one gcd per pair and one bounded clique test per search level.
+Each level costs one gcd per pair and one bounded clique test.
+
+Simulating days runs to the least common multiple of the periods. At periods near 10^18, that count is astronomical. A gcd threshold plus a clique check replaces the impossible calendar.
 
 ## Why It Works
 
-Every kept holiday occurs on day zero, so each party day is a multiple of a kept period. The difference of two multiples is a multiple of the gcd of their periods. The smallest positive difference over all pairs is the smallest pairwise gcd. No party day lies between two days that differ by this amount, so those days are consecutive.
+Four facts prove the method exact.
 
-A level g keeps only pairs with gcd at least g. This gives a shortest gap of at least g. A shortest gap of g also forces every pair to have gcd at least g. The best gap is therefore the largest feasible level.
+1. All kept holidays occur on day zero, so each party day is a multiple of a kept period.
+2. The difference of two multiples is a multiple of the gcd of the two periods. The smallest positive difference over all pairs is the smallest pairwise gcd.
+3. A level `g` keeps pairs with gcd at least `g`. A set whose every pair reaches `g` has a shortest gap of at least `g`.
+4. A greedy color sort splits candidates into groups of mutually non-adjacent holidays. A clique takes at most one holiday from each group, so the group count bounds every search branch.
 
-Edge condition: gcdVal(periods[i], periods[j]) >= level. Clique size: need = vertexCount - removeCount. Color bound: need > colorCap[i] rejects a branch.
+The main values and their roles:
 
-The greedy color sort splits candidates into groups of mutually non-adjacent holidays. A clique takes at most one holiday from each group. The number of groups then bounds the search inside a branch.
+| Term | Meaning |
+| --- | --- |
+| `gcdVal` | Euclid rule returning the gcd of two periods |
+| `adjacency` | bit mask of holidays connected to a given holiday |
+| `colorCap` | group index limiting a holiday's place in a clique |
+| `need` | number of holidays the clique must still hold |
+| `bestVal` | largest gcd level with a feasible clique |
+| `removeBits` | bit mask of holidays chosen for removal |
 
-The generator computes this example from the sample:
+These masks keep every clique test inside a 30-bit word.
+
+A script traces the sample case and prints these values:
 
 ```
 periods       : 6 13 10 15 7
@@ -48,11 +84,11 @@ removed       : 2 5
 shortest gap  : 2 days
 ```
 
-Level 2 is the largest level with a clique of three, so the program removes holidays 2 and 5.
+Level 2 is the highest level with a clique of three. The program keeps holidays 1, 3, and 4, and removes 2 and 5.
 
 ## Code
 
-The program reads all input once and parses digits by hand. The scanner skips separators, so blank lines do not change the parse. The int64 value holds periods up to 10^18. Cost: one pass over the input buffer.
+**Input and scanner.** One read loop loads the stream, and a hand scanner skips separators.
 
 ```nim
 import algorithm
@@ -71,20 +107,26 @@ proc nextNum(pos: var int): int64 =
     pos += 1
 ```
 
-Euclid's rule replaces a pair by a smaller pair on each step. The remainder reaches zero in a logarithmic number of steps. Cost: one gcd computation per pair of holidays.
+The read loop runs once per input line and stops at end of stream. The scanner skips non-digits, so blank lines cause no trouble. The `int64` result holds periods up to 10^18.
+
+Parsing costs one pass over the buffer.
+
+**GCD.** Euclid's rule replaces a pair with a smaller pair at each step.
 
 ```nim
-proc gcdVal(a, b: int64): int64 =
-  var x = a
-  var y = b
-  while y != 0:
-    let r = x mod y
-    x = y
-    y = r
-  x
+proc gcdVal(left, right: int64): int64 =
+  var first = left
+  var second = right
+  while second != 0:
+    let rem = first mod second
+    first = second
+    second = rem
+  first
 ```
 
-The color sort visits each candidate once per color class. Each class holds mutually non-adjacent holidays, so `colorCap[i]` limits the clique inside the remaining pool. Cost: bounded by the number of color classes, not by all subsets.
+The loop ends when the remainder reaches zero. It takes a logarithmic number of steps. The program computes one gcd for each holiday pair and for each search level.
+
+**Clique search.** `colorSort` groups non-adjacent holidays, and `cliqueExists` builds a clique inside the remaining pool.
 
 ```nim
 var vertexCount = 0
@@ -103,16 +145,16 @@ proc colorSort(candidates: int): int =
     var rest = uncolored
     while rest != 0:
       let lowBit = rest and (-rest)
-      var v = 0
+      var node = 0
       var shifted = lowBit
       while shifted > 1:
         shifted = shifted shr 1
-        v += 1
+        node += 1
       rest = rest xor lowBit
-      if (classMask and adjacency[v]) == 0:
+      if (classMask and adjacency[node]) == 0:
         classMask = classMask or lowBit
         uncolored = uncolored xor lowBit
-        orderList[count] = v
+        orderList[count] = node
         colorCap[count] = colorNum
         count += 1
   count
@@ -121,95 +163,122 @@ proc cliqueExists(need: int, candidates: int): bool =
   if candidates == 0: return false
   let count = colorSort(candidates)
   var pool = candidates
-  for i in countdown(count - 1, 0):
-    if need > colorCap[i]: return false
-    let v = orderList[i]
-    if cliqueExists(need - 1, pool and adjacency[v]): return true
-    pool = pool xor (1 shl v)
+  for idx in countdown(count - 1, 0):
+    if need > colorCap[idx]: return false
+    let node = orderList[idx]
+    if cliqueExists(need - 1, pool and adjacency[node]): return true
+    pool = pool xor (1 shl node)
   false
 ```
 
-One helper rebuilds `adjacency` for a level, so the two callers share the same edge rule. The binary search ends after a logarithmic number of levels. Cost: one gcd per pair at each level.
+Each color class holds mutually non-adjacent holidays. The `colorCap` test rejects a branch before it explores the whole class. The recursion visits at most `2^30` masks in theory, but the color bound prunes it sharply.
+
+**Adjacency.** One helper rebuilds the edge mask for a gcd level.
 
 ```nim
 proc buildAdjacency(level: int64) =
-  for i in 0 .. vertexCount - 1:
-    adjacency[i] = 0
-    for j in 0 .. vertexCount - 1:
-      if i != j and gcdVal(periods[i], periods[j]) >= level:
-        adjacency[i] = adjacency[i] or (1 shl j)
+  for row in 0 ..< vertexCount:
+    adjacency[row] = 0
+    for col in 0 ..< vertexCount:
+      if row != col and gcdVal(periods[row], periods[col]) >= level:
+        adjacency[row] = adjacency[row] or (1 shl col)
+```
+
+The double loop visits every ordered pair once. The `row != col` guard keeps a holiday away from its own mask. The block costs one gcd per ordered pair.
+
+**Binary search.** Sorted pairwise gcds give a small set of levels to test.
+
+```nim
 var scanPos = 0
 let caseCount = int(nextNum(scanPos))
-var outputText = ""
+var outputBuffer = ""
 for caseIdx in 0 ..< caseCount:
   vertexCount = int(nextNum(scanPos))
   let removeCount = int(nextNum(scanPos))
   periods = @[]
   periods.setLen vertexCount
-  for i in 0 .. vertexCount - 1: periods[i] = nextNum(scanPos)
+  for i in 0 ..< vertexCount: periods[i] = nextNum(scanPos)
   var need = vertexCount - removeCount
   removeBits = 0
   if need == 1:
     var keepIndex = 0
-    for i in 1 .. vertexCount - 1:
-      if periods[i] >= periods[keepIndex]: keepIndex = i
+    for idx in 1 ..< vertexCount:
+      if periods[idx] >= periods[keepIndex]: keepIndex = idx
     removeBits = ((1 shl vertexCount) - 1) and not (1 shl keepIndex)
   else:
     var gcdList: seq[int64] = @[]
-    for i in 0 .. vertexCount - 1:
-      for j in i + 1 .. vertexCount - 1: gcdList.add gcdVal(periods[i], periods[j])
+    for row in 0 ..< vertexCount:
+      for col in row + 1 ..< vertexCount: gcdList.add gcdVal(periods[row], periods[col])
     gcdList.sort(system.cmp[int64])
-    var lo = 0
-    var hi = gcdList.len - 1
+    var lowIdx = 0
+    var highIdx = gcdList.len - 1
     var bestVal = gcdList[0]
-    while lo <= hi:
-      let mid = (lo + hi) div 2
-      let level = gcdList[mid]
+    while lowIdx <= highIdx:
+      let midIdx = (lowIdx + highIdx) div 2
+      let level = gcdList[midIdx]
       buildAdjacency(level)
       if cliqueExists(need, (1 shl vertexCount) - 1):
         bestVal = level
-        lo = mid + 1
+        lowIdx = midIdx + 1
       else:
-        hi = mid - 1
+        highIdx = midIdx - 1
 ```
 
-The greedy scan visits holidays from left to right. It removes a holiday when a clique of `need` holidays still fits. Otherwise it keeps the holiday and narrows `allowed` to its neighbours. Cost: one clique test per holiday.
+The `need == 1` branch keeps the largest period without a clique test. The gcd list holds at most 435 values. The search ends after a logarithmic number of levels.
+
+**Greedy removal.** A left-to-right scan chooses the holidays to drop.
 
 ```nim
     buildAdjacency(bestVal)
     var candidates = (1 shl vertexCount) - 1
     var allowed = candidates
-    for i in 0 .. vertexCount - 1:
-      if (candidates and (1 shl i)) == 0: continue
-      if cliqueExists(need, (candidates and not (1 shl i)) and allowed):
-        removeBits = removeBits or (1 shl i)
-        candidates = candidates and not (1 shl i)
+    for node in 0 ..< vertexCount:
+      if (candidates and (1 shl node)) == 0: continue
+      if cliqueExists(need, (candidates and not (1 shl node)) and allowed):
+        removeBits = removeBits or (1 shl node)
+        candidates = candidates and not (1 shl node)
       else:
-        candidates = candidates and not (1 shl i)
-        allowed = allowed and adjacency[i]
+        candidates = candidates and not (1 shl node)
+        allowed = allowed and adjacency[node]
         need -= 1
 ```
 
-The final scan visits `vertexCount` holidays. The buffer flushes every `flushBlockBytes` bytes, so large cases do not grow memory. Cost: one string append per removed holiday.
+Removing a holiday succeeds when a clique of `need` holidays still fits. Otherwise the scan keeps it and narrows `allowed` to its neighbours. The block runs one clique test per holiday.
+
+**Output.** The final scan writes removed numbers in increasing order.
 
 ```nim
   var showSpace = false
-  for i in 0 .. vertexCount - 1:
-    if (removeBits and (1 shl i)) != 0:
-      if showSpace: outputText.add ' '
-      outputText.add $(i + 1)
+  for node in 0 ..< vertexCount:
+    if (removeBits and (1 shl node)) != 0:
+      if showSpace: outputBuffer.add ' '
+      outputBuffer.add $(node + 1)
       showSpace = true
-  outputText.add '\n'
-  if outputText.len >= flushBlockBytes:
-    stdout.write outputText
-    outputText.setLen 0
-stdout.write outputText
+  outputBuffer.add '\n'
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+stdout.write outputBuffer
 ```
+
+The loop visits holidays from left to right, so the output stays sorted. The buffer flushes every 256 KiB and caps memory. One line costs one string append per removed holiday.
 
 ## Complexity
 
-Input parsing reads each byte once. The gcd table costs n^2 pair computations per case. Binary search runs through at most 435 distinct levels. Each level tests a clique on at most 30 vertices with a color bound. The greedy scan adds one clique test per holiday. Space holds the input string, a 30-entry adjacency table, and small arrays.
+The gcd table dominates the work, while every clique test stays inside one word.
 
-Total time per case is O(n^2 log D) gcd work plus bounded clique tests, where D is the number of distinct pairwise gcds. Total space is O(n) plus the input buffer.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(input bytes) | one input buffer |
+| Pairwise gcd list | O(n^2) per case | O(n^2) gcd values |
+| Binary search levels | O(log D) clique tests | O(n) masks |
+| Greedy removal | O(n) clique tests | O(n) masks |
 
-Simulating days runs up to the least common multiple of the periods, which is astronomical near 10^18. Trying every removal set costs C(n, k) subsets, about 155 million at n = 30.
+Here `D` is the count of distinct pairwise gcds, at most 435.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n^2 log D) gcd work plus bounded clique tests |
+| Space | O(n) per case plus input and output buffers |
+
+Simulating days runs to the least common multiple of the periods, which explodes near 10^18.

@@ -1,49 +1,171 @@
+# DICE1 — Dice Contest (SPOJ)
+<https://www.spoj.com/problems/DICE1/>
+
 ## Problem
 
-A die with numbered stickers starts on a four-row strip. Each roll moves one square and costs the number that lands on top. Read the die values, the start square, and the target square, then print the smallest total cost.
+A die rolls across a four-row strip, and each landing costs the number on top.
+The program finds the cheapest route to the target square.
 
-| input or limit | bound |
+Read `t` test cases.
+Each case gives six face costs, then a start square and a target square.
+The die starts with its 1-dot face on top and its 2-dot face facing the player.
+Rolling to a side-adjacent square costs the value on the new top face.
+Print the minimal total cost.
+
+The first line of a case holds costs `l1` through `l6` for the sides originally showing 1 to 6 dots.
+The second line holds `x1 y1 x2 y2`, the start and target columns and rows.
+
+The judge bounds follow.
+
+| Item | Bound |
 | --- | --- |
-| sticker value | 1 to 50 |
-| column | -1,000,000,000 to 1,000,000,000 |
-| row | 1 to 4 |
-| time | 2569 ms |
-| memory | 1536 MB |
+| Face costs `li` | 1 to 50 |
+| Columns | -10^9 to 10^9 |
+| Rows | 1 to 4 |
+| Time limit | 2569 ms |
+| Memory limit | 1536 MB |
 
-The column span is huge, so the program must skip most columns.
+The huge column range rules out a plain grid search.
+
+The sample input and expected output follow verbatim.
+
+```
+1
+1 2 8 3 1 4
+-1 1 0 2
+```
+
+```
+7
+```
+
+The sample die reaches its target for a total cost of 7.
 
 ## Idea
 
-A die position needs a column, a row, and an orientation. An orientation says which original face is on top and which faces forward. Only 24 orientations exist, so a shortest-path search stays small. Dijkstra expands one state at a time, and a roll costs the new top value.
+Use Dijkstra's algorithm (shortest paths with non-negative costs) on a repeating pattern, like a bus timetable that repeats every few stops.
+A state is a column offset, a row, and one of 24 orientations (which face is on top and front).
+The strip is periodic, so distant columns repeat an earlier distance table plus a fixed cost delta.
 
-When two finished columns hold distance vectors that differ by one constant, every later column repeats that same gap. The program detects the gap, then jumps straight to the target column with arithmetic.
+Precompute the orientation transitions once.
+Expand columns with a heap (a priority queue ordered by current cost).
+When two completed columns match up to a constant offset, lock the period and jump to the target.
 
-Each expanded state examines four rolls, so the search spends constant work per state.
+Expanding one column costs constant work: 48 states times four moves.
+Visiting every column up to 10^9 is impossible.
+Find the period once, then jump.
 
 ## Why It Works
 
-A roll moves one square and turns the die by a quarter turn. A quarter turn permutes the four body diagonals in a cycle of length four. That cycle is odd. The row parity flips on the same roll, so the sum of both parities stays fixed. Half of the row-orientation pairs can never occur.
+Four facts prove the method.
 
-- `orientationsCount = 24` counts the distinct die orientations.
-- `statesPerColumn = 96` counts every row-orientation pair in one column.
-- `reachablePerColumn = 48` counts the reachable half of those pairs.
-- `orientationsCount * node.rowIndex + node.orientation` packs one pair into one slot.
-- `columnOffset = 4` reserves four columns on the left of the start.
-- `let blocks = (horizontalDistance - leftEdge) div periodLength` counts full repeats.
-- `answer = baseCost + blocks * periodDelta` turns the gap into the final cost.
+1. A roll changes the top and front faces deterministically.
+   There are 24 orientations for the ordered pair.
+2. Moving left swaps the two side face costs, so one horizontal direction suffices after that swap.
+3. Each column has 4 rows times 24 orientations, but only 48 slots are reachable from a given start.
+4. When two completed columns have matching distance profiles up to a constant delta, the pattern repeats.
+   The far answer is the base cost plus whole periods times delta.
 
-The script generated this walk for the sample. The start maps to column 0 and row 0.
+The main tables and their roles follow.
 
-| step | move | column | row | top dots | cost | total |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | roll left | -2 | 1 | 4 | 3 | 3 |
-| 2 | roll back | -2 | 2 | 2 | 2 | 5 |
-| 3 | roll right | -1 | 2 | 1 | 1 | 6 |
-| 4 | roll right | 0 | 2 | 5 | 1 | 7 |
+| Term | Meaning |
+| --- | --- |
+| `orientationNext` | new orientation after one of the four moves |
+| `orientationCostFace` | face whose cost a move pays |
+| `columnOffset` | shift that keeps column indices non-negative |
+| `periodDelta` | cost added by one full period |
 
-The four rolls cost 3, 2, 1, and 1, so the minimum is 7.
+The jump turns a billion columns into a few thousand.
+
+A script runs an independent shortest-path search for the sample case and prints the chosen rolls.
+
+```
+face costs 1..6: 1 2 8 3 1 4
+start (-1,1), target (0,2)
+roll to (-2,1)  top=4  cost=3
+roll to (-2,2)  top=2  cost=2
+roll to (-1,2)  top=1  cost=1
+roll to ( 0,2)  top=5  cost=1
+total = 7
+```
 
 ## Code
+
+**Constants and die tables.**
+
+```nim
+const
+  positionsCount = 6
+  moveCount = 4
+  orientationsCount = 24
+  rowsCount = 4
+  statesPerColumn = 96
+  reachablePerColumn = 48
+  columnOffset = 4
+  maxColumns = 8192
+  flushBlockBytes = 1 shl 18
+  infinite = high(int) div 4
+
+  serializeGrid: array[positionsCount, array[positionsCount, int]] = [
+    [-1, 0, 1, 2, 3, -1],
+    [4, -1, 5, 6, -1, 7],
+    [8, 9, -1, -1, 10, 11],
+    [12, 13, -1, -1, 14, 15],
+    [16, -1, 17, 18, -1, 19],
+    [-1, 20, 21, 22, 23, -1]
+  ]
+
+  topFaceGrid: array[positionsCount, array[positionsCount, int]] = [
+    [-1, 0, 0, 0, 0, -1],
+    [1, -1, 2, 3, -1, 4],
+    [1, 3, -1, -1, 2, 4],
+    [1, 2, -1, -1, 3, 4],
+    [1, -1, 3, 2, -1, 4],
+    [-1, 5, 5, 5, 5, -1]
+  ]
+
+  rotationGrid: array[moveCount, array[positionsCount, int]] = [
+    [1, 5, 2, 3, 0, 4],
+    [4, 0, 2, 3, 5, 1],
+    [2, 1, 5, 0, 4, 3],
+    [3, 1, 0, 5, 4, 2]
+  ]
+```
+
+The tables encode face positions, top faces, and rotations for four moves. A die has 24 orientations, and four rows give 96 states per column. The offset keeps negative columns inside an array.
+
+**Types and global state.**
+
+```nim
+type
+  Column = object
+    distances: array[statesPerColumn, int]
+    remaining: int
+    generation: int
+
+  SearchNode = object
+    distance: int
+    columnIndex: int
+    rowIndex: int
+    orientation: int
+
+var
+  orientationNext: array[orientationsCount, array[moveCount, int]]
+  orientationCostFace: array[orientationsCount, array[moveCount, int]]
+  initialOrientation = 0
+  faceCosts: array[positionsCount, int]
+  searchHeap: seq[SearchNode] = @[]
+  columnPool: array[maxColumns, Column]
+  columnCount = 0
+  caseGeneration = 0
+  inputData = ""
+  outputBuffer = ""
+  i = 0
+```
+
+Column stores one distance per state plus a lazy generation tag. The heap holds the frontier of the search. One pool of columns is reused across test cases.
+
+**Signed scanner.**
 
 ```nim
 proc nextInt(input: string, i: var int): int =
@@ -60,7 +182,47 @@ proc nextInt(input: string, i: var int): int =
   result = sign * value
 ```
 
-The loop ends at `input.len`, so the scanner reads the whole buffer once. It handles the minus sign before negative columns. The cost is one pass over the digits of each number.
+The scanner accepts a leading minus sign. It needs no token allocation. The cost is one pass over the input digits.
+
+**Heap operations.**
+
+```nim
+proc heapPush(node: SearchNode) =
+  searchHeap.add(node)
+  var j = searchHeap.len - 1
+  while j > 0:
+    let k = (j - 1) div 2
+    if searchHeap[j].distance < searchHeap[k].distance:
+      swap searchHeap[j], searchHeap[k]
+      j = k
+    else:
+      break
+
+proc heapPop(): SearchNode =
+  result = searchHeap[0]
+  let lastNode = searchHeap[searchHeap.len - 1]
+  searchHeap.setLen(searchHeap.len - 1)
+  if searchHeap.len > 0:
+    searchHeap[0] = lastNode
+    var k = 0
+    while true:
+      let i = k * 2 + 1
+      if i >= searchHeap.len:
+        break
+      let j = i + 1
+      var l = i
+      if j < searchHeap.len and searchHeap[j].distance < searchHeap[i].distance:
+        l = j
+      if searchHeap[l].distance < searchHeap[k].distance:
+        swap searchHeap[l], searchHeap[k]
+        k = l
+      else:
+        break
+```
+
+heapPush sifts a new node upward. heapPop replaces the root with the last node and sifts downward. Both cost O(log n) in the heap size.
+
+**Lazy column setup.**
 
 ```nim
 proc ensureColumn(i: int) =
@@ -74,9 +236,74 @@ proc ensureColumn(i: int) =
     columnPool[j].generation = caseGeneration
 ```
 
-The pool has `maxColumns = 8192` slots, which covers the short search window. The generation mark skips clearing slots that a later case reuses. A fresh slot costs one pass over 96 distances.
+ensureColumn grows the pool and resets a column when the generation changes. Distances start at infinity. The remaining counter records unreached states.
+
+**Orientation preparation.**
 
 ```nim
+proc initializeOrientations() =
+  for i in 0..<positionsCount:
+    for j in 0..<positionsCount:
+      let code = serializeGrid[i][j]
+      if code < 0:
+        continue
+      for k in 0..<moveCount:
+        let newTopPosition = rotationGrid[k][i]
+        let newFrontPosition = rotationGrid[k][j]
+        orientationNext[code][k] = serializeGrid[newTopPosition][newFrontPosition]
+        orientationCostFace[code][k] = topFaceGrid[newTopPosition][newFrontPosition]
+  initialOrientation = serializeGrid[0][1]
+```
+
+initializeOrientations fills the transition tables once. It records the next orientation and the paid face for each move. The initial orientation puts face 1 on top.
+
+**Search one case.**
+
+```nim
+proc solveCase() =
+  for k in 0..<positionsCount:
+    faceCosts[k] = nextInt(inputData, i)
+  let startX = nextInt(inputData, i)
+  var startRow = nextInt(inputData, i)
+  let targetX = nextInt(inputData, i)
+  var targetRow = nextInt(inputData, i)
+
+  var horizontalDistance: int
+  if targetX < startX:
+    swap faceCosts[2], faceCosts[3]
+    horizontalDistance = startX - targetX
+  else:
+    horizontalDistance = targetX - startX
+  dec startRow
+  dec targetRow
+
+  searchHeap.setLen(0)
+  columnCount = 0
+  inc caseGeneration
+  ensureColumn(0)
+  searchHeap.add(SearchNode(distance: 0, columnIndex: 0, rowIndex: startRow, orientation: initialOrientation))
+
+  var leftEdge = 0
+  var rightEdge = 0
+  var periodLength = -1
+  var periodDelta = 0
+  var pendingColumns = 0
+  var answer = -1
+
+  while searchHeap.len > 0:
+    let node = heapPop()
+    if node.columnIndex == horizontalDistance and node.rowIndex == targetRow:
+      answer = node.distance
+      break
+
+    ensureColumn(node.columnIndex)
+    let i = node.columnIndex + columnOffset
+    let j = orientationsCount * node.rowIndex + node.orientation
+    if columnPool[i].distances[j] != infinite:
+      continue
+    columnPool[i].distances[j] = node.distance
+    dec columnPool[i].remaining
+
     if columnPool[i].remaining == 0:
       if periodLength < 0:
         for j in 0..<columnCount:
@@ -97,11 +324,19 @@ The pool has `maxColumns = 8192` slots, which covers the short search window. Th
             elif currentDistance - earlierDistance != delta:
               matches = false
               break
-```
+          if matches and delta > 0:
+            periodLength = abs(node.columnIndex - (j - columnOffset))
+            leftEdge = min(node.columnIndex, j - columnOffset)
+            rightEdge = max(node.columnIndex, j - columnOffset)
+            periodDelta = delta
+            for k in leftEdge..rightEdge:
+              ensureColumn(k)
+              if columnPool[k + columnOffset].remaining > 0:
+                inc pendingColumns
+            break
+      elif node.columnIndex >= leftEdge and node.columnIndex <= rightEdge:
+        dec pendingColumns
 
-The scan checks only columns that are already complete. It compares the current vector with each earlier vector, one state at a time. A single mismatch rejects that pair. Each comparison costs 96 index reads.
-
-```nim
       if periodLength > 0 and pendingColumns == 0 and horizontalDistance >= leftEdge:
         let blocks = (horizontalDistance - leftEdge) div periodLength
         let offset = (horizontalDistance - leftEdge) mod periodLength
@@ -111,11 +346,7 @@ The scan checks only columns that are already complete. It compares the current 
           baseCost = min(baseCost, baseColumn.distances[orientationsCount * targetRow + l])
         answer = baseCost + blocks * periodDelta
         break
-```
 
-The offset stays inside one period, so the base column is always filled. The loop over `0..<orientationsCount` keeps the cheapest final orientation. The guard `horizontalDistance >= leftEdge` prevents a negative block count. This step costs 24 reads.
-
-```nim
     for k in 0..<moveCount:
       var newColumn = node.columnIndex
       var newRow = node.rowIndex
@@ -139,7 +370,9 @@ The offset stays inside one period, so the base column is always filled. The loo
       heapPush(SearchNode(distance: node.distance + moveCost, columnIndex: newColumn, rowIndex: newRow, orientation: newOrientation))
 ```
 
-The loop bound is four moves: forward, back, left, and right. The two row checks keep the die inside rows 1 to 4. The column check stops leftward rolls at the reserved edge. Each move pushes one heap entry.
+solveCase mirrors left travel by swapping two face costs. The search locks a period when two columns match up to a delta. The four move branches stay inside rows 1 to 4. The answer then jumps straight to the target column.
+
+**Write the answer.**
 
 ```nim
   outputBuffer.add($answer)
@@ -147,14 +380,47 @@ The loop bound is four moves: forward, back, left, and right. The two row checks
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen(0)
+
 ```
 
-The buffer holds up to 256 KiB before a write. The program never writes one answer at a time. Each answer adds only its digits and one newline.
+One answer is appended to the output buffer. A full block is flushed immediately. No write happens per state.
+
+**Input and driver.**
+
+```nim
+while not stdin.endOfFile():
+  var line = ""
+  if readLine(stdin, line):
+    inputData.add(line)
+    inputData.add('\n')
+
+initializeOrientations()
+let testCount = nextInt(inputData, i)
+for j in 0..<testCount:
+  solveCase()
+stdout.write outputBuffer
+```
+
+The driver reads every input line into one buffer. Orientations are prepared once before all cases. One final write emits the remaining output bytes.
 
 ## Complexity
 
-Building the orientation tables visits 24 states and four moves once, so it costs O(1) time and O(24) space.
+The phases and their costs follow.
 
-Dijkstra visits 48 reachable states per column and four moves per state. Let K be the number of columns opened before the gap closes. The search costs O(K × 48 × log K) time and O(K × 96) space. The period check adds O(K × 96) time. The final jump costs O(24) time.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Orientation setup | O(24 * 4) | constant |
+| Column expansion before the period | O(48 * 4) per column | O(48) per column |
+| Period jump | O(1) | constant |
+| Output | O(t) | one output block |
 
-Per case, the total is O(K log K) time and O(K) space, with K small in tests. A direct walk over every column would cost O(|x2 - x1|) time and cannot handle a span of 2,000,000,000.
+Only a few thousand columns expand before the period appears.
+
+The Big O summary follows.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(columns expanded * 48) per case |
+| Space | O(columns expanded * 48) |
+
+A plain search over every column up to 10^9 cannot finish.

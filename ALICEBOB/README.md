@@ -1,92 +1,74 @@
+# ALICEBOB — Alice and Bob (SPOJ)
+<https://www.spoj.com/problems/ALICEBOB/>
+
 ## Problem
 
-Read a polygon described by its sides and some of its diagonals. The edges arrive in any order, and the diagonals never cross. Print the vertices in border order, starting at vertex 1, with the smaller neighbor of vertex 1 second.
+Alice draws a convex polygon but hands Bob only a bag of edges, without marking which are sides.
+Bob must rebuild the border order from that bag of vertex pairs.
 
-The judge bounds are:
+The first line gives the dataset count. Each dataset gives n and m, then 2(m+n) endpoint integers for the sides and diagonals. Print vertices 1 to n in border order, starting at 1 with the smaller border neighbor second.
 
-| Item | Limit |
+The bounds and judge limits are:
+
+| Constraint | Value |
 | --- | --- |
-| Data sets | 1 to 20 |
-| Vertices per polygon | 3 to 10 000 |
-| Diagonals per polygon | 0 to n - 3 |
-| Time per run | 7 000 ms |
-| Memory per run | 1 536 MB |
+| Datasets d | 1 to 20 |
+| Vertices n | 3 to 10000 |
+| Diagonals m | 0 to n-3 |
+| Judge time | 7 s |
+| Judge memory | 1536 MB |
 
-Every data set fits in one pass over its edge list.
+Every dataset has a valid puzzle, so no rejection path is needed.
+
+The sample input and its expected output follow byte for byte.
+
+```
+1
+4 1
+1 3 4 2 1 2
+4 1 2 3
+```
+
+```
+1 3 2 4
+```
+
 
 ## Idea
 
-Every polygon with noncrossing diagonals has a vertex with only two edges. Clip that vertex, add the edge between its two neighbors, and repeat until three vertices remain. This touches each edge a constant number of times; trying every vertex order instead takes factorial work.
+Peel degree-two corners (ears) from the polygon, like trimming ears off paper until a triangle remains. A reverse pass glues them back.
+The program stores every given edge once in an adjacency list and once in a hash table. The hash table stops duplicate diagonals when an ear is removed.
+A queue repeatedly removes a degree-two vertex, links its two neighbors, and records the ear. The survivors form a triangle, and a reverse pass restores every removed vertex.
+Trying all vertex permutations costs factorial time, while peeling touches each ear once.
+Ear clipping rebuilds the border in linear expected time.
 
 ## Why It Works
 
-A graph drawn with all vertices on a circle and no crossing edges is outerplanar. Every outerplanar graph has a vertex with at most two edges. The border guarantees at least two, so a vertex with exactly two always exists.
+1. In a convex polygon with noncrossing diagonals, any degree-two vertex is an ear on the current border.
+2. Removing an ear deletes its two edges and adds one edge between its neighbors.
+3. The hash table records that new edge, so it is never added twice.
+4. Each ear is saved with both neighbors, which lets a reverse pass place it back on the border.
+5. The last three survivors form a triangle. A walk from vertex 1 takes the smaller neighbor first, as required.
 
-When we clip such a vertex, its two neighbors become consecutive on a smaller polygon. Adding their edge keeps that smaller graph outerplanar, so another clip always exists. Reversing the clip list puts every vertex back between its original two neighbors.
-
-We store each unordered edge pair as one integer. The key packs two labels into one number, and the hash table finds that key in constant time on average.
-
-The key terms are:
+Four terms carry the proof.
 
 | Term | Meaning |
 | --- | --- |
-| `keyStride` | `vertexCount + 1`, larger than every label |
-| `firstVertex * keyStride + secondVertex` | key for the pair with the smaller label first |
-| `wanted and keyMask` | first hash slot for a key |
+| ear | degree-two vertex that can be peeled |
+| diagonal | segment between two nonadjacent vertices |
+| hash key | ordered pair that identifies an edge |
+| border order | vertex sequence around the polygon |
 
-The mask keeps the slot inside the table, and linear probing resolves collisions.
+They explain how the bag of edges becomes one ordered walk.
 
-A small polygon shows every step:
-
-| Step | Action | Border |
-| --- | --- | --- |
-| start | degrees 1:4 2:2 3:3 4:3 5:2 | 1 2 3 4 5 |
-| clip 2 | neighbors 1 and 3, chord present | 1 3 4 5 |
-| clip 3 | neighbors 1 and 4, chord present | 1 4 5 |
-| insert 3 | between 1 and 4 | 1 3 4 5 |
-| insert 2 | between 1 and 3 | 1 2 3 4 5 |
-
-The last row matches the required border order.
+A script check of the sample reads n=4 and five edges: (1,3), (4,2), (1,2), (4,1), (2,3).
+Vertex 3 has degree 2, so it peels first, and vertex 4 also has degree 2.
+Restoring the ears after the triangle yields 1 3 2 4, matching the sample.
 
 ## Code
 
-Text first goes into one buffer, and a hand scanner reads integers from it. Output goes into one buffer that flushes in large blocks.
-
-```
-const firstDigitValue = 48
-const flushBlockBytes = 1 shl 18
-
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
-
-var i = 0
-
-proc nextInt(data: string, i: var int): int =
-  while i < data.len and (data[i] < '0' or data[i] > '9'):
-    i += 1
-  var value = 0
-  while i < data.len and data[i] >= '0' and data[i] <= '9':
-    value = value * 10 + int(data[i]) - firstDigitValue
-    i += 1
-  return value
-
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
-```
-
-The loop reads every line once, so the input buffer costs O(input bytes). `$walk` writes an integer, and `appendOutput` keeps at most one block in memory.
-
-Then comes the graph storage and edge lookup.
-
-```
+**Edge storage and keys.**
+```nim
 proc addGraphEdge(firstVertex, secondVertex: int) =
   let i = edgeSlotCount
   let j = i + 1
@@ -114,31 +96,12 @@ proc edgeKeyOf(firstVertex, secondVertex: int): int =
   if firstVertex < secondVertex:
     return firstVertex * keyStride + secondVertex
   return secondVertex * keyStride + firstVertex
-
-proc hasGraphEdge(firstVertex, secondVertex: int): bool =
-  let wanted = edgeKeyOf(firstVertex, secondVertex)
-  var k = wanted and keyMask
-  while keyTable[k] != 0:
-    if keyTable[k] == wanted:
-      return true
-    k = (k + 1) and keyMask
-  return false
-
-proc markGraphEdge(firstVertex, secondVertex: int) =
-  let wanted = edgeKeyOf(firstVertex, secondVertex)
-  var k = wanted and keyMask
-  while keyTable[k] != 0:
-    if keyTable[k] == wanted:
-      return
-    k = (k + 1) and keyMask
-  keyTable[k] = wanted
 ```
 
-`edgeSlotCount` grows by two per edge, and the arrays are sized for the maximum. `keyTable` holds zero in an empty slot, so no separate used flag is needed. Each lookup scans at most a few slots on average.
+`addGraphEdge` writes both directions of an edge and updates degrees. `edgeKeyOf` sorts a pair into one canonical key. The hash lookup then sees each edge only once.
 
-The setup resets the arrays per data set and reads the edge pairs.
-
-```
+**Dataset setup.**
+```nim
 let datasetCount = nextInt(inputData, i)
 for j in 0..<datasetCount:
   let vertexCount = nextInt(inputData, i)
@@ -174,11 +137,10 @@ for j in 0..<datasetCount:
     markGraphEdge(firstVertex, secondVertex)
 ```
 
-The table size is a power of two at least four times the edge count. That keeps the load low. Each edge is inserted once.
+The code sizes every array from the vertex and edge counts. It rebuilds the hash table with a power-of-two span. Each input edge is added and marked before peeling starts.
 
-The clipping loop builds the ear list.
-
-```
+**Ear peeling queue.**
+```nim
   var queue: seq[int] = @[]
   for vertex in 1..vertexCount:
     if degree[vertex] == 2:
@@ -221,13 +183,13 @@ The clipping loop builds the ear list.
       queue.add firstNeighbor
     if not removedVertex[secondNeighbor] and degree[secondNeighbor] == 2:
       queue.add secondNeighbor
-```
-
-The loop ends after n - 3 clips. Dead edge slots stay in the lists, but each clip scans its own vertex once. The hash table answers the chord question in constant time on average.
-
-The last block rebuilds the cycle and writes the answer.
 
 ```
+
+The queue holds vertices whose degree equals 2. Each pop links the two surviving neighbors. The loop stops once three vertices remain.
+
+**Border rebuild and output.**
+```nim
   var startSurvivor = 0
   for vertex in 1..vertexCount:
     if not removedVertex[vertex]:
@@ -296,10 +258,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The rebuild loop runs earVertex.len times. `nextVertex` and `prevVertex` make each insert constant time. The direction test guarantees vertex 1 gets the smaller neighbor second.
+The code seeds a triangle from three survivors. Ears are inserted in reverse peel order using their saved neighbors. The walk starts at vertex 1 and takes the smaller neighbor first.
+
 
 ## Complexity
 
-Reading and edge insertion take O(n + m) time per data set. Clipping takes O(n + m) expected time, since each edge dies once. Rebuilding and printing take O(n) time.
+The hash table makes edge tests constant on average and each vertex is peeled once.
 
-The total time is O(n + m) per data set and linear over the whole input. Space is also O(n + m) per data set. Trying every vertex order would take O(n!) time.
+| Phase | Time | Space |
+| --- | --- | --- |
+| edge setup | O(n+m) | adjacency and hash arrays |
+| ear peeling | O(n) expected | queue and ear records |
+| border rebuild | O(n) | next and prev arrays |
+
+All arrays are reused across datasets, so no per-ear allocation occurs.
+
+Big O uses vertex count n and diagonal count m.
+
+| Measure | Big O |
+| --- | --- |
+| time | O(n+m) expected per dataset |
+| space | O(n+m) |
+
+A permutation search would take factorial time, while peeling is linear.

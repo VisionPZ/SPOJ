@@ -1,43 +1,72 @@
+# HAREFOX — Hares and Foxes (SPOJ)
+<https://www.spoj.com/problems/HAREFOX/>
+
 ## Problem
 
-Each year the hares and foxes change by two linear equations. The four coefficients and the starting values are given. Decide the long-term limit of each population and print one of six fixed sentences. The input holds about 5000 cases. Each number uses at most ten characters.
+A theater researcher watches hares and foxes change year by year. He wants the long-term fate of each population without simulating centuries of biology.
 
-The limits are modest for this task.
+The input holds about 5000 cases. The first line is a case count. Each case has six real numbers a, b, c, d, h, and f, written two per line, followed by a blank line. Each number uses at most ten characters. Print one of six fixed sentences describing the limits of hares and foxes.
+
+The judge limits are:
 
 | Item | Value |
 | --- | --- |
 | Cases | about 5000 |
 | Numbers per case | 6 |
-| Number length | at most 10 characters |
+| Number text length | at most 10 characters |
 | Time limit | 5 s |
 | Memory limit | 1536 MB |
 
-Every case writes one line, so the output path carries most of the work.
+Every case writes one long sentence, so output dominates the run.
+
+The sample input reads:
+
+```text
+2
+2 0.500000
+0.500000 0.600000
+2 3
+
+0.100000 1
+2 0.100000
+1 1
+
+```
+
+The sample output reads:
+
+```text
+Both hares and foxes will overgrow.
+Hares will die out while foxes will overgrow.
+```
 
 ## Idea
 
-Both populations follow the same second-order recurrence. The two characteristic roots of that recurrence give each limit from the two starting values. Pick the root with the largest active magnitude. A positive root gives a signed infinity, and a negative or complex root gives no limit.
-
-Each case costs a fixed number of float operations, whatever the number of years.
+Find the fastest-growing part of a recurrence, like predicting a seesaw by watching its largest swing. Both populations obey the same second-order linear recurrence (each term is a fixed combination of two earlier terms). Its characteristic roots (solutions of the associated quadratic) set the long-term behavior. From each starting value, the program computes that root's weight and picks the dominant active one. Each case costs a fixed number of float operations, whatever the year count. Simulating year by year would cost O(years), could overflow, and still never reach a limit. Takeaway: solve the quadratic once, then read off each limit.
 
 ## Why It Works
 
-Let `p` be `a + c` and let `q` be `a * c + b * d`. Both populations obey `x[k+2] = p * x[k+1] - q * x[k]`. The roots of `t*t - p*t + q = 0` are `L1` and `L2`. The discriminant is `D = p*p - 4*q`.
+1. The update equations are `h(next) = a*h - b*f` and `f(next) = c*f + d*h`.
+2. With `p = a + c` and `q = a*c + b*d`, both populations obey `x(k+2) = p*x(k+1) - q*x(k)`.
+3. The roots of `t² - p*t + q = 0` are `L1` and `L2`; the gap is `D = p² - 4q`.
+4. The weights are `A = (x1 - L2*x0) / (L1 - L2)` and `B = (L1*x0 - x1) / (L1 - L2)`.
+5. Then `x(k) = A*L1^k + B*L2^k`, so the largest active magnitude decides the limit.
+6. A positive root above 1 gives signed infinity, while a negative or complex dominant root gives no limit.
+7. Tolerances of 1e-9 and 1e-7 absorb rounding in magnitudes and weights.
 
-The starting values set the two weights:
+The table defines the terms.
 
-`A = (x1 - L2 * x0) / (L1 - L2)`
+| Term | Meaning |
+| --- | --- |
+| `traceValue` | p, the sum of a and c |
+| `determinant` | q, equal to a*c + b*d |
+| `discriminant` | D, equal to p² - 4q |
+| `rootGap` | square root of D when D is positive |
+| `classifySequence` | maps one population to a limit code |
 
-`B = (L1 * x0 - x1) / (L1 - L2)`
+These five terms set the two limits.
 
-Then `x[k] = A * L1^k + B * L2^k`.
-
-- Both magnitudes below 1 make the sequence tend to zero.
-- The largest active root above 1 gives the sign of its weight as the limit.
-- A negative dominant root flips sign each step, so no limit exists.
-- Complex roots with magnitude at least 1 rotate forever, so no limit exists.
-
-The second sample case works as follows.
+A script evaluated the second sample case.
 
 | Term | Value |
 | --- | --- |
@@ -46,16 +75,14 @@ The second sample case works as follows.
 | D | 3.21 |
 | L1 | 1.9458 |
 | L2 | 0.1542 |
-| h1 | -0.9 |
-| f1 | 2.1 |
-| A for hares | -0.5884 |
-| A for foxes | 1.0861 |
+| hare weight A | -0.5884 |
+| fox weight A | 1.0861 |
 
-The hares weight is negative and the foxes weight is positive. The answer is "Hares will die out while foxes will overgrow."
+The hares trend to minus infinity and the foxes to plus infinity. The program prints "Hares will die out while foxes will overgrow."
 
 ## Code
 
-The scanner reads the whole input once. It skips spaces and the blank line after each case.
+**Constants and number readers.** The code defines the six answer strings and scans integers and reals by hand.
 
 ```nim
 import math
@@ -112,9 +139,9 @@ proc nextRealValue(data: string, i: var int): float =
   return signValue * (wholePart + fractionPart)
 ```
 
-The scanner walks at most one character per input byte. The sign branch keeps negative values intact.
+The sign branch keeps negative values intact, and the decimal branch handles optional fractions. Blank lines between cases are treated as spaces. Each scanner walks at most one character per input byte.
 
-This block reads the limit of one sequence from the two roots and the two weights.
+**Limit classifier.** This block reads one population's limit from two roots and two weights.
 
 ```nim
 proc classifySequence(initialValue: float, nextValue: float, traceValue: float,
@@ -195,9 +222,9 @@ proc classifySequence(initialValue: float, nextValue: float, traceValue: float,
   return limitNoLimit
 ```
 
-There is one branch for distinct roots and one for a repeated root. The tie rule picks a negative root so oscillation wins. The block runs in constant time.
+Distinct roots take the first branch, and a repeated root takes the second. The tie rule prefers a negative root, so oscillation wins. Every path runs in constant time.
 
-This block combines the two limits into one sentence.
+**Case answer.** The block combines the two population limits into one sentence.
 
 ```nim
 proc answerForCase(coeffA: float, coeffB: float, coeffC: float, coeffD: float,
@@ -227,9 +254,9 @@ proc answerForCase(coeffA: float, coeffB: float, coeffC: float, coeffD: float,
   return answerChaos
 ```
 
-The loop bound is the fixed case count. The square root is skipped when the discriminant is negative. Each case does one classification pass.
+The square root is skipped when the discriminant is negative. Each case classifies two populations in one pass. Unmatched limit pairs return the chaos sentence.
 
-The main loop reads once and writes in blocks.
+**Driver.** The main loop reads once and writes in blocks.
 
 ```nim
 var inputData = ""
@@ -260,12 +287,24 @@ if outputBuffer.len > 0:
   outputBuffer.setLen 0
 ```
 
-The loop runs exactly `caseCount` times. A 256 KiB block bounds the output memory. Flushing in blocks avoids one write per line.
+The loop runs exactly `caseCount` times. A 256 KiB block bounds output memory. Flushing in blocks avoids one write per sentence.
 
 ## Complexity
 
-Reading and parsing take time linear in the input size. Classification takes constant time per case. Output takes time linear in the number of cases.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Read and parse case | O(input bytes) | O(input bytes) |
+| Classify two sequences | O(1) | O(1) |
+| Write answer | O(1) per case | one block |
 
-Total time is `O(N)` for `N` cases. Input memory is linear in the input size. Output memory stays under the 256 KiB flush block.
+Parsing and writing dominate the run.
 
-A naive program simulates many years for every case. That costs `O(N * years)` and can overflow.
+Each case costs a fixed number of float operations.
+
+| Measure | Bound |
+| --- | --- |
+| Total time | O(N) for N cases |
+| Input space | O(total input bytes) |
+| Output space | under the 256 KiB flush block |
+
+A naive program simulates many years per case. That costs O(N * years) and can overflow before the limit appears.

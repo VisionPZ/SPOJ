@@ -1,69 +1,83 @@
+# ALIBB — Alibaba (SPOJ)
+<https://www.spoj.com/problems/ALIBB/>
+
 ## Problem
 
-Alibaba walks along a straight road to collect treasures. Each treasure has a position and a deadline. He chooses where to start, and walking one unit of distance takes one unit of time. Collecting a treasure takes no time. Print the earliest time at which he can collect every treasure strictly before its deadline, or print `No solution`.
+Alibaba must grab treasures before their deadlines while starting from the best spot on a long road.
+He needs the earliest finish time, or a report that no plan can work.
 
-| Quantity | Bound |
+The first line gives the dataset count. Each dataset gives n, then n pairs of place and deadline in increasing place order. Print the smallest finish time, or the words No solution.
+
+The bounds and judge limits are:
+
+| Constraint | Value |
 | --- | --- |
-| Datasets | at most 10 |
-| Treasures per dataset | at most 10,000 |
-| Time limit | 1 s |
-| Memory limit | 1536 MB |
+| Datasets K | up to 10 |
+| Treasures n | up to 10000 |
+| Judge time | 1 s |
+| Judge memory | 1536 MB |
 
-A dataset can hold 10,000 treasures, so the work per dataset drives the design.
+The quadratic dynamic program fits these bounds with two rolling rows.
+
+The sample input and its expected output follow byte for byte.
+
+```
+2
+5
+1 3
+3 1
+5 8
+8 19
+10 15
+5
+1 5
+2 1
+3 4
+4 2
+5 3
+```
+
+```
+11
+No solution
+```
+
 
 ## Idea
 
-Treat the collected treasures as one block of consecutive positions. After any walk, Alibaba stands at the left or right end of that block. A state stores the block and the end where he stands. Each step adds the next treasure at one end, so a small table answers the whole dataset. Trying every visiting order instead takes factorial time.
-
-Cost: one state per block and end, with constant work per state.
+Treat each sweep as choosing which end to visit next, like a runner who keeps extending a collected interval at either end.
+The program keeps two dynamic program rows (tables of best times) over the collected block. One row ends at the left end, and the other row ends at the right end.
+Each state adds the travel time for the next treasure and rejects a choice that misses its deadline. A full straight sweep is handled as a quick special case.
+Enumerating visit orders costs factorial time, while the block state collapses them into O(n squared) work.
+The interval state turns a maze of orders into two short rows.
 
 ## Why It Works
 
-Walking past a treasure collects it for free. The collected block therefore grows by one treasure at a time. The new treasure is collected last, so only its arrival time needs a deadline check. An arrival equal to the deadline is too late, so the program marks that state with `infinity`.
+1. After any number of picks, the collected treasures form a contiguous block in place order.
+2. The next pick must extend that block on the left or the right, so the block endpoints describe every useful state.
+3. `curLeft` records the earliest finish when the last pick sat at the left end, and `curRight` records the right-end case.
+4. A pick arriving after its deadline is stored as infinity, which removes that route.
+5. When every deadline exceeds the full span, a straight sweep to the far end takes exactly that span.
 
-The two updates use these values:
+Four terms describe the state.
 
-- `curLeft[leftIndex]` adds the left treasure after a walk ending on the left or right.
-- `curRight[leftIndex]` adds the right treasure after a walk ending on the left or right.
-- A value at least the new deadline becomes `infinity`.
-- `prevLeft` and `prevRight` hold the shorter block from the previous right end.
+| Term | Meaning |
+| --- | --- |
+| block | collected treasures between two place indices |
+| left state | sweep currently parked at the block left end |
+| right state | sweep currently parked at the block right end |
+| deadline | latest arrival time allowed at a treasure |
 
-If every deadline exceeds the span of the whole road, a walk from one end to the other works. That walk finishes at `span`, and no walk can finish sooner.
+They show why two rows replace a factorial search.
 
-This table comes from the generator script for the first sample. Each entry gives the best time ending at the left end and at the right end.
-
-```
-right 1, left 1 -> (0, 0)
-right 2, left 1 -> (2, inf)
-right 3, left 1 -> (inf, 6)
-right 4, left 1 -> (inf, 9)
-right 5, left 1 -> (inf, 11)
-right 5, left 2 -> (inf, 7)
-right 5, left 3 -> (5, 5)
-right 5, left 4 -> (2, 2)
-answer 11
-```
-
-The last row ends at the right end of the full block, which gives the answer 11.
+A script check of the first dataset reads places [1,3,5,8,10] and deadlines [3,1,8,19,15].
+The full span is 10 minus 1, which is 9. The deadline 1 at place 3 is not loose, so the rows are needed.
+The dynamic program returns 11, matching the sample. The second dataset reaches infinity and prints No solution.
 
 ## Code
 
-The program reads stdin once into `inputData` and scans digits by hand. One `outputBuffer` flushes in large blocks.
-
+**Integer scanner.**
 ```nim
-{.checks: off.}
-const firstDigitValue = 48
-const flushBlockBytes = 1 shl 18
-const infinity = 1 shl 60
-
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
-
-var scanPos = 0
-
 proc nextInt(data: string, pos: var int): int =
   while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
     pos += 1
@@ -72,20 +86,11 @@ proc nextInt(data: string, pos: var int): int =
     value = value * 10 + int(data[pos]) - firstDigitValue
     pos += 1
   value
-
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
 ```
 
-The scanner skips spaces and newlines, so input whitespace needs no special cases. `scanPos` advances past each number, and no token objects are built. Named constants replace digits and the flush size.
+The scanner reads places and deadlines from one buffer. Whitespace between numbers is ignored. The cost is one pass over the dataset bytes.
 
-The main loop reads one dataset and tests the span shortcut.
-
+**Dataset setup and shortcut.**
 ```nim
 let caseCount = nextInt(inputData, scanPos)
 for caseIndex in 0..<caseCount:
@@ -107,10 +112,9 @@ for caseIndex in 0..<caseCount:
   elif treasureCount > 1:
 ```
 
-The inner loops run once per treasure. The shortcut avoids the table when no deadline can bind. A strict comparison keeps the equal-deadline case in the table.
+The code reads every pair before deciding. It checks whether all deadlines exceed the full span. A loose set returns the span in constant extra work.
 
-The table keeps only two rows, one for each end of the current block.
-
+**Rolling interval dynamic program.**
 ```nim
     var prevLeft = newSeq[int](treasureCount + 2)
     var prevRight = newSeq[int](treasureCount + 2)
@@ -144,10 +148,9 @@ The table keeps only two rows, one for each end of the current block.
     answer = min(prevLeft[1], prevRight[1])
 ```
 
-`rightIndex` grows from 2 to the treasure count, and `leftIndex` walks down to 1. Setting both single-treasure rows to zero lets Alibaba start at any treasure. The downward order keeps the wider row ready when a state needs it. Each pair of indices costs constant time.
+The outer loop grows the block by one place each round. The inner loop walks the left edge inward and fills two rows. A swap reuses the arrays instead of allocating new ones.
 
-The program writes one result per dataset and flushes the last block.
-
+**Answer emission.**
 ```nim
   if answer >= infinity:
     appendOutput("No solution")
@@ -156,11 +159,28 @@ The program writes one result per dataset and flushes the last block.
   outputBuffer.add '\n'
 
 stdout.write outputBuffer
-outputBuffer.setLen 0
 ```
 
-An unreachable answer stays at `infinity` and prints `No solution`. Each result ends with a newline. The final write emits the bytes left in the buffer.
+Infinity means no valid route exists. The code prints No solution in that case. All answers collect in one output buffer.
+
 
 ## Complexity
 
-Reading input costs one pass over the numbers. The table costs O(n²) time and O(n) space per dataset, and the span shortcut costs O(n) time. Total time is O(n²) per dataset, with O(n) space for the two row pairs. Enumerating every visiting order instead takes O(n!) time.
+Two rolling rows keep memory small while the state count grows quadratically.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| input parse | O(n) | two arrays |
+| loose check | O(n) | constant |
+| interval dynamic program | O(n squared) | four rows |
+
+No allocation happens inside the inner loop, which keeps the 1 s limit safe.
+
+Big O uses treasure count n.
+
+| Measure | Big O |
+| --- | --- |
+| time | O(n squared) per dataset |
+| space | O(n) |
+
+A factorial search over visit orders is far slower than this block state.

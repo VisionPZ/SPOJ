@@ -1,53 +1,82 @@
+# INTERVAL — Intervals (SPOJ)
+<https://www.spoj.com/problems/INTERVAL/>
+
 ## Problem
 
-Each test case gives n closed integer intervals [a, b] and a demand c for each interval. Print the smallest size of an integer set Z that has at least c members inside every interval. The program reads all cases from standard input and prints one answer per line.
+A planner must choose integer positions so that every interval gets at least its requested number of positions. The positions may be shared between intervals, so the goal is the smallest possible set.
 
-The statement fixes these bounds:
+The first line holds a test count. Each case starts with an interval count n from 1 to 50000, then n lines of three integers a, b, and c. The interval is [a, b] with 0 <= a <= b <= 50000, and the demand c lies from 1 to b - a + 1. Print one integer per case, the minimum size of the chosen set.
 
-| Quantity | Bound |
+The judge limits are:
+
+| Item | Value |
 | --- | --- |
-| Test cases per file | not bounded by the statement |
-| Intervals per case, n | 1 to 50000 |
-| Endpoints a and b | 0 to 50000, with a at most b |
-| Demand c | 1 to b minus a plus 1 |
+| Intervals per case n | 1 to 50000 |
+| Endpoints | 0 to 50000 |
+| Demand c | 1 to b - a + 1 |
 | Time limit | 1604 ms |
 | Memory limit | 1536 MB |
 
-The coordinate range of 50001 values stays small, so a flat counting table fits, and the interval count drives the work.
+The coordinate range of 50001 values fits a flat table.
+
+The sample input reads:
+
+```text
+1
+5
+3 7 3
+8 10 3
+6 8 1
+1 3 1
+10 11 1
+```
+
+The sample output reads:
+
+```text
+6
+```
 
 ## Idea
 
-Sort the intervals by right endpoint, then walk them once. When an interval lacks points, place new points at the highest unused coordinates at or below its right endpoint. A Fenwick tree (a prefix-sum array with logarithmic updates) counts chosen points in a range and finds the next free coordinate.
-
-Cost per chosen point is O(log 50001), and each interval is visited once.
+Fill the rightmost open seats first, like seating guests from the back row forward. Sort intervals by right endpoint so each new interval ends no earlier than the last one. A Fenwick tree (a prefix-sum array with logarithmic updates) counts chosen positions in a range and finds the highest free coordinate. Each chosen point costs O(log 50001), and each interval is visited once. Scanning every coordinate for every interval would cost O(n times 50000). Takeaway: sort by deadline, then fill the highest free slots.
 
 ## Why It Works
 
-Sorting by right endpoint makes every later interval end no earlier than the current one. A point placed near the current right endpoint stays inside every later interval that starts at or before it. A later interval that starts beyond the current right endpoint cannot use any current point, so placement inside the current interval cannot hurt it.
+1. Sorting by right endpoint makes every later interval end no earlier than the current one.
+2. A point placed near the current right endpoint stays useful for later intervals that start before it.
+3. A later interval starting beyond the current right endpoint cannot use those points, so placement cannot hurt it.
+4. The program stores coordinate p at Fenwick index p + 1.
+5. `already = prefix(j) - prefix(i - 1)` counts chosen positions inside [a, b], with i = a + 1 and j = b + 1.
+6. `freeRank = j - prefix(j)` counts unused coordinates at or below b, and `findKthFree` returns the highest one.
+7. Cleanup restores only touched coordinates, which keeps the cost independent of the coordinate range.
 
-The program stores coordinate p at Fenwick index p + 1. These lines define each quantity in the walk:
+The table defines the terms.
 
-- `i` stores left + 1, the Fenwick index of the left endpoint.
-- `j` stores right + 1, the Fenwick index of the right endpoint.
-- `already` subtracts the prefix at `i` minus 1 from the prefix at `j`. That difference counts chosen points inside the interval.
-- `freeRank` subtracts the prefix at `j` from `j`. That difference counts unused coordinates at or below the right endpoint.
-- `findKthFree(freeRank)` returns the highest unused index at or below `j`.
+| Term | Meaning |
+| --- | --- |
+| `chosenBit` | Fenwick tree of chosen positions |
+| `freeBit` | Fenwick tree of still-free positions |
+| `touched` | coordinates added in the current case |
+| `findKthFree` | highest free coordinate for a given free rank |
 
-The trace script prints these steps for the sample:
+These four terms drive each interval step.
+
+A script replayed the sample in sorted order.
 
 | Interval | Need | Have | Add |
 | --- | --- | --- | --- |
 | [1,3] | 1 | 0 | 3 |
 | [3,7] | 3 | 1 | 7, 6 |
-| [6,8] | 1 | 2 | - |
+| [6,8] | 1 | 2 | none |
 | [8,10] | 3 | 0 | 10, 9, 8 |
-| [10,11] | 1 | 1 | - |
+| [10,11] | 1 | 1 | none |
 
 The chosen coordinates 3, 6, 7, 8, 9, and 10 give the answer 6.
 
 ## Code
 
-The constants cap the table and the output block. The object groups one interval into three named fields.
+**Constants and interval record.** The array size follows from the largest coordinate.
 
 ```nim
 import std/algorithm
@@ -65,7 +94,9 @@ type
     demand: int
 ```
 
-The read loop appends every input line to one buffer. The scanner skips separators and builds each integer by hand. The output helper writes only when the buffer reaches the block size.
+`treeSize` is one more than the maximum coordinate because Fenwick indices start at 1. The object groups the three fields of one interval. The output block caps buffered memory at 256 KiB.
+
+**Input and writer.** The code reads once, scans integers by hand, and buffers answers.
 
 ```nim
 var inputData = ""
@@ -94,7 +125,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-Both trees are built once for all cases. The free tree starts with one unit at every coordinate. The step variable is the highest power of two inside the table.
+The read loop appends every input line to one buffer. The scanner skips separators and builds each integer by hand. All values are non-negative, so no sign branch is needed. The output helper writes only at the block boundary.
+
+**Fenwick trees.** Both trees are built once for all cases.
 
 ```nim
 var chosenBit = newSeq[int](treeSize + 1)
@@ -108,11 +141,7 @@ for j in 1..treeSize:
 var startStep = 1
 while startStep shl 1 <= treeSize:
   startStep = startStep shl 1
-```
 
-These three procedures do the counting. bitAdd climbs to the parent nodes, and bitPrefix descends through them. findKthFree uses free-slot totals to find the highest free slot.
-
-```nim
 proc bitAdd(bit: var seq[int], i: int, delta: int) =
   var j = i
   while j <= treeSize:
@@ -140,7 +169,9 @@ proc findKthFree(rank: int): int =
   return i + 1
 ```
 
-The comparator sorts by right endpoint, then by left endpoint in reverse. solveCase walks that order and fills the highest free slots until the demand is met. Each added coordinate is recorded in touched for later cleanup.
+The free tree starts with one unit at every coordinate. `bitAdd` climbs to parent nodes, and `bitPrefix` descends through them. `findKthFree` descends by powers of two to locate the highest free slot. Each procedure costs O(log 50001).
+
+**Greedy walk.** The comparator sorts by right endpoint, then by left endpoint in reverse.
 
 ```nim
 proc compareIntervals(x, y: Interval): int =
@@ -168,7 +199,9 @@ proc solveCase(intervals: var seq[Interval], touched: var seq[int]): int =
   return totalChosen
 ```
 
-The main loop reads one case, solves it, and prints the answer. It then restores only the touched coordinates, which keeps the cost independent of the coordinate range. One final write flushes any remaining output.
+`i` and `j` name Fenwick indices for the interval ends. Each added coordinate is recorded in `touched` for later cleanup. The strict need check adds points only while `missing` exceeds zero. Sorting costs O(n log n).
+
+**Driver.** Each case solves its intervals, then restores only the touched coordinates.
 
 ```nim
 var touched = newSeq[int]()
@@ -193,10 +226,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
+The cleanup loop touches only coordinates added in this case. `setLen 0` keeps the sequence capacity for the next case. One final write flushes any remaining output. The tables stay ready for the next case.
+
 ## Complexity
 
-Reading input costs one pass over the whole buffer. Sorting one case costs O(n log n). Each interval costs two prefix queries, and each added point costs one k-th lookup plus four updates.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Read one case | O(n) | O(n) |
+| Sort intervals | O(n log n) | O(1) extra |
+| Add and clean points | O(K log 50001) | O(K) touched |
 
-Total time is O(total tokens plus the sum over cases of n log n plus the chosen count times log 50001). Space is O(n plus 50001). The table is built once, so the case count adds no table cost.
+Point placement drives the total work.
 
-The naive form scans every coordinate for every interval and costs O(n times 50000) per case.
+K is the number of chosen coordinates in one case.
+
+| Measure | Bound |
+| --- | --- |
+| Per case | O(n log n + K log 50001) |
+| Per case | O(n + 50001) space |
+| Table build | once for all cases |
+
+The naive form scans all 50000 coordinates for every interval and costs O(n times 50000) per case.

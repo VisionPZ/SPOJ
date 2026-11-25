@@ -1,54 +1,128 @@
+# DIRVS — Direct Visibility (SPOJ)
+<https://www.spoj.com/problems/DIRVS/>
+
 ## Problem
 
-Read T town descriptions. Each town is a P by Q grid of terrain heights. Two base stations sit at given cells.
+A technician carries a heavy cache between two antennas and must keep one in sight at every step.
+The program finds the shortest legal walk.
 
-The technician walks between adjacent cells. Each step climbs at most one metre or descends at most three metres. After each step, at least one base station must be visible.
+Read `T` towns.
+Each town is a `P` by `Q` grid of terrain heights, followed by two base station cells.
+The technician moves between side-adjacent cells.
+Each step may climb at most 1 metre or descend at most 3 metres.
+After every step, at least one station must be visible.
 
-Print the shortest path length, or the failure sentence when no path exists.
+Print the shortest path length, or `Mission impossible!` when no path exists.
+A success line reads `The shortest path is L steps long.`
 
-The bounds are:
+The judge bounds follow.
 
 | Item | Bound |
 | --- | --- |
-| Test cases T | about 500 |
-| Grid size P, Q | 1 to 200 |
+| Test cases `T` | about 500 |
+| Grid size `P`, `Q` | 1 to 200 |
 | Cell height | 0 to 5000 metres |
 | Time limit | 13000 ms |
 | Memory limit | 1536 MB |
 
-The grid size and height bounds keep all arithmetic in 64-bit integers.
+The grid bounds keep every cross product in 64-bit integers.
+
+The sample input and expected output follow verbatim.
+
+```
+4
+5 5
+8 7 6 5 4
+2 2 2 2 2
+2 2 2 2 2
+2 2 2 2 2
+2 2 2 2 2
+1 1 5 1
+5 8
+2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2
+9 9 9 9 9 9 9 2
+2 2 2 2 2 2 2 2
+1 2 5 1
+5 8
+2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2
+9 9 9 9 9 9 9 2
+2 2 2 2 2 2 2 2
+1 5 5 1
+6 12
+5 5 5 5 1 5 5 5 5 5 5 5
+5 5 5 5 1 5 5 5 5 5 5 5
+5 5 5 5 9 5 5 5 5 5 5 5
+5 9 1 5 5 5 5 5 5 5 5 5
+5 5 9 5 5 5 5 5 5 5 5 5
+5 5 9 5 5 5 5 5 5 5 5 5
+6 1 3 12
+```
+
+```
+The shortest path is 10 steps long.
+Mission impossible!
+The shortest path is 14 steps long.
+The shortest path is 18 steps long.
+```
+
+The four towns print two successes and two failures.
 
 ## Idea
 
-Compute visibility first, then find the path. For each base station, group all cells by the primitive direction from that station. March each ray outward once.
+Check sightlines first, then draw the route, like surveying a map before planning a hike.
+For each station, group other cells by primitive direction, a direction divided by the gcd (greatest common divisor) of its offsets.
+March each ray outward once.
 
-Two running values remember the steepest climb that passed cells require. An ascending ray uses the entry edge of each passed cell. A descending ray uses its exit edge.
+Two running fractions remember the steepest climb and the steepest descent that passed cells require.
+A cell center is tested in constant time against those fractions.
+Breadth-first search (shortest paths on an unweighted grid) then visits cells that see either station.
+It checks four neighbours per cell and the climb and descent limits.
 
-Each cell center is tested against one value in constant time.
-
-A breadth-first search then walks cells that see either station. The search obeys the height rule on every step. It uses four neighbours per cell, so it visits each cell once.
+Cost per station is one gcd per cell plus one march per ray.
+Checking every cell pair would repeat work on shared rays.
+Group rays first, then run one breadth-first search.
 
 ## Why It Works
 
-A ray is blocked only when it enters the interior of a solid cube. Touching a face or an edge is allowed, so equality never blocks.
+Four facts prove the method.
 
-The ray height is linear. Its lowest point inside a cell sits at the entry edge for an ascent. For a descent, the lowest point sits at the exit edge.
+1. A ray is blocked only when it enters the interior of a solid cube.
+   Touching a face or an edge is allowed, so equality never blocks.
+2. The ray height is linear.
+   The lowest point inside a passed cell sits at the entry edge for an ascent and at the exit edge for a descent.
+3. Scaling ray time by `stepX` times `stepY` makes each cell crossing an integer `cellCross`.
+   Cross multiplication (comparing fractions without division) keeps every test exact.
+4. Breadth-first search is correct because each rule is local to one step.
+   The first time the search reaches the second station gives the minimum length.
 
-Scaling ray time by stepX times stepY makes every edge crossing an integer cellCross. The term sourceHeight minus cellTop measures source clearance above the current cell. Multiplying by finalCross and adding slope times the crossing time keeps the test exact.
+The running values and their roles follow.
 
-A cell blocks an ascending target when that sum is negative. Rearranging gives a required slope of leavingCandidate over cellCross for descents. The value enteringCandidate over previousCross is the requirement for ascents.
+| Term | Meaning |
+| --- | --- |
+| `steps` | gcd of the row and column gaps from the station |
+| `dirCol`, `dirRow` | primitive direction components |
+| `ascendingNum / ascendingDen` | steepest required climb seen so far |
+| `descendingNum / descendingDen` | steepest required descent seen so far |
 
-Here is a worked example for heights 0, 1, 2 in one row with the station on the first cell. The source height value is 1, stepX is 2, stepY is 1, and scale is 2.
+All visibility tests stay in 64-bit integer arithmetic.
 
-At step 1 the crossing is 1. The requirement and the slope both equal 2 over 1. The second cell is visible.
+A script checks the first three heights of the sample row 8 7 6 5 4.
+The station sits on the cell of height 8 with center height 17, and `stepX = 2` and `stepY = 1`.
 
-At step 2 the crossing is 3. The requirement stays 2 over 1; the slope reaches 4 over 2. The third cell is visible.
+```
+step 1: cross=1, requirement 2/1, ray slope 2/1 -> visible
+step 2: cross=3, requirement 2/1, ray slope 4/2 -> visible
+```
 
-Breadth-first search is correct because every rule is local to one step. The first time the search reaches the second station, the number of steps is minimal.
+The equality passes, so both cells see the station.
 
 ## Code
 
-The input loop appends every line into one buffer. The scanner walks that buffer by index and never splits tokens.
+**Constants.**
 
 ```nim
 const firstDigitValue = 48
@@ -60,7 +134,13 @@ const infiniteCross = 1 shl 60
 const successSentence = "The shortest path is "
 const failureSentence = "Mission impossible!"
 const stepSuffix = " steps long."
+```
 
+directionWidth covers offsets from minus 199 to 199. infiniteCross marks an axis with no cell crossings. The three output phrases are fixed strings.
+
+**Input and scanner.**
+
+```nim
 var inputData = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
@@ -79,7 +159,9 @@ proc nextInt(data: string, i: var int): int =
   return value
 ```
 
-The direction table holds the farthest cell center for each primitive direction. The table covers offsets from minus 199 to 199 on both axes. The ray loop stops after maxSteps crossings, and each crossing updates one running maximum.
+Every input line is copied into one buffer. nextInt skips non-digits and builds values digit by digit. The scanner allocates no token strings.
+
+**Direction grouping.**
 
 ```nim
 proc greatestCommonDivisor(first: int, second: int): int =
@@ -93,7 +175,13 @@ proc greatestCommonDivisor(first: int, second: int): int =
 
 var directionMaxSteps = newSeq[int](directionTableSize)
 var usedDirections: seq[int] = @[]
+```
 
+greatestCommonDivisor reduces a gap pair to a primitive direction. directionMaxSteps keeps the farthest cell on each direction. The 401 by 401 table is reused after every ray march.
+
+**March all rays from one station.**
+
+```nim
 proc markVisibleFromSource(terrain: seq[int], rowCount: int, colCount: int,
                            sourceRow: int, sourceCol: int,
                            visible: var seq[bool]) =
@@ -176,7 +264,9 @@ proc markVisibleFromSource(terrain: seq[int], rowCount: int, colCount: int,
     directionMaxSteps[k] = 0
 ```
 
-The queue holds at most P times Q cell indices. Output is appended to one buffer and flushed in large blocks.
+The first double loop bins every cell into a primitive direction. The second loop marches each used ray once. Ascending and descending requirements are updated with cross multiplication. directionMaxSteps is reset after each direction.
+
+**Output buffer.**
 
 ```nim
 var outputBuffer = ""
@@ -186,7 +276,13 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+appendOutput flushes at 256 KiB. All result lines share one buffer. The write layer is independent of the ray logic.
+
+**Breadth-first search and answer.**
+
+```nim
 let testCount = nextInt(inputData, i)
 for j in 1..testCount:
   let rowCount = nextInt(inputData, i)
@@ -248,10 +344,26 @@ for j in 1..testCount:
 stdout.write outputBuffer
 ```
 
+The case loop reads the grid and both station cells. Two visibility calls mark the cells that see a station. The queue visits four neighbours and checks the height rule. The first arrival at the second station gives the minimum length.
+
 ## Complexity
 
-Reading input takes time linear in the number of heights. Grouping cells takes O(P*Q) greatest common divisor computations per base station.
+The phases and their costs for one town follow.
 
-Marching all rays takes at most O(P*Q*(P+Q)) cell crossings per station. Most rays are short. The breadth-first search takes O(P*Q) time and visits each cell once.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Read and bin cells | O(P*Q) gcd calls | O(P*Q) terrain |
+| March all rays | O(P*Q*(P+Q)) crossings | O(401²) direction table |
+| Breadth-first search | O(P*Q) | O(P*Q) |
+| Output | O(1) per town | one output block |
 
-Terrain, visibility, distance and queue each use O(P*Q) space. The direction table uses 401 times 401 integers, independent of the grid size. A pairwise visibility check would take O(P*Q*(P+Q)) time per station and repeat work on shared rays; the ray grouping removes that repeat.
+Most rays are short, so the march stays well below its bound.
+
+The Big O summary follows.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(P*Q*(P+Q)) per town worst case |
+| Space | O(P*Q) plus the fixed direction table |
+
+A pairwise visibility check repeats the same ray work for every cell pair.

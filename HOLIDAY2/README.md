@@ -1,42 +1,77 @@
+# HOLIDAY2 — Getting Rid of the Holidays (Act II) (SPOJ)
+
+<https://www.spoj.com/problems/HOLIDAY2/>
+
 ## Problem
 
-There are `n` holidays, and holiday `i` returns every `t_i` days. Choose exactly `k` of them to remove so the longest work rhythm `r` remains valid. Workers rest every `r` days, so each kept period must be a multiple of `r`. Print the removed holiday numbers in increasing order, numbered from 1 to `n`.
+A worker rests every `r` days, and every kept holiday must fall on a rest day. Drop exactly `k` holidays so that rhythm stays as long as possible.
 
-The limits set the size of the search.
+Read `t` cases. Each case gives `n`, `k`, and `n` periods. Holiday `i` returns every `t_i` days, starting on day zero.
+
+Print the removed holiday numbers in increasing order, numbered from 1 to `n`.
+
+The limits set the size of the search:
 
 | Quantity | Bound |
 | --- | --- |
-| Test cases | t <= 100 |
-| Holidays per case | n <= 100 |
-| Removals | 1 <= k < n |
-| Period | 1 <= t_i <= 10^18 |
+| Test cases `t` | at most 100 |
+| Holidays `n` | at most 100 |
+| Removals `k` | `1 <= k < n` |
+| Period `t_i` | 1 to 10^18 |
 | Time limit | 17000 ms |
 | Memory limit | 1536 MB |
 | Source limit | 4096 B |
 
 The small holiday count makes a search over common divisors practical.
 
+The sample cases:
+
+```
+2
+6 4
+1 3 4 5 6 1
+8 4
+200 125 200 999 380 500 200 500
+```
+
+```
+1 3 4 6
+2 4 5 8
+```
+
 ## Idea
 
-The program searches greatest common divisors (gcds) of subsets instead of trying every rhythm. A rhythm works only when it divides every kept period, so the best one is a gcd of the kept periods. Scanning all integers up to 10^18 is impossible, while subset gcds are few.
+Think of a rhythm as a ruler whose marks fall every `r` days. A holiday fits only when its period lands exactly on a mark.
 
-Cost per period: one gcd against each known candidate.
+A valid rhythm divides every kept period, so the best one is a gcd (greatest common divisor) of the kept periods. The program builds candidate values by taking each period's gcd with values seen earlier. An open-addressed hash set stores those values without duplicates.
+
+Then the program counts how many periods each candidate divides.
+
+Cost per period: one gcd against each known candidate, then one divisibility test per candidate. Scanning every integer up to 10^18 cannot finish. Candidate gcds are few, so the search stays small.
 
 ## Why It Works
 
-A holiday falls on days `t_i`, 2t_i, 3t_i, and so on. The days off are `r`, 2r, 3r, and so on. Every holiday lands on a day off exactly when `r` divides `t_i`.
+Four facts prove the search exact.
 
-Let `m` be the number of kept holidays. If a number `d` divides at least `m` periods, take their gcd. That gcd is a multiple of `d`. It also divides at least `m` periods. An optimum therefore appears among the gcds of subsets of size `m`.
+1. Holiday `i` falls on days `t_i`, `2t_i`, `3t_i`, and so on. Rest days are `r`, `2r`, `3r`, and so on. Every holiday lands on a rest day exactly when `r` divides `t_i`.
+2. Let `m` be the number of kept holidays. If `d` divides at least `m` periods, their gcd is a multiple of `d` and divides at least `m` periods. An optimum therefore appears among the gcds of subsets of size `m`.
+3. Processing periods in order and gcd-ing each with every known candidate generates every subset gcd. Each new subset either adds a period or keeps the earlier gcd.
+4. The hash set uses a 64-bit multiplier and linear probing. Zero marks an empty slot because gcds of positive periods are positive.
 
-Each formula term has one job:
+The main values and their roles:
 
-`keepCount = holidayCount - removeCount` counts the holidays left after removals.
+| Term | Meaning |
+| --- | --- |
+| `keepCount` | holidays left after the removals |
+| `common` | gcd of an earlier candidate with the new period |
+| `multiples` | periods divisible by the candidate rhythm |
+| `bestRhythm` | largest candidate with enough supporting periods |
+| `ValueSet` | open-addressed set holding unique candidates |
+| `slotFor` | mixed hash index for one value |
 
-`common = gcdOf(candidates[j], value)` joins an earlier subset gcd with the new period.
+These terms keep the search on divisor values, never on raw days.
 
-`multiples >= keepCount` accepts a rhythm with enough supporting periods.
-
-A script computes this example from the first sample case:
+A script computes this trace from the first sample case:
 
 ```
 keep 2 of 6 periods [1, 3, 4, 5, 6, 1]
@@ -47,11 +82,11 @@ best rhythm 3
 removed holidays 1 3 4 6
 ```
 
-The periods 3 and 6 support rhythm 3, so the program removes holidays 1, 3, 4 and 6.
+The periods 3 and 6 support rhythm 3, so the program keeps them and removes holidays 1, 3, 4, and 6.
 
 ## Code
 
-The input loop reads the whole stream before parsing.
+**Input and scanner.** One read loop loads the stream, and a hand scanner parses signed-digit values.
 
 ```nim
 const firstDigitValue = 48
@@ -74,19 +109,20 @@ proc nextInt(data: string, pos: var int): int64 =
     pos += 1
   value
 ```
-The loop ends at end of input, so blank lines cannot split a case. The scanner ignores non-digits, and periods are positive, so no sign branch is needed. It touches each input byte once.
 
-The set stores candidates without duplicates.
+The loop ends at end of input, so blank lines cannot split a case. The scanner ignores non-digits, and all periods stay positive. It touches each input byte once.
+
+**GCD and set.** `gcdOf` runs Euclid's rule, and `ValueSet` stores candidates without duplicates.
 
 ```nim
 proc gcdOf(left: int64, right: int64): int64 =
-  var a = left
-  var b = right
-  while b != 0:
-    let rest = a mod b
-    a = b
-    b = rest
-  a
+  var first = left
+  var second = right
+  while second != 0:
+    let rest = first mod second
+    first = second
+    second = rest
+  first
 
 type ValueSet = object
   slots: seq[int64]
@@ -127,9 +163,10 @@ proc addSet(store: var ValueSet, value: int64) =
     store.slots[idx] = value
     store.used += 1
 ```
-The gcd loop runs until the remainder is zero. Zero marks an empty hash slot because gcds of positive periods are positive. The table doubles when half full, which keeps each insert cheap.
 
-The output buffer batches all writes.
+The gcd loop stops when the remainder is zero. Zero marks an empty hash slot because candidate gcds stay positive. The table doubles at half load, so each insert stays cheap.
+
+**Buffered output.** One string collects every answer line.
 
 ```nim
 var outputBuffer = ""
@@ -140,9 +177,10 @@ proc appendOutput(text: string) =
     stdout.write outputBuffer
     outputBuffer.setLen 0
 ```
-The buffer flushes when it reaches `flushBlockBytes`. This avoids one write per number. Each flush clears the same string.
 
-The main loop selects the rhythm and the removals.
+The buffer flushes at `flushBlockBytes`, which avoids one write per number. Each flush clears the same string. Work stays proportional to the answer text.
+
+**Case driver.** The loop builds candidates, picks the rhythm, and prints removals.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -150,8 +188,8 @@ for caseIndex in 0 ..< caseCount:
   let holidayCount = int(nextInt(inputData, scanPos))
   let removeCount = int(nextInt(inputData, scanPos))
   var periods = newSeq[int64](holidayCount)
-  for i in 0 ..< holidayCount:
-    periods[i] = nextInt(inputData, scanPos)
+  for idx in 0 ..< holidayCount:
+    periods[idx] = nextInt(inputData, scanPos)
   let keepCount = holidayCount - removeCount
   var seen: ValueSet
   seen.slots = newSeq[int64](1024)
@@ -161,8 +199,8 @@ for caseIndex in 0 ..< caseCount:
       seen.addSet(value)
       candidates.add value
     let before = candidates.len
-    for j in 0 ..< before:
-      let common = gcdOf(candidates[j], value)
+    for idx in 0 ..< before:
+      let common = gcdOf(candidates[idx], value)
       if not seen.inSet(common):
         seen.addSet(common)
         candidates.add common
@@ -180,24 +218,41 @@ for caseIndex in 0 ..< caseCount:
       bestRhythm = rhythm
   var removed = newSeq[int]()
   var kept = 0
-  for i in 0 ..< holidayCount:
-    if periods[i] mod bestRhythm == 0 and kept < keepCount:
+  for idx in 0 ..< holidayCount:
+    if periods[idx] mod bestRhythm == 0 and kept < keepCount:
       kept += 1
     else:
-      removed.add i + 1
-  for j in 0 ..< removed.len:
-    if j > 0:
+      removed.add idx + 1
+  for idx in 0 ..< removed.len:
+    if idx > 0:
       appendOutput " "
-    appendOutput $(removed[j])
+    appendOutput $(removed[idx])
   appendOutput "\n"
 
 stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
-The outer loop runs once per test case. The inner loop stops at `before`, the candidate count before the current period, so new entries need no reprocessing. The scan stops at `keepCount` multiples.
+
+The inner loop stops at `before`, the candidate count before the current period. New entries need no reprocessing there. The rhythm scan stops as soon as `keepCount` multiples appear.
+
+The reconstruction keeps the first `keepCount` supporting holidays.
 
 ## Complexity
 
-Reading and parsing touch each input byte once, at O(input size). Let `s` be the number of candidates and `n` the holiday count. Building candidates costs one gcd per candidate per period, at O(s * n). Counting costs one divisibility check per candidate per period, also O(s * n). Output writes `k` indices per case.
+Candidate building and counting share the same nested shape.
 
-Total time is O(s * n) per case, where `s` is at most the number of divisors across the periods. Space is O(s + n) for the candidates and the periods, plus the input and output buffers. A naive scan over every integer up to 10^18 would cost O(10^18 * n) per case.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(input bytes) | one input buffer |
+| Candidate gcds | O(s * n) per case | O(s) candidates |
+| Rhythm counting | O(s * n) per case | O(1) extra |
+| Reconstruction and output | O(n + k) | O(k) removed numbers |
+
+Here `s` is the number of unique candidate values.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(s * n) per case |
+| Space | O(s + n) plus I/O buffers |
+
+A naive scan over every integer up to 10^18 would cost O(10^18 * n) time per case.

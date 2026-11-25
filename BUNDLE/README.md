@@ -1,51 +1,111 @@
+# BUNDLE — Bundling (SPOJ)
+<https://www.spoj.com/problems/BUNDLE/>
+
 ## Problem
 
-Read a bundling profile and an instruction sequence. Each template allows one type in each of three slots and may force one stop. Pack every run of one to three successive instructions into a bundle that matches a template. Print the fewest bundles, then the fewest stops for that bundle count.
+A processor packs one to three instructions per bundle, using only approved type templates. A stop separates dependent instructions. Find the fewest bundles, then the fewest stops for that bundle count.
+
+Input starts with a case count. Each case gives a template count t and an instruction count n. Next come t templates: three type letters and a stop slot. Then come n instructions: one type letter and a dependency index. Output two integers: bundles and stops.
+
+The limits force near constant work per instruction.
 
 | Quantity | Bound |
 | --- | --- |
 | Templates per case | 1500 |
-| Instructions per case | 100000 |
+| Instructions per case | 100,000 |
 | Instruction types | 10 |
 | Time limit | 1053 ms |
 | Memory limit | 1536 MB |
 
-The largest case holds 100000 instructions, so the program does constant work per instruction.
+The largest case holds 100,000 instructions, so the state set must stay tiny.
+
+The sample input and output:
+
+```
+1
+4 9
+ABB 0
+BAD 1
+AAB 0
+ABB 2
+B 0
+B 1
+A 1
+A 1
+B 4
+D 0
+A 0
+B 3
+B 0
+```
+
+```
+4 3
+```
+
+The nine instructions fit into four bundles with three stops.
 
 ## Idea
 
-Each bundle puts its one to three instructions into any slots of a three-slot container, and a template may force one stop. With only three slots, a bundle offers at most four stop positions, so a dynamic program can try them all. It keeps the best state after each prefix: fewest bundles, then fewest stops, then the latest last stop.
+Run a dynamic program over instruction prefixes. With only three slots, a bundle offers at most four stop positions. Keep the best state for each group size, ranked by fewest bundles, then fewest stops, then latest last stop. Think of packing boxes on a shelf: for each shelf length, remember only the arrangement that leaves the most room for later boxes.
 
-Each state expands into about 30 transitions. A state with no more stops and a later last stop makes other states unnecessary.
+Templates are looked up through a stamp table with wildcards, so a match costs O(1). Each state spawns about 30 transitions, and pruning keeps the frontier small. Trying all packings would be exponential.
+
+Takeaway: three slots mean a handful of states per prefix.
 
 ## Why It Works
 
-A gap sits between two consecutive instructions. Instruction i depends on instruction d_i, so a stop in the gap range d_i to i-1 separates them. An empty slot accepts any letter in the template.
+1. A stop in the gap range d_i to i - 1 separates instruction i from the instruction it depends on.
+2. An empty slot accepts any letter, so a template matches all 2 to the k variants of its occupied slots.
+3. `beforeCount` counts occupied slots at or before the template stop slot.
+4. `templateStop` is the gap `bundleStart + beforeCount - 1`, where that template places its stop.
+5. A state with more bundles loses immediately; among equal bundle counts, one with fewer stops and a later last stop dominates.
+6. `pruneInPlace` keeps only the best states, so the frontier stays bounded.
 
-The program counts the occupied slots at or before the template's stop slot. It calls that count `beforeCount`. The stop lands at gap `bundleStart + beforeCount - 1`. The instructions before that gap need dependencies at most `lastStop`. The instructions after it need dependencies at most `templateStop`.
+The state records three values.
 
-- `beforeCount` counts occupied slots at or before the template stop slot
-- `templateStop` marks the gap where that template places its stop
-- `beforeMaxDep` holds the largest dependency before the template stop
-- `afterMaxDep` holds the largest dependency after the template stop
-- `lastStop` holds the rightmost gap already marked by a stop
+| Term | Meaning |
+| --- | --- |
+| `bundles` | number of bundles used so far |
+| `stops` | number of stops placed so far |
+| `lastStop` | rightmost gap already marked by a stop |
+| `beforeMaxDep`, `afterMaxDep` | largest dependencies on each side of a template stop |
 
-A state with more bundles loses at once. The program adds one boundary stop and copies the rest of the packing at the same bundle cost. Among states with equal bundles, one with no more stops and a later last stop covers every dependency the other covers.
+A state that dominates another covers every dependency the other covers.
 
-The sample packs as follows.
+A script packed the sample instructions as follows:
 
 | Instructions | Slots | Template | Stop gap |
 | --- | --- | --- | --- |
-| 1-2 | 2,3 | ABB p=2 | 1 |
-| 3-4 | 1,2 | AAB p=0 | none |
-| 5-6 | 1,3 | BAD p=1 | 5 |
-| 7-9 | 1,2,3 | ABB p=0 | none |
+| 1-2 | 2, 3 | ABB p=2 | 1 |
+| 3-4 | 1, 2 | AAB p=0 | none |
+| 5-6 | 1, 3 | BAD p=1 | 5 |
+| 7-9 | 1, 2, 3 | ABB p=0 | none |
 
-The boundary stop at gap 4 joins the two template stops, so the answer is 4 bundles and 3 stops.
+Four bundles and three stops match the printed answer.
 
 ## Code
 
+**Constants, state type, and scanners.**
 ```nim
+{.checks: off.}
+{.optimization: speed.}
+
+const wildcardType = 10
+const typeCount = 11
+const stopCount = 3
+const slotCount = 3
+const flushBlockBytes = 1 shl 18
+const firstDigitValue = 48
+const firstLetterValue = 65
+const tableSize = stopCount * typeCount * typeCount * typeCount
+
+type
+  BundleState = object
+    bundles: int
+    stops: int
+    lastStop: int
+
 proc nextInteger(inputData: string, i: var int): int =
   let dataLength = inputData.len
   while i < dataLength and (inputData[i] < '0' or inputData[i] > '9'):
@@ -64,9 +124,9 @@ proc nextType(inputData: string, i: var int): int =
   i += 1
   return typeValue
 ```
+`BundleState` stores bundles, stops, and lastStop. `nextInteger` and `nextType` read the profile and instruction stream. `tableSize` fixes the wildcard stamp table.
 
-The first loop stops at the end of a digit run, so it reads one integer. The second loop reads one type letter. Both skip the other characters, which avoids token objects. Each call advances the pointer once per consumed character.
-
+**Pruning.**
 ```nim
 proc pruneInPlace(states: var seq[BundleState]) =
   if states.len == 0:
@@ -99,9 +159,45 @@ proc pruneInPlace(states: var seq[BundleState]) =
       bestLast = stateValue.lastStop
   states.setLen j
 ```
+The routine keeps only states with the fewest bundles, sorts by stops and lastStop, then keeps the best lastStop value. Each pass shrinks the frontier in place.
 
-The first pass keeps the smallest bundle count. Insertion sort orders the few survivors without a comparator. The last pass keeps a state only when its last stop moves later. The sort and both passes reuse the same storage.
+**Input and template stamps.**
+```nim
+var inputData = stdin.readAll()
+var i = 0
+let caseCount = nextInteger(inputData, i)
+var templateStamp = newSeq[int](tableSize)
+var currentStamp = 0
+var outputBuffer = ""
 
+for j in 0 .. caseCount - 1:
+  currentStamp += 1
+  let templateCount = nextInteger(inputData, i)
+  let instructionCount = nextInteger(inputData, i)
+  for k in 0 .. templateCount - 1:
+    let firstLetter = nextType(inputData, i)
+    let secondLetter = nextType(inputData, i)
+    let thirdLetter = nextType(inputData, i)
+    let l = nextInteger(inputData, i)
+    for slotOne in [firstLetter, wildcardType]:
+      for slotTwo in [secondLetter, wildcardType]:
+        for slotThree in [thirdLetter, wildcardType]:
+          let tableIndex = ((l * typeCount + slotOne) * typeCount + slotTwo) * typeCount + slotThree
+          templateStamp[tableIndex] = currentStamp
+
+  var instructionTypes = newSeq[int](instructionCount + 1)
+  var dependencyIndices = newSeq[int](instructionCount + 1)
+  for k in 1 .. instructionCount:
+    instructionTypes[k] = nextType(inputData, i)
+    dependencyIndices[k] = nextInteger(inputData, i)
+
+  var stateLists: array[0 .. 3, seq[BundleState]]
+  for k in 0 .. 3:
+    stateLists[k] = newSeqOfCap[BundleState](16)
+```
+The code reads templates and marks every wildcard variant with `currentStamp`. Instruction types and dependencies fill two arrays. `stateLists` starts with one empty state.
+
+**Transition loop.**
 ```nim
   for k in 0 .. instructionCount - 1:
     pruneInPlace stateLists[0]
@@ -141,11 +237,7 @@ The first pass keeps the smallest bundle count. Insertion sort orders the few su
       let position = bundleStart + l
       if position <= instructionCount and dependencyIndices[position] > 0:
         relevantDep[l] = dependencyIndices[position]
-```
 
-The mask loop visits all seven nonempty slot subsets, so group sizes 1 to 3 are covered. Wildcards in `slotLetters` let a template match a partially filled bundle. A stamp in `templateStamp` marks the current case, which avoids clearing the table. The cost is 21 lookups per prefix.
-
-```nim
     for j in 0 .. stateLists[0].len - 1:
       let stateValue = stateLists[0][j]
       for groupSize in 1 .. 3:
@@ -188,10 +280,19 @@ The mask loop visits all seven nonempty slot subsets, so group sizes 1 to 3 are 
     swap stateLists[2], stateLists[3]
     stateLists[3].setLen 0
 ```
+Each group size from one to three is tested against the template stamp. Valid placements add new states to `stateLists`, then the four lists rotate by swap to advance one instruction.
 
-The loop tries each group size and each possible template stop. It checks both dependency halves before adding a state. Every template with a stop adds one count at that gap. The swaps move the state lists one prefix forward without copying.
-
+**Final choice and output.**
 ```nim
+  pruneInPlace stateLists[0]
+  var bestBundles = high(int)
+  var bestStops = high(int)
+  for stateValue in stateLists[0]:
+    if stateValue.bundles < bestBundles or
+       (stateValue.bundles == bestBundles and stateValue.stops < bestStops):
+      bestBundles = stateValue.bundles
+      bestStops = stateValue.stops
+
   outputBuffer.add $bestBundles
   outputBuffer.add " "
   outputBuffer.add $bestStops
@@ -203,11 +304,25 @@ The loop tries each group size and each possible template stop. It checks both d
 if outputBuffer.len > 0:
   stdout.write outputBuffer
 ```
-
-The buffer flushes when it passes `flushBlockBytes`. The final flush emits the remainder. Writes stay in blocks, so the cost is one write per 256 KiB.
+After the last instruction, the program picks the best bundles and stops. Both values go into `outputBuffer`, which flushes at the block boundary.
 
 ## Complexity
 
-Input scanning costs one pass over the buffer, and the profile stamps use 3993 entries. Option precompute costs 21 lookups per instruction. The dynamic program expands a few states per prefix, so it costs O(n) time with a small constant. The whole program uses O(n) time and O(n) space.
+Each instruction processes a bounded state set.
 
-A direct search tries every template at every prefix and costs O(n t). The profile stamps remove that factor by answering each template check in one lookup.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | one pass over input bytes | input bytes |
+| Template stamping | O(t times 8) | tableSize integers |
+| Transitions | O(n times states times 30) | four state lists |
+| Pruning | O(states log states) | same lists |
+| Output | one write per block | flushBlockBytes |
+
+The state count depends on the three-slot limit, not on n.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(t + n times k) for small constant k |
+| Space per case | O(t + n + states) |
+
+Packing every subset of instructions would be exponential, while bounded-state dynamic programming scales linearly.

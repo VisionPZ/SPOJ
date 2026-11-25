@@ -36,106 +36,106 @@ for caseIndex in 0..<caseCount:
   let chaserStart = nextInt(inputData, scanPos) - 1
 
   var head = newSeq[int](nodeCount)
-  for i in 0..<nodeCount:
-    head[i] = -1
+  for nodeIdx in 0..<nodeCount:
+    head[nodeIdx] = -1
   var neighborTo = newSeq[int](2 * edgeCount)
   var neighborNext = newSeq[int](2 * edgeCount)
   var degree = newSeq[int](nodeCount)
   var edgeSlot = 0
   for edgeIndex in 0..<edgeCount:
-    let u = nextInt(inputData, scanPos) - 1
-    let v = nextInt(inputData, scanPos) - 1
-    neighborTo[edgeSlot] = v
-    neighborNext[edgeSlot] = head[u]
-    head[u] = edgeSlot
+    let fromNode = nextInt(inputData, scanPos) - 1
+    let toNode = nextInt(inputData, scanPos) - 1
+    neighborTo[edgeSlot] = toNode
+    neighborNext[edgeSlot] = head[fromNode]
+    head[fromNode] = edgeSlot
     edgeSlot += 1
-    degree[u] += 1
-    neighborTo[edgeSlot] = u
-    neighborNext[edgeSlot] = head[v]
-    head[v] = edgeSlot
+    degree[fromNode] += 1
+    neighborTo[edgeSlot] = fromNode
+    neighborNext[edgeSlot] = head[toNode]
+    head[toNode] = edgeSlot
     edgeSlot += 1
-    degree[v] += 1
+    degree[toNode] += 1
 
   let stateCount = nodeCount * nodeCount
-  var closedFlag = newSeq[bool](stateCount)
-  for i in 0..<nodeCount:
-    closedFlag[i * nodeCount + i] = true
-    var e = head[i]
-    while e != -1:
-      closedFlag[i * nodeCount + neighborTo[e]] = true
-      e = neighborNext[e]
+  var isClosed = newSeq[bool](stateCount)
+  for nodeIdx in 0..<nodeCount:
+    isClosed[nodeIdx * nodeCount + nodeIdx] = true
+    var edgeIdx = head[nodeIdx]
+    while edgeIdx != -1:
+      isClosed[nodeIdx * nodeCount + neighborTo[edgeIdx]] = true
+      edgeIdx = neighborNext[edgeIdx]
 
   var removed = newSeq[bool](nodeCount)
   var peelDegree = newSeq[int](nodeCount)
   var queue = newSeq[int](nodeCount)
   var queueHead = 0
   var queueTail = 0
-  for i in 0..<nodeCount:
-    peelDegree[i] = degree[i]
-    if degree[i] <= 1:
-      queue[queueTail] = i
+  for nodeIdx in 0..<nodeCount:
+    peelDegree[nodeIdx] = degree[nodeIdx]
+    if degree[nodeIdx] <= 1:
+      queue[queueTail] = nodeIdx
       queueTail += 1
   while queueHead < queueTail:
-    let u = queue[queueHead]
+    let vertex = queue[queueHead]
     queueHead += 1
-    if removed[u]:
+    if removed[vertex]:
       continue
-    removed[u] = true
-    var e = head[u]
-    while e != -1:
-      let v = neighborTo[e]
-      if not removed[v]:
-        peelDegree[v] -= 1
-        if peelDegree[v] == 1:
-          queue[queueTail] = v
+    removed[vertex] = true
+    var edgeIdx = head[vertex]
+    while edgeIdx != -1:
+      let neighbor = neighborTo[edgeIdx]
+      if not removed[neighbor]:
+        peelDegree[neighbor] -= 1
+        if peelDegree[neighbor] == 1:
+          queue[queueTail] = neighbor
           queueTail += 1
-      e = neighborNext[e]
+      edgeIdx = neighborNext[edgeIdx]
 
   var distToCore = newSeq[int](nodeCount)
-  for i in 0..<nodeCount:
-    distToCore[i] = farDistance
+  for nodeIdx in 0..<nodeCount:
+    distToCore[nodeIdx] = farDistance
   queueHead = 0
   queueTail = 0
-  for i in 0..<nodeCount:
-    if not removed[i]:
-      distToCore[i] = 0
-      queue[queueTail] = i
+  for nodeIdx in 0..<nodeCount:
+    if not removed[nodeIdx]:
+      distToCore[nodeIdx] = 0
+      queue[queueTail] = nodeIdx
       queueTail += 1
   while queueHead < queueTail:
-    let u = queue[queueHead]
+    let vertex = queue[queueHead]
     queueHead += 1
-    var e = head[u]
-    while e != -1:
-      let v = neighborTo[e]
-      if distToCore[v] == farDistance:
-        distToCore[v] = distToCore[u] + 1
-        queue[queueTail] = v
+    var edgeIdx = head[vertex]
+    while edgeIdx != -1:
+      let neighbor = neighborTo[edgeIdx]
+      if distToCore[neighbor] == farDistance:
+        distToCore[neighbor] = distToCore[vertex] + 1
+        queue[queueTail] = neighbor
         queueTail += 1
-      e = neighborNext[e]
+      edgeIdx = neighborNext[edgeIdx]
 
   var runnerWins = false
   if not removed[runnerStart]:
     runnerWins = true
   elif distToCore[runnerStart] != farDistance:
     var distFromChaser = newSeq[int](nodeCount)
-    for i in 0..<nodeCount:
-      distFromChaser[i] = farDistance
+    for nodeIdx in 0..<nodeCount:
+      distFromChaser[nodeIdx] = farDistance
     queueHead = 0
     queueTail = 0
     distFromChaser[chaserStart] = 0
     queue[queueTail] = chaserStart
     queueTail += 1
     while queueHead < queueTail:
-      let u = queue[queueHead]
+      let vertex = queue[queueHead]
       queueHead += 1
-      var e = head[u]
-      while e != -1:
-        let v = neighborTo[e]
-        if distFromChaser[v] == farDistance:
-          distFromChaser[v] = distFromChaser[u] + 1
-          queue[queueTail] = v
+      var edgeIdx = head[vertex]
+      while edgeIdx != -1:
+        let neighbor = neighborTo[edgeIdx]
+        if distFromChaser[neighbor] == farDistance:
+          distFromChaser[neighbor] = distFromChaser[vertex] + 1
+          queue[queueTail] = neighbor
           queueTail += 1
-        e = neighborNext[e]
+        edgeIdx = neighborNext[edgeIdx]
     var current = runnerStart
     var steps = 0
     while true:
@@ -144,14 +144,14 @@ for caseIndex in 0..<caseCount:
       if distToCore[current] == 0:
         runnerWins = true
         break
-      var e = head[current]
+      var edgeIdx = head[current]
       var nextVertex = -1
-      while e != -1:
-        let v = neighborTo[e]
-        if distToCore[v] < distToCore[current]:
-          nextVertex = v
+      while edgeIdx != -1:
+        let neighbor = neighborTo[edgeIdx]
+        if distToCore[neighbor] < distToCore[current]:
+          nextVertex = neighbor
           break
-        e = neighborNext[e]
+        edgeIdx = neighborNext[edgeIdx]
       if nextVertex < 0:
         break
       current = nextVertex
@@ -162,30 +162,30 @@ for caseIndex in 0..<caseCount:
     outputBuffer.add '\n'
     continue
 
-  var finalizedA = newSeq[bool](stateCount)
-  var finalizedX = newSeq[bool](stateCount)
-  var pushedX = newSeq[bool](stateCount)
+  var finalizedRunner = newSeq[bool](stateCount)
+  var finalizedChaser = newSeq[bool](stateCount)
+  var pushedChaser = newSeq[bool](stateCount)
   var pending = newSeq[uint16](stateCount)
-  for r in 0..<nodeCount:
-    let startCount = uint16(degree[r] + 1)
-    let base = r * nodeCount
-    for c in 0..<nodeCount:
-      pending[base + c] = startCount
+  for runnerPos in 0..<nodeCount:
+    let startCount = uint16(degree[runnerPos] + 1)
+    let base = runnerPos * nodeCount
+    for chaserPos in 0..<nodeCount:
+      pending[base + chaserPos] = startCount
 
   let maxBucket = nodeCount + 4
   var bucketHead = newSeq[int32](maxBucket + 1)
   var eventNext = newSeq[int32](2 * stateCount)
 
-  for r in 0..<nodeCount:
-    var code = (r * nodeCount + r) * 2 + 1
+  for runnerPos in 0..<nodeCount:
+    var code = (runnerPos * nodeCount + runnerPos) * 2 + 1
     eventNext[code] = bucketHead[0]
     bucketHead[0] = int32(code + 1)
-    var e = head[r]
-    while e != -1:
-      code = (r * nodeCount + neighborTo[e]) * 2 + 1
+    var edgeIdx = head[runnerPos]
+    while edgeIdx != -1:
+      code = (runnerPos * nodeCount + neighborTo[edgeIdx]) * 2 + 1
       eventNext[code] = bucketHead[1]
       bucketHead[1] = int32(code + 1)
-      e = neighborNext[e]
+      edgeIdx = neighborNext[edgeIdx]
 
   var answer = -1
   let targetState = runnerStart * nodeCount + chaserStart
@@ -195,56 +195,56 @@ for caseIndex in 0..<caseCount:
       bucketHead[value] = eventNext[code]
       let eventType = code and 1
       let state = code shr 1
-      let r = state div nodeCount
-      let c = state - r * nodeCount
+      let runnerPos = state div nodeCount
+      let chaserPos = state - runnerPos * nodeCount
       if eventType == 1:
-        if finalizedX[state]:
+        if finalizedChaser[state]:
           continue
-        finalizedX[state] = true
-        var stateA = r * nodeCount + c
-        if not finalizedA[stateA]:
-          pending[stateA] = pending[stateA] - uint16(1)
-          if pending[stateA] == uint16(0):
-            finalizedA[stateA] = true
-            let nextCode = stateA * 2
+        finalizedChaser[state] = true
+        var runnerState = runnerPos * nodeCount + chaserPos
+        if not finalizedRunner[runnerState]:
+          pending[runnerState] = pending[runnerState] - uint16(1)
+          if pending[runnerState] == uint16(0):
+            finalizedRunner[runnerState] = true
+            let nextCode = runnerState * 2
             eventNext[nextCode] = bucketHead[value]
             bucketHead[value] = int32(nextCode + 1)
-        var e = head[r]
-        while e != -1:
-          stateA = neighborTo[e] * nodeCount + c
-          if not finalizedA[stateA]:
-            pending[stateA] = pending[stateA] - uint16(1)
-            if pending[stateA] == uint16(0):
-              finalizedA[stateA] = true
-              let nextCode = stateA * 2
+        var edgeIdx = head[runnerPos]
+        while edgeIdx != -1:
+          runnerState = neighborTo[edgeIdx] * nodeCount + chaserPos
+          if not finalizedRunner[runnerState]:
+            pending[runnerState] = pending[runnerState] - uint16(1)
+            if pending[runnerState] == uint16(0):
+              finalizedRunner[runnerState] = true
+              let nextCode = runnerState * 2
               eventNext[nextCode] = bucketHead[value]
               bucketHead[value] = int32(nextCode + 1)
-          e = neighborNext[e]
+          edgeIdx = neighborNext[edgeIdx]
       else:
         if state == targetState:
           answer = value
           break
-        var stateX = r * nodeCount + c
-        if not finalizedX[stateX] and not pushedX[stateX]:
-          if not closedFlag[stateX]:
-            pushedX[stateX] = true
+        var chaserState = runnerPos * nodeCount + chaserPos
+        if not finalizedChaser[chaserState] and not pushedChaser[chaserState]:
+          if not isClosed[chaserState]:
+            pushedChaser[chaserState] = true
             let nextValue = value + 1
             if nextValue <= maxBucket:
-              let nextCode = stateX * 2 + 1
+              let nextCode = chaserState * 2 + 1
               eventNext[nextCode] = bucketHead[nextValue]
               bucketHead[nextValue] = int32(nextCode + 1)
-        var e = head[c]
-        while e != -1:
-          stateX = r * nodeCount + neighborTo[e]
-          if not finalizedX[stateX] and not pushedX[stateX]:
-            if not closedFlag[stateX]:
-              pushedX[stateX] = true
+        var edgeIdx = head[chaserPos]
+        while edgeIdx != -1:
+          chaserState = runnerPos * nodeCount + neighborTo[edgeIdx]
+          if not finalizedChaser[chaserState] and not pushedChaser[chaserState]:
+            if not isClosed[chaserState]:
+              pushedChaser[chaserState] = true
               let nextValue = value + 1
               if nextValue <= maxBucket:
-                let nextCode = stateX * 2 + 1
+                let nextCode = chaserState * 2 + 1
                 eventNext[nextCode] = bucketHead[nextValue]
                 bucketHead[nextValue] = int32(nextCode + 1)
-          e = neighborNext[e]
+          edgeIdx = neighborNext[edgeIdx]
     if answer >= 0:
       break
 

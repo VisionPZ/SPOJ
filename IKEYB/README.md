@@ -1,35 +1,110 @@
+# IKEYB — I-Keyboard (SPOJ)
+
+<https://www.spoj.com/problems/IKEYB/>
+
 ## Problem
 
-Read T test cases. Each case gives K key characters, L letter characters, and L letter frequencies. Split the letters into consecutive groups on the keys and minimize total typing price. The price of a letter is its frequency times its position on its key. Break cost ties by maximizing the letters on the last key, then the key before it, and so on. Print a header and K key lines per case, followed by a blank line.
+Typing a letter on a phone keypad costs one press per position on its key. Assign letters to keys so a typed message costs as little as possible.
 
-The bounds stay small in both dimensions.
+Read `t` cases. Each case gives `K`, `L`, the `K` key characters, the `L` letter characters, and `L` frequencies. Split the letters into consecutive groups, one group per key.
+
+Print `Keypad #j:`, then `K` lines of `key: letters`, then a blank line. Cost ties go to the layout with more letters on the last key, then the key before it.
+
+The bounds stay small in both dimensions:
 
 | Quantity | Bound |
 | --- | --- |
-| Test cases | about 2000 |
-| Keys K | 1 to 90 |
-| Letters L | K to 90 |
-| Frequency | 1 to 100000 |
+| Test cases `t` | about 2000 |
+| Keys `K` | 1 to 90 |
+| Letters `L` | `K` to 90 |
+| Letter frequency | 1 to 100000 |
 | Time limit | 5000 ms |
 | Memory limit | 1536 MB |
 
-The product of K and L never exceeds 8100.
+The product `K * L` never exceeds 8100, so a quadratic table fits.
+
+The sample case:
+
+```
+1
+8 26
+23456789
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+3371
+589
+1575
+1614
+6212
+971
+773
+1904
+2989
+123
+209
+1588
+1513
+2996
+3269
+1080
+121
+2726
+3083
+4368
+1334
+518
+752
+427
+733
+871
+```
+
+```
+Keypad #1:
+2: ABCD
+3: EFG
+4: HIJK
+5: LM
+6: NOPQ
+7: RS
+8: TUV
+9: WXYZ
+
+```
 
 ## Idea
 
-One key holds one consecutive block of letters, so the task is a partition problem. Prefix sums give the cost of any block in constant time. A dynamic program fills one state for each count of letters and keys. On a cost tie it keeps the smallest split point, which leaves the most letters on the last key. Walking the saved splits backward gives the required tie order. Enumerating all partitions would take exponential time.
+Cut the letter string into `K` consecutive blocks, like slicing a long ribbon. Prefix sums price any slice at once.
 
-Each state scans at most L split points, so one case costs O(K L^2).
+A dynamic program fills `minimumCost[k][l]`, the cheapest way to place the first `l` letters on `k` keys. Each state tries every possible split point. `bestSplitAt` saves the smallest split on a tie, which leaves the most letters on the last key.
+
+Walking those saved splits backward fills every key in the required order.
+
+Each state scans at most `L` splits, so one case costs O(K L^2). Listing all partitions takes exponential time.
 
 ## Why It Works
 
-`prefixFrequency` sums the frequencies up to a letter. `prefixWeighted` sums each frequency times its letter index. The cost of a block `k` through `l` is the weighted sum minus `(k - 1)` times the plain sum. The subtraction shifts every letter to its position inside the block.
+Five facts prove the program optimal and correctly ordered.
 
-`minimumCost[k][l]` holds the cheapest cost for the first `l` letters on `k` keys. The program tries every `i` from `k` minus one up to `l` minus one. The last key takes the letters after that split. The guard on `infiniteCost` skips prefixes that no key assignment can reach. Adding to an unreachable state would overflow and create a false negative cost.
+1. `prefixFrequency` sums frequencies up to a letter. `prefixWeighted` sums each frequency times its letter index.
+2. The cost of block `k` through `l` is the weighted sum minus `(k - 1)` times the plain sum. The subtraction restarts positions at one on each key.
+3. `minimumCost[k][l]` picks the smallest value of `minimumCost[k - 1][i] + segmentCost[i + 1][l]` over `i` from `k - 1` to `l - 1`.
+4. The `infiniteCost` guard skips prefixes no key assignment can reach. Adding to such a state would overflow and create a false negative cost.
+5. A strict `<` comparison keeps the smallest split on a tie. That choice maximizes the last key, and backtracking repeats it for earlier keys.
 
-The scan visits `i` in increasing order and replaces the answer only on a strictly lower cost. The smallest `i` therefore survives a tie. That choice maximizes the letters on the last key. Repeating the choice from the back fills the earlier keys in the required order.
+The tables and their roles:
 
-Here is the sample case solved by the program.
+| Term | Meaning |
+| --- | --- |
+| `minimumCost` | cheapest cost for the first `l` letters on `k` keys |
+| `bestSplitAt` | smallest split point kept at each state |
+| `segmentCost` | typing cost of one consecutive block |
+| `prefixFrequency` | running sum of letter frequencies |
+| `prefixWeighted` | running sum of frequency times letter index |
+| `infiniteCost` | sentinel for unreachable states |
+
+Every block price comes from two prefix entries, so no block is rescanned.
+
+A script prices the sample layout key by key:
 
 | Key | Letters | Cost |
 | --- | --- | --- |
@@ -42,20 +117,54 @@ Here is the sample case solved by the program.
 | 8 | TUV | 8590 |
 | 9 | WXYZ | 7289 |
 
-The total cost is 77933, and no other layout beats it.
+The costs sum to 77933, and no other layout beats it.
 
 ## Code
 
-```
-  var lineBuffer = ""
-  while readLine(stdin, lineBuffer):
-    inputData.add lineBuffer
-    inputData.add '\n'
+**Constants and tables.** Fixed arrays hold every DP state and prefix entry.
+
+```nim
+const maxKeyCount = 90
+const maxLetterCount = 90
+const flushBlockBytes = 1 shl 18
+const firstDigitValue = 48
+const infiniteCost = high(int64) div 4
+
+var inputData = ""
+var i = 0
+var outputBuffer = ""
+
+var minimumCost: array[0..maxKeyCount + 1, array[0..maxLetterCount + 1, int64]]
+var bestSplitAt: array[0..maxKeyCount + 1, array[0..maxLetterCount + 1, int]]
+var segmentCost: array[0..maxLetterCount + 1, array[0..maxLetterCount + 1, int64]]
+var prefixFrequency: array[0..maxLetterCount + 1, int64]
+var prefixWeighted: array[0..maxLetterCount + 1, int64]
+var frequencyValues: array[0..maxLetterCount + 1, int64]
+var keyCharacters: array[0..maxKeyCount + 1, char]
+var letterCharacters: array[0..maxLetterCount + 1, char]
+var groupStart: array[0..maxKeyCount + 1, int]
+var groupEnd: array[0..maxKeyCount + 1, int]
 ```
 
-The loop reads every line into `inputData`. Adding a newline preserves token boundaries. The loop runs once per input line.
+The arrays reuse the same memory across all cases. `infiniteCost` leaves room to add a block price without overflow.
 
-```
+**Output helpers and scanners.** One buffer collects writes, and scanners read characters and integers.
+
+```nim
+proc flushOutput() =
+  stdout.write outputBuffer
+  outputBuffer.setLen 0
+
+proc appendText(textValue: string) =
+  outputBuffer.add textValue
+  if outputBuffer.len >= flushBlockBytes:
+    flushOutput()
+
+proc appendCharacter(characterValue: char) =
+  outputBuffer.add characterValue
+  if outputBuffer.len >= flushBlockBytes:
+    flushOutput()
+
 proc nextInteger(): int =
   let dataLength = inputData.len
   while i < dataLength and inputData[i] != '-' and
@@ -73,11 +182,20 @@ proc nextInteger(): int =
   if isNegative:
     return -numberValue
   return numberValue
+
+proc nextCharacter(): char =
+  let dataLength = inputData.len
+  while i < dataLength and inputData[i] <= ' ':
+    inc i
+  result = inputData[i]
+  inc i
 ```
 
-The scanner advances `i` only forward. It handles a minus sign before the digits. The inner loop runs once per input character.
+`flushOutput` writes one block and clears the string. `nextInteger` handles a minus sign before the digits. `nextCharacter` skips whitespace and returns one letter or key name.
 
-```
+**Prefix sums and block costs.** Two running sums price every consecutive block.
+
+```nim
     prefixFrequency[0] = 0
     prefixWeighted[0] = 0
     for l in 1..letterCount:
@@ -93,9 +211,16 @@ The scanner advances `i` only forward. It handles a minus sign before the digits
         segmentCost[k][l] = weightedSum - int64(k - 1) * frequencySum
 ```
 
-The inner loop visits letterCount times for each `k`. The offset `(k - 1)` restarts positions at one on each key. Every block cost takes constant time.
+The inner loop visits `letterCount` times for each `k`. The offset `(k - 1)` restarts positions at one on each key. Every block cost takes constant time.
 
-```
+**Dynamic program.** The nested loops fill one state per key count and letter count.
+
+```nim
+    for k in 0..keyCount:
+      for l in 0..letterCount:
+        minimumCost[k][l] = infiniteCost
+        bestSplitAt[k][l] = -1
+    minimumCost[0][0] = 0
     for k in 1..keyCount:
       for l in k..letterCount:
         var chosenCost = infiniteCost
@@ -112,9 +237,15 @@ The inner loop visits letterCount times for each `k`. The offset `(k - 1)` resta
         bestSplitAt[k][l] = chosenSplit
 ```
 
-The scan visits `l` minus `k` plus one split points. The guard skips states with no reachable prefix. Strict comparison keeps the smallest tie split. This block costs O(K L^2) per case.
+The scan visits `l - k + 1` split points per state. The guard skips unreachable prefixes. Strict comparison keeps the smallest tie split, so the last key grows first.
 
-```
+**Reconstruction and printing.** Saved splits are walked backward, then printed key by key.
+
+```nim
+    appendText("Keypad #")
+    appendText($j)
+    appendText(":\n")
+
     var remainingLetters = letterCount
     var k = keyCount
     while k >= 1:
@@ -132,18 +263,28 @@ The scan visits `l` minus `k` plus one split points. The guard skips states with
           appendCharacter(letterCharacters[k])
       appendText("\n")
     appendText("\n")
+
+  flushOutput()
 ```
 
-The first loop runs keyCount times, once for each key. The empty-group check keeps the trailing space on an unused key. The second loop writes K lines and at most L letters.
-
-```
-proc flushOutput() =
-  stdout.write outputBuffer
-  outputBuffer.setLen 0
-```
-
-The program flushes after each `flushBlockBytes` bytes. One write serves many output lines. Clearing the buffer with `setLen` reuses its memory.
+The first loop runs `keyCount` times. The empty-group check keeps the trailing space on an unused key. The second loop writes `K` lines and at most `L` letters.
 
 ## Complexity
 
-Reading and scanning take O(total input tokens). Precomputing block costs takes O(L^2) per case. The DP takes O(K L^2) per case. Reconstruction and printing take O(L + K) per case. Tables use O(K L) space, plus one input buffer and one output buffer. Direct enumeration would examine all groupings of the letter sequence.
+Precomputation and the DP share the same quadratic shape.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(input bytes) | input buffer |
+| Prefix and block costs | O(L^2) per case | O(L^2) table |
+| Dynamic program | O(K L^2) per case | O(K L) tables |
+| Reconstruction and output | O(L + K) per case | O(K) group arrays |
+
+Constants cap `K` and `L` at 90, so each table stays small.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(K L^2) per case |
+| Space | O(K L) plus input and output buffers |
+
+Direct enumeration examines every grouping of the letter sequence and grows exponentially.

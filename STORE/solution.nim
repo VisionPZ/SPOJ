@@ -23,10 +23,10 @@ proc nextInt(data: string, pos: var int): int =
 
 proc nextField(data: string, pos: var int): char =
   while pos < data.len:
-    let c = data[pos]
-    if c == 'S' or c == 'M' or c == 'P' or c == 'K' or c == 'w':
+    let cellChar = data[pos]
+    if cellChar == 'S' or cellChar == 'M' or cellChar == 'P' or cellChar == 'K' or cellChar == 'w':
       pos += 1
-      return c
+      return cellChar
     pos += 1
   return 'S'
 
@@ -41,13 +41,13 @@ var stride = 0
 var delta: array[4, int]
 var blocked: seq[bool]
 var edgeBlock: seq[int]
-var disc: seq[int]
+var discTime: seq[int]
 var lowLink: seq[int]
 var parentCell: seq[int]
 var edgeStack: seq[int]
 var visitStamp: seq[int]
 var floodQueue: seq[int]
-var distArr: seq[int]
+var pushDist: seq[int]
 var stateQueue: seq[int]
 var stateHead = 0
 var stateTail = 0
@@ -57,20 +57,20 @@ var blockCount = 0
 
 proc tarjanDfs(cell: int) =
   dfsTime += 1
-  disc[cell] = dfsTime
+  discTime[cell] = dfsTime
   lowLink[cell] = dfsTime
-  for d in 0..3:
-    let neighbor = cell + delta[d]
+  for dirIdx in 0..3:
+    let neighbor = cell + delta[dirIdx]
     if blocked[neighbor]:
       continue
-    if disc[neighbor] == 0:
+    if discTime[neighbor] == 0:
       parentCell[neighbor] = cell
       let stackTop = edgeStack.len
-      edgeStack.add(cell * 4 + d)
+      edgeStack.add(cell * 4 + dirIdx)
       tarjanDfs(neighbor)
       if lowLink[neighbor] < lowLink[cell]:
         lowLink[cell] = lowLink[neighbor]
-      if lowLink[neighbor] >= disc[cell]:
+      if lowLink[neighbor] >= discTime[cell]:
         blockCount += 1
         while edgeStack.len > stackTop:
           let edge = edgeStack[edgeStack.len - 1]
@@ -80,10 +80,10 @@ proc tarjanDfs(cell: int) =
           let toCell = fromCell + delta[fromDir]
           edgeBlock[fromCell * 4 + fromDir] = blockCount
           edgeBlock[toCell * 4 + (fromDir xor 1)] = blockCount
-    elif neighbor != parentCell[cell] and disc[neighbor] < disc[cell]:
-      edgeStack.add(cell * 4 + d)
-      if disc[neighbor] < lowLink[cell]:
-        lowLink[cell] = disc[neighbor]
+    elif neighbor != parentCell[cell] and discTime[neighbor] < discTime[cell]:
+      edgeStack.add(cell * 4 + dirIdx)
+      if discTime[neighbor] < lowLink[cell]:
+        lowLink[cell] = discTime[neighbor]
 
 proc initStart(parcelCell: int, keeperCell: int) =
   blocked[parcelCell] = true
@@ -97,17 +97,17 @@ proc initStart(parcelCell: int, keeperCell: int) =
   while head < tail:
     let cell = floodQueue[head]
     head += 1
-    for e in 0..3:
-      let nextCell = cell + delta[e]
+    for dirIdx in 0..3:
+      let nextCell = cell + delta[dirIdx]
       if not blocked[nextCell] and visitStamp[nextCell] != stamp:
         visitStamp[nextCell] = stamp
         floodQueue[tail] = nextCell
         tail += 1
   blocked[parcelCell] = false
-  for d in 0..3:
-    if not blocked[parcelCell + delta[d]] and visitStamp[parcelCell + delta[d]] == stamp:
-      let state = parcelCell * 4 + d
-      distArr[state] = 0
+  for dirIdx in 0..3:
+    if not blocked[parcelCell + delta[dirIdx]] and visitStamp[parcelCell + delta[dirIdx]] == stamp:
+      let state = parcelCell * 4 + dirIdx
+      pushDist[state] = 0
       stateQueue[stateTail] = state
       stateTail += 1
 
@@ -122,15 +122,15 @@ for caseIndex in 0..<caseCount:
   delta[2] = -1
   delta[3] = 1
   blocked = newSeq[bool](cellTotal)
-  for i in 0..<cellTotal:
-    blocked[i] = true
+  for cellIdx in 0..<cellTotal:
+    blocked[cellIdx] = true
   var parcelCell = 0
   var keeperCell = 0
   var targetCell = 0
-  for i in 1..rows:
-    for j in 1..cols:
+  for rowIdx in 1..rows:
+    for colIdx in 1..cols:
       let field = nextField(inputData, scanPos)
-      let cell = i * stride + j
+      let cell = rowIdx * stride + colIdx
       blocked[cell] = (field == 'S')
       if field == 'P':
         parcelCell = cell
@@ -139,24 +139,24 @@ for caseIndex in 0..<caseCount:
       elif field == 'K':
         targetCell = cell
   edgeBlock = newSeq[int](cellTotal * 4)
-  for i in 0..<edgeBlock.len:
-    edgeBlock[i] = -1
-  disc = newSeq[int](cellTotal)
+  for edgeIdx in 0..<edgeBlock.len:
+    edgeBlock[edgeIdx] = -1
+  discTime = newSeq[int](cellTotal)
   lowLink = newSeq[int](cellTotal)
   parentCell = newSeq[int](cellTotal)
-  for i in 0..<cellTotal:
-    parentCell[i] = -1
+  for cellIdx in 0..<cellTotal:
+    parentCell[cellIdx] = -1
   edgeStack = newSeq[int](cellTotal * 4)
   dfsTime = 0
   blockCount = 0
-  for i in 0..<cellTotal:
-    if not blocked[i] and disc[i] == 0:
-      tarjanDfs(i)
+  for cellIdx in 0..<cellTotal:
+    if not blocked[cellIdx] and discTime[cellIdx] == 0:
+      tarjanDfs(cellIdx)
   visitStamp = newSeq[int](cellTotal)
   floodQueue = newSeq[int](cellTotal)
-  distArr = newSeq[int](cellTotal * 4)
-  for i in 0..<distArr.len:
-    distArr[i] = -1
+  pushDist = newSeq[int](cellTotal * 4)
+  for stateIdx in 0..<pushDist.len:
+    pushDist[stateIdx] = -1
   stateQueue = newSeq[int](cellTotal * 4)
   stateHead = 0
   stateTail = 0
@@ -170,20 +170,20 @@ for caseIndex in 0..<caseCount:
       stateHead += 1
       let parcelHere = state div 4
       let prevDir = state mod 4
-      let pushCount = distArr[state]
-      for d in 0..3:
-        let landingCell = parcelHere + delta[d]
+      let pushCount = pushDist[state]
+      for dirIdx in 0..3:
+        let landingCell = parcelHere + delta[dirIdx]
         if blocked[landingCell]:
           continue
-        let standDir = d xor 1
+        let standDir = dirIdx xor 1
         let standCell = parcelHere + delta[standDir]
         if blocked[standCell]:
           continue
         if edgeBlock[parcelHere * 4 + prevDir] != edgeBlock[parcelHere * 4 + standDir]:
           continue
         let nextState = landingCell * 4 + standDir
-        if distArr[nextState] == -1:
-          distArr[nextState] = pushCount + 1
+        if pushDist[nextState] == -1:
+          pushDist[nextState] = pushCount + 1
           if landingCell == targetCell:
             answer = pushCount + 1
             break

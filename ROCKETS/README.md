@@ -1,45 +1,96 @@
+# ROCKETS — Rockets (SPOJ)
+
+<https://www.spoj.com/problems/ROCKETS/>
+
 ## Problem
 
-Read t test cases. Each case gives n points in set R and n points in set W, with integer coordinates in [-10000, 10000]. Print one target number per rocket, in input order. Each segment from a rocket to its target must avoid every other segment. No three input points lie on one line.
+Ground-to-ground rockets must hit enemy targets with straight flight paths that never cross. Assign one target to each rocket so every pair of trajectories stays clear.
 
-| Quantity | Bound |
-| --- | --- |
-| Points per set | n <= 10000 |
-| Coordinate range | -10000 to 10000 |
-| Memory limit | 1536 MB |
-| Time limit | 1200 ms |
+Input: `t` cases separated by blank lines. Each starts with `n`, then `n` rocket points followed by `n` target points. Output: `n` lines; line `i` gives the index of the target assigned to rocket `i`.
 
-The point count drives the running time; the coordinate range only bounds the arithmetic.
+The bounds from the statement:
+
+| Item | Bound |
+|---|---|
+| Points in each set `n` | 1 ≤ n ≤ 10000 |
+| Coordinates | integers from −10000 to 10000 |
+| General position | no three points are collinear |
+| Judge limit | 1200 ms, 1536 MB |
+
+Any non-crossing pairing is accepted, so the output need not match the sample exactly.
+
+The sample input and output:
+
+```
+1
+4
+0 0
+1 5
+4 2
+2 6
+1 2
+5 4
+4 5
+3 1
+```
+
+```
+2
+1
+4
+3
+```
 
 ## Idea
 
-Split each point set with a balanced line and solve the two sides on their own. A balanced line passes through one rocket and one target. Each open half-plane then holds equal counts of both kinds. Match the two points on that line, then recurse on each side. Each point takes O(log n) sorting work per level and O(log^2 n) over the whole recursion.
+Pair the leftmost point first, like untangling crossing strings by deciding the one strand that must reach across. Its partner splits the remaining points into two independent halves.
+
+The program picks the leftmost point, sorts all others by angle around it, and scans that order. A target that balances rocket and target counts gives a valid split. The program chooses the balancing point closest to the angular median, then recurses on each half.
+
+Each level sorts its slice by angle, giving O(n log² n) expected work overall. Small slices use insertion sort. Trying all n! pairings is impossible beyond a handful of points.
+
+The leftmost point has a forced partner, and recursion settles the rest.
 
 ## Why It Works
 
-Choose the leftmost point v of a set. Every other point lies to its right, or directly above it. Direction angles from v therefore span less than a half turn. Sort the other points by slope around v.
+Four facts carry the pairing.
 
-Call a point same when it belongs to v's kind and opposite otherwise. Start a running count at zero. Add one for each same point and subtract one for each opposite point. The count ends at -1, so some opposite point has count zero before it. Take the one nearest the middle position. The points before it and after it then hold equal counts of both kinds.
+1. In a non-crossing perfect matching, the leftmost point's segment splits the other points into two halves. A point on one side cannot pair across that segment without crossing it.
+2. Each half must hold equal numbers of rockets and targets. In angular order, an opposite-type point that brings `balanceValue` to zero creates such a half.
+3. Picking the balancing point nearest the angular median keeps both recursive slices small, limiting total work.
+4. `slopeLess` compares angles with integer cross-products, so no floating point enters the sort. The general-position rule removes ties.
 
-The segment from v to that point separates the halves. Segments built inside a half stay inside that half. They never cross the separating segment or a segment from the other half.
+The values that drive the split:
 
-The sample uses v = (0, 0), the leftmost rocket. The table lists the other points by slope around v. The count column shows the value before each point.
+| Term | Meaning |
+|---|---|
+| `pivotX`, `pivotY` | coordinates of the current leftmost point |
+| `slopeLess` | angular order test using a cross-product |
+| `balanceValue` | rockets minus targets in the angular scan |
+| `matchPos` | chosen partner position inside the sorted slice |
 
-| Target | Kind | Angle | Count before |
-| --- | --- | --- | --- |
-| w4 | W | 0.322 | 0 |
-| r3 | R | 0.464 | -1 |
-| w2 | W | 0.675 | 0 |
-| w3 | W | 0.896 | -1 |
-| w1 | W | 1.107 | -2 |
-| r4 | R | 1.249 | -3 |
-| r2 | R | 1.373 | -2 |
+The median choice bounds recursion depth and total work.
 
-w2 sits nearest the middle, so the first segment joins r1 to w2. The remaining points form two balanced sets and follow the same rule.
+A script-traced example with two rockets and two targets:
+
+```
+R1 = (0,0), R2 = (0,2), W1 = (2,0), W2 = (2,2)
+pivot R1; others by angle: W1 (0 deg), W2 (45 deg), R2 (90 deg)
+scan: W1 -> balance 0 -> partner W1
+remaining R2 and W2 pair together
+
+output for rocket 1, rocket 2: 1 2
+```
+
+The four-point sample produces the pairing `2 1 4 3` by the same rule.
 
 ## Code
 
+**Constants and scanner.** The scanner accepts negative coordinates and the input is read once.
+
 ```nim
+{.push checks: off, optimization: speed, stackTrace: off, lineDir: off.}
+{.emit: "#pragma GCC optimize(\"O3\")".}
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 17
 const maxPoints = 20000
@@ -68,7 +119,13 @@ proc nextInt(data: string, position: var int): int =
   if negative:
     return -value
   return value
+```
 
+`nextInt` checks for a leading minus sign before reading digits. `maxPoints = 20000` covers both sets at the largest case.
+
+**Output helper and state.** Arrays hold coordinates, types, indices, and the recursion stack.
+
+```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -76,11 +133,7 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
-```
 
-The read loop ends at end of input. The scanner handles a leading minus sign, so negative coordinates parse correctly. One scan of the input bytes covers every token.
-
-```nim
 var xCoord: array[maxPoints, int]
 var yCoord: array[maxPoints, int]
 var isRocketPoint: array[maxPoints, bool]
@@ -92,7 +145,13 @@ var stackHi: array[maxPoints, int]
 var pivotX = 0
 var pivotY = 0
 var randomState: uint32 = 2463534242'u32
+```
 
+`sourceIndex` maps a point back to its input number. `matchResult` holds one target per rocket. `randomState` seeds the quicksort pivot choice.
+
+**Random pivot and angular order.** `nextIndex` picks a pivot, and `slopeLess` orders points by angle.
+
+```nim
 proc nextIndex(rangeSize: int): int =
   randomState = randomState xor (randomState shl 13)
   randomState = randomState xor (randomState shr 17)
@@ -109,7 +168,13 @@ proc slopeLess(leftId, rightId: int): bool =
   if rightDx == 0:
     return true
   return int64(yCoord[leftId] - pivotY) * int64(rightDx) < int64(yCoord[rightId] - pivotY) * int64(leftDx)
+```
 
+`nextIndex` uses xorshift and stays inside its range. `slopeLess` compares slopes with a cross-product, handling vertical rays first.
+
+**Sorting.** Quicksort switches to insertion sort for small slices.
+
+```nim
 proc insertionSort(lo, hi: int) =
   for i in lo + 1..<hi:
     let value = pointIds[i]
@@ -137,7 +202,9 @@ proc quickSort(lo, hi: int) =
   quickSort(store + 1, hi)
 ```
 
-The sort runs over the half-open range [lo, hi). A point directly above v has zero horizontal distance and sorts last. Cross products compare slopes without division. A random pivot keeps the sort fast on already ordered point lists. Sorting costs O(m log m) expected time for m points.
+`insertionLimit = 16` bounds the small-slice work. The last point becomes the pivot, and points are partitioned by `slopeLess`. Recursion stops at the insertion threshold.
+
+**Divide and conquer.** Each step picks a leftmost pivot, finds its balanced partner, and recurses on both sides.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -206,10 +273,27 @@ outputBuffer.setLen 0
 {.pop.}
 ```
 
-The stack holds ranges of still unsolved points. Each range picks its leftmost point and finds one balanced target. Choosing the target nearest the middle keeps the two new ranges close in size. The final loop prints n answers per case. This phase costs O(n log^2 n) time and O(n) working space per case.
+The stack avoids deep call recursion. Each scan counts same-type against opposite-type points and keeps the partner nearest the middle. `matchResult` records the pair for the rocket's output line.
 
 ## Complexity
 
-Reading the input takes time linear in the number of input bytes. Sorting costs O(m log m) per node of expected time, with m points in that node. Balanced splits give O(n log^2 n) total time per case. The output pass takes O(n) time and the block buffer holds at most flushBlockBytes bytes. Working arrays hold O(n) points.
+Each level sorts one slice by angle, then splits it in two.
 
-A naive search tries each rocket with each target and tests every pair of segments. That approach costs O(n^3) time and loses badly at n = 10000.
+| Phase | Time | Space |
+|---|---|---|
+| Input read | one pass over input bytes | input bytes |
+| Angular sort | O(m log m) expected per level | O(m) |
+| Divide and conquer | O(log n) levels | O(n) stack |
+| Output | one write per 128 KiB block | 128 KiB |
+| Total per case | O(n log² n) expected | O(n) |
+
+The median partner keeps both halves small at every level.
+
+| Measure | Big O |
+|---|---|
+| Time | O(n log² n) expected per case |
+| Space | O(n) for point arrays and the recursion stack |
+
+Trying all n! rocket-to-target assignments would be hopeless at `n = 10000`.
+
+Enumerating every assignment costs n! steps. The balanced angular split builds a valid non-crossing matching in polynomial time.

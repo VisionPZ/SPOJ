@@ -1,47 +1,107 @@
+# EMPTY — Empty Cuboids (SPOJ)
+<https://www.spoj.com/problems/EMPTY/>
+
 ## Problem
 
-Read t cases. Each case gives n points with integer coordinates from 1 to 1000000. Find the largest box with a corner at the origin, edges on the positive axes, and no given point in its interior. A point on a wall does not count. Print the positive coordinates of the far corner. Any largest box is accepted.
+A warehouse wants the biggest box from the origin that contains none of the stored marker points inside.
+The program prints the far corner of that box.
 
-The table lists the input bounds and the judge limits.
+Read `t` cases. Each case gives `n` points with integer coordinates from 1 to 10^6.
+Find the cuboid with largest volume that has one corner at the origin.
+Its edges lie on the positive axes, and no given point lies in its interior.
+A point on a wall does not count as inside.
+
+Print three positive integers: the far corner coordinates.
+Any largest cuboid is accepted.
+
+The judge bounds follow.
 
 | Quantity | Bound |
 | --- | --- |
-| Test cases t | at most 10 |
-| Points per case n | at most 5000 |
+| Test cases `t` | at most 10 |
+| Points per case `n` | at most 5000 |
 | Each coordinate | 1 to 1000000 |
 | Time limit | 7000 ms |
 | Memory limit | 1536 MB |
 
-Up to 50000 points per run rules out a search over all coordinate triples.
+Up to 50000 points per run rules out a search over coordinate triples.
+
+The sample input and expected output follow verbatim.
+
+```
+1
+4
+3 3 300000
+2 200000 5
+90000 3 2000
+2 2 1000
+```
+
+```
+1000000 200000 1000
+```
+
+The far corner is 1000000 200000 1000 for the sample points.
 
 ## Idea
 
-Use a sweep over the x edge and a segment tree over the y edge. Each box edge stops at a point or at the coordinate limit, so point x values cover every answer. The tree keeps the best y*z per point at O(log^2 n) steps, instead of checking all coordinate triples.
+Sweep the x edge and keep a segment tree (a tree storing best values over intervals) for the y and z edges.
+Each box edge stops at a point or at the coordinate limit, so point x values cover every answer.
+
+For a fixed X, only points with x < X matter.
+For each candidate Y, the largest safe Z is the smallest z among those points with y < Y.
+That value never grows as Y grows, so inserting a point lowers it over one interval.
+A range update changes that interval in O(log² n) steps.
+
+Cost per case is O(n log² n).
+Trying every X, Y, Z triple and checking all points costs O(n^4).
+Sweep x and let the tree hold the best y*z.
 
 ## Why It Works
 
-A point with integer coordinates is inside box (X,Y,Z) when x<X, y<Y, and z<Z. A point on a wall never counts, so equality is safe.
+Four facts prove the method.
 
-For a fixed X, only points with x<X matter. For each candidate Y, the largest safe Z is the smallest z among those points with y<Y. When no such point exists, Z is 1000000. Call this value minZ(Y).
+1. A point lies inside box (X,Y,Z) when x < X, y < Y, and z < Z.
+   Equality is safe because a wall does not count.
+2. For fixed X, the safe Z at Y is the smallest z over points with x < X and y < Y.
+   It is 10^6 when no such point exists.
+3. That value never grows as Y grows.
+   Adding point (y,z) lowers it for Y > y only where the old value exceeds z, which is one interval.
+4. The tree stores Y times that value at each compressed Y.
+   The root therefore holds the best product for the current X.
 
-minZ(Y) never grows as Y grows. Adding point (y,z) lowers minZ(Y) for Y>y, and only where minZ(Y)>z. Those Y values form one interval, so one range set handles the insertion.
+The values stored by the tree follow.
 
-The tree stores Y*minZ(Y) at each compressed Y. A range set to z puts the largest Y in that range at the top. The sweep tries X at every point x and at 1000000. The best X equals the smallest x of the points blocking some Y,Z, or 1000000, so the list is complete.
+| Term | Meaning |
+| --- | --- |
+| `yValues` | sorted unique point y values plus 10^6 |
+| `minZ(Y)` | smallest z of a blocking point with smaller y |
+| `treeMax` | largest Y*minZ(Y) in a node interval |
+| `treeLazy` | pending z value for a whole interval |
 
-The script prints one row per candidate x edge for the sample points.
+The root gives the best Y and Z for the current X.
 
+A script evaluates every candidate x edge for the sample points.
+
+```
 | X edge | best Y*Z | chosen Y | chosen Z | volume |
 | --- | --- | --- | --- | --- |
 | 2 | 1000000000000 | 1000000 | 1000000 | 2000000000000 |
 | 3 | 200000000 | 200000 | 1000 | 600000000 |
 | 90000 | 200000000 | 200000 | 1000 | 18000000000000 |
 | 1000000 | 200000000 | 200000 | 1000 | 200000000000000 |
+the last row is largest, so the answer is 1000000 200000 1000
+```
 
 The last row is largest, which gives the sample answer.
 
 ## Code
 
+**Constants, point type, and scanner.**
+
 ```nim
+import algorithm
+
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 const maxEdge = 1000000
@@ -63,21 +123,9 @@ proc nextInt(data: string, position: var int): int =
   return value
 ```
 
-Both loops stop at dataLength, the end of the one input buffer. Skipping non-digits absorbs the blank lines between cases. Scanning costs one pass over the bytes.
+maxEdge is the coordinate limit of 10^6. A Point keeps the three coordinates in named fields. The scanner walks one input buffer by index. Skipping non-digits absorbs blank lines.
 
-```nim
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
-
-var i = 0
-let caseCount = nextInt(inputData, i)
-var outputBuffer = ""
-```
-
-The loop runs once per input line and keeps all data in one buffer. The newline keeps two neighboring numbers apart. Reading costs one pass over the stream.
+**Tree globals and build.**
 
 ```nim
 var yValues: seq[int]
@@ -115,7 +163,9 @@ proc pushDown(nodeIndex, leftBound, rightBound: int) =
     treeLazy[nodeIndex] = -1
 ```
 
-Build runs once per case over the sorted y values. applyValue sets a whole node range to one z value, so the largest Y in that range wins. pushDown clears a stale parent value before a partial update.
+applyValue sets a whole node to one z value. The largest Y in that interval wins the product. buildTree initializes every leaf to the maximum edge. pushDown clears a stale parent value before a partial update.
+
+**Point query and range update.**
 
 ```nim
 proc valueAt(nodeIndex, leftBound, rightBound, target: int): int =
@@ -144,7 +194,13 @@ proc assignRange(nodeIndex, leftBound, rightBound, queryLeft, queryRight, value:
   else:
     treeMax[nodeIndex] = treeMax[nodeIndex * 2]
     treeArg[nodeIndex] = treeArg[nodeIndex * 2]
+```
 
+valueAt descends to one compressed Y. assignRange covers an interval with log n nodes. After the update, each parent keeps the larger child product. The cost is O(log n) per tree operation.
+
+**Insert one point.**
+
+```nim
 proc insertPoint(pointY, pointZ: int) =
   let lastIndex = yValues.len - 1
   var low = 0
@@ -171,7 +227,9 @@ proc insertPoint(pointY, pointZ: int) =
   assignRange(1, 0, lastIndex, firstAffected, leftIndex, pointZ)
 ```
 
-insertPoint finds the first y edge above the point with a binary search. A second binary search finds the last edge whose minZ exceeds z. assignRange then updates that interval once. Each insertion costs about log^2 n steps.
+A binary search finds the first y edge above the point. A second search finds the last edge whose minZ exceeds z. assignRange lowers that whole interval once. Each insertion costs about log² n steps.
+
+**Read the current best.**
 
 ```nim
 proc considerEdge(edgeX: int, bestVolume: var int64, answerX, answerY, answerZ: var int) =
@@ -187,7 +245,25 @@ proc considerEdge(edgeX: int, bestVolume: var int64, answerX, answerY, answerZ: 
     answerZ = winningZ
 ```
 
-considerEdge reads the top product from the root. The stored index gives Y, and valueAt gives Z. One check costs one tree descent.
+considerEdge takes the product and Y index from the root. valueAt recovers the matching Z. One check costs one tree descent.
+
+**Input setup.**
+
+```nim
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var i = 0
+let caseCount = nextInt(inputData, i)
+var outputBuffer = ""
+```
+
+The read loop keeps the whole stream in one buffer. A newline separates neighboring numbers. One output buffer holds all answers.
+
+**Sweep the x edges.**
 
 ```nim
 var caseIndex = 0
@@ -247,12 +323,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The outer loop runs once per case. Points sort by x, then groups enter in x order. The final considerEdge handles X=1000000. Output waits in one buffer and flushes in blocks.
+Points are sorted by x and grouped into edges. yValues is compressed and the tree is rebuilt per case. Each edge is considered before its points are inserted. The final call handles X = 10^6.
 
 ## Complexity
 
-Reading and parsing cost O(N) in the input bytes, where N is the number of tokens. Sorting one case costs O(n log n). The sweep does n insertions at O(log^2 n) steps each, so one case costs O(n log^2 n) time.
+The phases and their costs for one case follow.
 
-The input buffer holds O(N) bytes. The tree arrays hold four slots per distinct y value, so O(n) space per case.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Read and sort | O(n log n) | O(n) |
+| Build tree | O(n) | O(n) |
+| n insertions | O(n log² n) | O(n) |
+| Consider edges and write | O(n log n + 1) | one output block |
 
-A brute search tries every X,Y,Z triple and then checks every point. That costs O(n^4) time per case, far beyond the limit.
+The tree arrays hold four slots per distinct y value.
+
+The Big O summary follows.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n log² n) per case |
+| Space | O(n) per case |
+
+A brute search over X, Y, and Z triples with point checks costs O(n^4) per case.

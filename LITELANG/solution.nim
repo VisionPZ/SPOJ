@@ -31,29 +31,29 @@ var nodeAlive: seq[bool]
 var minHeap: seq[int]
 var maxHeap: seq[int]
 
-proc pushMin(heap: var seq[int], id: int) =
-  heap.add id
-  var i = heap.len - 1
-  while i > 0:
-    let p = (i - 1) div 2
-    if nodeValue[heap[p]] <= nodeValue[heap[i]]:
+proc pushMin(heap: var seq[int], nodeId: int) =
+  heap.add nodeId
+  var idx = heap.len - 1
+  while idx > 0:
+    let parentIdx = (idx - 1) div 2
+    if nodeValue[heap[parentIdx]] <= nodeValue[heap[idx]]:
       break
-    let swapId = heap[p]
-    heap[p] = heap[i]
-    heap[i] = swapId
-    i = p
+    let swapId = heap[parentIdx]
+    heap[parentIdx] = heap[idx]
+    heap[idx] = swapId
+    idx = parentIdx
 
-proc pushMax(heap: var seq[int], id: int) =
-  heap.add id
-  var i = heap.len - 1
-  while i > 0:
-    let p = (i - 1) div 2
-    if nodeValue[heap[p]] >= nodeValue[heap[i]]:
+proc pushMax(heap: var seq[int], nodeId: int) =
+  heap.add nodeId
+  var idx = heap.len - 1
+  while idx > 0:
+    let parentIdx = (idx - 1) div 2
+    if nodeValue[heap[parentIdx]] >= nodeValue[heap[idx]]:
       break
-    let swapId = heap[p]
-    heap[p] = heap[i]
-    heap[i] = swapId
-    i = p
+    let swapId = heap[parentIdx]
+    heap[parentIdx] = heap[idx]
+    heap[idx] = swapId
+    idx = parentIdx
 
 proc popMin(heap: var seq[int]): int =
   result = heap[0]
@@ -62,21 +62,21 @@ proc popMin(heap: var seq[int]): int =
   if heap.len == 0:
     return
   heap[0] = lastId
-  var i = 0
+  var idx = 0
   while true:
-    let leftIndex = 2 * i + 1
+    let leftIndex = 2 * idx + 1
     let rightIndex = leftIndex + 1
-    var smallest = i
+    var smallest = idx
     if leftIndex < heap.len and nodeValue[heap[leftIndex]] < nodeValue[heap[smallest]]:
       smallest = leftIndex
     if rightIndex < heap.len and nodeValue[heap[rightIndex]] < nodeValue[heap[smallest]]:
       smallest = rightIndex
-    if smallest == i:
+    if smallest == idx:
       break
-    let swapId = heap[i]
-    heap[i] = heap[smallest]
+    let swapId = heap[idx]
+    heap[idx] = heap[smallest]
     heap[smallest] = swapId
-    i = smallest
+    idx = smallest
 
 proc popMax(heap: var seq[int]): int =
   result = heap[0]
@@ -85,42 +85,42 @@ proc popMax(heap: var seq[int]): int =
   if heap.len == 0:
     return
   heap[0] = lastId
-  var i = 0
+  var idx = 0
   while true:
-    let leftIndex = 2 * i + 1
+    let leftIndex = 2 * idx + 1
     let rightIndex = leftIndex + 1
-    var largest = i
+    var largest = idx
     if leftIndex < heap.len and nodeValue[heap[leftIndex]] > nodeValue[heap[largest]]:
       largest = leftIndex
     if rightIndex < heap.len and nodeValue[heap[rightIndex]] > nodeValue[heap[largest]]:
       largest = rightIndex
-    if largest == i:
+    if largest == idx:
       break
-    let swapId = heap[i]
-    heap[i] = heap[largest]
+    let swapId = heap[idx]
+    heap[idx] = heap[largest]
     heap[largest] = swapId
-    i = largest
+    idx = largest
 
 proc addLeaf(value: int64) =
-  let id = nodeValue.len
+  let nodeId = nodeValue.len
   nodeValue.add value
   nodeAlive.add true
-  pushMin(minHeap, id)
-  pushMax(maxHeap, id)
+  pushMin(minHeap, nodeId)
+  pushMax(maxHeap, nodeId)
 
 proc removeLightest(): int64 =
   while not nodeAlive[minHeap[0]]:
     discard popMin(minHeap)
-  let id = popMin(minHeap)
-  nodeAlive[id] = false
-  return nodeValue[id]
+  let nodeId = popMin(minHeap)
+  nodeAlive[nodeId] = false
+  return nodeValue[nodeId]
 
 proc removeHeaviest(): int64 =
   while not nodeAlive[maxHeap[0]]:
     discard popMax(maxHeap)
-  let id = popMax(maxHeap)
-  nodeAlive[id] = false
-  return nodeValue[id]
+  let nodeId = popMax(maxHeap)
+  nodeAlive[nodeId] = false
+  return nodeValue[nodeId]
 
 let caseCount = nextInt(inputData, scanPos)
 for caseIndex in 0..<caseCount:
@@ -128,17 +128,15 @@ for caseIndex in 0..<caseCount:
   let letterCount = nextInt(inputData, scanPos)
   var letterWeights: seq[int64]
   letterWeights.setLen(letterCount)
-  var weightTotal: int64 = 0
-  for i in 0..<letterCount:
-    letterWeights[i] = int64(nextInt(inputData, scanPos))
-    weightTotal += letterWeights[i]
-  for i in 1..<letterCount:
-    let key = letterWeights[i]
-    var j = i - 1
-    while j >= 0 and letterWeights[j] > key:
-      letterWeights[j + 1] = letterWeights[j]
-      j -= 1
-    letterWeights[j + 1] = key
+  for idx in 0..<letterCount:
+    letterWeights[idx] = int64(nextInt(inputData, scanPos))
+  for curIdx in 1..<letterCount:
+    let key = letterWeights[curIdx]
+    var prevIdx = curIdx - 1
+    while prevIdx >= 0 and letterWeights[prevIdx] > key:
+      letterWeights[prevIdx + 1] = letterWeights[prevIdx]
+      prevIdx -= 1
+    letterWeights[prevIdx + 1] = key
 
   nodeValue.setLen(0)
   nodeAlive.setLen(0)
@@ -146,9 +144,9 @@ for caseIndex in 0..<caseCount:
   maxHeap.setLen(0)
   var leafTotal: int64 = 0
   let initialCount = min(wordTarget, letterCount)
-  for i in 0..<initialCount:
-    addLeaf(letterWeights[i])
-    leafTotal += letterWeights[i]
+  for idx in 0..<initialCount:
+    addLeaf(letterWeights[idx])
+    leafTotal += letterWeights[idx]
   var leafCount = initialCount
 
   var bestTotal: int64 = high(int64)
@@ -158,8 +156,8 @@ for caseIndex in 0..<caseCount:
     let lightest = removeLightest()
     leafTotal -= lightest
     leafCount -= 1
-    for i in 0..<letterCount:
-      let childWeight = lightest + letterWeights[i]
+    for idx in 0..<letterCount:
+      let childWeight = lightest + letterWeights[idx]
       addLeaf(childWeight)
       leafTotal += childWeight
       leafCount += 1

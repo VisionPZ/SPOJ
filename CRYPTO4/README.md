@@ -1,10 +1,18 @@
+# CRYPTO4 — The Bytelandian Cryptographer (Act IV) (SPOJ)
+
+<https://www.spoj.com/problems/CRYPTO4/>
+
 ## Problem
 
-Each test case gives a bound m, a damaged plaintext x, and a damaged ciphertext y. The cipher adds a repeating key of length n to each plaintext letter, where 1 <= n <= m. A star marks a lost character. Print x, filling a lost letter only when every consistent key gives that letter. Otherwise print a star.
+Two copies of a secret message arrive with letters burned away. The remaining letters still reveal the repeating key, so some missing letters can be restored with certainty.
 
-The judge bounds the run as follows.
+Input: one integer for the case count, then an upper bound m, the damaged plaintext x, and the damaged ciphertext y. Stars mark lost characters.
 
-| Quantity | Limit |
+Output: the plaintext x with stars left only where no key makes the letter certain.
+
+The judge bounds the run as follows:
+
+| Item | Bound |
 | --- | --- |
 | Test cases | 200 |
 | Key length bound m | 100000 |
@@ -14,46 +22,96 @@ The judge bounds the run as follows.
 
 The total input bound caps all message lengths together.
 
+The sample input and output:
+
+```
+4
+1
+A*X*C
+**CM*
+4
+*B***A
+AAAAAA
+6
+*B***A
+AAAAAA
+4
+*AA*******
+AAAAAAAAAA
+```
+
+```
+A*XHC
+*BA*BA
+*B***A
+*AA**A****
+```
+
 ## Idea
 
-Each known pair gives a key shift; a length n works when positions sharing a residue modulo n share one shift. The program finds conflicting distances with two FFT (fast Fourier transform) autocorrelations, which count matching shifts in one pass. A naive scan would compare every length with every position; the transform replaces that scan.
+Turn each known letter pair into a clue on a 26-hour clock, like matching repeated stripes on two rolls of wallpaper. Positions that share a key position must show the same clock offset.
 
-Cost per item: one transform per encoded array, and one divisor check per unresolved position.
+The program uses two fast Fourier transforms (FFTs, fast ways to correlate sequences) to find every distance where two clues disagree. It then tests each candidate key length against those distances. Surviving lengths vote on each lost letter.
+
+One transform costs O(L log L) for a message of length L, and the length sieve costs O(L log m). Testing every length against every position would cost O(m × L).
+
+The transform finds all conflicting distances at once.
 
 ## Why It Works
 
-For a fully known position the shift is y minus x modulo 26. Two positions with different shifts rule out n exactly when n divides their distance.
+A known pair fixes one key shift.
 
-The program maps each shift to a point on the unit circle. The real part of the autocorrelation at a distance counts overlapping known pairs when their shifts match. Each mismatch lowers that real part by at least 0.029. The program uses confidenceMargin as the cut.
+1. For a known pair, the shift is `(y - x) mod 26`.
+2. Two known positions with different shifts rule out any key length that divides their distance.
+3. An autocorrelation (a comparison with a shifted copy) counts agreeing pairs at each distance. The real part of the encoded signal falls when shifts disagree.
+4. The largest valid length gives one forced shift per residue (position within the key). A lost letter is filled only when every valid length agrees on that shift.
 
-For each length n, the sieve visits the distances n, 2n, 3n, and so on. The sum of those visits stays below about 12 times the message length.
+The arrays carry the following facts:
 
-The largest valid length gives one forced shift per used residue. A lost letter takes y minus that shift when every valid length covers its residue. One uncovered residue leaves the letter lost.
+| Term | Meaning |
+| --- | --- |
+| `diffAt` | key shift at a known position, or -1 when unknown |
+| `conflictAt[distance]` | true when that distance holds disagreeing shifts |
+| `validLengths` | key lengths with no conflict on any multiple |
+| `forcedAtLargest` | shift forced by the largest valid length at a residue |
+| `residueValue` | shifts seen at each residue for one candidate length |
+| `confidenceMargin` | 0.01, the cut that rejects rounding noise |
 
-The arrays carry one fact each.
+The length sieve visits distances n, 2n, 3n, and so on. The sum of those visits stays below about 12 times the message length.
 
-- `conflictAt` holds the conflict flag for a distance.
-- `invalidAt` holds a conflict at any multiple of a length.
-- `forcedAtLargest` holds the shift forced at a residue.
-- `residueValue` holds the shift seen at a residue for the current length.
-- `buildDivisors` lists lengths that cover one position when a final check is needed.
+A script restores the first sample case, where m = 1 and only key length 1 is possible:
 
-The sample case with m set to 4 leaves one valid length.
-
-| Position | Plain | Cipher | Residue mod 3 | Forced shift | Printed |
+| Position | Plain | Cipher | Residue mod 1 | Forced shift | Printed |
 | --- | --- | --- | --- | --- | --- |
-| 0 | * | A | 0 | none | * |
-| 1 | B | A | 1 | 25 | B |
-| 2 | * | A | 2 | 0 | A |
-| 3 | * | A | 0 | none | * |
-| 4 | * | A | 1 | 25 | B |
-| 5 | A | A | 2 | 0 | A |
+| 0 | A | `*` | 0 | 5 | A |
+| 1 | `*` | `*` | 0 | none | `*` |
+| 2 | X | C | 0 | 5 | X |
+| 3 | `*` | M | 0 | 5 | H |
+| 4 | C | `*` | 0 | none | C |
 
-Positions 0 and 3 stay lost because residue 0 has no known shift.
+Position 2 gives shift C minus X, which is 5. Position 3 becomes M minus 5, which is H, so the output is `A*XHC`.
 
 ## Code
 
-The blocks below come from the program without edits.
+**Constants.** The thresholds bound the work and the rounding risk.
+
+```nim
+import math
+
+const flushBlockBytes = 1 shl 18
+const firstDigitValue = 48
+const firstLetterValue = 65
+const circlePi = 3.141592653589793
+const letterCount = 26
+const bruteForceLimit = 2048
+const confidenceMargin = 0.01
+const sweepWorkBudget = 4000000000000000000
+const staleSweepLimit = 100000000
+```
+
+Short messages use a direct scan instead of a transform. The margin keeps rounding noise from becoming a conflict. The budgets cap the final verification work.
+
+**Input and scanners.** One buffer holds the stream, and two scanners read integers and words.
 
 ```nim
 var inputData = ""
@@ -91,7 +149,9 @@ proc emitChar(value: char) =
     outputBuffer.setLen 0
 ```
 
-The read loop stops when readLine reports the end of input. The scanner walks inputData by index and builds no token objects. emitChar flushes every flushBlockBytes bytes, so one case never writes per character.
+The read loop stops when `readLine` reports the end of input. The scanners walk the buffer by index and build no token objects. `emitChar` flushes at 256 KiB, so one case never writes per character.
+
+**Transform and trig tables.** Bit reversal and butterfly steps implement the FFT in place.
 
 ```nim
 proc fftTransform(re: var seq[float], im: var seq[float], inverse: bool) =
@@ -135,11 +195,83 @@ proc fftTransform(re: var seq[float], im: var seq[float], inverse: bool) =
     for k in 0 ..< size:
       re[k] = re[k] / float(size)
       im[k] = im[k] / float(size)
+
+var cosineTable: array[letterCount, float]
+var sineTable: array[letterCount, float]
+for value in 0 ..< letterCount:
+  let angle = 2.0 * circlePi * float(value) / float(letterCount)
+  cosineTable[value] = cos(angle)
+  sineTable[value] = sin(angle)
 ```
 
-The outer loop runs one pass per bit of size. Bit reversal puts each sample in butterfly order before those passes. This block costs O(size log size) arithmetic.
+The outer loop runs one pass per bit of the transform size. Bit reversal puts each sample in butterfly order first. Each table entry places one letter shift on the unit circle.
+
+**Number theory helpers and case setup.** Divisors of a distance give the key lengths that a known pair can rule out.
 
 ```nim
+proc greatestCommonDivisor(leftValue: int, rightValue: int): int =
+  var left = leftValue
+  var right = rightValue
+  while right != 0:
+    let saved = left
+    left = right
+    right = saved mod right
+  result = left
+
+var smallestFactor: seq[int] = @[0, 0]
+
+proc ensureFactors(upperBound: int) =
+  if smallestFactor.len > upperBound:
+    return
+  let oldLength = smallestFactor.len
+  smallestFactor.setLen(upperBound + 1)
+  for k in oldLength .. upperBound:
+    smallestFactor[k] = 0
+  if upperBound < 2:
+    return
+  for candidate in 2 .. upperBound:
+    if smallestFactor[candidate] == 0:
+      smallestFactor[candidate] = candidate
+      if candidate <= upperBound div candidate:
+        var multiple = candidate * candidate
+        while multiple <= upperBound:
+          if smallestFactor[multiple] == 0:
+            smallestFactor[multiple] = candidate
+          multiple += candidate
+
+var divisorBuffer: seq[int] = @[]
+
+proc buildDivisors(value: int) =
+  divisorBuffer.setLen 0
+  divisorBuffer.add 1
+  var remaining = value
+  while remaining > 1:
+    let prime = smallestFactor[remaining]
+    var exponent = 0
+    while remaining mod prime == 0:
+      remaining = remaining div prime
+      exponent.inc
+    let existingCount = divisorBuffer.len
+    var power = 1
+    for step in 1 .. exponent:
+      power *= prime
+      for k in 0 ..< existingCount:
+        divisorBuffer.add divisorBuffer[k] * power
+
+let testCount = scanInt()
+
+for l in 0 ..< testCount:
+  let cipherBound = scanInt()
+  let plainText = scanWord()
+  let cipherText = scanWord()
+  let textLength = plainText.len
+
+  var diffAt: seq[int8]
+  diffAt.setLen(textLength)
+  var knownCount = 0
+  var valuePositions: array[letterCount, seq[int]]
+  for value in 0 ..< letterCount:
+    valuePositions[value].setLen 0
   for j in 0 ..< textLength:
     if plainText[j] == '*' or cipherText[j] == '*':
       diffAt[j] = -1
@@ -148,7 +280,13 @@ The outer loop runs one pass per bit of size. Bit reversal puts each sample in b
       diffAt[j] = int8(diffValue)
       valuePositions[diffValue].add j
       knownCount.inc
+```
 
+The sieve stores one smallest prime factor per number. `buildDivisors` multiplies those factors into every divisor. The case setup computes one shift per known pair and records where each shift appears.
+
+**Conflict detection and valid lengths.** A direct scan handles short messages; longer ones use two transforms.
+
+```nim
   var conflictAt: seq[bool]
   conflictAt.setLen(textLength)
 
@@ -197,11 +335,7 @@ The outer loop runs one pass per bit of size. Bit reversal puts each sample in b
     for distance in 1 ..< textLength:
       if realKnown[distance] > 0.5 and realSignal[distance] < realKnown[distance] - confidenceMargin:
         conflictAt[distance] = true
-```
 
-The short branch visits every distance below textLength, so its bound is the message length squared. The transform branch encodes shifts with cosineTable and sineTable. The margin confidenceMargin keeps rounding noise from becoming a conflict.
-
-```nim
   var invalidAt: seq[bool]
   invalidAt.setLen(cipherBound + 1)
   var validLengths: seq[int] = @[]
@@ -238,9 +372,13 @@ The short branch visits every distance below textLength, so its bound is the mes
         forcedAtLargest[l] = diffAt[j]
 ```
 
-The sieve walks multiples of a length up to textLength and stops at the first conflict. That walk costs about textLength times the harmonic sum of the bound. The last loop stores one forced shift per residue at the largest valid length.
+The short branch visits every distance below the message length. The transform branch encodes shifts with the two trig tables. The sieve walks multiples of each length and keeps the conflict-free ones.
+
+**Answer setup.** The code groups repeated shifts so that some letters need no further check.
 
 ```nim
+  ensureFactors(textLength)
+
   var groupStep: array[letterCount, int]
   var groupFirst: array[letterCount, int]
   var groupNeed: array[letterCount, int]
@@ -280,9 +418,30 @@ The sieve walks multiples of a length up to textLength and stops at the first co
         groupFull[value] = false
       else:
         groupNeed[value] = int(needValue)
-```
 
-```nim
+  var validIndexAt: seq[int]
+  validIndexAt.setLen(cipherBound + 1)
+  for k in 0 .. cipherBound:
+    validIndexAt[k] = -1
+  for k in 0 ..< validCount:
+    validIndexAt[validLengths[k]] = k
+
+  var coverStamp: seq[int]
+  coverStamp.setLen(cipherBound + 1)
+  for k in 0 .. cipherBound:
+    coverStamp[k] = 0
+  var stampCounter = 0
+
+  var answerFor: seq[char]
+  answerFor.setLen(textLength)
+  var pendingFor: seq[int8]
+  pendingFor.setLen(textLength)
+  var targetFor: seq[int8]
+  targetFor.setLen(textLength)
+  var checkedFor: seq[int]
+  checkedFor.setLen(textLength)
+  var alivePositions: seq[int] = @[]
+
   for j in 0 ..< textLength:
     if plainText[j] != '*':
       answerFor[j] = plainText[j]
@@ -328,7 +487,9 @@ The sieve walks multiples of a length up to textLength and stops at the first co
     alivePositions.add j
 ```
 
-This pass touches each position once. It keeps letters already known in x and letters with a lost y. It sets one target shift from the largest valid length.
+The group step is the gcd of gaps between equal shifts. The pass keeps known letters and discards letters with a lost ciphertext. Each remaining letter records one target shift.
+
+**Verification sweep.** The code checks smaller valid lengths, then uses divisors for the positions left over.
 
 ```nim
   var residueValue: seq[int8]
@@ -392,18 +553,38 @@ This pass touches each position once. It keeps letters already known in x and le
     if coveredCount < l:
       answerFor[j] = '*'
     pendingFor[j] = 0
+
+  for j in 0 ..< textLength:
+    emitChar(answerFor[j])
+  emitChar('\n')
+
+stdout.write outputBuffer
 ```
 
-The sweep visits valid lengths from large to small and stops after staleSweepLimit quiet lengths. The divisor loop uses smallestFactor and buildDivisors for the remaining positions. Each surviving position pays one divisor scan.
+The sweep visits valid lengths from large to small and stops after many quiet lengths. The divisor loop reuses `smallestFactor` to test each remaining position. One final pass emits the restored message.
 
 ## Complexity
 
-Input reading and parsing take time linear in the total input size and use one buffer.
+Conflict detection dominates long messages, and the length sieve adds a logarithmic factor.
 
-Conflict detection takes O(textLength log textLength) time for long messages. Messages with at most bruteForceLimit characters use the direct scan instead.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over total input | input bytes |
+| Shift setup | O(L) per case | O(L) |
+| Conflict detection | O(L log L) or O(L²) if short | O(L) |
+| Length sieve | O(L log m) per case | O(m) |
+| Answer setup | O(L + m) per case | O(L + m) |
+| Verification sweep | bounded by two budgets | O(L + m) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(L log L + L log m) | O(L + m) |
 
-The length sieve takes O(textLength log m) time. The answer setup takes O(textLength + m) time. The sweep is capped by sweepWorkBudget and staleSweepLimit. Divisor scans handle the positions left after the sweep.
+Here L is the message length and m is the key bound.
 
-Space is O(textLength + m) for the arrays, plus transform arrays of the next power of two above twice the message length.
+The asymptotic bounds are as follows:
 
-The total time is O(textLength log textLength + textLength log m) plus the answer work. A naive method tests every length against every position and costs O(m times textLength).
+| Measure | Big O |
+| --- | --- |
+| Time | O(L log L + L log m) per case |
+| Space | O(L + m) per case |
+
+Testing every length against every position would cost O(m × L) per case.

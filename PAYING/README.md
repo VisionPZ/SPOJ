@@ -1,45 +1,93 @@
+# PAYING — Paying in Byteland (SPOJ)
+<https://www.spoj.com/problems/PAYING/>
+
 ## Problem
 
-Read a count of test cases, then one decimal sum per case. A coin set is perfect when it pays every amount from zero to its total. Print the smallest coin count of a perfect set whose total equals each sum.
+Byteland mints coins in every power of two. A collection is perfect when it can pay every amount from zero up to its total value. Find the smallest perfect collection whose total is exactly n.
 
-| Quantity | Bound |
+You receive up to 50 large sums. Each sum can have 1000 digits, so ordinary machine integers cannot hold it. The answer is a small coin count.
+
+Input: the first integer is c, the number of cases. Each following line holds one integer n. Output: one integer per line, the minimum number of coins.
+
+These are the bounds and the judge limits:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | c ≤ 50 |
-| Sum | n ≤ 10^1000 |
+| Test cases c | at most 50 |
+| Sum n | at most 10^1000 |
+| Coin denominations | 2^i for i = 0, 1, 2, … |
 | Time limit | 5923 ms |
 | Memory limit | 1536 MB |
 
-The 1000-digit sum drives the design, while the case count stays small.
+The sample asks for five sums:
+
+```
+5
+507
+29
+8574
+233
+149
+```
+
+```
+14
+7
+21
+11
+10
+```
+
+The sum 29 needs seven coins.
 
 ## Idea
 
-Sort the coins of a perfect set by value. Each coin must not exceed the total of smaller coins plus one. So the largest coin is at most half of n + 1, and the smaller coins form a perfect set again. Remove that largest power of two and repeat until nothing remains. The number of removals equals the bit length plus the set-bit count of n + 1, minus two. Each case costs O(d²) digit operations for d decimal digits. Enumerating all coin sets takes exponential time.
+Add one to the sum, then count binary digits by repeated halving on paper. Picture folding a long strip of paper in half. Each fold is one binary digit. Each leftover square is a one bit.
+
+The program stores n as decimal digits, increments it by one with a carry, and halves it repeatedly. Each halving adds one to `bitLength`; each odd intermediate value adds one to `setBits`. The answer is `bitLength + setBits − 2`.
+
+Why that formula works: coins 1, 2, 4, …, 2^(L−2) form a perfect chain covering zero through 2^(L−1)−1. Each extra one bit of n + 1 below its top bit needs one more coin. The chain count plus the extra count gives L − 1 + P − 1.
+
+Halving costs O(D) per binary digit, with D ≤ 1000 digits, so one case costs O(D²). A coin search over huge sums has no practical bound.
+
+Takeaway: decimal halving extracts a binary count without ever building a giant integer.
 
 ## Why It Works
 
-A sorted coin set is perfect exactly when every coin stays at most one above the reachable total. Start with reach zero, add each coin, and extend reach by that coin. A gap appears as soon as a coin passes reach plus one. For the largest coin, the smaller coins must already be perfect, and the largest coin must fit the same rule. This gives the removal condition.
+Four facts prove the formula.
 
-Let m stand for n + 1. The largest power of two at most m is the top power. The coin is that power divided by two, and m drops by the coin. The answer is bitLength(n + 1) + setBits(n + 1) - 2.
+1. A perfect set of k coins covers at most 2^k − 1. Each next coin is at most one plus the total already covered, so coverage at most doubles.
+2. The chain 1, 2, 4, …, 2^(L−2) is perfect and covers zero through 2^(L−1)−1 using L − 1 coins.
+3. Let S = n + 1 and let its binary bits include positions e below the top. Adding one coin of value 2^e for each such bit keeps the set perfect, because 2^e never exceeds coverage plus one. The total becomes 2^(L−1)−1 + (S − 2^(L−1)) = n.
+4. Fewer coins cannot work. The chain forces L − 1 coins, and each lower set bit of S forces one extra coin to reach the exact total.
 
-Let h be the bit length of m. If bit h - 2 of m is zero, removing the coin lowers the bit length by one and keeps the set-bit count. If that bit is one, the bit length stays and the set-bit count drops by one. One removal always lowers the answer formula by one, so the formula counts the removals.
+These are the terms in the halving loop:
 
-The table below traces n = 29. The coins in sorted order are 1, 2, 2, 4, 4, 8, 8.
+| Term | Meaning |
+| --- | --- |
+| `digits` | decimal digits of n + 1, least significant last |
+| `carryOver` | carry produced when adding one |
+| `halfCarry` | remainder 0 or 1 from dividing by two |
+| `bitLength` | number of halving rounds, the binary length |
+| `setBits` | number of odd intermediate values, the one bits |
 
-| Coin | Reach before | Fits | Reach after |
-| --- | --- | --- | --- |
-| 1 | 0 | yes | 1 |
-| 2 | 1 | yes | 3 |
-| 2 | 3 | yes | 5 |
-| 4 | 5 | yes | 9 |
-| 4 | 9 | yes | 13 |
-| 8 | 13 | yes | 21 |
-| 8 | 21 | yes | 29 |
+A script traces the second sample case:
 
-Here n + 1 is 30. It has bit length five and four set bits. The answer is five plus four minus two, which is seven.
+```
+n=29, n+1=30
+30 /2 = 15 remainder 0
+15 /2 =  7 remainder 1
+ 7 /2 =  3 remainder 1
+ 3 /2 =  1 remainder 1
+ 1 /2 =  0 remainder 1
+bitLength=5 setBits=4 answer=7
+```
+
+The first remainder is zero because 30 is even. Leading zeros after halving are skipped, so the loop counts exactly five bits. The answer 7 matches the sample.
 
 ## Code
 
-The first block reads the whole stream and splits it into tokens.
+**Input.** One buffer holds all lines, and the scanner finds the case count.
 
 ```nim
 const firstDigitValue = 48
@@ -62,7 +110,13 @@ proc nextInt(data: string, i: var int): int =
     value = value * 10 + int(data[i]) - firstDigitValue
     i += 1
   return value
+```
 
+The scanner skips separators and stops at the buffer end. Only the small case count goes through `nextInt`. The cost is one pass over the input bytes.
+
+**Coin count.** A digit slice is incremented and halved until nothing remains.
+
+```nim
 proc nextNumberBounds(data: string, i: var int, numberStart: var int, numberEnd: var int) =
   while i < data.len and (data[i] < '0' or data[i] > '9'):
     i += 1
@@ -70,13 +124,7 @@ proc nextNumberBounds(data: string, i: var int, numberStart: var int, numberEnd:
   while i < data.len and data[i] >= '0' and data[i] <= '9':
     i += 1
   numberEnd = i
-```
 
-The read loop ends at end of input, so one buffer holds every token. `nextInt` reads the small case count. `nextNumberBounds` keeps a long sum as a slice, so no big integer parse is needed. The scan visits each input byte once.
-
-The next block adds one and counts bits by repeated halving.
-
-```nim
 proc coinCount(data: string, numberStart: int, numberEnd: int): int =
   var digits: seq[int] = @[0]
   for i in numberStart..<numberEnd:
@@ -113,9 +161,9 @@ proc coinCount(data: string, numberStart: int, numberEnd: int): int =
   return bitLength + setBits - 2
 ```
 
-The leading zero absorbs the carry from adding one. `digitCount` skips leading zeros before each halving pass. `halfCarry` moves from one decimal digit to the next, and its final value is the bit. The outer loop runs once per bit, so the work is quadratic in the digit count.
+`nextNumberBounds` records a digit span without copying it. The leading zero in `digits` leaves room for a carry past the most significant digit. The inner loop divides each digit by two and passes `halfCarry`; dropping leading zeros keeps the loop short. Cost is O(D²) worst case for D digits.
 
-The last block writes the answers.
+**Output.** Answers gather in one buffer.
 
 ```nim
 var outputBuffer = ""
@@ -125,7 +173,13 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+The flush triggers every `flushBlockBytes` bytes. No write happens inside the case loop. The cost is one pass over the answer text.
+
+**Driver.** Each digit span becomes one answer line.
+
+```nim
 let caseCount = nextInt(inputData, i)
 for j in 0..<caseCount:
   var numberStart = 0
@@ -138,15 +192,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The loop runs once per case. `appendOutput` flushes only after 256 KiB, so no per-line write reaches the stream. The final write empties the remaining buffer.
+The bounds helper advances the scan cursor for the next case. Each case allocates one digit array. The final write flushes the tail.
 
 ## Complexity
 
+Decimal halving dominates each case.
+
 | Phase | Time | Space |
 | --- | --- | --- |
-| Read and scan | O(total input bytes) | O(input size) |
-| Add one | O(d) | O(d) |
-| Halving passes | O(d²) | O(d) |
-| Output | O(c) | O(block size) |
+| Input scan | O(total tokens) | O(input size) |
+| Increment by one | O(D) | O(D) |
+| Halving loop | O(D × bits) | O(D) |
+| Output | O(cases) | O(block size) |
 
-Here c is the case count and d is the digit count, at most 1001. Total time is O(c · d²) and total working space is O(d) plus the input buffer. Enumeration of coin sets grows exponentially with n and cannot handle these sums.
+The halving loop dominates, with about 3.3 × 10³ rounds for a 1000-digit input.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(D²), D = number of digits |
+| Total time | O(sum of D² over cases) |
+| Working space | O(D) |
+
+Building coin values up to 10^1000 as integers is impossible, while digit halving stays tiny.

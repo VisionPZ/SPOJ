@@ -1,36 +1,87 @@
+# COMMEDIA — Commedia dell Arte (SPOJ)
+
+<https://www.spoj.com/problems/COMMEDIA/>
+
 ## Problem
 
-Read several three-dimensional sliding puzzles. Each puzzle is a cube of `M × M × M` slots containing numbered tiles and one empty slot marked zero. A move slides a neighbouring tile into the empty slot. Decide whether the given arrangement can reach the solved arrangement. Print one sentence per puzzle.
+A troupe arranges numbered cards in a cube of slots, with one empty slot for sliding. The troupe wants to know whether a shown arrangement can be slid back into order.
 
-| Quantity | Bound |
+Input: one integer for the puzzle count, then one side length M and M cubed tile values per puzzle. Zero marks the empty slot.
+
+Output: `Puzzle can be solved.` or `Puzzle is unsolvable.` on its own line for each puzzle.
+
+The statement and judge give these bounds:
+
+| Item | Bound |
 | --- | --- |
 | Puzzles per file | not fixed |
-| Cube side `M` | 1 to 100 |
-| Slots per puzzle | up to 1,000,000 |
+| Cube side M | 1 to 100 |
+| Slots per puzzle | up to 1000000 |
 | Time limit | 5000 ms |
 | Memory limit | 1536 MB |
 
 A naive search of arrangements is impossible, so the answer comes from a parity invariant.
 
+The sample input and output:
+
+```
+2
+2
+1 2 3 4
+5 7 6 0
+2
+2 1 3 5
+4 6 0 7
+```
+
+```
+Puzzle is unsolvable.
+Puzzle can be solved.
+```
+
 ## Idea
 
-Count inversions of the tile sequence after replacing the empty slot with the largest tile number. Add the parity of the empty slot's coordinate sum. Compare the result with the coordinate sum of the solved empty slot. Equal parities mean the puzzle is solvable.
+Treat the empty slot as the largest tile, like swapping a blank card into a sorted deck. Every slide then swaps two entries, which flips the permutation (ordering) parity.
 
-Counting inversions with a Fenwick tree costs O(N log N) for N slots. Counting them by pairwise comparison would cost O(N²).
+The program counts inversions (out-of-order pairs) with a Fenwick tree (an array that sums prefixes fast). It adds the parity of the empty slot's coordinate sum and compares with the solved arrangement.
+
+Counting inversions costs O(N log N) for N slots. Pairwise comparison would cost O(N²) and fail on the largest cube.
+
+One parity sum decides every puzzle.
 
 ## Why It Works
 
-Every move exchanges the empty slot with one tile. In the full sequence of tiles plus the empty marker, that exchange changes the permutation parity. The same move changes exactly one coordinate of the empty slot by one, so the coordinate-sum parity also changes. Their sum therefore stays constant.
+Each slide changes two things at once.
 
-In the solved arrangement the permutation is the identity and the empty slot sits at `(M−1, M−1, M−1)`. Its coordinate sum is `3(M−1)`. The test is:
+1. The empty slot swaps with one tile, which flips the permutation parity.
+2. The same slide changes exactly one coordinate by one, which flips the coordinate-sum parity.
+3. Their sum therefore stays unchanged by every legal move.
+4. In the solved arrangement the permutation is the identity and the empty slot sits at `(M-1, M-1, M-1)`.
 
-- `inversion parity + empty coordinate parity ≡ 3(M−1) (mod 2)`
+The test and the index layout are as follows:
 
-The linear slot index is `x + M·y + M²·z`, so the three coordinates are read with one division and two remainders.
+| Term | Meaning |
+| --- | --- |
+| inversion parity | parity of out-of-order tile pairs |
+| `blankCoordinateParity` | parity of the empty slot's coordinate sum |
+| `solvedCoordinateParity` | `3 × (M - 1)` reduced modulo 2 |
+| linear index | `x + M × y + M² × z` |
+| test | `inversion parity + blank parity ≡ solved parity (mod 2)` |
+
+The linear index is read with one division and two remainders.
+
+A script checks the two sample puzzles:
+
+| Puzzle | Tiles with blank as largest | Inversions | Blank parity | Solved parity | Result |
+| --- | --- | --- | --- | --- | --- |
+| 1 | `1 2 3 4 5 7 6 8` | 1 | 1 | 1 | unsolvable |
+| 2 | `2 1 3 5 4 6 8 7` | 3 | 0 | 1 | solvable |
+
+Puzzle 1 gives `1 + 1 = 0 (mod 2)` against 1. Puzzle 2 gives `3 + 0 = 1 (mod 2)` against 1.
 
 ## Code
 
-The input goes into one buffer and a digit scanner supplies the integers.
+**Constants and scanner.** All tile numbers are non-negative, so the scanner needs no sign branch.
 
 ```nim
 const firstDigitValue = 48
@@ -56,9 +107,9 @@ proc nextInt(data: string, i: var int): int =
   return value
 ```
 
-All tile numbers are non-negative, so the scanner needs no sign branch. Parsing one number visits each digit once.
+The read loop keeps the whole stream in one string. Parsing one number visits each digit once. The two messages are constants, so no line is built per puzzle.
 
-The Fenwick tree counts inversions in one pass and records the empty slot.
+**Fenwick tree.** Adding a value and summing a prefix both walk a short chain of indexes.
 
 ```nim
 var fenwickTree: seq[int]
@@ -76,7 +127,13 @@ proc prefixSum(j: int): int =
     total += fenwickTree[k]
     k -= k and -k
   return total
+```
 
+`addValue` climbs by the lowest set bit of the index. `prefixSum` descends by the same bit. Each call costs O(log N).
+
+**Parity pass.** The blank becomes the largest value and lands last in the solved order.
+
+```nim
 proc permutationParity(slotCount: int, blankValue: int, k: var int): int =
   fenwickTree = newSeq[int](slotCount + 1)
   var parity = 0
@@ -90,9 +147,9 @@ proc permutationParity(slotCount: int, blankValue: int, k: var int): int =
   return parity
 ```
 
-At slot `j`, the number of earlier larger values is `j − prefixSum(value)`. Only parity matters, so the tree stores counts and the accumulator keeps one bit. The empty marker uses the largest value and lands last in the solved sequence.
+At slot j, the count of earlier larger values is `j - prefixSum(value)`. Only parity matters, so the tree stores counts and the accumulator keeps one bit. The empty marker uses the largest value.
 
-The driver converts the empty index to coordinates and applies the test.
+**Driver.** The program converts the empty index to coordinates and applies the test.
 
 ```nim
 var outputBuffer = ""
@@ -124,8 +181,28 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The tree is rebuilt per puzzle because the slot count can change. Output is written in blocks rather than one call per puzzle.
+The tree is rebuilt per puzzle because the slot count can change. The three coordinates come from one division and two remainders. Output is written in blocks, not one call per puzzle.
 
 ## Complexity
 
-Reading and inversion counting take O(N log N) time and O(N) space for N slots. Coordinate work and output take O(1) per puzzle. Total time is O(N log N) per puzzle and total space is O(N). Pairwise inversion counting would take O(N²) and fail at the largest cube.
+Inversion counting dominates each puzzle, and the coordinate test costs constant work.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Fenwick build | O(N) per puzzle | O(N) |
+| Inversion count | O(N log N) per puzzle | O(N) |
+| Parity test | O(1) per puzzle | O(1) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per puzzle | O(N log N) | O(N) |
+
+At the largest cube, N reaches one million slots.
+
+The asymptotic bounds are as follows:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(N log N) per puzzle |
+| Space | O(N) per puzzle |
+
+Counting inversions by pairwise comparison would cost O(N²) and fail at that size.

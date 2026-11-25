@@ -1,64 +1,89 @@
+# TTABLE — Timetable (SPOJ)
+
+<https://www.spoj.com/problems/TTABLE/>
+
 ## Problem
 
-Read several test cases. Each case lists direct trains for every city. Find all optimal connections from city 1 to the last city. Print their count, then each departure and arrival time in increasing departure order.
+A rail passenger wants a booklet listing the best connections from city 1 to city n. Each station posts only direct trains, and a change costs no time. A connection is optimal when no alternative leaves no earlier, arrives no later, and takes strictly less time.
 
-A connection is optimal when no journey leaves at or after its departure, arrives at or before its arrival, and travels faster. Duplicate departure and arrival pairs count once.
+Input starts with the test count `t`. Each case starts with `n`, then lists `n` timetables. A timetable starts with `m`, followed by `m` rows of departure `A`, arrival `B`, and destination city. Clock times use `hh:mm` form, departures are sorted, and all `m` values sum to at most 1,000,000. Output the count `r`, then `r` increasing departure rows of the form `A B`. Duplicate clock pairs print once.
 
-The statement and judge table give these bounds.
+The judge warns about enormous input and output.
 
 | Item | Bound |
 | --- | --- |
-| Cities per case | 2 to 100 000 |
-| Train positions over all timetables | at most 1 000 000 |
+| Cities per case | 2 to 100000 |
+| Train positions over all timetables | at most 1000000 |
 | Clock times | 00:00 to 23:59 |
 | Judge limit | 1956 ms, 1536 MB |
 
-A day has 1440 minutes, so every time index stays small.
+A day holds 1440 minutes, so every time index stays tiny.
+
+The sample input and output follow verbatim.
+
+```
+1
+3
+3
+09:00 15:00 3
+10:00 12:00 2
+11:00 20:00 3
+2
+11:30 13:00 3
+12:30 14:00 3
+0
+```
+
+```
+2
+10:00 14:00
+11:00 20:00
+```
 
 ## Idea
 
-Build a Pareto frontier of suffix journeys for every city. A suffix journey leaves a city and reaches the destination. Each pair stores a departure time and its earliest arrival at the destination.
+Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station.
 
-Process train departures from latest to earliest. A train arrives after it departs, so its destination frontier is already complete. The frontier reuses finished work, so one binary search replaces a fresh full search.
+Each city keeps a Pareto frontier of suffix journeys: pairs of departure time and earliest arrival at the destination. Trains are processed from latest departure to earliest. Because every train arrives after it leaves, the destination frontier is already complete. One binary search replaces a fresh full search through the graph.
 
-Cost per train: one binary search over at most 1440 pairs.
+A search restarted at every train costs quadratic work in the train count. Reusing finished frontiers cuts each train to logarithmic cost.
+
+Finished suffixes turn a graph search into a table lookup.
 
 ## Why It Works
 
 Four facts prove the method.
 
-First, an arrival no later than another and a departure no earlier than another never increase trip time. The time drops strictly unless both clock times match. Optimal connections are therefore the Pareto-maximal pairs.
+1. Arriving no later and departing no earlier never increases travel time. Optimal connections are the Pareto-maximal pairs of departure and arrival.
+2. A frontier sorted by departure from latest to earliest also sorts by arrival from latest to earliest. The earliest feasible arrival after a time `B` sits at the last pair whose departure is at least `B`.
+3. A train from `v` at `A` reaches `w` at `B`, with `B > A`. Every suffix from `w` departs after `A`, and earlier departure groups have already built that frontier.
+4. A new pair departs earlier than every stored pair. It survives only when its arrival is smaller than the last stored arrival.
 
-Second, a frontier sorted by departure from latest to earliest also sorts by arrival from latest to earliest. The earliest feasible arrival after time B sits at the last pair whose departure is at least B.
-
-Third, a train from v at A reaches w at B, and B is greater than A. Every suffix from w departs after B, hence after A. Earlier departure groups have already built that frontier.
-
-Fourth, a new pair departs earlier than every stored pair. The last stored pair holds the smallest arrival. The new pair survives only when its arrival is smaller.
-
-These terms drive the update.
+The table names the update values.
 
 | Term | Meaning |
 | --- | --- |
-| `JourneyFrontier` | stored pairs, ordered by departure from latest to earliest |
+| `JourneyFrontier` | stored pairs, latest departure first |
 | `earliestSuffixArrival` | finds the last feasible pair in a frontier |
 | `arrivalTime` | time the current train reaches its destination |
-| `currentDeparture` | departure of the group now being processed |
+| `currentDeparture` | departure of the group being processed |
+| `suffixArrival` | earliest trip end the train can still reach |
 
-`l` is the largest stored index whose departure is at least `arrivalTime`. `suffixArrival` is that pair's arrival, the earliest trip end the train can still reach. A pair enters the frontier when `candidateArrival` is smaller than the last stored arrival.
+`l` is the largest stored index whose departure is at least `arrivalTime`. A pair enters the frontier only when `candidateArrival` beats the last arrival.
 
-This trace uses the sample input, which gen.py checks.
+This trace uses the sample input.
 
-| Step | Train | Continuation | City 1 frontier after the step |
+| Step | Train | Continuation | City 1 frontier afterward |
 | --- | --- | --- | --- |
 | 1 | 11:00 to city 3, arrive 20:00 | destination suffix starts at 20:00 | (11:00, 20:00) |
 | 2 | 10:00 to city 2, arrive 12:00 | city 2 suffix gives 14:00 | (11:00, 20:00), (10:00, 14:00) |
 | 3 | 09:00 to city 3, arrive 15:00 | 15:00 loses to 14:00 | unchanged |
 
-The two surviving pairs print as 10:00 14:00 and 11:00 20:00.
+The two surviving pairs print as `10:00 14:00` and `11:00 20:00`.
 
 ## Code
 
-**Setup and bulk input.**
+**Input setup.** Constants, bulk input, and the scanner set up parsing.
 
 ```nim
 const firstDigitValue = 48
@@ -74,9 +99,9 @@ while readLine(stdin, inputLine):
 var i = 0
 ```
 
-The read loop runs to EOF, so all input lands in one string. `minuteCount` bounds every time index. Cost: one pass over the input bytes.
+The read loop runs to EOF, so all input lands in one string. `minuteCount` bounds every time index. Cost is one pass over the input bytes.
 
-**Digit scanner.**
+**Digit scanner.** The digit scanner skips separators, including colons.
 
 ```nim
 proc nextInt(data: string, i: var int): int =
@@ -89,9 +114,9 @@ proc nextInt(data: string, i: var int): int =
   return value
 ```
 
-The scanner skips colons and spaces, since every number is non-negative. `i` advances by index and builds no token object. Cost: one pass over each number's digits.
+Every number is non-negative, so the scanner ignores signs and colons. It builds no token object. Each call costs time proportional to its digits.
 
-**Output helpers.**
+**Clock output.** The output helpers write fixed-width clock times.
 
 ```nim
 var outputBuffer = ""
@@ -112,9 +137,9 @@ proc appendClockTime(minutesValue: int) =
   outputBuffer.add char(firstDigitValue + minutePart mod 10)
 ```
 
-One buffer collects all output and flushes every 256 KiB. `appendClockTime` writes two fixed-width digits per field. Cost: one flush per block, not per line.
+One buffer collects output and flushes every 256 KiB. `appendClockTime` writes two fixed-width digits per field. Cost is one flush per block, not per line.
 
-**Frontier query.**
+**Frontier query.** The frontier query finds the best continuation.
 
 ```nim
 type JourneyFrontier = seq[tuple[departure: int; arrival: int]]
@@ -135,9 +160,9 @@ proc earliestSuffixArrival(frontier: JourneyFrontier, earliestDeparture: int): i
   return frontier[l].arrival
 ```
 
-The search finds the rightmost pair whose departure is at least `earliestDeparture`. That pair has the smallest arrival among feasible suffixes. `high(int)` marks an unreachable destination. Cost: at most 11 comparisons.
+The search finds the rightmost pair departing at or after `earliestDeparture`. That pair has the smallest arrival among feasible suffixes. `high(int)` marks an unreachable destination. Cost is at most 11 comparisons.
 
-**Reusable storage.**
+**Reusable arrays.** Storage arrays are reused across cases.
 
 ```nim
 var departureTimes: seq[int] = @[]
@@ -154,9 +179,9 @@ var touchedCities: seq[int] = @[]
 var stampValue = 0
 ```
 
-The program reuses these arrays across cases. `setLen 0` clears a sequence without freeing its storage. `stampValue` avoids clearing a whole city table per group. Cost: constant work per case start.
+`setLen 0` clears a sequence without freeing its storage. `stampValue` avoids clearing a whole city table per departure group. Cost at a case start is constant.
 
-**Input for one case.**
+**Case input.** Input for one case fills the flat arrays.
 
 ```nim
 let caseCount = nextInt(inputData, i)
@@ -181,9 +206,9 @@ for j in 0..<caseCount:
   let trainCount = departureTimes.len
 ```
 
-Two digit reads build each clock time, so colons need no special handling. Each train stores four integers in flat arrays. Cost: one add per train position.
+Two digit reads build each clock time, so colons need no branch. Each train stores four integers. Cost is one add per train position.
 
-**Counting sort by departure.**
+**Counting sort.** Counting sort orders trains by departure.
 
 ```nim
   for k in 0..<minuteCount: departureCounts[k] = 0
@@ -202,9 +227,9 @@ Two digit reads build each clock time, so colons need no special handling. Each 
     nextSlot[departTime] += 1
 ```
 
-The minute scan runs from 1439 down to 0, so `trainOrder` starts at the latest departure. Counting sort replaces a comparison sort over up to one million trains. Cost: O(trainCount + 1440).
+The minute scan runs from 1439 down to 0, so `trainOrder` starts latest. Counting sort replaces a comparison sort over a million trains. Cost is `O(trainCount + 1440)`.
 
-**Frontier construction.**
+**Frontier sweep.** The sweep builds each city frontier from latest departure to earliest.
 
 ```nim
   cityFrontiers.setLen cityCount + 1
@@ -246,9 +271,9 @@ The minute scan runs from 1439 down to 0, so `trainOrder` starts at the latest d
     l = k
 ```
 
-The outer loop visits each departure group once. Trains that share a departure collapse to the smallest arrival per source city. The last-entry test drops dominated pairs. Cost: O(trainCount log 1440).
+The outer loop visits each departure group once. Trains sharing a departure collapse to the smallest arrival per city. The last-entry test drops dominated pairs. Cost is `O(trainCount log 1440)`.
 
-**Output.**
+**Answer output.** Output prints city 1's frontier in increasing departure order.
 
 ```nim
   let answerFrontier = cityFrontiers[1]
@@ -271,26 +296,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Reverse indexing prints increasing departure times. The final write flushes the remaining bytes. Cost: one line per optimal pair.
+Reverse indexing prints increasing departure times. The final write flushes the remaining bytes. Cost is one line per optimal pair.
 
 ## Complexity
 
-Costs by phase:
+Each phase has a clear bound.
 
 | Phase | Time | Space |
 | --- | --- | --- |
 | Input read | one pass over input bytes | input string |
-| Counting sort | O(trainCount + 1440) | one order array |
-| Frontier build | O(trainCount log 1440) | one pair per kept suffix |
+| Counting sort | O(T + 1440) | one order array |
+| Frontier build | O(T log 1440) | one pair per kept suffix |
 | Output | one flush per 256 KiB | 256 KiB buffer |
 
-The frontier build dominates the run, since 1440 stays fixed.
+The frontier build dominates, since 1440 stays fixed.
 
-Totals use T for train positions in one case and C for cities.
+Totals use `T` for train positions in one case and `C` for cities.
 
-| Measure | Form |
+| Measure | Big O |
 | --- | --- |
 | Time | O(T log 1440) per case |
 | Space | O(C + T) per case |
 
-A fresh search from every train costs O(T squared) in the worst case.
+A fresh graph search from every train costs `O(T^2)` in the worst case.

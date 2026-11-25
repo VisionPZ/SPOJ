@@ -1,76 +1,94 @@
+# SHOP — Shopping (SPOJ)
+<https://www.spoj.com/problems/SHOP/>
+
 ## Problem
 
-Read many grids from one input stream. Each case starts with a width and a height, followed by one row of characters per line. A cell holds a shelf (`X`), the start (`S`), the destination (`D`), or a digit from 1 to 9. Print the least time to reach the destination, one answer per line. A case with width and height `0 0` ends the input. We write `O(n)` for work that grows linearly with n.
+A crowded shop has shelves and open squares. Each open square costs a number of seconds to cross. Find the quickest route from the entrance S to the monitor counter D.
 
-The statement and judge table give these bounds.
+Input: pairs of integers w and h, ending with 0 0. Each case then has h lines of w characters. `X` is a shelf, `S` the start, `D` the goal, and a digit 1 to 9 the crossing cost. Output: one integer per case, the minimum seconds.
 
-| item | bound |
-|---|---|
-| grid width | at most 25 |
-| grid height | at most 25 |
-| pass cost | 1 to 9 per digit cell |
-| test cases | any count, ended by `0 0` |
-| judge limit | 3000 ms, 1536 MB |
+The statement sets these bounds.
 
-The small grid and the small digit range shape the algorithm.
+| Item | Bound |
+| --- | --- |
+| Width w | at most 25 |
+| Height h | at most 25 |
+| Square cost | 1 to 9 seconds |
+| Test cases | until the 0 0 line |
+| Judge time limit | 3000 ms |
+| Judge memory limit | 1536 MB |
+
+A route always exists, so no failure case is needed.
+
+The sample input:
+
+```
+4 3
+X1S3
+42X4
+X1D2
+
+5 5
+S5213
+2X2X5
+51248
+4X4X2
+1445D
+
+0 0
+```
+
+The sample output:
+
+```
+4
+23
+```
 
 ## Idea
 
-Treat every open cell as a node and every step as an edge, then settle cells in increasing cost with Dijkstra's algorithm. A bucket queue (one slot per distance) replaces the heap because costs are small integers. Cost per settled cell is one bucket pop plus four neighbour checks, while a heap pays a logarithm per push.
+Spread ripples from the entrance across the grid, like water finding the fastest path around rocks. Each ripple costs an extra second per square crossed. The first ripple reaching the counter gives the minimum time.
+
+The program uses Dijkstra with a bucket queue, also called Dial's algorithm. Costs range from 1 to 9, so a bucket index is the distance itself. The largest useful distance is 625 times 9, so buckets are cheap and fixed. Each settled cell relaxes at most four neighbors. A cell enters a bucket once per improved distance, and cells are removed from the front. A priority-queue heap would do the same job with a logarithm per step.
+
+Small integer costs let buckets replace a heap.
 
 ## Why It Works
 
-Every step costs zero or more, so Dijkstra settles cells in nondecreasing distance. The first pop of the destination gives its final cost. A shortest path never repeats a cell, since each repeated step adds cost. The path uses at most 624 moves, so its cost stays below 624 * 9. `bucketTotal` gives every distance one slot.
+Four facts carry the program.
 
-The grid is stored row by row in one array.
+1. All step costs are positive integers, so Dijkstra settles cells in nondecreasing distance. The first pop of the goal is therefore optimal.
+2. A bucket holds every cell at one distance. Scanning buckets from low to high reproduces Dijkstra's order without comparisons.
+3. Costs are at most 9 and cells are at most 625, so no distance exceeds 5625. The bucket count of 5627 covers every reachable distance.
+4. A stale entry is skipped when its stored distance differs from the current bucket index. That check replaces a decrease-key operation.
 
-| term | meaning |
-|---|---|
-| `rowStart + k` | flat index of a cell in the current row |
-| `settledCell div width` | row of a settled cell |
-| `settledCell mod width` | column of a settled cell |
-| `currentDistance + stepCost` | candidate distance of a neighbour |
-| `bucketTotal` | one slot for each possible distance |
+Each term has one job.
 
-These expressions turn a flat index back into a row and column.
+| Term | Meaning |
+| --- | --- |
+| `bucketHead` | first queued node at each distance |
+| `bucketVertex` | cell stored in one queue node |
+| `distanceValue` | best known cost to reach a cell |
+| `touchedBuckets` | bucket list that needs clearing next case |
 
-The destination costs zero, so a neighbour can add it at the current distance. The inner loop reads the bucket head on each pass, so it also sees nodes added while that distance is processed. `resetBuckets` clears only the slots used by the previous case.
+Every distance is an integer, so no rounding occurs.
 
-The first sample grid has twelve cells, numbered row by row.
+A script traces the first sample grid from S at row 0, column 2.
 
-| cell | index (row, col) | content |
-|---|---|---|
-| 0 | (0, 0) | X |
-| 1 | (0, 1) | 1 |
-| 2 | (0, 2) | S |
-| 3 | (0, 3) | 3 |
-| 4 | (1, 0) | 4 |
-| 5 | (1, 1) | 2 |
-| 6 | (1, 2) | X |
-| 7 | (1, 3) | 4 |
-| 8 | (2, 0) | X |
-| 9 | (2, 1) | 1 |
-| 10 | (2, 2) | D |
-| 11 | (2, 3) | 2 |
+```text
+start distance 0 at S (0,2)
+step to (0,1) cost 1 -> distance 1
+step to (1,1) cost 2 -> distance 3
+step to (2,1) cost 1 -> distance 4
+step to D (2,2) cost 0 -> distance 4
+first pop of D gives 4
+```
 
-The start is cell 2 and the destination is cell 10.
-
-These cells settle in this order.
-
-| distance settled | cell index | content |
-|---|---|---|
-| 0 | 2 | S |
-| 1 | 1 | 1 |
-| 3 | 3 | 3 |
-| 3 | 5 | 2 |
-| 4 | 9 | 1 |
-| 4 | 10 | D |
-
-Cell 10 settles at distance 4, which matches the sample output.
+The answer is 4, matching the sample. The goal square itself adds no cost.
 
 ## Code
 
-**Input and constants.**
+**Constants and reader.** The whole stream enters one buffer.
 
 ```nim
 import sequtils
@@ -104,9 +122,9 @@ proc readInteger(): int =
   return value
 ```
 
-`inputData` holds the whole input, and `i` walks it by index. The read loop ends when `readLine` returns false. `readInteger` skips blank lines between cases and costs one pass over the digits.
+`bucketTotal` is 5627, one past the largest possible distance. `readInteger` skips blank lines between cases.
 
-**Shared arrays and enqueue.**
+**Bucket structures.** Fixed arrays hold queued cells.
 
 ```nim
 var gridCells: seq[char]
@@ -131,7 +149,13 @@ proc resetBuckets() =
   for i in touchedBuckets:
     bucketHead[i] = -1
   touchedBuckets.setLen 0
+```
 
+`enqueueNode` prepends a node to one bucket in O(1). `resetBuckets` clears only touched buckets, not all 5627.
+
+**Neighbor relaxation.** Shelves are skipped immediately.
+
+```nim
 proc tryRelax(neighborCell: int, currentDistance: int) =
   let cellChar = gridCells[neighborCell]
   if cellChar == 'X':
@@ -145,9 +169,9 @@ proc tryRelax(neighborCell: int, currentDistance: int) =
     enqueueNode(candidateDistance, neighborCell)
 ```
 
-`bucketHead` starts at -1 for every distance. `enqueueNode` links a cell into its distance slot and records the slot in `touchedBuckets`. `resetBuckets` clears only those slots, so stale links never survive a case. Cost: constant time per enqueue.
+`S`, `D` and `X` all cost zero to enter, but shelves return early. A cell is enqueued only when its distance improves.
 
-**One search.**
+**Dijkstra sweep.** Buckets are scanned in increasing distance.
 
 ```nim
 proc shortestPathCost(width: int, height: int, startCell: int, targetCell: int): int =
@@ -188,9 +212,9 @@ proc shortestPathCost(width: int, height: int, startCell: int, targetCell: int):
       return unreachableCost
 ```
 
-The inner loop pops from the bucket head on each pass. This trap avoids losing cells added at the current distance, which happens when the destination is reached. The distance loop runs at most `bucketTotal` times. Cost: one pop and four neighbour checks per settled cell.
+The four boundary checks keep moves inside the grid. The stale-entry test skips old queue nodes. Returning at the goal's first pop is safe because bucket order is Dijkstra order.
 
-**Main loop.**
+**Driver.** Each grid produces one line.
 
 ```nim
 var outputBuffer: string
@@ -223,28 +247,24 @@ while width != 0 or height != 0:
 stdout.write outputBuffer
 ```
 
-The row loop runs `height` times and the column loop runs `width` times. `outputBuffer` flushes at `flushBlockBytes`, so answers never write one line at a time. Cost: one line per case.
+`skipWhitespace` skips the blank line before each grid. The 0 0 pair ends the loop. The final write emits the remaining bytes.
 
 ## Complexity
 
-Costs by phase:
+Each case settles at most 625 cells and scans 5627 buckets.
 
-| phase | time | space |
-|---|---|---|
-| input read | one pass over all bytes | input bytes |
-| grid build | linear in cells | cells in the grid |
-| each search | one pop and four checks per settled cell | fixed bucket array |
-| output | one write per 256 KiB block | 256 KiB |
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | O(B) for B bytes | B bytes |
+| Grid load | O(w times h) | O(w times h) |
+| Dijkstra | O(bucketTotal + w times h) | O(bucketTotal) |
+| Output | O(1) per case | one block |
 
-The search settles each cell at most once and relaxes at most four neighbours per settled cell.
+`bucketTotal` is 5627, and w times h is at most 625.
 
-Big O terms:
+| Measure | Big O |
+| --- | --- |
+| Time | O(5627 + w times h) per case |
+| Space | O(w times h + 5627) |
 
-| measure | form |
-|---|---|
-| time | O(n) per grid, n = cell count |
-| space | O(n) plus the fixed bucket array |
-
-Each grid adds one answer line and no growing state.
-
-A full scan of all cell pairs costs quadratic time per grid. A heap Dijkstra costs O(n) with a logarithmic factor per push. The bucket queue removes that factor because every cost is a small integer.
+A binary-heap Dijkstra costs O(w h log(w h)) per case, which is larger here.

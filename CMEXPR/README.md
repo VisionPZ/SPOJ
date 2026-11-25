@@ -1,10 +1,18 @@
+# CMEXPR — Complicated Expressions (SPOJ)
+
+<https://www.spoj.com/problems/CMEXPR/>
+
 ## Problem
 
-Read T expressions, one per line. Each expression uses lowercase variables, the operators + - * /, and parentheses. Remove every parenthesis pair that leaves the expression semantically unchanged. Print the resulting expression for each line.
+An accountant wants shorter arithmetic notes. Parentheses that do not change the meaning only add clutter, so the accountant removes them.
 
-The input obeys these limits.
+Input: one integer for the expression count, then one expression per line. Each expression uses lowercase variables, the operators `+ - * /`, and parentheses.
 
-| Item | Value |
+Output: one expression per line, with every removable parenthesis pair deleted.
+
+The statement and judge give these bounds:
+
+| Item | Bound |
 | --- | --- |
 | Expressions | about 10000 |
 | Line length | at most 250 characters |
@@ -13,41 +21,77 @@ The input obeys these limits.
 
 The largest legal input holds about 2.5 MB of expression text.
 
+The sample input and output:
+
+```
+8
+(a+(b*c))
+((a+b)*c)
+(a*(b*c))
+(a*(b/c)*d)
+((a/(b/c))/d)
+((x))
+(a+b)-(c-d)-(e/f)
+(a+b)+(c-d)-(e+f)
+```
+
+```
+a+b*c
+(a+b)*c
+a*b*c
+a*b/c*d
+a/(b/c)/d
+x
+a+b-(c-d)-e/f
+a+b+c-d-(e+f)
+```
+
 ## Idea
 
-Parse each line into a binary expression tree with two stacks. Print the tree in order and wrap a child in parentheses only when a priority table says so. The left-child table and the right-child table encode the statement's associativity rules.
+Unpack each expression like nested boxes. Every box becomes a node in a binary tree, and the printer wraps a child only when the tree order demands it.
 
-Each expression costs O(L) time and O(L) space, where L is its length.
+The program parses with two stacks, one for operands and one for operators. A priority table then decides whether a child needs parentheses on the left or on the right.
+
+Parsing and printing both visit each character or node once, so one expression costs O(L) time and O(L) space. Rewriting the line by repeatedly removing one pair would rescan the whole line each time.
+
+The tree makes each parent-child decision local.
 
 ## Why It Works
 
-Multiplication and division have priority 2. Addition and subtraction have priority 1. A variable has priority 99, so it never needs parentheses. A child needs parentheses when its priority falls below a threshold.
+Two properties decide every parenthesis pair.
 
-| Child position | + | - | * | / |
+1. Multiplication and division bind tighter than addition and subtraction, so their priority is 2 against 1.
+2. A variable has priority 99, so no operator can require parentheses around it.
+3. Operators of equal priority group from the left, so a left child keeps its order without parentheses.
+4. A right child under `-` or `/` with equal priority keeps its parentheses, because regrouping changes its meaning.
+
+The printer uses one threshold table:
+
+| Child position | `+` | `-` | `*` | `/` |
 | --- | --- | --- | --- | --- |
 | Left | 1 | 1 | 2 | 2 |
 | Right | 1 | 2 | 2 | 3 |
 
-The right thresholds for '-' and '/' exceed the child priority by one. A right child with equal priority therefore keeps its parentheses. A left child with equal priority never does, because operators group from the left.
+The right thresholds for `-` and `/` exceed the child priority by one. A right child with equal priority therefore stays wrapped.
 
-The statement allows associativity of addition and multiplication. It also allows + with - and * with / when the second operator is - or /. No other rearrangement is legal, so a right child under '-' or '/' must stay wrapped.
-
-The following lines apply the rule.
+A script prints the sample expressions after the tree pass:
 
 | Input | Printed output |
 | --- | --- |
-| (a+(b*c)) | a+b*c |
-| ((a+b)*c) | (a+b)*c |
-| a-(b-c) | a-(b-c) |
-| a+(b-c) | a+b-c |
-| a/(b/c) | a/(b/c) |
-| (a+b)+(c-d)-(e+f) | a+b+c-d-(e+f) |
+| `(a+(b*c))` | `a+b*c` |
+| `((a+b)*c)` | `(a+b)*c` |
+| `a-(b-c)` | `a-(b-c)` |
+| `a+(b-c)` | `a+b-c` |
+| `a/(b/c)` | `a/(b/c)` |
+| `(a+b)+(c-d)-(e+f)` | `a+b+c-d-(e+f)` |
 
-In the last row, the '-' parent keeps (e+f) wrapped. The '+' parent before it drops the parentheses around (c-d).
+In the last row, the `-` parent keeps `(e+f)` wrapped. The `+` parent before it drops the parentheses around `(c-d)`.
 
 ## Code
 
-```
+**Storage.** Fixed arrays hold the tree nodes and both stacks for one 250-character line.
+
+```nim
 const
   flushBlockBytes = 1 shl 18
   firstDigitValue = 48
@@ -68,9 +112,11 @@ var
   operatorCount = 0
 ```
 
-The arrays hold 512 nodes, which covers the 250-character limit. The buffers and both stacks are allocated once. Setup costs O(1).
+The 512 slots cover the 250-character limit. All buffers are allocated once. Setup costs constant work.
 
-```
+**Input helpers.** One scanner reads the count, and another reads one whole expression token.
+
+```nim
 proc nextInt(): int =
   while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
     inc i
@@ -88,9 +134,11 @@ proc readExpressionToken(token: var string) =
     inc i
 ```
 
-nextInt skips whitespace and stops at the first non-digit. readExpressionToken stops at whitespace, so a newline ends an expression. Both scans advance i once per character and cost O(L).
+`nextInt` skips whitespace and stops at the first non-digit. `readExpressionToken` stops at whitespace, so a newline ends an expression. Both scans advance the index once per character.
 
-```
+**Precedence and node creation.** Applying an operator pops two operands and pushes one tree node.
+
+```nim
 proc operatorPrecedence(op: char): int =
   if op == '*' or op == '/':
     result = 2
@@ -112,9 +160,11 @@ proc applyOperator() =
   inc nodeCount
 ```
 
-applyOperator pops two operands and one operator, then pushes the new node. Both stacks hold at most L entries. Each operator is applied once, so the total cost is O(L).
+Both stacks hold at most L entries. Each operator is applied once, so the total cost is O(L).
 
-```
+**Tree build.** A left-to-right scan turns the token into nodes using the two stacks.
+
+```nim
 proc buildTree(token: string): int =
   nodeCount = 0
   valueCount = 0
@@ -144,9 +194,11 @@ proc buildTree(token: string): int =
   result = valueStack[0]
 ```
 
-The main loop runs once per input character, so L bounds it. A '(' opens a context and ')' closes it. Operators of equal priority are applied at once, which gives left associativity.
+The loop runs once per character, so L bounds it. A `(` opens a context and a `)` closes it. Equal-priority operators are applied at once, which gives left grouping.
 
-```
+**Printer.** A recursive walk emits parentheses only when the threshold table requires them.
+
+```nim
 proc emitNode(node: int, parentOp: char, side: int) =
   var needParens = false
   if side != 0 and not nodeIsLeaf[node]:
@@ -168,9 +220,11 @@ proc emitNode(node: int, parentOp: char, side: int) =
     outputBuffer.add ')'
 ```
 
-The recursion visits each node once. side 1 marks a left child and side 2 marks a right child. The threshold test is the only place where parentheses are added.
+The recursion visits each node once. Side 1 marks a left child and side 2 marks a right child. This test is the only place where parentheses are added.
 
-```
+**Driver.** The program reads the whole stream once and flushes output in blocks.
+
+```nim
 var inputLine = ""
 while readLine(stdin, inputLine):
   inputData.add inputLine
@@ -189,10 +243,27 @@ for j in 0 .. expressionCount - 1:
 stdout.write outputBuffer
 ```
 
-The expression loop runs T times. The input is read once into one string. The output buffer flushes in 256 KiB blocks, so large output costs few writes.
+The expression loop runs once per line. The output buffer flushes at 256 KiB, so a large run costs few writes. The final write emits the short tail.
 
 ## Complexity
 
-Building a tree scans L characters and creates at most L nodes. Printing walks each node once. The whole run costs O(T * L) time.
+Building a tree scans L characters, and printing walks L nodes.
 
-Input storage uses O(T * L) bytes. The node arrays and both stacks use O(L) space per expression. A direct rewrite that removes one pair of parentheses at a time would rescan the line for every pair.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Tree build | O(L) per expression | O(L) nodes and stacks |
+| Print | O(L) per expression | O(L) recursion |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total | O(T × L) | O(T × L + L) working |
+
+At the 250-character limit, one expression holds at most 250 nodes.
+
+The asymptotic bounds are as follows:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(T × L) for T expressions |
+| Space | O(L) working space |
+
+Removing one parenthesis pair at a time would rescan the line for each pair.

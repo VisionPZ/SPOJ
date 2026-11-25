@@ -1,52 +1,106 @@
+# CUTOUT — Cutting out (SPOJ)
+<https://www.spoj.com/problems/CUTOUT/>
+
 ## Problem
 
-Read several squares with axis-aligned rectangles already cut out. Print the area of the largest axis-aligned rectangle that fits in the remaining paper. One integer per data set goes on its own output line.
+A sheet of paper already has holes cut from it.
+The task is to find the largest rectangle of paper that remains.
+
+Read several square sheets with axis-aligned rectangles already removed.
+Each dataset gives square side `n` and cut count `r`.
+The next line holds `4r` coordinates.
+Each cut gives a left, right, bottom, and top distance from the square edges.
+The right and left values may arrive in either order.
+Print one integer per dataset: the largest area that fits in the remaining paper.
+
+The judge bounds follow.
 
 | Item | Bound |
 | --- | --- |
-| Data sets | at most 10 |
-| Square side n | 1 to 40000 |
-| Cut rectangles r | 0 to 100 |
-| Rectangle coordinates | 0 to n |
-| Time and memory | 5000 ms, 1536 MB |
+| Datasets | at most 10 |
+| Square side `n` | 1 to 40000 |
+| Cut rectangles `r` | 0 to 100 |
+| Cut coordinates | 0 to `n` |
+| Time limit | 5000 ms |
+| Memory limit | 1536 MB |
 
-The small rectangle count makes coordinate compression possible.
+The small cut count keeps the compressed grid tiny.
+
+The sample input and expected output follow verbatim.
+
+```
+2
+6 2
+0 3 0 3 3 6 3 6
+10 3
+0 5 0 5 0 10 5 10 9 10 0 5
+```
+
+```
+9
+20
+```
+
+The two sheets give answers of 9 and 20.
 
 ## Idea
 
-An empty rectangle can grow until one side reaches a cut edge or the square border, so only those edges can bound the answer. The program sorts the cut coordinates, removes duplicates, and marks each grid cell covered by a cut. A stack turns one row of free cells into a histogram, and the widest span gives the largest area ending at that row. A full grid would hold up to 1.6 billion cells; compression keeps at most 201 by 201, so each cell costs constant time.
+Only cut edges and the square border can bound an optimal rectangle, like fence posts around a field.
+Coordinate compression (replacing each coordinate by its rank) turns the square into at most 201 by 201 cells.
+
+Mark each compressed cell covered by a cut.
+A monotone stack then finds the widest free rectangle ending at each row.
+`upHeights` stores the vertical run of free cells in each column.
+
+Cost per cell is constant work in the histogram (column heights) sweep.
+A full grid would hold 1.6 billion cells.
+Compress first, then sweep once over the small grid.
 
 ## Why It Works
 
-Every side of an optimal rectangle touches a cut side or the square border. If a side sat inside an empty interval, moving it outward would keep the rectangle empty and increase its area.
+Four facts prove the method.
 
-Sorting the coordinates turns the square into cells between consecutive x values and y values. Every cut covers a contiguous block of cells because its sides belong to that set. The program stores the row start as `rowStart = xi * yCellCount`.
+1. If a side sat inside an empty interval, moving it outward would keep the rectangle empty and increase its area.
+   So every side touches a cut edge or the square border.
+2. Sorting cut coordinates and the two borders gives cells between consecutive values.
+   Every cut covers one contiguous block of cells.
+3. `blocked[xi * yCellCount + yi]` marks a cell inside a cut.
+   `prefixWidths` returns any span width with one subtraction.
+4. `upHeights[xi]` stores the free run ending at the current y row.
+   The stack pops each bar once, so one row costs linear time.
 
-- `yCellCount = yCoords.len - 1` is the number of y cells.
-- `i = findIndex(xCoords, cutLefts[k])` is the first x cell of the cut.
-- `j = findIndex(xCoords, cutRights[k])` is the cell past its last x cell.
-- `blocked[rowStart + yi] = true` marks each cell inside the cut.
+The terms of the weighted histogram follow.
 
-For one row, `upHeights[xi]` stores the vertical length of free cells ending at that row. The stack keeps increasing heights, so each bar is popped once. When a shorter bar appears, the popped bar spans from the next shorter bar to the current column. `prefixWidths` gives that span's width in one subtraction, and height times width is the best area for that bar.
+| Term | Meaning |
+| --- | --- |
+| `xCoords`, `yCoords` | sorted unique cut edges plus borders 0 and `n` |
+| `xCellCount`, `yCellCount` | coordinate count minus one |
+| `leftEdge` | first x cell of the popped span |
+| `spanWidth` | `prefixWidths[i] - prefixWidths[leftEdge]` |
 
-The worked example below comes from the first sample data set.
+Height times span width gives the candidate area.
+
+A script expands the first sample dataset and prints one line per row.
 
 ```
-Square 6 by 6, cuts [0,3]x[0,3] and [3,6]x[3,6].
-x coordinates: 0 3 6   widths: 3 3
-y coordinates: 0 3 6   heights: 3 3
-blocked cells: (0,0), (1,1)
+Square 6 by 6; cuts [0,3]x[0,3] and [3,6]x[3,6].
+x edges: 0 3 6   widths: 3 3
+y edges: 0 3 6   heights: 3 3
+blocked cells: (0,0) (1,1)
 row 0 upHeights: 0 3   best area 9
 row 1 upHeights: 3 0   best area 9
+answer: 9
 ```
 
 The largest area over all rows is 9, which matches the sample.
 
 ## Code
 
-The scanner reads integers from the single input buffer.
+**Integer scanner.**
 
-```
+```nim
+const flushBlockBytes = 1 shl 18
+
 proc nextInt(inputData: string, i: var int): int =
   while i < inputData.len and inputData[i] <= ' ':
     i = i + 1
@@ -57,11 +111,11 @@ proc nextInt(inputData: string, i: var int): int =
   return value
 ```
 
-The digit loop runs once per digit, at most five here. It skips spaces and newlines, so an empty rectangle line causes no error. It allocates no temporary strings.
+The digit loop runs once per digit, at most five here. It skips spaces and newlines, so a short coordinate line causes no error. The scanner allocates no temporary strings.
 
-Sorted boundaries let each cut map to a cell range.
+**Coordinate helpers.**
 
-```
+```nim
 proc sortValues(values: var seq[int]) =
   if values.len < 2: return
   for i in 1 ..< values.len:
@@ -90,11 +144,11 @@ proc findIndex(values: seq[int], target: int): int =
   return low
 ```
 
-Insertion sort makes at most 201 passes, one per coordinate after the first. Duplicate removal keeps only distinct boundaries. Binary search takes eight comparisons over 202 values.
+sortValues inserts at most 201 values into order. uniqueSorted keeps only distinct boundaries. findIndex binary-searches a coordinate in about eight comparisons. These helpers map each cut onto cell indices.
 
-The histogram finds the best rectangle ending at one row.
+**Weighted histogram.**
 
-```
+```nim
 proc largestWeightedRectangle(heights, prefixWidths: seq[int], columnCount: int, stack: var seq[int]): int =
   var bestArea = 0
   stack.setLen 0
@@ -118,11 +172,11 @@ proc largestWeightedRectangle(heights, prefixWidths: seq[int], columnCount: int,
   return bestArea
 ```
 
-The column loop runs columnCount times, at most 201. Popping on a height greater than or equal to the current one merges equal bars. Each bar enters and leaves the stack once, so one row costs linear time.
+The column loop runs at most 201 times. Popping on a height greater than or equal to the current one merges equal bars. Each bar enters and leaves the stack once. One row therefore costs linear time.
 
-The program reads the whole stream once and starts the case loop.
+**Input setup.**
 
-```
+```nim
 var inputData: string
 var line: string
 while readLine(stdin, line):
@@ -134,11 +188,11 @@ var caseCount = nextInt(inputData, i)
 var outputBuffer: string
 ```
 
-The read loop appends every line to one buffer. The program scans that buffer once. One output buffer holds all answers until a block is full.
+The read loop appends every input line to one buffer. The program scans that buffer once. One output buffer holds answers until a block is full.
 
-Each case builds the compressed grid and marks the cut cells.
+**Mark the cut cells.**
 
-```
+```nim
 for l in 1 .. caseCount:
   var squareSize = nextInt(inputData, i)
   var rectangleCount = nextInt(inputData, i)
@@ -181,11 +235,11 @@ for l in 1 .. caseCount:
         blocked[rowStart + yi] = true
 ```
 
-The rectangle loop runs 4r times, at most 400. The marking loops run rightIndex minus leftIndex and topIndex minus bottomIndex times. They stay inside the compressed grid and never touch the full square.
+The rectangle loop reads 4r coordinates and orders each pair. Cut edges join the x and y coordinate lists. The marking loops visit only cells inside the cut. They never touch the full 40000 by 40000 square.
 
-The sweep takes the best row and writes the answers.
+**Sweep rows and write the answer.**
 
-```
+```nim
   var upHeights = newSeq[int](xCellCount)
   var prefixWidths = newSeq[int](xCellCount + 1)
   for xi in 0 ..< xCellCount:
@@ -211,17 +265,26 @@ The sweep takes the best row and writes the answers.
 stdout.write outputBuffer
 ```
 
-The row loop runs yCellCount times and the inner loop xCellCount times. Adding the answer to one buffer avoids a write per line. The final write flushes the last partial block.
+The row loop runs yCellCount times and the inner loop xCellCount times. prefixWidths turns a cell span into a width. The final write flushes the last partial output block.
 
 ## Complexity
 
-The table gives the cost of each phase for one data set.
+The phases and their costs for one dataset follow.
 
-| Phase | Time | Extra space |
+| Phase | Time | Space |
 | --- | --- | --- |
 | Read and sort coordinates | O(r log r) | O(r) |
 | Mark blocked cells | O(r²) worst case | O(X·Y) |
-| Sweep rows with the stack | O(X·Y) | O(X+Y) |
+| Sweep rows with the stack | O(X·Y) | O(X + Y) |
 | Total | O(X·Y + r log r) | O(X·Y) |
 
-At most 202 x coordinates and 202 y coordinates give 40401 cells. A full grid would store up to 1.6 billion cells, and the compressed sweep visits about forty thousand instead.
+Here X and Y are the compressed cell counts, at most 201 each.
+
+The Big O summary follows.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(X·Y + r log r) per dataset |
+| Space | O(X·Y) per dataset |
+
+A full grid would store 1.6 billion cells, while the compressed sweep visits about forty thousand.

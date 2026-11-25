@@ -1,52 +1,104 @@
+# CUBERT — Cube Root (SPOJ)
+<https://www.spoj.com/problems/CUBERT/>
+
 ## Problem
 
-Read a count, then that many lines. Each line holds one positive integer of at most 150 decimal digits, with optional surrounding spaces and possible blank lines. Print one line per number: the sum of the printed digits modulo 10, a space, and the cube root truncated after its tenth decimal place.
+A fairytale contest needs the cube root of a huge integer printed to ten decimal places.
+Ordinary floating point cannot hold 150 digits.
 
-The judge bounds are:
+Read a count `t`, then `t` integers of up to 150 digits.
+Blank lines and surrounding spaces may appear.
+For each integer, print a checksum, a space, and the cube root truncated after ten decimal places.
+The checksum is the sum of the printed root digits modulo 10.
+
+The judge bounds follow.
 
 | Quantity | Bound |
 | --- | --- |
-| Test cases | 20 |
-| Digits per number | 150 |
+| Test cases `t` | at most 20 |
+| Digits per number | up to 150 |
+| Printed decimal places | 10 |
 | Time limit | 5000 ms |
 | Memory limit | 1536 MB |
 
-The 150-digit bound exceeds floating-point range, so the program uses integer arithmetic only.
+The 150-digit bound rules out floating point.
+
+The sample input and expected output follow verbatim.
+
+```
+5
+1
+        8
+   1000
+
+2
+33076161
+```
+
+```
+1 1.0000000000
+2 2.0000000000
+1 10.0000000000
+0 1.2599210498
+6 321.0000000000
+```
+
+Each line pairs a checksum with a root truncated at ten decimals.
 
 ## Idea
 
-Scale each number by 10^30, then take an integer cube root. Because 10^30 is a perfect cube, the scaled root carries ten decimal digits of the answer inside one integer.
+Scale first, like measuring a room in millimeters to keep fractions exact.
+Multiply the number by 10^30, then take an integer cube root.
 
-The program splits that integer at the last ten digits and adds its digits for the checksum. A binary search finds the root in about 200 steps, and each step multiplies small numbers stored in base 10^9.
+Because 10^30 equals (10^10)^3, the scaled root carries ten decimal digits of the answer.
+The program splits the last ten digits off as the fraction.
+A binary search finds the root in about 200 steps.
+Each step multiplies limbs (chunks stored in base 10^9) using integer arithmetic.
 
-Cost: about 200 cube computations per case, each on numbers of at most 60 digits.
+Cost per step is a few dozen limb products.
+Trying candidate roots from one upward would need about 10^50 attempts.
+Exact integer scaling prints a truncated root with no rounding drift.
 
 ## Why It Works
 
-Write N for the input number and R for the integer cube root of N times 10^30.
+Four facts prove the method.
 
-- 10^30 equals (10^10)^3, so R equals the cube root of N times 10^10, rounded down.
-- The last ten digits of R are the fraction. The digits before them are the whole part.
-- Rounding down truncates, so no digit rounds up.
-- Adding every digit of R and taking the result modulo 10 gives the checksum.
+1. The number 10^30 equals (10^10)^3.
+   Therefore the integer cube root of `N * 10^30` equals the root of `N` times 10^10, rounded down.
+2. The last ten digits of that root form the fraction.
+   The earlier digits form the whole part.
+3. Rounding down truncates, so no digit ever rounds up.
+4. Adding every printed digit and reducing modulo 10 gives the checksum.
 
-The generator computes this example for N = 2:
+The main values and their roles follow.
+
+| Term | Meaning |
+| --- | --- |
+| `baseValue` | 10^9, the base of every limb |
+| `limbDigits` | 9, the digit count of one limb |
+| `scaleZeros` | 30, the decimal shift applied before the root |
+| `fractionDigits` | 10, digits split off after the root |
+| `digitCount` | number of decimal digits in a big number |
+
+The scale and the fraction width match by design.
+
+A script expands the sample value `N = 2` and prints these digits.
 
 ```
 scaled   = 2000000000000000000000000000000
 root     = 12599210498
-digits   = '12599210498'
-whole    = '1'
-fraction = '2599210498'
+digits   = 1 2 5 9 9 2 1 0 4 9 8
+whole    = 1
+fraction = 2599210498
 checksum = 0
 output   = 0 1.2599210498
 ```
 
-The printed digits sum to 50, which gives checksum 0.
+The printed digits sum to 50, so the checksum is 0.
 
 ## Code
 
-First the constants, the number type, and the smallest operations. `parseNumber` groups digits into nine-digit limbs. `multiplySmall` keeps each limb below `baseValue`.
+**Constants and number type.**
 
 ```nim
 const firstDigitValue = 48
@@ -57,7 +109,13 @@ const fractionDigits = 10
 const flushBlockBytes = 1 shl 18
 
 type BigNumber = seq[int]
+```
 
+The base is 10^9, so one limb holds nine decimal digits. The scale is 30 zeros and the fraction is ten digits. A BigNumber is a list of limbs with the least significant limb first.
+
+**Parsing and small multiply.**
+
+```nim
 proc normalizeNumber(value: var BigNumber) =
   while value.len > 0 and value[value.len - 1] == 0:
     value.setLen(value.len - 1)
@@ -90,9 +148,9 @@ proc multiplySmall(value: BigNumber, factor: int): BigNumber =
   normalizeNumber(result)
 ```
 
-The group is nine digits because `limbDigits` is 9, so each limb stays below 1,000,000,000. The loop reads digits from the right, which handles leading zeros without a separate pass. The cost is linear in the digit count.
+parseNumber reads digits from the right and groups them into limbs. Reading right to left handles leading zeros without a special pass. multiplySmall carries overflow into later limbs. Both operations cost one pass over the limb count.
 
-Comparison checks the most significant limb first, then walks down. Subtraction borrows one `baseValue` when a limb goes negative. Halving walks from the most significant limb so the remainder flows downward. Each operation costs one pass over at most 20 limbs.
+**Comparison and limb arithmetic.**
 
 ```nim
 proc compareNumbers(left: BigNumber, right: BigNumber): int =
@@ -147,7 +205,9 @@ proc halveNumber(value: BigNumber): BigNumber =
   normalizeNumber(result)
 ```
 
-Multiplication collects at most seven products per output limb, so a 64-bit `int` holds the sum. The carry moves to the next limb on each step. Multiplication costs at most 98 limb products here.
+compareNumbers checks the most significant limb first. addNumbers and subtractNumbers carry or borrow one base value per limb. halveNumber walks from the top so the remainder flows downward. Each operation costs one pass over at most 20 limbs.
+
+**Full multiplication.**
 
 ```nim
 proc multiplyNumbers(left: BigNumber, right: BigNumber): BigNumber =
@@ -174,7 +234,9 @@ proc multiplyNumbers(left: BigNumber, right: BigNumber): BigNumber =
   normalizeNumber(result)
 ```
 
-`powerOfTen` builds the search bound with repeated small multiplies. `integerCubeRoot` searches the inclusive range from zero to that bound. The loop stops when the low and high ends meet, so the result is the largest cube not exceeding the target. `numberToString` pads each lower limb with leading zeros to keep place values aligned.
+The product of two limbs plus a carry stays below 2^63. Each output limb collects its products, then passes the carry upward. The double loop costs O(L²) limb products for L limbs.
+
+**Root search and formatting.**
 
 ```nim
 proc powerOfTen(exponent: int): BigNumber =
@@ -224,7 +286,9 @@ proc numberToString(value: BigNumber): string =
     k -= 1
 ```
 
-The input loop reads the whole stream once into `inputData`. `nextToken` returns digit runs, so spaces and blank lines never reach the parser. The loop scales each number by `scaleZeros` zeros, then builds one output line. `appendOutput` flushes a completed block, which keeps memory use at `flushBlockBytes`.
+powerOfTen builds the search bound with repeated small multiplies. integerCubeRoot searches until low and high meet. That gives the largest cube not exceeding the target. numberToString pads lower limbs to nine digits to preserve place values.
+
+**Input, tokens, and output buffer.**
 
 ```nim
 var inputData = ""
@@ -257,7 +321,13 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+The read loop stores the whole stream in one buffer. nextToken returns digit runs, so spaces and blank lines never reach the parser. appendOutput flushes a full 256 KiB block. The scanner never allocates a token string.
+
+**Driver.**
+
+```nim
 var firstPos = 0
 var lastPos = 0
 nextToken(inputData, scanPos, firstPos, lastPos)
@@ -288,12 +358,27 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
+Each case scales its number by 30 decimal zeros. The root text is split at the last ten digits. The checksum sums those digits modulo 10. The final write emits the remaining output bytes.
+
 ## Complexity
 
-Let d be the digit count, at most 150.
+Let `d` be the digit count of one number, at most 150.
 
-- Parsing and scaling take O(d) limb work.
-- The search takes about 200 iterations, each with at most 98 limb products because numbers stay under 60 digits.
-- Printing takes O(d).
+The phases and their costs follow.
 
-Total per case: O(d) limb work with a fixed cost of about 200 multiplications. Testing every candidate root up to the answer would need about 10^60 trials, which is impossible.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Parse and scale | O(d) | O(d) limbs |
+| Binary search | about 200 cube computations | O(d) limbs |
+| Format and checksum | O(d) | one line string |
+
+The limb count stays small because 150 digits need about 17 limbs.
+
+The Big O summary follows.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(d) limb work with a fixed search count per case |
+| Space | O(d) per case plus the output block |
+
+Trying every candidate root up to the answer needs about 10^50 trials, which cannot finish.

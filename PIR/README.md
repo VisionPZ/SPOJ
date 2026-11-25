@@ -1,61 +1,83 @@
+# PIR — Pyramids (SPOJ)
+<https://www.spoj.com/problems/PIR/>
+
 ## Problem
 
-Read the number of test cases, then six edge lengths for each pyramid. The edges arrive in the order AB, AC, AD, BC, BD, CD. Print the volume of each pyramid with four digits after the decimal point.
+An archaeologist finds tetrahedrons with triangular bases. He measures all six edges but needs the volume for a calendar study.
 
-The input bounds and judge limits are fixed.
+You receive the edge lengths in a fixed order. Compute each volume and print it with four digits after the decimal point.
+
+Input: the first integer is t, the number of tests. Each following line holds six positive integers: AB, AC, AD, BC, BD, CD. Output: one real number per test, rounded to four decimals.
+
+These are the bounds and the judge limits:
 
 | Item | Bound |
 | --- | --- |
-| Edge lengths | integers from 1 to 1000 |
-| Test cases | given by the first integer |
+| Test cases t | from the input |
+| Edge lengths | positive integers up to 1000 |
+| Output precision | four digits after the decimal point |
 | Time limit | 1000 ms |
 | Memory limit | 1536 MB |
 
-All six edges fit in six integers, so the work per case stays constant.
+The sample has a regular tetrahedron and a skewed one:
+
+```
+2
+1 1 1 1 1 1
+1000 1000 1000 3 4 5
+```
+
+```
+0.1179
+1999.9937
+```
+
+The regular tetrahedron of edge 1 has volume √2 / 12.
 
 ## Idea
 
-Place vertex D at the origin and read vectors DA, DB, and DC from the edge lengths. The volume is one sixth of their scalar triple product, so its square divides the dot-product matrix determinant (the Gram determinant) by 36. The law of cosines gives every dot product from two squared edges, and five exact integer terms finish the calculation.
+Recover the corner angles from the edge lengths, then apply a determinant formula. Picture a three-legged tripod: knowing the three legs and the distances between their feet fixes the shape, so the enclosed volume is determined.
 
-Each case uses a fixed number of integer operations and one decimal format.
+The program places vertex D at the origin and treats DA, DB, DC as vectors. The law of cosines gives their pairwise dot products from the opposite edges AB, AC, and BC. The Gram determinant of those three vectors expands into five integer terms.
+
+The terms use squares up to 10⁶ and products up to about 1.6 × 10⁹, but their signed sum needs more than 64 bits. The program accumulates into a 128-bit pair built from an int64 and a uint64. It takes one square root at the end and formats four decimals.
+
+Each test costs O(1). A floating-point determinant subtracts nearly equal large values and loses the four decimal digits.
+
+Takeaway: an exact integer expansion plus one square root keeps the printed digits stable.
 
 ## Why It Works
 
-Let u equal AD squared, v equal BD squared, and w equal CD squared. Let p equal u plus v minus AB squared. Let q equal u plus w minus AC squared.
+Four facts support the formula.
 
-Let r equal v plus w minus BC squared. Each value is an integer. The law of cosines makes p, q, and r twice the dot products of the three vectors.
+1. Put D at the origin. Then 2·DA·DB = |DA|² + |DB|² − |AB|², and similarly for the other pairs. These are `twiceDotAB`, `twiceDotAC`, and `twiceDotBC`.
+2. The Gram determinant of three vectors equals 36 V². Write a = |DA|², b = |DB|², c = |DC|². The expansion gives 144 V² = 4abc + (2u)(2v)(2w) − a(2w)² − b(2v)² − c(2u)². Here u, v, w are the three dot products.
+3. Each term can exceed int64 only after summation. `addProduct` tracks carries and sign extension across a 64-bit low word and a 64-bit high word, so the total stays exact.
+4. `formatFloat(volume, ffDecimal, 4)` rounds the single square root to four decimals. Rounding happens once, after all exact arithmetic.
 
-The dot-product matrix has half-integer entries, so the program doubles it. Doubling a three-row matrix multiplies its determinant by eight. The doubled determinant equals 288 times the squared volume, so half of it equals 144 times the squared volume. Call that half S.
-
-S = 4uvw + pqr - ur² - vq² - wp²
-
-The five terms carry these meanings.
+These are the values in one test:
 
 | Term | Meaning |
 | --- | --- |
-| 4uvw | four times the product of the squared edges from D |
-| pqr | the product of the three doubled dot products |
-| ur² | one squared edge times one squared doubled dot product |
-| vq² | the same product for the second edge |
-| wp² | the same product for the third edge |
+| `squaredAD`, `squaredBD`, `squaredCD` | squared lengths a, b, c of the three edges from D |
+| `twiceDotAB` | a + b − AB², twice the DA·DB dot product |
+| `twiceDotAC` | a + c − AC² |
+| `twiceDotBC` | b + c − BC² |
+| `scaledSquaredVolume` | the exact value of 144 V² |
+| `volume` | sqrt(scaledSquaredVolume / 144) |
 
-The last three terms are subtracted. Each term alone fits in a signed 64-bit word, but their sum can pass that limit. The `addProduct` procedure stores the carry in `highWord` and the value in `lowWord`. The final S never exceeds 2·10^18, so `lowWord` holds it exactly.
+A script evaluates the five terms for both sample cases:
 
-A script generated this example from a tall tetrahedron with edges 1, 1, 1000, 1, 1000, 1000.
+```
+edges (1,1,1,1,1,1)      terms [4,1,-1,-1,-1] sum 2 -> 0.11785
+edges (1000,1000,1000,3,4,5) terms [1600000000,12800,-1024000000,-10000,-6400] sum 575996400 -> 1999.99375
+```
 
-| Quantity | Value |
-| --- | --- |
-| u, v, w | 1,000,000 each |
-| p, q, r | 1,999,999 each |
-| 4uvw | 4,000,000,000,000,000,000 |
-| pqr | 7,999,988,000,005,999,999 |
-| ur² + vq² + wp² | 11,999,988,000,003,000,000 |
-| S | 2,999,999 |
-| Volume | 144.3375 |
-
-The first two terms already exceed a 64-bit word, while S is only 2,999,999.
+The first sum gives √2 / 12, printed as 0.1179. The second gives √3999975, printed as 1999.9937. Both round once at the output step.
 
 ## Code
+
+**Setup.** The scanner reads integers, and a helper adds signed terms into a wide accumulator.
 
 ```nim
 import math, strutils
@@ -71,11 +93,7 @@ proc nextInt(inputData: string, i: var int): int =
     value = value * 10 + (int(inputData[i]) - digitBase)
     i += 1
   return value
-```
 
-Both loops advance `i` once per byte, so scanning costs one pass over the input buffer. The cast turns a character into a number before the comparison. The scanner skips spaces and newlines without allocating tokens.
-
-```nim
 proc addProduct(highWord: var int64, lowWord: var uint64, term: int64) =
   let termBits = cast[uint64](term)
   let addedLow = lowWord + termBits
@@ -83,15 +101,17 @@ proc addProduct(highWord: var int64, lowWord: var uint64, term: int64) =
   let extendWord: int64 = if term < 0: -1 else: 0
   lowWord = addedLow
   highWord += carryWord + extendWord
-```
 
-The carry and sign extension keep the two words in balance. Without the sign extension, a negative term would add a large positive value. Five calls produce the exact sum.
-
-```nim
 proc flushOutput(outputBuffer: var string) =
   stdout.write outputBuffer
   outputBuffer.setLen 0
+```
 
+`addProduct` extends a negative term through the high word with `extendWord`. The unsigned overflow flag supplies the carry. Each addition costs O(1); no big-integer library is needed.
+
+**Driver.** Each line of six edges becomes one volume.
+
+```nim
 var inputData = ""
 var nextLine = ""
 while readLine(stdin, nextLine):
@@ -103,11 +123,7 @@ let testCount = nextInt(inputData, i)
 var outputBuffer = ""
 var highWord: int64 = 0
 var lowWord: uint64 = 0
-```
 
-The read loop adds a newline after each line, so tokens never join across lines. `flushOutput` clears the same buffer with `setLen 0`, so memory stays at one block. Reading finishes before the case loop starts.
-
-```nim
 var j = 0
 while j < testCount:
   let edgeAB = nextInt(inputData, i)
@@ -144,16 +160,25 @@ if outputBuffer.len > 0:
   flushOutput(outputBuffer)
 ```
 
-The while loop runs exactly `testCount` times. Each pass reads six tokens and adds five terms to the exact accumulator. `formatFloat` writes four decimals, and `flushBlockBytes` caps the buffer at one block.
+The read loop puts all lines in one buffer. The five `addProduct` calls match the expanded determinant exactly. `scaledSquaredVolume` stays within int64 after the sum, so the low word holds it; the final flush writes the tail.
 
 ## Complexity
 
-Let L be the input length in bytes and t be the number of cases.
+Each test uses a fixed number of operations.
 
 | Phase | Time | Space |
 | --- | --- | --- |
-| Read and scan | O(L) | O(L) |
-| Per case | O(1) | O(1) |
-| Write output | O(t) | O(flushBlockBytes) |
+| Input scan | O(total tokens) | O(input size) |
+| Dot products and terms | O(1) | O(1) |
+| Square root and formatting | O(1) | O(1) |
+| Output | O(tests) | O(block size) |
 
-The total is O(L + t) time and O(L + flushBlockBytes) space. A naive program builds the Cayley-Menger matrix and runs Gaussian elimination in floating point for each case. That uses dozens of steps instead of five and can round away the answer after a large cancellation.
+Every test costs O(1) time and O(1) working space.
+
+| Measure | Big O |
+| --- | --- |
+| Time per test | O(1) |
+| Total time | O(t) |
+| Working space | O(1) |
+
+A floating-point determinant risks cancellation; the exact integer sum avoids it at the same constant cost.

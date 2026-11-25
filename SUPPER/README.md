@@ -1,63 +1,92 @@
+# SUPPER — Supernumbers in a permutation (SPOJ)
+
+<https://www.spoj.com/problems/SUPPER/>
+
 ## Problem
 
-Read ten permutations, one per test case. Each permutation holds every value from 1 to n once. A supernumber is a value that appears in at least one longest increasing subsequence. Print the count of supernumbers, then print their values in ascending order.
+A permutation lists numbers in some order. Its longest increasing subsequences may be several, and a supernumber belongs to at least one of them. The task finds every supernumber.
 
-The judge fixes the size of one case and the budget for all ten.
+Input: ten test cases one after another. Each case gives `n`, then a permutation of `1..n`. Output: two lines per case, first the count of supernumbers, then the numbers in increasing order.
 
-| Limit | Value |
+The statement gives these bounds:
+
+| Item | Bound |
 | --- | --- |
-| Permutation size n | at most 100000 |
-| Test cases | 10 |
-| Time | 2250 ms |
-| Memory | 1536 MB |
+| Test cases | exactly 10 |
+| Permutation size `n` | 1 to 100,000 |
+| Values | a permutation of `1..n` |
+| Judge limit | 2250 ms, 1536 MB |
 
-All ten cases share the same 2250 ms budget.
+Large input and output call for one buffered read and batched writes.
+
+The sample input and output:
+
+```
+5
+2 1 4 5 3
+```
+
+```
+4
+1 2 4 5
+```
 
 ## Idea
 
-For each position, find the longest increasing subsequence that ends there and the one that starts there. The position belongs to some longest increasing subsequence exactly when those two lengths add up to the full length plus one. Compute both lengths with a tails array, an array where `tailValues` holds the smallest last value for each subsequence length. A binary search places each value in O(log n) steps. A boolean array indexed by value then emits the supernumbers in ascending order with no sort.
+Check whether each number sits on a longest rising route, like a commuter who belongs to at least one fastest path through a city. Compute the best route ending at each stop and the best route starting there.
 
-Cost per element: O(log n) for the forward pass and O(log n) for the backward pass.
+The program uses patience sorting with binary search in both directions. Forward passes give the longest increasing subsequence ending at each position.
+
+A reverse pass with negated values gives the one starting there. Each element costs `O(log n)`, so a case costs `O(n log n)`.
+
+Enumerating all longest subsequences can take exponential time. Two length arrays decide membership with one addition per position.
+
+A value is a supernumber when the two lengths through it reach the global maximum.
 
 ## Why It Works
 
-Take any longest increasing subsequence and a position inside it. The values before that position form an increasing subsequence ending there, so their count is at most `endingLength[j]`. The values after it form an increasing subsequence starting there, so their count is at most `startingLength[j]`. Those two parts share the position, so their combined length is `endingLength[j] + startingLength[j] - 1`. This combined sequence is increasing, so it cannot exceed `longestLength`.
+Four facts justify the membership test.
 
-Now suppose the equality holds. The prefix subsequence ends at the position, and the suffix subsequence starts there. Every value in the first part is smaller than the value at the position, and every value in the second part is larger. Concatenating them gives an increasing subsequence of length `longestLength` that contains the position. Therefore the equality is both necessary and sufficient.
+1. Patience sorting keeps `tailValues[v]` as the smallest possible tail of a rising subsequence of length `v`.
+2. `lowerBound` finds the first tail at least as large as the current value. That index plus one is the longest rising subsequence ending here.
+3. Scanning right to left with negated values gives the longest rising subsequence starting here.
+4. A longest subsequence through position `j` has length `endingLength[j] + startingLength[j] - 1`. It is a supernumber when that value equals `longestLength`.
 
-The position is `j`. The binary search returns the insertion slot `k` or `l`. The test for one position uses four terms.
+The arrays and helpers used by the driver:
+
+| Term | Meaning |
+| --- | --- |
+| `endingLength[j]` | longest rising subsequence ending at position `j` |
+| `startingLength[j]` | longest rising subsequence starting at position `j` |
+| `tailValues` | smallest tail for each subsequence length |
+| `lowerBound` | binary search for the first tail not below a value |
+| `isSupernumber[value]` | membership flag, indexed by value |
+
+Scanning values from 1 to `n` prints the supernumbers in sorted order.
+
+A script trace of the sample permutation:
 
 ```
-    if endingLength[j] + startingLength[j] - 1 == longestLength:
+permutation [2, 1, 4, 5, 3], longest length 3
+| position | value | ending | starting | end+start-1 | supernumber |
+| 1 | 2 | 1 | 3 | 3 | True |
+| 2 | 1 | 1 | 3 | 3 | True |
+| 3 | 4 | 2 | 2 | 3 | True |
+| 4 | 5 | 3 | 1 | 3 | True |
+| 5 | 3 | 2 | 1 | 2 | False |
+supernumbers: [1, 2, 4, 5]
 ```
 
-- `endingLength[j]`: longest increasing subsequence ending at this position.
-- `startingLength[j]`: longest increasing subsequence starting at this position.
-- `- 1`: the value at this position appears in both lengths.
-- `longestLength`: length of the longest increasing subsequence of the case.
-
-For the sample permutation 2 1 4 5 3, the two passes give these lengths.
-
-| Position | Value | endingLength | startingLength | Sum | Supernumber |
-| --- | --- | --- | --- | --- | --- |
-| 0 | 2 | 1 | 3 | 3 | yes |
-| 1 | 1 | 1 | 3 | 3 | yes |
-| 2 | 4 | 2 | 2 | 3 | yes |
-| 3 | 5 | 3 | 1 | 3 | yes |
-| 4 | 3 | 2 | 1 | 2 | no |
-
-Only the value at position 4 fails the test, so the answer is 1 2 4 5.
+Value 3 reaches only length 2 through its position. It is absent from every longest subsequence.
 
 ## Code
 
-```
+**Scanner and binary search.** The scanner reads positive integers, and `lowerBound` scans the tail array.
+
+```nim
 const maxPermutationSize = 100000
 const flushBlockBytes = 1 shl 17
-```
 
-The first constant fixes the largest legal array and the second sets the flush threshold. All work arrays are allocated once, so no case pays an allocation cost. The closed bound comes from the judge limit of 100000.
-
-```
 proc nextInt(inputData: string, i: var int): int =
   let dataLength = inputData.len
   while i < dataLength and (inputData[i] < '0' or inputData[i] > '9'):
@@ -67,11 +96,7 @@ proc nextInt(inputData: string, i: var int): int =
     value = value * 10 + int(inputData[i]) - 48
     i = i + 1
   return value
-```
 
-The loop advances until a digit appears, so spaces and newlines need no special handling. Each value has at most six digits. The scanner allocates nothing and costs O(1) per value.
-
-```
 proc lowerBound(tailValues: seq[int], tailCount: int, value: int): int =
   var i = 0
   var j = tailCount
@@ -84,9 +109,13 @@ proc lowerBound(tailValues: seq[int], tailCount: int, value: int): int =
   return i
 ```
 
-The search halves the live prefix on each step, so it takes O(log n) comparisons. Lower bound keeps the strictly increasing rule intact. The live prefix always has `tailCount` entries.
+The scanner skips non-digits and needs no sign branch.
+`lowerBound` runs in `O(log n)` because it halves the index range each step.
+It returns the first tail not smaller than `value`.
 
-```
+**Stored arrays and input.** Fixed arrays cover the largest permitted permutation.
+
+```nim
 var permutation = newSeq[int](maxPermutationSize + 1)
 var endingLength = newSeq[int](maxPermutationSize + 1)
 var startingLength = newSeq[int](maxPermutationSize + 1)
@@ -100,16 +129,20 @@ while readLine(stdin, line):
   inputData.add "\n"
 var i = 0
 var outputBuffer: string
+```
+
+All arrays have `maxPermutationSize + 1` slots, so no case allocates memory.
+The reader appends lines to one input string.
+The loop stops when the parsed size falls below one.
+
+**Two passes and output.** Forward, reverse, and membership scans share the same tail array.
+
+```nim
 while i < inputData.len:
   let size = nextInt(inputData, i)
   if size < 1: break
   for j in 0 ..< size:
     permutation[j] = nextInt(inputData, i)
-```
-
-The five arrays are sized once from the maximum legal permutation, so no case allocates. The input loop gathers every line into one string before parsing starts. The guard stops the empty case created by the trailing newline. Filling one case costs O(n).
-
-```
   var tailCount = 0
   for j in 0 ..< size:
     let value = permutation[j]
@@ -118,11 +151,6 @@ The five arrays are sized once from the maximum legal permutation, so no case al
     tailValues[k] = value
     if k == tailCount: tailCount = tailCount + 1
   let longestLength = tailCount
-```
-
-The loop visits positions from 0 to size-1 in index order. A smaller tail always wins, so `tailValues` holds the best tail for each length. The guard extends the live prefix only for a longer subsequence. Cost is O(n log n).
-
-```
   tailCount = 0
   for j in 0 ..< size:
     let k = size - 1 - j
@@ -131,11 +159,6 @@ The loop visits positions from 0 to size-1 in index order. A smaller tail always
     startingLength[k] = l + 1
     tailValues[l] = value
     if l == tailCount: tailCount = tailCount + 1
-```
-
-The loop visits positions from size-1 down to 0. Negating the value turns a decreasing run in reverse order into an increasing run for the same binary search. This avoids a second comparison routine. Cost is O(n log n).
-
-```
   for value in 1 .. size:
     isSupernumber[value] = false
   var supernumberCount = 0
@@ -162,10 +185,29 @@ The loop visits positions from size-1 down to 0. Negating the value turns a decr
 stdout.write outputBuffer
 ```
 
-The first loop resets only values that this case can emit. Marking by value makes the second loop emit values in ascending order without a sort. The buffer flushes every 128 KiB, so output cost stays linear in bytes written.
+The forward loop fills `endingLength` and records the maximum.
+The reverse loop negates each value, which turns a falling tail into a rising one.
+The membership loop marks values, and the final loop prints them in sorted order.
 
 ## Complexity
 
-Reading takes O(total numbers) time and one input buffer. The forward pass takes O(n log n) time for one case and uses one array of n integers. The backward pass takes O(n log n) time and reuses the tail array. Marking and printing take O(n) time and use one boolean array of n entries. For ten cases of size n, total time is O(10 n log n) and peak space is O(n) beyond the two buffers.
+Each case performs two linear passes with a binary search per element.
 
-A naive method tries every subsequence, which costs O(2^n) time per case. Testing each pair of positions with dynamic programming costs O(n^2) time and O(n) space, still too slow at n = 100000. The tails method reduces each pass to O(log n) per element.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Forward pass | O(n log n) | O(n) for two arrays |
+| Reverse pass | O(n log n) | O(n) for two arrays |
+| Membership and output | O(n) | O(n) for flags |
+| Total per case | O(n log n) | O(n) |
+
+At `n = 100,000` each pass performs about 1.7 million comparison steps.
+
+The asymptotic bounds follow from the table:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n log n) per case, O(10 × n log n) overall |
+| Space | O(n) per case, plus buffers |
+
+Listing all longest subsequences can be exponential. Two patience-sorting passes decide membership in near-linear time.

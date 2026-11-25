@@ -1,34 +1,78 @@
+# PLONK — Where to Drink the Plonk? (SPOJ)
+<https://www.spoj.com/problems/PLONK/>
+
 ## Problem
 
-Each test case gives `n` friends at street crossroads with coordinates xi yi. Choose one friend's house as the meeting place so that the total walking distance of all friends is smallest. Print that minimum distance, one line per case.
+A group of friends lives at crossroads of a square street grid. They want to meet at one friend's house and minimize the total walking distance.
 
-| Quantity | Bound |
+Everyone walks along the streets and turns only at crossroads. Adjacent crossroads are one unit apart. Find the smallest total distance over all friends' houses.
+
+Input: the first integer is t, the number of cases. Each case gives n friends, then n pairs of coordinates. Output: one integer per case, the minimum total distance.
+
+These are the bounds and the judge limits:
+
+| Item | Bound |
 | --- | --- |
-| Friends per case `n` | 1 to 10000 |
-| Coordinates xi, yi | 0 to 100000 |
+| Test cases t | from the input |
+| Friends n | 1 to 10000 |
+| Coordinates | 0 to 100000 |
 | Time limit | 6000 ms |
 | Memory limit | 1536 MB |
 
-The output is one number per case, so input parsing and sorting dominate the runtime.
+The sample has seven friends:
+
+```
+1
+7
+1 3
+3 2
+3 5
+6 9
+10 1
+12 4
+5 7
+```
+
+```
+39
+```
+
+Friend (3, 5) gives the smallest total of 39.
 
 ## Idea
 
-Walking along streets gives a Manhattan distance, which splits into an x part and a y part. Sort each coordinate and build prefix sums, then price every possible house in constant time. Scan the given houses once and keep the smallest combined price.
+Split the walk into horizontal and vertical parts, then pick the middle house on each axis. Picture friends living along one long road: the house that minimizes everyone's walking is the median one.
 
-Cost per case: sorting takes O(n log n), and pricing plus scanning takes O(n).
+Street distance is Manhattan distance, |x₁ − x₂| + |y₁ − y₂|, so the two axes work independently. For a sorted list of coordinates, the sum of absolute differences is smallest at a median.
+
+The meeting point must be a friend's house, so the program evaluates the cost at every friend coordinate. Prefix sums give each cost in O(1) after sorting. It keeps the lowest x-cost plus y-cost over all friends.
+
+Sorting costs O(n log n) per case; the rest is O(n). Trying every pair of houses costs O(n²).
+
+Takeaway: two median scans replace a grid search with a sort plus two linear passes.
 
 ## Why It Works
 
-Walking from (1, 3) to (3, 5) takes 4 steps: 2 horizontal and 2 vertical. Summed over all friends, the total equals a term using only the meeting x plus a term using only the meeting y.
+Four facts prove the method.
 
-For a group of equal x values, let `l` be the first index and `j` the index after the last copy. The coordinate is `value`. The price is the following expression.
+1. Manhattan distance separates into |x₁ − x₂| plus |y₁ − y₂|. The x-coordinate of the meeting house affects only the first term.
+2. The sum of absolute deviations from a point is minimized at a median. With an even count, any point between the two middle values works, and one of the friend coordinates lies in that range.
+3. For sorted coordinates and a value v at positions l through j, the left contribution is v × l − prefixX[l]. The right contribution is totalX − prefixX[j] − v × (n − j). Grouping equal values yields the exact cost.
+4. Evaluating `costAtX[x] + costAtY[y]` over every friend checks all legal meeting houses, so the minimum is the answer.
 
-`value * l - prefixX[l] + (totalX - prefixX[j]) - value * (friendCount - j)`.
+These are the arrays in the computation:
 
-`prefixX[l]` is the sum of x values below the group, so the first pair counts the steps from friends on the left. `totalX - prefixX[j]` is the sum of x values above the group, so the last pair counts steps from friends on the right. Equal values share one price, so the group loop visits each distinct coordinate once. The same formula fills `costAtY`. For each house, `costAtX[coordX[i]] + costAtY[coordY[i]]` is its total, and `minTotal` holds the smallest one.
+| Term | Meaning |
+| --- | --- |
+| `coordX`, `coordY` | original coordinates of the friends |
+| `sortedX`, `sortedY` | sorted copies used for prefix sums |
+| `prefixX`, `prefixY` | running sums of the sorted values |
+| `totalX`, `totalY` | sums of all coordinates |
+| `costAtX[v]`, `costAtY[v]` | total axis distance if the meeting coordinate is v |
 
-Prices for the sample friends.
+A script prints the total distance for each candidate friend in the sample:
 
+```
 | Friend | x cost | y cost | total |
 | --- | --- | --- | --- |
 | (1, 3) | 33 | 16 | 49 |
@@ -38,14 +82,31 @@ Prices for the sample friends.
 | (10, 1) | 34 | 24 | 58 |
 | (12, 4) | 44 | 15 | 59 |
 | (5, 7) | 21 | 22 | 43 |
+```
 
-The smallest total is 39, which matches the sample output.
+Friend (3, 5) has the smallest total, 39. The x-cost column is minimized near the median x of 5, and the y-cost near the median y of 4.
 
 ## Code
 
-The input is read once into one buffer, then a hand scanner walks the buffer. No allocation happens while numbers are parsed.
+**Input.** One buffer holds the stream, and a small scanner reads integers.
 
 ```nim
+{.push checks: off.}
+
+import algorithm
+
+const
+  firstDigitValue = 48
+  flushBlockBytes = 1 shl 18
+  maxCoordValue = 100000
+
+proc compareInts(left, right: int): int =
+  if left < right:
+    return -1
+  if left > right:
+    return 1
+  return 0
+
 var inputData = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
@@ -64,9 +125,9 @@ proc nextInt(data: string, position: var int): int =
   return value
 ```
 
-The loop ends at end of input, and the scanner stops at each non-digit. The loop runs once per input line; parsing is O(total tokens).
+`compareInts` gives the sort a stable ordering with no closure allocation. The scanner walks one shared buffer. Cost is one pass over the input bytes.
 
-Output is collected in one string and written in large blocks.
+**Output.** Answers collect in a block-flushed buffer.
 
 ```nim
 var outputBuffer = ""
@@ -78,11 +139,31 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The buffer flushes every `flushBlockBytes` bytes, never per line. This keeps write calls few on large outputs.
+The flush triggers every `flushBlockBytes` bytes. No write happens inside the friend loop. The cost is one pass over the answer text.
 
-Each coordinate list is sorted, and prefix sums make later pricing constant time.
+**Driver.** Each case sorts both axes, then scores every friend.
 
 ```nim
+var costAtX: array[0..maxCoordValue, int64]
+var costAtY: array[0..maxCoordValue, int64]
+
+let caseCount = nextInt(inputData, scanPos)
+for k in 0..<caseCount:
+  let friendCount = nextInt(inputData, scanPos)
+  var coordX: seq[int] = @[]
+  var coordY: seq[int] = @[]
+  coordX.setLen(friendCount)
+  coordY.setLen(friendCount)
+  var totalX = 0'i64
+  var totalY = 0'i64
+  for i in 0..<friendCount:
+    let x = nextInt(inputData, scanPos)
+    let y = nextInt(inputData, scanPos)
+    coordX[i] = x
+    coordY[i] = y
+    totalX += x
+    totalY += y
+
   var sortedX = coordX
   var sortedY = coordY
   sortedX.sort(compareInts)
@@ -95,13 +176,7 @@ Each coordinate list is sorted, and prefix sums make later pricing constant time
   for i in 0..<friendCount:
     prefixX[i + 1] = prefixX[i] + sortedX[i]
     prefixY[i + 1] = prefixY[i] + sortedY[i]
-```
 
-Both loops run `friendCount` times. `prefixX` has one extra cell so an empty prefix is zero. Sorting costs O(n log n) here.
-
-Each group of equal x values gets one price, then the same happens for y.
-
-```nim
   var l = 0
   while l < friendCount:
     var j = l + 1
@@ -110,13 +185,16 @@ Each group of equal x values gets one price, then the same happens for y.
     let value = sortedX[l]
     costAtX[value] = int64(value) * l - prefixX[l] + (totalX - prefixX[j]) - int64(value) * (friendCount - j)
     l = j
-```
 
-The outer loop stops at `friendCount`; `j` stops at the first different value. Grouping avoids pricing the same coordinate twice. The cost is O(n) per dimension.
+  l = 0
+  while l < friendCount:
+    var j = l + 1
+    while j < friendCount and sortedY[j] == sortedY[l]:
+      j += 1
+    let value = sortedY[l]
+    costAtY[value] = int64(value) * l - prefixY[l] + (totalY - prefixY[j]) - int64(value) * (friendCount - j)
+    l = j
 
-Finally, each stored house price is checked and the minimum is appended.
-
-```nim
   var minTotal = high(int64)
   for i in 0..<friendCount:
     let candidateTotal = costAtX[coordX[i]] + costAtY[coordY[i]]
@@ -125,10 +203,32 @@ Finally, each stored house price is checked and the minimum is appended.
 
   appendOutput($minTotal)
   outputBuffer.add '\n'
+
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-The scan visits every house once and adds one newline. `high(int64)` is a safe starting value because all distances fit in 64 bits.
+The two `while l < friendCount` loops group equal coordinates, so a shared value gets one cost. `prefixX[j]` excludes the group starting at j, which forms the right-hand sum. Only friend coordinates are read back, so stale entries for unused values never matter.
 
 ## Complexity
 
-Reading and scanning take O(total input tokens) time. Each case sorts two lists in O(n log n) time and O(n) space. Pricing, the final scan, and prefix sums take O(n) time. The two cost arrays occupy O(100001) int64 cells. Total time is O(t n log n). The naive approach sums distances from every house to every friend, which takes O(n²) per case.
+Sorting and two linear scoring passes carry the work.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(total tokens) | O(input size) |
+| Sort both axes | O(n log n) | O(n) |
+| Prefix sums | O(n) | O(n) |
+| Cost tables | O(n) | O(maxCoordValue) |
+| Best-friend scan | O(n) | O(1) |
+| Output | O(cases) | O(block size) |
+
+Sorting dominates, with O(n log n) time and O(n) extra space per case.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(n log n) |
+| Total time | O(sum of n log n over cases) |
+| Working space | O(n + maxCoordValue) |
+
+Testing every grid crossroad costs O(100000²) per case, far more than two median passes.

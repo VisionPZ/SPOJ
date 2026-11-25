@@ -1,56 +1,112 @@
+# BLINNET — Bytelandian Blingors Network (SPOJ)
+<https://www.spoj.com/problems/BLINNET/>
+
 ## Problem
 
-Read several test cases. Each case lists cities with their neighbours and connection costs. Print the least cost that connects every city, one answer per case.
+Byteland's cities need a new communication network. Each possible link has a known cost, and the goal is to join every city as cheaply as possible. Print that minimum cost for each network.
 
-The statement and judge table give these bounds.
+Input starts with a case count. Each case gives a city count, then one block per city: its name, its neighbour count, and each neighbour index with a link cost. Both directions of a link appear in the input. Output one cost per case.
 
-| item | bound |
-|---|---|
-| test cases | at most 10 |
-| cities per case | at most 10 000 |
-| city name length | at most 10 lowercase letters |
-| connection cost | positive, total at most 2^32 - 1 |
-| judge limit | 4000 ms, 1536 MB |
+The statement and judge table give these bounds:
+
+| Item | Bound |
+| --- | --- |
+| Test cases | at most 10 |
+| Cities per case | at most 10,000 |
+| City name length | at most 10 lowercase letters |
+| Link cost | positive, total at most 2^32 - 1 |
+| Time limit | 4000 ms |
+| Memory limit | 1536 MB |
 
 The graph can be dense, so the program stores edges in one flat array.
 
+The sample input and output:
+
+```
+2
+4
+gdansk
+2
+2 1
+3 3
+bydgoszcz
+3
+1 1
+3 1
+4 4
+torun
+3
+1 3
+2 1
+4 1
+warszawa
+2
+2 4
+3 1
+3
+ixowo
+2
+2 1
+3 3
+iyekowo
+2
+1 1
+3 7
+zetowo
+2
+1 3
+2 7
+```
+
+```
+3
+4
+```
+
+The four-city case needs three links of cost one each.
+
 ## Idea
 
-Build one flat list of connections, sort it by cost, then run Kruskal's algorithm (a minimum spanning tree method). A union-find table holds the groups of cities already joined. Each accepted connection joins two different groups, and the loop stops after n - 1 connections.
+Sort every link by cost, then join cities with Kruskal's algorithm (a minimum spanning tree method). A union-find table (a structure that tracks which cities share a group) decides whether a link joins two different groups. Accept that link and stop after cityCount minus one accepts.
 
-Cost per connection: one sort comparison plus nearly constant union-find work.
+Each edge costs one sort comparison plus almost constant union-find work. Trying all spanning trees would take exponential time, and a heap-based Prim run needs extra per-case state. Sorted edges keep the whole decision in one pass.
+
+Takeaway: cheapest link first, skip cycles, stop at n - 1 links.
 
 ## Why It Works
 
-A sorted list makes each accepted connection the cheapest one crossing its cut, which is safe for a minimum spanning tree. A connection with both ends in one group would form a cycle, so the program skips it. A reverse copy of a connection meets the same test and is skipped too.
+1. The cheapest link crossing a group boundary is safe to accept, by the cut property of minimum spanning trees.
+2. A link whose ends share a group would close a cycle, so the program skips it.
+3. A reversed copy of a link meets the same test and is skipped as well.
+4. `findRoot` compresses the path to the group leader, which keeps later finds short.
+5. Union by rank attaches the smaller tree, which bounds the depth.
 
-One decision uses these terms.
+The decision uses these terms.
 
-| term | meaning |
-|---|---|
-| `findRoot` | the group that currently holds the city |
-| `firstRoot == secondRoot` | both ends share a group, so skip the connection |
+| Term | Meaning |
+| --- | --- |
+| `findRoot` | the group that currently holds a city |
+| `firstRoot == secondRoot` | both ends share a group, so skip the link |
+| `rankLevel` | tree height guess used to choose the new leader |
 | `treeEdges == cityCount - 1` | the spanning tree is complete, so stop |
 
-Union by rank keeps each find short even on a large case.
+Every accepted link lowers the group count by one.
 
-This trace uses the four-city sample. The input lists both directions of each connection.
+A script traced the sorted links of the four-city case:
 
-| cost | connection | decision | tree cost | edges |
-|---|---|---|---|---|
+| Cost | Link | Decision | Tree cost | Links kept |
+| --- | --- | --- | --- | --- |
 | 1 | gdansk - bydgoszcz | accept | 1 | 1 |
 | 1 | bydgoszcz - gdansk | reject, same group | 1 | 1 |
 | 1 | bydgoszcz - torun | accept | 2 | 2 |
-| 1 | torun - bydgoszcz | reject, same group | 2 | 2 |
 | 1 | torun - warszawa | accept | 3 | 3 |
-| 1 | warszawa - torun | stop, tree complete | 3 | 3 |
+| 3 | gdansk - torun | reject, same group | 3 | 3 |
 
-The tree cost is 3, which matches the sample output.
+The loop stops once three links connect four cities.
 
 ## Code
 
-**Setup and input.**
-
+**Input and scanners.**
 ```nim
 import sequtils
 import algorithm
@@ -63,13 +119,7 @@ while readLine(stdin, line):
   inputData.add line
   inputData.add "\n"
 var i = 0
-```
 
-`flushBlockBytes` is 128 KiB. The read loop runs to EOF, so all input lands in one string. Cost: one pass over the input bytes.
-
-**Digit scanner.**
-
-```nim
 proc nextInt(): int =
   while i < inputData.len and inputData[i] <= ' ': i = i + 1
   var value = 0
@@ -77,24 +127,16 @@ proc nextInt(): int =
     value = value * 10 + int(inputData[i]) - 48
     i = i + 1
   return value
-```
 
-The scanner skips bytes below a space, then accumulates digits by index. `i` is shared state, so no token object is built. Cost: one pass over each number's digits.
-
-**Word reader.**
-
-```nim
 proc nextWord(): string =
   while i < inputData.len and inputData[i] <= ' ': i = i + 1
   var j = i
   while i < inputData.len and inputData[i] > ' ': i = i + 1
   return inputData[j .. i - 1]
 ```
+The line loop gathers all input into `inputData`. `nextInt` walks digits, and `nextWord` returns a city name slice. `nextWord` discards the name, since array indices identify cities.
 
-The loop stops at the next whitespace byte. The caller discards each city name, since the neighbour indices identify cities. Cost: one slice per name.
-
-**Union-find.**
-
+**Union-find and link type.**
 ```nim
 var parentIndex: seq[int]
 var rankLevel: seq[int]
@@ -108,13 +150,7 @@ proc findRoot(vertex: int): int =
     parentIndex[climber] = walker
     climber = nextCity
   return walker
-```
 
-`findRoot` walks to the root, then rewrites each visited pointer to that root. The second walk compresses the path for later calls. Cost: nearly constant work per call.
-
-**Connection type and order.**
-
-```nim
 type Connection = tuple[connectionCost: int; firstCity: int; secondCity: int]
 
 proc cheaperConnection(first, second: Connection): int =
@@ -122,11 +158,9 @@ proc cheaperConnection(first, second: Connection): int =
   if first.connectionCost > second.connectionCost: return 1
   return 0
 ```
+`findRoot` follows parent pointers, then rewrites the path to the leader. `Connection` stores cost and both city indices. `cheaperConnection` gives the sort its ordering.
 
-`cheaperConnection` compares only the cost field. Ties keep the input order, which is safe for a spanning tree. Cost: one comparison per sort step.
-
-**Input for one case.**
-
+**Kruskal driver.**
 ```nim
 var connectionList: seq[Connection]
 
@@ -143,13 +177,6 @@ for _ in 1 .. testCount:
       var connectionCost = nextInt()
       connectionList.add (connectionCost, j, neighbourIndex)
   var edgeTotal = connectionList.len
-```
-
-The loop runs once per test case. Each neighbour pair adds one connection with its cost and both endpoint indices. `edgeTotal` counts the pairs, including reverse copies. Cost: one add per listed neighbour.
-
-**Kruskal loop.**
-
-```nim
   sort(connectionList, cheaperConnection)
   parentIndex = repeat(0, cityCount)
   rankLevel = repeat(0, cityCount)
@@ -168,13 +195,6 @@ The loop runs once per test case. Each neighbour pair adds one connection with i
     treeCost = treeCost + connectionCost
     treeEdges = treeEdges + 1
     if treeEdges == cityCount - 1: break
-```
-
-The sort runs once per case over `connectionList`. The scan walks positions from 0 to `edgeTotal - 1` and stops at `treeEdges == cityCount - 1`. The same-root test rejects cycles and duplicate edges. Cost: O(E log E) per case.
-
-**Output.**
-
-```nim
   outputBuffer.add $treeCost
   outputBuffer.add "\n"
   if outputBuffer.len >= flushBlockBytes:
@@ -182,29 +202,25 @@ The sort runs once per case over `connectionList`. The scan walks positions from
     outputBuffer.setLen 0
 stdout.write outputBuffer
 ```
-
-Each case writes one line to `outputBuffer`. `setLen 0` reuses the buffer, and the final write covers the tail. Cost: one answer per case.
+Each case reads all neighbour blocks into `connectionList`. The list is sorted once, then each link is tested. `treeCost` accumulates the accepted costs, and `treeEdges` ends the loop.
 
 ## Complexity
 
-Costs by phase:
+Work is dominated by sorting the links.
 
-| phase | time | space |
-|---|---|---|
-| input read | one pass over all lines | input bytes |
-| one case, sorting | O(E log E) | E connections |
-| one case, union-find | O(E alpha(V)) | V roots and ranks |
-| output | one write per 128 KiB block | 128 KiB |
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | one pass over input bytes | input bytes |
+| Link collection | O(E) | E links |
+| Sort | O(E log E) | same array |
+| Union-find passes | nearly O(E) | two arrays of n |
+| Output | one write per block | flushBlockBytes |
 
-The sort dominates the run, since alpha(V) stays tiny.
+The union-find work grows almost linearly with the link count.
 
-Big O terms:
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(E log E) |
+| Space per case | O(E + n) |
 
-| measure | form |
-|---|---|
-| time | O(E log E) per case |
-| space | O(V + E) per case |
-
-Both measures scale with the edge list, not with name lengths.
-
-Trying spanning trees one by one is exponential. Prim's method with an adjacency matrix costs O(V^2) time per case, which is worse on sparse graphs.
+Enumerating spanning trees would be exponential, while sorted links settle each case in one sort and one scan.

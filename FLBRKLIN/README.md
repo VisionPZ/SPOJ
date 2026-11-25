@@ -1,52 +1,69 @@
+# FLBRKLIN — Flat broken lines (SPOJ)
+<https://www.spoj.com/problems/FLBRKLIN/>
+
 ## Problem
 
-The input gives distinct points on a sheet. A flat broken line is a left-to-right stroke whose segments each stay within 45 degrees of the x axis. Find the fewest such lines that cover every point. Write u for y minus x and v for y plus x. Print one integer per test case.
+A draftsman draws flat broken lines across a sheet of graph paper to cover marked points. Each stroke runs left to right and never tilts more than 45 degrees from horizontal. Find the fewest strokes that cover every point.
 
-| Quantity | Bound |
+The first line holds the test count t. Each case starts with a point count n, then n lines with coordinates x and y. Points are distinct and both coordinates run from 0 to 30000. Print one integer per case, the minimum number of lines.
+
+The judge limits are:
+
+| Item | Value |
 | --- | --- |
-| Test cases | not stated |
 | Points per case | at most 30000 |
-| x and y | 0 to 30000 |
-| Time limit | 5000 ms |
+| Coordinates | 0 to 30000 |
+| Time limit | 5 s |
 | Memory limit | 1536 MB |
 
-The point count drives the design, so each case needs a subquadratic method.
+The point count rules out any pairwise method.
+
+The sample input reads:
+
+```text
+1
+6
+1 6
+10 8
+1 5
+2 20
+4 4
+6 2
+```
+
+The sample output reads:
+
+```text
+3
+```
 
 ## Idea
 
-A flat broken line is the graph of a function whose slope magnitude stays at most one. Two points fit on one line when their vertical gap never exceeds their horizontal gap. That condition becomes u never rising and v never falling along a line. By Dilworth's theorem the fewest lines equal the largest group of points with u rising and v rising. The program sorts by u and v, then counts that group with a patience-sorting scan.
-
-Cost per point: one comparison in the sort and one logarithmic step in the scan.
+Rewrite each point using two diagonal coordinates, like labeling a parcel with two routing numbers. Set u = y - x and v = y + x. One flat line covers points whose u does not rise while v does not fall. By Dilworth's theorem (a rule linking chain covers to antichains), the fewest lines equal the largest group with both u and v rising. Patience sorting (a card-game method for longest rising runs) counts that group in one pass. Each point costs one sort comparison and one binary search. A matching built from point pairs would cost cubic time. Takeaway: sort by one coordinate, then count rising values of the other.
 
 ## Why It Works
 
-Take two points with x coordinates x1 < x2 and y coordinates y1 and y2. One line covers both when the absolute gap |y2 - y1| stays at most x2 - x1. Split that inequality into its two sides.
+1. For two points with x1 < x2, one line covers both exactly when |y2 - y1| is at most x2 - x1.
+2. That inequality splits into u2 <= u1 and v2 >= v1.
+3. Those two rules define a partial order, and one flat line covers a chain in that order.
+4. Dilworth's theorem equates the minimum chain cover with the largest antichain.
+5. Two points are incomparable exactly when u rises and v rises, so the answer is a longest rising subsequence of v.
+6. The packed key sorts by u ascending and, for equal u, by v descending, which keeps equal-u points out of one rising run.
 
-u2 <= u1 follows from y2 - x2 <= y1 - x1.
-v2 >= v1 follows from y1 + x1 <= y2 + x2.
+The table defines each term used above.
 
-These two rules form a partial order. One line covers a chain in this order, so the answer is a minimum chain cover. Dilworth's theorem equates that cover with the largest antichain. Two points are incomparable exactly when u rises and v rises together. The answer is therefore the longest subsequence with both values strictly rising.
+| Term | Meaning |
+| --- | --- |
+| u | y - x, the up-diagonal coordinate |
+| v | y + x, the down-diagonal coordinate |
+| lisTails | smallest tail value for each rising-run length |
+| keyShift | 16 bits reserved for the low part of a key |
 
-The program packs the two values into one integer key. The upper bits hold u plus 30000. The lower bits hold 65535 minus v. Ascending keys place u in rising order and v in falling order for equal u. That tie rule keeps two points with equal u out of one rising subsequence.
+These four terms cover the sort and the scan.
 
-The scan keeps `lisTails`, the smallest last value seen for each subsequence length. A binary search finds the first entry at least as large as the new v. The scan replaces that entry, or appends v when no entry qualifies. The final length is the answer.
+A script transformed the sample points and replayed the scan.
 
-The script transforms the sample points as follows.
-
-| point | u = y - x | v = y + x |
-| --- | --- | --- |
-| (1, 6) | 5 | 7 |
-| (10, 8) | -2 | 18 |
-| (1, 5) | 4 | 6 |
-| (2, 20) | 18 | 22 |
-| (4, 4) | 0 | 8 |
-| (6, 2) | -4 | 8 |
-
-The point (10, 8) has u = -2 and v = 18 in that table.
-
-After sorting, the scan reads v in this order.
-
-| point | u | v | `lisTails` after |
+| Point | u | v | `lisTails` after |
 | --- | --- | --- | --- |
 | (6, 2) | -4 | 8 | 8 |
 | (10, 8) | -2 | 18 | 8, 18 |
@@ -55,11 +72,11 @@ After sorting, the scan reads v in this order.
 | (1, 6) | 5 | 7 | 6, 7 |
 | (2, 20) | 18 | 22 | 6, 7, 22 |
 
-The tails end at length 3, so three lines cover the sample.
+The tails end at length 3, so three flat lines cover the sample.
 
 ## Code
 
-The scanner skips the blank lines between cases and reads all input once.
+**Scanner and buffers.** The code slurps input once and parses coordinates with a digit scanner.
 
 ```nim
 import algorithm
@@ -88,9 +105,9 @@ proc nextInt(data: string, position: var int): int =
   return value
 ```
 
-The read loop runs once per input line and appends one newline each time. The digit value subtracts `firstDigitValue`, so the scanner handles non-negative coordinates only. Parsing visits each character once and costs O(input bytes).
+The read loop runs once per input line. The digit loop visits each character once, so parsing costs O(input bytes). Coordinates are non-negative, so no sign branch is needed. `keyMask` isolates the low 16 bits of a packed key.
 
-The two sequences are reused across cases, and the output buffer flushes in blocks.
+**Shared sequences and writer.** The two sequences are reused across cases.
 
 ```nim
 var sortKeys: seq[int] = @[]
@@ -110,9 +127,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-`flushBlockBytes` caps memory at 256 KiB and avoids one write per answer. `compareKey` gives the sort a plain ascending order. Reusing both sequences costs O(1) per case and no per-case allocation.
+`setLen` in the driver reuses capacity, so no per-case allocation is needed. `compareKey` gives the sort a plain ascending order. `flushBlockBytes` caps memory at 256 KiB and avoids one write per answer. The helper cost is constant per case.
 
-The key builder runs once per point, and the sort orders the keys.
+**Key building and sort.** The program packs both diagonal coordinates into one sortable integer.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -129,9 +146,9 @@ for caseIndex in 0..<caseCount:
   sort(sortKeys, compareKey)
 ```
 
-The loop bound equals the point count of the current case. Storing 65535 minus v makes v fall inside each equal-u group. Key building is linear; the sort costs O(n log n).
+The loop bound equals the point count of the current case. Storing `keyMask - downValue` makes v fall inside each equal-u group. Key building is linear, and the sort costs O(n log n).
 
-The scan finds the rising subsequence and appends one answer line per case.
+**Rising-run scan.** A binary search maintains the smallest tail for each run length.
 
 ```nim
   lisTails.setLen(0)
@@ -157,8 +174,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The strict test at lo keeps equal v values out of one subsequence. The final write flushes any bytes left below the block size. Each point costs one binary search, so the scan costs O(n log n).
+The strict test at `lo` keeps equal v values out of one rising run. Each point costs one binary search, so the scan costs O(n log n). The final write flushes any bytes left below the block size.
 
 ## Complexity
 
-Reading costs O(total input bytes) once. Each case builds keys in O(n), sorts in O(n log n), and scans in O(n log n). The total is O(total input bytes + sum of n log n over cases). Space is O(n) for `sortKeys` and `lisTails`, plus the 256 KiB output buffer. A pairwise method that builds a matching would take cubic time per case.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Parse one case | O(n) | O(n) keys |
+| Sort keys | O(n log n) | O(1) extra |
+| Rising-run scan | O(n log n) | O(n) tails |
+
+Both main phases grow logarithmically.
+
+Sorting and scanning share the same logarithmic factor.
+
+| Measure | Bound |
+| --- | --- |
+| Per case | O(n log n) time |
+| Per case | O(n) space |
+| Total | O(input bytes + sum of n log n) |
+
+A pairwise matching method would build a graph with one edge per point pair and cost cubic time per case.

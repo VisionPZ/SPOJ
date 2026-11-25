@@ -1,59 +1,77 @@
+# AGGRCOW — Aggressive Cows (SPOJ)
+<https://www.spoj.com/problems/AGGRCOW/>
+
 ## Problem
 
-Read several test cases. Each case gives N stall positions and a cow count C. Place the cows in distinct stalls so the smallest distance between any two cows is as large as possible. Print that largest minimum distance for each case.
+A farmer must place aggressive cows in the widest possible stalls along a long barn.
+He wants the largest gap that still fits every cow without a fight.
 
-The statement sets these bounds:
+The first line gives the case count. Each case gives N stalls and C cows, then N stall positions. Print the largest achievable minimum distance between two cows.
 
-| Quantity | Bound |
+The bounds and judge limits are:
+
+| Constraint | Value |
 | --- | --- |
-| Test cases | not stated |
-| Stalls per case | 2 to 100000 |
-| Cows per case | 2 to N |
+| Stalls N | 2 to 100000 |
+| Cows C | 2 to N |
 | Stall position | 0 to 1000000000 |
-| Time limit | 2000 ms |
-| Memory limit | 1536 MB |
+| Judge time | 2 s |
+| Judge memory | 1536 MB |
 
-The stall count drives the design, since each feasibility test scans every stall.
+The large stall count favors a sorted scan over any placement search.
+
+The sample input and its expected output follow byte for byte.
+
+```
+1
+5 3
+1
+2
+8
+4
+9
+```
+
+```
+3
+```
+
 
 ## Idea
 
-Sort the stalls and binary search the largest workable gap. A gap works when C cows fit with every pair at least that far apart. Place each cow at the leftmost stall that keeps the gap. One test therefore scans the sorted stalls once. One answer costs O(N log R) time for a position range of R. Trying every subset of stalls costs far more.
+Guess a distance and walk the sorted stalls, like checking whether a row of chairs fits a spacing rule.
+The program sorts the stall positions, then applies binary search (repeated guessing over an ordered range). A greedy scan places each cow in the earliest stall that respects the guessed gap.
+That scan costs one pass over N stalls. Sorting costs O(N log N), and the binary search adds O(log range) passes.
+Trying every set of C stalls is combinatorial and far slower.
+Sort once, then test distances with a linear greedy scan.
 
 ## Why It Works
 
-Moving the first cow to an earlier stall never reduces the room left for later cows. So first-fit placement succeeds whenever any placement succeeds. If a gap works, every smaller gap also works, and binary search applies.
+1. Sorting puts stalls in increasing order, so an earliest-fit greedy scan maximizes the cow count for any gap.
+2. If greedy fits C cows at gap d, every smaller gap also fits. Monotonicity allows binary search on the answer.
+3. `canPlace` returns early as soon as C cows are placed.
+4. The upper bound uses last stall minus first stall plus one, so the search never misses a valid gap.
+5. The greedy scan never looks back, which gives its linear cost.
 
-The search interval is half open. It starts at zero and ends one past the span from the lowest stall to the highest stall. A stall after `lastIndex` is usable when `stalls[i] - stalls[lastIndex] >= gap`. The midpoint `midGap` chooses the upper middle, so each step shrinks the interval and never stalls.
+Three terms carry the proof.
 
-The script in `gen.py` places cows greedily on the sorted sample stalls 1, 2, 4, 8, 9:
+| Term | Meaning |
+| --- | --- |
+| gap | candidate minimum distance between cows |
+| feasible | a gap that fits at least C cows |
+| monotone | once a gap fails, larger gaps also fail |
 
-| Gap | Placed stalls | Cow count |
-| --- | --- | --- |
-| 2 | 1, 4, 8 | 3 |
-| 3 | 1, 4, 8 | 3 |
-| 4 | 1, 8 | 2 |
+They explain why a binary search replaces enumeration.
 
-Three cows fit at gap 3 but not at gap 4, so the answer is 3.
+A script check of the sample sorts [1,2,8,4,9] into [1,2,4,8,9].
+At gap 4, greedy places cows at 1 and 8 only, so the test fails.
+At gap 3, greedy places cows at 1, 4, and 8, so the test succeeds.
+Binary search therefore reports 3.
 
 ## Code
 
+**Integer scanner.**
 ```nim
-{.push checks: off.}
-{.passC: "-O3".}
-
-import algorithm
-
-const firstDigitValue = 48
-const flushBlockBytes = 1 shl 18
-
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
-
-var scanPos = 0
-
 proc nextInt(data: string, pos: var int): int =
   while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
     pos += 1
@@ -64,20 +82,9 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-The read loop stops when stdin ends. The scanner skips non-digits, which absorbs every line break. Scanning one buffer costs one pass over the input bytes.
+The scanner skips separators and folds digits into a value. It walks one input buffer by index. No token objects are allocated.
 
-```nim
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
-```
-
-A flush happens once the buffer passes its byte limit. Reusing the buffer with `setLen 0` avoids a fresh string per answer. The cost is one stream write per block.
-
+**Feasibility test.**
 ```nim
 proc canPlace(stalls: seq[int], cowCount, gap: int): bool =
   var placedCount = 1
@@ -90,11 +97,10 @@ proc canPlace(stalls: seq[int], cowCount, gap: int): bool =
   return cowCount <= 1
 ```
 
-The loop visits each stall once, starting after the first. The `>=` test accepts a stall exactly one gap away. The early return stops work once enough cows fit. The worst cost is O(N) per test.
+The loop starts with a cow in the first stall. It places the next cow only when the distance reaches the gap. An early return stops the scan once C cows fit.
 
+**Binary search driver.**
 ```nim
-var stalls: seq[int] = @[]
-
 let caseCount = nextInt(inputData, scanPos)
 for j in 0..<caseCount:
   let stallCount = nextInt(inputData, scanPos)
@@ -113,13 +119,28 @@ for j in 0..<caseCount:
       highGap = midGap - 1
   appendOutput($(lowGap))
   outputBuffer.add '\n'
-
-stdout.write outputBuffer
-outputBuffer.setLen 0
 ```
 
-The sort orders stalls once per case, at O(N log N). The binary search runs O(log R) times. `setLen` reuses one stall array across cases. The final write flushes any remaining output.
+The driver sorts stalls before searching. The midpoint uses a rounded-up division to avoid an infinite loop. One answer is appended per case to the shared buffer.
+
 
 ## Complexity
 
-Reading and scanning take time linear in the input size. Sorting costs O(N log N) per case. Each feasibility test costs O(N), and the search runs O(log R) times. The total is O(N log N + N log R) time and O(N) space per case. A subset search would examine exponentially many stall assignments.
+The sort dominates small ranges, and the search adds a few linear scans.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| read and sort | O(N log N) | one stall array |
+| one gap test | O(N) | constant |
+| binary search | O(N log range) | constant |
+
+Each gap test stays linear because the scan never backtracks.
+
+Big O uses stall count N and position range R.
+
+| Measure | Big O |
+| --- | --- |
+| time | O(N log N + N log R) |
+| space | O(N) |
+
+Enumerating cow subsets would be exponential, so the monotone test wins.

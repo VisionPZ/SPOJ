@@ -1,57 +1,81 @@
+# SHORTCUT — Shortcut (SPOJ)
+<https://www.spoj.com/problems/SHORTCUT/>
+
 ## Problem
 
-Read a walk of `n` straight sections on a square grid. Each section is 10 metres long and points north, east, south, or west. The walk never visits a point twice. Print the shortest horizontal or vertical segment that joins two break points and is not part of the walk. Print its length, begin index, end index, and direction. Break points are numbered from 0 at home to `n` at the university.
+Mirek walks a route of straight ten-metre sections, turning right angles as he goes. He wants one straight shortcut between two rest points, horizontal or vertical, and as short as possible.
 
-| Limit | Value |
+Input: an integer t, then t cases. Each case gives section count n, then a string of n letters N, E, S or W. Output: four fields, the length in sections, the begin point, the end point, and the direction letter.
+
+The statement sets these bounds.
+
+| Item | Bound |
 | --- | --- |
-| Sections per case | 3 to 250000 |
-| Time | 1302 ms |
-| Memory | 1536 MB |
+| Test cases | t from input |
+| Sections n | 3 to 250000 |
+| Route letters | N, E, S or W |
+| Break point numbers | 0 through n |
+| Judge time limit | 1302 ms |
+| Judge memory limit | 1536 MB |
 
-A single case may hold a quarter million sections, so the scan must stay linear.
+At least one shortcut always exists.
+
+The sample input:
+
+```
+1
+12
+NNNENNWWWSSW
+```
+
+The sample output:
+
+```
+2 3 11 W
+```
 
 ## Idea
 
-Group break points by the row or column that holds them. Sort each group by its coordinate. A shortest shortcut only joins break points that are neighbours in that sorted order. Counting sort builds both orders in linear time because every coordinate stays inside `[-n, n]`. Each break point enters two groups and meets at most two neighbours, so the scan costs constant work per break point.
+Lay the route on a grid and group rest points by row, like sorting addresses by street. Two points on the same row can be joined horizontally. Adjacent rest points in sorted order give the shortest horizontal gap, so only neighbors matter. Do the same by column for vertical shortcuts.
 
-The walk itself covers a segment when it stays on that row or column between the two points. Neighbouring break points satisfy that condition exactly when their walk indices differ by one. The scan skips those pairs.
+The program uses counting sort on x and y instead of a comparison sort. Coordinates can be negative, so an offset shifts them into non-negative buckets. Each rest point is visited twice, once per direction. A pair of nested loops over all points would cost O(n squared), which is impossible at 250000 sections.
+
+Counting sort turns a quadratic search into two linear scans.
 
 ## Why It Works
 
-If a shortcut spans a third break point on its line, one of the two shorter sub-segments is also a shortcut and is shorter. A shortest shortcut therefore never spans another break point on its line. It must join neighbours in the sorted order.
+Four facts carry the program.
 
-Two neighbouring break points on a line form a real shortcut exactly when their walk indices differ by more than one. A difference of one means the walk section between them already lies on that line.
+1. A shortcut joins two break points on the same row or the same column. The route never revisits a place, so each row and column holds distinct positions.
+2. For a fixed row, the shortest gap comes from two break points adjacent in x order. Any third point between them would make one gap shorter.
+3. Counting sort groups points by coordinate in O(n) time. The offset of n plus 2 keeps negative coordinates positive.
+4. Skipping index differences of one avoids the trivial shortcut between consecutive sections. The tie rules then pick the earliest begin and the furthest end.
 
-Counting sort needs two index formulas. The term `coordinateOffset = sectionCount + 2` shifts every coordinate into a positive bucket index. The term `bucketCount = 2 * sectionCount + 5` covers every coordinate from `-n` to `n`. The array `lastOnRow[rowSlot]` holds the previous break point on that row in x order.
+Each term has one job.
 
-A script generated this worked example for the route `NNENNWWSS`.
-
-| Break point | Position |
+| Term | Meaning |
 | --- | --- |
-| 0 | (0, 0) |
-| 1 | (0, 1) |
-| 2 | (0, 2) |
-| 3 | (1, 2) |
-| 4 | (1, 3) |
-| 5 | (1, 4) |
-| 6 | (0, 4) |
-| 7 | (-1, 4) |
-| 8 | (-1, 3) |
-| 9 | (-1, 2) |
+| `orderByX` | break point indices sorted by x coordinate |
+| `orderByY` | break point indices sorted by y coordinate |
+| `lastOnRow` | most recent point seen at a y value |
+| `coordinateOffset` | shift that keeps buckets non-negative |
 
-Every candidate shortcut from neighbouring break points follows.
+Lengths are integers in section units, so no rounding occurs.
 
-| Length | Begin | End | Direction | Line |
-| --- | --- | --- | --- | --- |
-| 1 | 2 | 9 | W | row 2 |
-| 2 | 2 | 6 | N | column 0 |
-| 2 | 4 | 8 | W | row 3 |
+A script traces the sample route NNNENNWWWSSW.
 
-The first row wins by length, so the answer is `1 2 9 W`.
+```text
+break 0 (0,0)   3 (0,3)   6 (1,5)   9 (-2,5)   11 (-2,3)
+row y=3 holds breaks 3 and 11, gap 2 in x
+row y=5 holds breaks 6 and 9, gap 3 in x
+best length 2, begin 3, end 11, direction W
+```
+
+The shortest gap spans two sections, from break 3 to break 11.
 
 ## Code
 
-The scanner reads the whole input buffer once. It skips non-digits and consumes the decimal digits of each integer.
+**Scanner.** One index walks the whole input buffer.
 
 ```nim
 const firstDigitValue = 48
@@ -66,9 +90,9 @@ proc nextInt(inputData: string, i: var int): int =
     i.inc
 ```
 
-Each loop advances `i` past at most one token. The digit loop runs once per digit, so the cost is linear in the input size. The scanner skips letters, which lets the route scanner consume direction characters separately.
+The first loop skips letters and spaces, so the route string is bypassed. The scanner reads each number in one digit pass.
 
-The comparison picks the winner and derives its direction from the two positions.
+**Tie rule.** One helper decides whether a candidate wins.
 
 ```nim
 proc considerShortcut(lengthValue: int, firstBreak: int, secondBreak: int,
@@ -99,9 +123,9 @@ proc considerShortcut(lengthValue: int, firstBreak: int, secondBreak: int,
         bestDirection = 'S'
 ```
 
-The `improves` condition applies the three tie-break rules in order. It updates five variables at once, so a candidate cannot change direction without changing its endpoints. The cost is constant per candidate.
+The begin and end are ordered by route index, not by position. The three conditions match the length, begin and end tie rules. Direction follows the coordinate difference.
 
-The program reads all lines into one buffer before it parses anything.
+**Input and reusable arrays.** Buffers grow only when a larger case arrives.
 
 ```nim
 var inputData = ""
@@ -113,13 +137,45 @@ while readLine(stdin, lineBuffer):
 var outputBuffer = ""
 var i = 0
 let testCount = nextInt(inputData, i)
+
+var xPositions = newSeq[int](1)
+var yPositions = newSeq[int](1)
+var orderByX = newSeq[int](1)
+var orderByY = newSeq[int](1)
+var xCounts = newSeq[int](1)
+var yCounts = newSeq[int](1)
+var lastOnRow = newSeq[int](1)
+var lastOnColumn = newSeq[int](1)
 ```
 
-The loop runs once per input line. It adds one newline per line, so the buffer keeps the original byte shape. A single bulk read avoids one system call per token.
+One line loop collects the stream. Each array starts at length one and grows to the largest case.
 
-The walk scan writes the position of every break point.
+**Case setup and route walk.** Letters become grid coordinates.
 
 ```nim
+for j in 0 ..< testCount:
+  let sectionCount = nextInt(inputData, i)
+  let breakCount = sectionCount + 1
+  let coordinateOffset = sectionCount + 2
+  let bucketCount = 2 * sectionCount + 5
+
+  if xPositions.len < breakCount:
+    xPositions.setLen(breakCount)
+    yPositions.setLen(breakCount)
+    orderByX.setLen(breakCount)
+    orderByY.setLen(breakCount)
+  if xCounts.len < bucketCount:
+    xCounts.setLen(bucketCount)
+    yCounts.setLen(bucketCount)
+    lastOnRow.setLen(bucketCount)
+    lastOnColumn.setLen(bucketCount)
+
+  for j in 0 .. bucketCount - 1:
+    xCounts[j] = 0
+    yCounts[j] = 0
+    lastOnRow[j] = -1
+    lastOnColumn[j] = -1
+
   while i < inputData.len and inputData[i] <= ' ':
     i.inc
 
@@ -144,9 +200,9 @@ The walk scan writes the position of every break point.
     yPositions[j] = currentY
 ```
 
-The loop bound is `sectionCount`, the closed form for one position per section. The whitespace skip stops at the first direction character. The scan costs one step per section.
+`breakCount` is `sectionCount + 1`, so home and university are included. Coordinates stay within plus or minus n, so `bucketCount` covers both axes. Clearing touches only `bucketCount` buckets.
 
-Counting sort builds the two coordinate orders.
+**Counting sort.** Prefix sums place each point in order.
 
 ```nim
   for k in 0 .. sectionCount:
@@ -172,11 +228,16 @@ Counting sort builds the two coordinate orders.
     yCounts[ySlot].inc
 ```
 
-The first and last loops run `sectionCount + 1` times. The middle loop runs `bucketCount` times. Prefix sums turn counts into write slots without a comparison sort. The whole block costs linear time.
+Counting sort runs in O(n + bucketCount). The offset prevents a negative bucket index. The two order arrays hold break point indices, not coordinates.
 
-The row scan finds horizontal shortcuts.
+**Neighbor scans.** Each adjacent pair gives one candidate.
 
 ```nim
+  var bestLength = 1 shl 30
+  var bestBegin = 0
+  var bestEnd = 0
+  var bestDirection = 'N'
+
   for j in 0 .. sectionCount:
     let k = orderByX[j]
     let rowSlot = yPositions[k] + coordinateOffset
@@ -187,13 +248,7 @@ The row scan finds horizontal shortcuts.
         considerShortcut(lengthValue, previousBreak, k, true,
           xPositions, yPositions, bestLength, bestBegin, bestEnd, bestDirection)
     lastOnRow[rowSlot] = k
-```
 
-The loop visits every break point once in x order. The index test rejects pairs that the walk already joins on this row. The array update keeps the neighbour for the next point on the row. The scan costs one step per break point.
-
-The column scan applies the same rule to vertical shortcuts.
-
-```nim
   for j in 0 .. sectionCount:
     let k = orderByY[j]
     let columnSlot = xPositions[k] + coordinateOffset
@@ -206,9 +261,9 @@ The column scan applies the same rule to vertical shortcuts.
     lastOnColumn[columnSlot] = k
 ```
 
-The loop bound matches the row scan. It uses y order and stores the neighbour per column. The direction flag is false, so the comparison derives a north or south direction.
+The x scan finds horizontal shortcuts, and the y scan finds vertical ones. The difference of one skips consecutive route sections. Each scan visits every break point once.
 
-The output buffer holds all answers and flushes in fixed blocks.
+**Output.** Four fields make one line.
 
 ```nim
   outputBuffer.add $bestLength
@@ -227,10 +282,25 @@ if outputBuffer.len > 0:
   stdout.write outputBuffer
 ```
 
-The flush runs when the buffer reaches `flushBlockBytes`, so write cost stays near one call per block. The final write handles a short tail. Reusing the buffer with `setLen 0` avoids one allocation per flush.
+The final write clears the tail. A flush runs every 256 KiB, which caps memory.
 
 ## Complexity
 
-Bulk input costs `O(S)`, where `S` is the total input length. Counting sort costs `O(n)` per case with two bucket arrays of size `2n + 5`. The two neighbour scans cost `O(n)` per case in total. The program uses `O(n)` space per case.
+Two counting sorts and two neighbor scans drive each case.
 
-The total cost is `O(S + n)` time and `O(n)` space per case. A naive scan of every break point pair costs `O(n^2)` time and cannot handle a full-size case.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | O(B) for B bytes | B bytes |
+| Route walk | O(n) | O(n) |
+| Counting sort | O(n + bucketCount) | O(n) |
+| Neighbor scans | O(n) | O(bucketCount) |
+| Output | O(t) lines | one block |
+
+`bucketCount` is about `2n + 5`, so sorting stays linear.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n + bucketCount) per case |
+| Space | O(n + bucketCount) |
+
+Checking all break point pairs would cost O(n squared) time.

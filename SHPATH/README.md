@@ -1,66 +1,106 @@
+# SHPATH — The Shortest Path (SPOJ)
+<https://www.spoj.com/problems/SHPATH/>
+
 ## Problem
 
-Read several test cases. Each case gives cities, their neighbours with costs, and pairs of cities to query. Print the least path cost for each pair, one answer per line.
+A traveller compares bus fares between named cities. Each direct link has a positive cost, and a trip costs the sum of its links. Answer several cheapest-fare queries per test case.
 
-The statement and judge table give these bounds.
+Input: an integer s, then s cases. Each case gives city count n, then for each city a name, neighbour count p, and p pairs of city index and cost. Then come r queries with two names. Output: one cost per query, in input order.
 
-| item | bound |
-|---|---|
-| test cases | at most 10 |
-| cities per case | at most 10 000 |
-| queries per case | at most 100 |
-| any path cost | at most 200 000 |
-| judge limit | 1500 ms, 1536 MB |
+The statement sets these bounds.
 
-The cost bound makes a bucket queue possible.
+| Item | Bound |
+| --- | --- |
+| Test cases s | at most 10 |
+| Cities n | at most 10000 |
+| Queries r | at most 100 |
+| City name length | at most 10 lowercase letters |
+| Cost of any path | at most 200000 |
+| Judge time limit | 1500 ms |
+| Judge memory limit | 1536 MB |
+
+The path cost bound makes bucket indexing practical.
+
+The sample input:
+
+```
+1
+4
+gdansk
+2
+2 1
+3 3
+bydgoszcz
+3
+1 1
+3 1
+4 4
+torun
+3
+1 3
+2 1
+4 1
+warszawa
+2
+2 4
+3 1
+2
+gdansk warszawa
+bydgoszcz warszawa
+```
+
+The sample output:
+
+```
+3
+2
+```
 
 ## Idea
 
-Group queries by source city and run Dijkstra's algorithm once per distinct source. Instead of a binary heap, use a bucket queue (Dial's algorithm): one slot per possible distance, with a bit for each city waiting there. Stop a run once every target of that source has a settled distance.
+Group questions by their starting city, like a travel desk handling one departure point at a time. One fare map from that city answers all its queries. The program explores outward in cheap-to-expensive order and stops once every target is settled.
 
-Cost per settled city: one bit test to find the next distance, plus one pass over its outgoing edges.
+It uses Dijkstra with a bucket queue, also called Dial's algorithm. Path costs never exceed 200000, so the distance itself is a bucket index. A bit mask marks which buckets hold work, which lets the scan skip empty distances quickly. Each source runs one Dijkstra pass, so a case costs at most r passes. A heap would replace the buckets with a logarithm per step.
+
+Grouping queries avoids one search per query.
 
 ## Why It Works
 
-Dijkstra settles cities in nondecreasing distance order, since all edge costs are positive. The smallest nonempty bucket therefore gives the next city to settle.
+Four facts carry the program.
 
-A 64-bit word holds 64 buckets, so the scan moves word by word, not slot by slot. Bits are cleared after each use, and only touched words are reset between runs.
+1. Cities are numbered from one in the input, so the scanner subtracts one. A hash table maps each name to that internal index.
+2. All costs are positive, so Dijkstra settles cities in nondecreasing distance. The first time a target is settled, its distance is final.
+3. A bucket holds every city at one distance. The bit mask has one bit per bucket, so finding the next nonempty bucket skips long gaps without a linear scan.
+4. Queries sharing a source use one search. The `targetStamp` array counts distinct targets, and the search stops when that count reaches zero.
 
-These expressions map a distance to a bit.
+Each term has one job.
 
-| term | meaning |
-|---|---|
-| `i shr 6` | the 64-bit word that holds this distance |
-| `i and 63` | the bit inside that word |
-| `(j shl 6) + lowestSetBitPosition(bitMask)` | decode the next distance |
-| `candidateDistance <= guaranteedPathCost` | keep only paths within the stated bound |
+| Term | Meaning |
+| --- | --- |
+| `bucketHead` | first queued node at a distance |
+| `bucketWords` | bit mask of nonempty buckets |
+| `distanceValue` | cheapest known cost to a city |
+| `targetStamp` | marks the targets of the current source |
 
-Decoding gives the next distance without a heap.
+Distances are integers, so no rounding occurs. Paths above 200000 are ignored because the statement bounds every valid path.
 
-This trace uses the four-city sample and its two queries.
+A script traces the first sample query from gdansk.
 
-| source | target | distance | all distances |
-|---|---|---|---|
-| gdansk | warszawa | 3 | 0, 1, 2, 3 |
-| bydgoszcz | warszawa | 2 | 1, 0, 1, 2 |
+```text
+gdansk links: torun 3, bydgoszcz 1
+settled bydgoszcz at 1
+from bydgoszcz: torun at 2, warszawa at 5
+settled torun at 2
+from torun: warszawa at 3
+settled warszawa at 3
+answer gdansk -> warszawa = 3
+```
 
-Both answers match the sample output.
-
-These distances show the bucket encoding.
-
-| distance | word index | bit | decoded distance |
-|---|---|---|---|
-| 0 | 0 | 0 | 0 |
-| 1 | 0 | 1 | 1 |
-| 3 | 0 | 3 | 3 |
-| 65 | 1 | 1 | 65 |
-| 200 000 | 3125 | 0 | 200 000 |
-
-Each row decodes back to its input distance.
+The second query from bydgoszcz answers 2 through torun.
 
 ## Code
 
-**Constants.**
+**Line reader and integer scanner.** One line buffer is refilled on demand.
 
 ```nim
 import tables
@@ -71,13 +111,7 @@ const unreachableDistance: int32 = 1000000000
 const guaranteedPathCost: int32 = 200000
 const bucketTotal = int(guaranteedPathCost) + 2
 const wordTotal = (bucketTotal shr 6) + 1
-```
 
-`guaranteedPathCost` is the stated path bound. `wordTotal` counts the 64-bit words needed for all buckets. These values never change. Cost: no work at run time.
-
-**Line refill and spacing.**
-
-```nim
 var lineBuffer: string
 var i = 0
 var inputDone = false
@@ -92,13 +126,7 @@ proc refillLine(): bool =
       return false
     lineBuffer.add "\n"
     i = 0
-```
 
-`refillLine` reads one line at a time and appends a newline to the buffer. `skipSpace` crosses line breaks and blank lines. Cost: one read per line of input.
-
-**Integer reader.**
-
-```nim
 proc skipSpace() =
   while true:
     while i < lineBuffer.len and lineBuffer[i] <= ' ': i = i + 1
@@ -114,9 +142,9 @@ proc readInt32(): int32 =
   return value
 ```
 
-`readInt32` scans digits from the shared line buffer. It builds the value by index, with no substring. Cost: one pass over each number's digits.
+`bucketTotal` is 200002, and `wordTotal` is 3126 words of 64 bits. `refillLine` crosses line and blank-line boundaries, so the scanner never misses a token.
 
-**Low-bit table.**
+**Bit mask lookup.** A table maps a 16-bit chunk to its lowest set bit.
 
 ```nim
 var wordText: string
@@ -143,9 +171,9 @@ proc lowestSetBitPosition(value: uint64): int =
   return 48 + lowBitPosition[chunk]
 ```
 
-The table is built once for all 16-bit chunks. `lowestSetBitPosition` checks four chunks to cover a 64-bit word. Cost: O(2^16) to build, O(1) per lookup.
+The table is built once at startup. Four chunk lookups find the next set bit in O(1).
 
-**Shared arrays.**
+**Queue state.** Touched buckets and words leave no stale state.
 
 ```nim
 var edgeStart: seq[int]
@@ -161,13 +189,7 @@ var nodeNext: seq[int]
 var nodeTotal = 0
 var targetStamp: seq[int]
 var searchStamp = 0
-```
 
-`bucketHead` and `bucketWords` are reused across cases. `nodeVertex` and `nodeNext` hold the waiting cities. `targetStamp` marks the targets of the current run. Cost: arrays sized by the stated bounds.
-
-**Bucket operations.**
-
-```nim
 proc clearBuckets() =
   for i in usedDistanceList:
     bucketHead[i] = -1
@@ -186,9 +208,9 @@ proc enqueueBucket(distance: int32, vertex: int32) =
   nodeTotal = nodeTotal + 1
 ```
 
-`clearBuckets` touches only the slots used by the last run. `enqueueBucket` sets one bit, then links a fresh node. The line `nodeNext[nodeTotal] = bucketHead[i]` fills the new node's pointer; appending instead would leave a stale slot and break the list. Cost: O(1) per enqueue.
+`clearBuckets` touches only used buckets, not all 200002. `enqueueBucket` sets one bit and prepends one node, both in O(1).
 
-**One Dijkstra run.**
+**Dijkstra pass.** The bit mask skips empty distance rows.
 
 ```nim
 proc shortestPathsFrom(source: int32, cityCount: int, targetsLeft: var int) =
@@ -238,9 +260,9 @@ proc shortestPathsFrom(source: int32, cityCount: int, targetsLeft: var int) =
   clearBuckets()
 ```
 
-The scan starts at distance zero and jumps to the next set bit. `edgeStart` bounds each adjacency walk. `targetsLeft` drops when a target settles, and the run ends at `currentDistance >= int(guaranteedPathCost)`. Cost: O(E + C) per source, for cost bound C.
+A settled target is cleared, so it cannot be counted twice. Relaxations above the guaranteed cost are dropped. The mask lookup jumps straight to the next nonempty bucket.
 
-**Word reader.**
+**Name reader.** One word is read at a time.
 
 ```nim
 proc readWord(): string =
@@ -252,9 +274,9 @@ proc readWord(): string =
   return collected
 ```
 
-`readWord` collects bytes above a space. The city name stays as a string for the table lookup. Cost: one slice per name.
+The scan stops at whitespace, so city names and counts share one reader.
 
-**Graph input.**
+**Driver.** One search serves all queries with the same source.
 
 ```nim
 var testCount = int(readInt32())
@@ -279,13 +301,6 @@ for _ in 1 .. testCount:
   nodeVertex = newSeq[int32](edgeTotal + 2)
   nodeNext = newSeq[int](edgeTotal + 2)
   bucketWords = repeat(cast[uint64](0), wordTotal)
-```
-
-`nameToIndex` maps each name to its city index. `edgeStart[i]` records the first edge of each city. `nodeVertex` and `nodeNext` are sized `edgeTotal + 2` for the enqueues. Cost: O(V + E) per case.
-
-**Query grouping.**
-
-```nim
   var queryCount = int(readInt32())
   var querySource = newSeq[int32](queryCount)
   var queryTarget = newSeq[int32](queryCount)
@@ -308,13 +323,6 @@ for _ in 1 .. testCount:
     for j in 0 .. queryCount - 1:
       if querySource[j] == querySource[i]:
         answerValue[j] = distanceValue[int(queryTarget[j])]
-```
-
-`querySource` and `queryTarget` hold the pairs in input order. `sourceUsed` skips a source after its first run. `targetStamp` marks every target of that source before the run. Cost: O(r) per case for r queries.
-
-**Output.**
-
-```nim
   for i in 0 .. queryCount - 1:
     outputBuffer.add $answerValue[i]
     outputBuffer.add "\n"
@@ -324,29 +332,25 @@ for _ in 1 .. testCount:
 stdout.write outputBuffer
 ```
 
-`answerValue` is written in input order, not in run order. The buffer flushes every 128 KiB. Cost: one line per query.
+Adjacency is stored in flat arrays with one start index per city. `sourceUsed` skips a source after its first search. Answers are written in query order, not in source order.
 
 ## Complexity
 
-Costs by phase:
+Bucket Dijkstra dominates each distinct source.
 
-| phase | time | space |
-|---|---|---|
-| input read | one pass over all lines | input bytes |
-| graph build | O(V + E) per case | V + E entries |
-| query grouping | O(r) per case | r pairs |
-| each Dijkstra run | O(E + C) | C/64 bucket words |
-| output | one write per 128 KiB block | 128 KiB |
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(B) for B bytes | B bytes |
+| Graph build | O(n + p total) | O(n + p total) |
+| One Dijkstra pass | O(200002 + edges touched) | O(200002) buckets |
+| All queries | at most r passes | O(n) per pass |
+| Output | O(r) lines | one block |
 
-Runs with the same source are shared, so at most V runs occur.
+r is at most 100, but repeated sources share a pass.
 
-Big O terms:
+| Measure | Big O |
+| --- | --- |
+| Time | O(distinct sources times (200002 + edges)) |
+| Space | O(n + edges + 200002) |
 
-| measure | form |
-|---|---|
-| time | O(s(E + C) + r) worst case |
-| space | O(V + E + C/64) per case |
-
-Both measures depend on the cost bound C, not on a heap.
-
-A binary heap gives O(r E log V) time when run per query. Floyd-Warshall costs O(V^3) time and O(V^2) space, which is too large at V = 10 000.
+One Dijkstra per query would repeat the same search up to 100 times.

@@ -1,54 +1,88 @@
+# FSHEEP — Fencing in the Sheep (SPOJ)
+<https://www.spoj.com/problems/FSHEEP/>
+
 ## Problem
 
-Read a polygon and a herd of sheep. The polygon vertices arrive in counter-clockwise order. The shepherd stands at the origin and sees the whole interior. Count the sheep inside the polygon, including sheep on the fence. Print one count per test case.
+A tired shepherd stands inside a polygon pen and counts sheep from one spot. He sees the whole interior, but some sheep sit on the fence and still count as inside.
 
-The judge bounds are:
+The first line holds a test count t. Each case starts with a vertex count n and a sheep count m. Next come n vertex coordinates in counter-clockwise order, then m sheep coordinates. The shepherd stands at (0, 0). Print one integer per case, the number of sheep inside or on the fence.
 
-| quantity | limit |
+The judge limits are:
+
+| Item | Value |
 | --- | --- |
-| vertices per case | 3 to 100000 |
-| sheep per case | 0 to 100000 |
-| coordinate range | -32000 to 32000 |
-| time limit | 1064 ms |
-| memory limit | 1536 MB |
+| Vertices per case n | 3 to 100000 |
+| Sheep per case m | 0 to 100000 |
+| Coordinates | -32000 to 32000 |
+| Time limit | 1064 ms |
+| Memory limit | 1536 MB |
 
 One case may hold 100000 vertices and 100000 sheep.
 
+The sample input reads:
+
+```text
+1
+6 5
+2 2
+4 4
+6 6
+-3 1
+-1 -1
+5 1
+2 1
+3 2
+6 6
+3 3
+-3 0
+```
+
+The sample output reads:
+
+```text
+3
+```
+
 ## Idea
 
-The origin sees the whole interior, so every ray from the origin leaves the polygon once. The vertices follow angular order, so one binary search replaces a scan of all n edges. A triangle test then settles each sheep in O(log n) work.
+The shepherd sees every corner, like a guard at the hub of a wheel. Each ray from the origin crosses the fence once, so the vertices already lie in angular order. Sort them by angle (the direction of a vector around the circle), then binary search the gap that contains each sheep. A triangle test using cross products (signed area of a parallelogram) settles containment in constant time. Each sheep costs O(log n) comparisons. Casting a ray against every edge would cost O(n) per sheep. Takeaway: find the angular wedge first, then test one triangle.
 
 ## Why It Works
 
-The shepherd sees the whole interior, so the polygon is star-shaped around the origin. Joining the origin to each consecutive pair of vertices splits the polygon into triangles with disjoint interiors. Each triangle covers one angular gap between neighbouring vertices. A sheep in that gap lies inside the polygon exactly when it lies inside that triangle.
+1. The origin sees the whole pen, so joining it to consecutive vertices splits the pen into triangles with disjoint interiors.
+2. Each triangle covers one angular gap between neighboring vertices.
+3. A sheep in that gap lies inside the pen exactly when it lies inside that triangle.
+4. Vertices on the same ray form a radial chain, and the farthest one sets the boundary distance.
+5. `halfPlane` splits the circle at the x-axis, and `compareAngle` orders vectors by half, then by cross-product sign.
+6. Binary search stops at the first vertex whose angle passes the sheep's angle; modulo wraps the gap endpoints around the circle.
+7. Non-negative cross products include sheep sitting on the fence.
 
-Some vertices may share one ray from the origin. Those vertices form a radial chain on the fence. The farthest vertex in the chain gives the boundary distance.
+The table defines each term.
 
-A sheep at that angle lies inside when its squared radius does not exceed that vertex's squared radius.
+| Term | Meaning |
+| --- | --- |
+| `vertexOrder` | vertex indices sorted by angle |
+| `rayMaxSq` | largest squared radius on each ray |
+| `crossProduct` | signed area between two vectors |
+| `beforeIndex`, `afterIndex` | vertices bracketing the sheep's angle |
 
-The index rules are:
+These five terms drive the angle search.
 
-- `halfPlane` splits the circle at the x-axis into two halves.
-- `compareAngle` orders two vectors by half, then by the sign of the cross product.
-- `lowerBound` stops at the first vertex whose angle passes the sheep's angle.
-- `beforePos` and `afterPos` wrap with modulo to name the gap endpoints.
-- `rayMaxSq` holds the largest squared radius on each ray.
+A script replayed the sample decisions.
 
-The sample vertices sort as (5,1), (2,2), (4,4), (6,6), (-3,1), (-1,-1). The decisions are:
-
-| sheep | sector or ray | crosses | result |
+| Sheep | Sector or ray | Cross products | Result |
 | --- | --- | --- | --- |
-| (2,1) | (5,1) to (2,2) | 3, 2, 3 | inside |
-| (3,2) | (5,1) to (2,2) | 7, 2, -1 | outside |
-| (6,6) | ray of (6,6), radius 8 against 8 | none | inside |
-| (3,3) | ray of (6,6), radius 4 against 8 | none | inside |
-| (-3,0) | (-3,1) to (-1,-1) | 3, 3, -2 | outside |
+| (2, 1) | (5, 1) to (2, 2) | 3, 2, 3 | inside |
+| (3, 2) | (5, 1) to (2, 2) | 7, 2, -1 | outside |
+| (6, 6) | ray of (6, 6), radius 8 against 8 | none | inside |
+| (3, 3) | ray of (6, 6), radius 4 against 8 | none | inside |
+| (-3, 0) | (-3, 1) to (-1, -1) | 3, 3, -2 | outside |
 
 Three sheep lie inside, which matches the sample output.
 
 ## Code
 
-The input pass reads every line into one buffer, then scans integers by hand. The scanner accepts a minus sign before the digits.
+**Input and angles.** The code reads once and compares directions with integer arithmetic.
 
 ```nim
 import algorithm
@@ -80,11 +114,19 @@ proc nextInt(data: string, position: var int): int =
   return sign * value
 ```
 
-The read loop runs until `readLine` returns false. The minus branch keeps negative coordinates exact. The scan walks the buffer once with growing position.
+The minus branch keeps negative coordinates exact. The scan walks the buffer once with a growing position. `checks: off` removes redundant bounds checks on the hot arrays. Each token costs one pass over its digits.
 
-Angle order uses integer cross products, so no floating point is needed. Equal angles break ties by input order. This keeps neighbouring vertices adjacent.
+**Comparators and arrays.** Angle order uses cross products, so no floating point is needed.
 
 ```nim
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
 proc halfPlane(x: int, y: int): int =
   if y > 0 or (y == 0 and x > 0): 0 else: 1
 
@@ -115,9 +157,9 @@ proc compareVertex(leftIndex: int, rightIndex: int): int =
   return 0
 ```
 
-The comparator returns one of three signs, which the sort needs. The cross product stays within 64-bit integers. This block costs one comparison per sort step.
+`compareVertex` breaks equal-angle ties by input index, which keeps neighbors adjacent. `leftIndex` and `rightIndex` name positions in the sorted index array. Each comparison costs constant time.
 
-Each case reads its vertices once and sorts their indices by angle.
+**Vertex setup.** Each case reads its vertices once and fills the farthest-radius table.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -153,7 +195,7 @@ for caseIndex in 0..<caseCount:
 
 The vertex loop runs exactly `vertexCount` times. Squared radii use `int64` to avoid overflow. Two passes fill `rayMaxSq` with the largest squared radius on each ray. Reusing the sequences keeps allocation out of the loop.
 
-The query loop finds the gap for each sheep and applies the containment test.
+**Sheep queries.** A binary search finds the wedge, then a triangle test decides containment.
 
 ```nim
   var insideCount = 0
@@ -197,12 +239,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The binary search halves the sorted index range each step, so it costs O(log n) comparisons. The modulo wraps the search ends around the circle. Non-negative cross products include sheep on the fence. The output buffer flushes in blocks of `flushBlockBytes`.
+The binary search halves the sorted range each step, so it costs O(log n) comparisons. `beforePos` and `afterPos` wrap around the circle. Non-negative cross products include sheep on the fence. The final write flushes the buffered answer lines.
 
 ## Complexity
 
-Reading all input costs O(T) time for T tokens. Sorting the vertices costs O(n log n) per case. Each sheep costs O(log n) time for the binary search and O(1) for the triangle test. The total is O(n log n + m log n) time per case.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Read and sort vertices | O(n log n) | O(n) |
+| Fill farthest radii | O(n) | O(n) |
+| Query one sheep | O(log n) | O(1) |
 
-The arrays hold O(n) integers per case. The input buffer and output block add O(T) and O(flushBlockBytes) space.
+The binary search keeps each sheep cheap.
+
+The angular sort and the sheep queries both carry a logarithm.
+
+| Measure | Bound |
+| --- | --- |
+| Per case | O(n log n + m log n) time |
+| Per case | O(n) space |
+| Total | linear in input bytes plus the sort and query terms |
 
 A full ray cast over every edge costs O(n m) time per case. The angular gap method removes that product.

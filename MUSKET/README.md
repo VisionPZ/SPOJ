@@ -1,8 +1,16 @@
+# MUSKET — Musketeers (SPOJ)
+
+<https://www.spoj.com/problems/MUSKET/>
+
 ## Problem
 
-Read several tournaments. Each case gives the number of players and a square matrix of duel results. A duel pits a player against the neighbor on its right, and the loser leaves the circle. Print how many players can win some order of all duels, then print those numbers in ascending order.
+Musketeers duel in a circle, and the loser leaves. Some fighters can win only under certain orders of duels.
 
-The bounds are:
+Read several tournaments. Each case gives the player count and a square matrix of duel results. A duel pits a player against the neighbor on the right, and the loser leaves the circle.
+
+Print how many players can win some order of all duels, then their numbers in ascending order.
+
+The bounds and judge limits:
 
 | Quantity | Bound |
 | --- | --- |
@@ -13,45 +21,77 @@ The bounds are:
 
 The player count is small, so interval dynamic programming fits. The number of duel orders does not.
 
+The sample case:
+
+```
+1
+7
+1111101
+0101100
+0111111
+0001101
+0000101
+1101111
+0100001
+```
+
+```
+3
+1
+3
+6
+```
+
 ## Idea
 
-The surviving players keep their circle order after every duel. The last two survivors must therefore come from two neighboring arcs. Compute the possible winners of every arc from short arcs to long ones.
+Survivors keep their circle order after every duel, so the final duel joins two neighboring arcs.
 
-Double the player list so an arc that wraps past the last player becomes one straight interval. Each interval stores two sets: its possible winners, and the players that beat at least one of them. Merging two arcs uses only bit operations on these sets.
+Think of a necklace cut into two strands. Each strand is reduced to one bead, then the strands meet. The program doubles the player list so any wrapping arc becomes one straight interval.
 
-One split of an arc costs O(n / 64) word operations.
+Interval dynamic programming (solving short intervals first, then longer ones) fills a winner set and a hit set per interval. A merge uses bit operations on two 64-bit words.
+
+One split of an arc costs O(n / 64) word operations. Trying every duel order takes exponential time.
 
 ## Why It Works
 
-Each duel removes one player and keeps the remaining order. The final duel joins two neighboring arcs, and each arc has already been reduced to one survivor.
+Five facts prove the merge rule.
 
-For an arc, call its winner set win and its hit set. A hit set holds every player that beats at least one winner of that arc.
+1. Each duel removes one player and keeps the remaining order. The final duel therefore joins two neighboring arcs, each reduced to one survivor.
+2. For an arc, the winner set holds its possible survivors. The hit set holds every player that beats at least one of those winners.
+3. Merging two arcs gives `(left win AND right hit) OR (right win AND left hit)`. The first term covers a left survivor beating a right one, and the second covers the reverse.
+4. Doubling the list puts every full-length arc at a start position from 1 through `n`. The union of their winner sets is the final answer.
+5. `readRow` reads exactly `playerCount` digit characters, so a row such as `010` is not read as the number ten. Two words cover the 100 player bits.
 
-When two arcs join, a player wins the union if its own side produces a survivor and that survivor beats the other survivor.
+The arrays and their roles:
 
-merged winners = (left win ∩ right hit) ∪ (right win ∩ left hit)
-
-- left win ∩ right hit: left survivors that beat some right survivor.
-- right win ∩ left hit: right survivors that beat some left survivor.
-- The union covers both cases, because either side may win the last duel.
-
-Doubling the list puts every possible final arc of players at a start position from 1 to the player count. The program unions the winner sets of those arcs.
-
-For the sample, the seven arcs of full length give these winner sets.
-
-| Arc start | Possible winners |
+| Term | Meaning |
 | --- | --- |
-| 1 | 1, 6 |
-| 2 | 1, 3 |
-| 3 | 1, 3 |
-| 4 | 3, 6 |
-| 5 | 3, 6 |
-| 6 | 3, 6 |
-| 7 | 1, 6 |
+| `beatsLow` | low word of players each player defeats |
+| `winLow` | low word of possible winners of an interval |
+| `hitLow` | low word of players beating some winner |
+| `doubled` | twice the player count, for wrapping arcs |
+| `intervalIndex` | flat index of an interval in the doubled list |
+| `countBits` | counts set bits across both words |
 
-Their union is 1, 3, 6, which matches the sample output.
+The high-word arrays hold the same information for players 64 through 100.
+
+A script prints the winner set of every full-length arc in the sample:
+
+```
+1 [1, 6]
+2 [1, 3]
+3 [1, 3]
+4 [3, 6]
+5 [3, 6]
+6 [3, 6]
+7 [1, 6]
+```
+
+The union is `{1, 3, 6}`, so the program prints count 3 and then players 1, 3, and 6.
 
 ## Code
+
+**Setup and scanner.** One buffer holds the input, and a hand scanner reads integers.
 
 ```nim
 const firstDigitValue = 48
@@ -78,6 +118,8 @@ proc nextInt(data: string, position: var int): int =
 
 The scanner walks one buffer built from `readLine`. It converts digits with `firstDigitValue`, so no token objects are created. Reading the whole stream once costs one pass over the input.
 
+**Bit helpers and matrix.** Two words hold all player bits, and one helper reads a row.
+
 ```nim
 proc addBit(lowWord: var uint64, highWord: var uint64, bitIndex: int) =
   if bitIndex < bitsPerWord:
@@ -95,7 +137,9 @@ proc readRow(data: string, position: var int, beatsLow: var seq[uint64],
     position += 1
 ```
 
-`readRow` reads exactly `playerCount` digit characters, so a row such as 010 is not read as the number ten. The first 64 bits go into one word and the rest go into the second word. The cost is one pass over the matrix.
+`readRow` reads exactly `playerCount` digit characters, so a row such as 010 stays three bits. The first 64 bits go into one word and the rest into the second. The cost is one pass over the matrix.
+
+**Answer helpers and output.** Bit tests and one block buffer finish each case.
 
 ```nim
 proc hasBit(lowWord: uint64, highWord: uint64, bitIndex: int): bool =
@@ -122,7 +166,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-`hasBit` and `countBits` work on two words. `appendOutput` flushes at `flushBlockBytes`, which caps memory and avoids one write per number. Each number costs constant work.
+`hasBit` and `countBits` work on two words. `appendOutput` flushes at `flushBlockBytes`, which caps memory and avoids one write per number.
+
+**Interval DP.** Arcs grow from one player to the full circle.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -168,7 +214,9 @@ for caseIndex in 0..<caseCount:
           addBit(hitLow[intervalIndex], hitHigh[intervalIndex], player)
 ```
 
-The loop over `length` stops at `playerCount`, and `leftIndex` scans the doubled list. The split merges winner sets with a few word operations. The program fills `hitLow` and `hitHigh` after each winner set, so longer arcs can use them. The cost per case is O(n^3 / 64) word operations.
+The loop over `length` stops at `playerCount`, and `leftIndex` scans the doubled list. The split merges winner sets with a few word operations. The program fills hit sets right after each winner set, so longer arcs can use them.
+
+**Answer.** The full-length arcs union into the final winner set.
 
 ```nim
   var answerLow = 0'u64
@@ -189,10 +237,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The answer unions the full-length arcs. `countBits` gives the first output line, and the scan prints winners in ascending order. The final `stdout.write` flushes the remaining buffer.
+The answer unions the full-length arcs. `countBits` gives the first line, and the scan prints winners in increasing order. The final write flushes the remaining buffer.
 
 ## Complexity
 
-Reading and parsing cost O(total input bytes). The table stores four words for each of O(n^2) cells. Each case costs O(n^3 / 64) word operations, so the total is O(input bytes + t * n^3 / 64). Space is O(n^2) per case.
+The interval table dominates both time and space.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(input bytes) | one input buffer |
+| Matrix read | O(n^2) | O(n) bit rows |
+| Interval DP | O(n^3 / 64) word operations | O(n^2) cells |
+| Answer and output | O(n) | one output block |
+
+Four words hold the sets of each interval cell.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(input bytes + t * n^3 / 64) |
+| Space | O(n^2) per case |
 
 Trying every duel order takes exponential time in the player count.

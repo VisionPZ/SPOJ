@@ -1,181 +1,427 @@
+# ZEBRA — The Zebra Crossing (SPOJ)
+<https://www.spoj.com/problems/ZEBRA/>
+
 ## Problem
 
-Pedestrians stand at different points on one side of a street. At the green light each walks a straight line at constant speed to the far side. You choose a starting point, a start delay, an angle, and a speed at most `v`, then cross. Count the most pedestrians you can meet at the same place and time while both are in the street. Print one maximum per test case.
+Pedestrians cross a street at known times and angles, and you may pick your own start, angle, and speed. The goal is the largest possible collision count.
 
-| Quantity | Bound |
+The input starts with the case count. Each case gives the person count, street width, and speed limit, then one start, crossing time, and angle per person. Print the maximum collisions.
+
+The judge bounds are:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | 100 |
-| Pedestrians per case | 10000 |
-| Street width | 1 to 100 m |
-| Speed limit | 1 to 10000 m/s |
-| Angle step | 1/60 degree, from -5000 to 5000 |
-| Time limit | 17000 ms |
+| Cases | at most 100 |
+| People `n` | 1 to 10000 |
+| Street width `w` | 1 to 100 meters |
+| Speed limit `v` | 1 to 10000 m/s |
+| Start coordinate | -10000 to 10000 |
+| Crossing time | 1 to 10000 seconds |
+| Angle | -5000 to 5000 units of 1/60 degree |
+| Judge time | 17000 ms |
+| Memory | 1536 MB |
+| Source size | 50000 B |
 
-The work must scale to a group of 10000 people sharing one crossing time.
+A crossing time equals the shared progress clock.
+
+Sample input and output:
+
+Input:
+
+```
+1
+5 20 2
+-20 10 2700
+20 10 -2700
+-5 1 4000
+-4 1 4000
+5 1 -4000
+```
+
+Output:
+
+```
+2
+```
 
 ## Idea
 
-Split people by crossing time. Within one group your crossing time equals theirs, so a start point and a far-side point hit a person exactly when those two points straddle that person's segment. Sweep the start point and keep far-side counts in a lazy segment tree. Small cases additionally enumerate delayed strategies by solving four linear equations per candidate hit set.
+Only people with your crossing time can collide. Think of picking a lane on a crosswalk and counting paths that cross your own.
 
-One person costs two range updates and one range maximum query in the sweep. The delayed pass costs a fixed polynomial in the small-group size.
+The program groups people by crossing time. For each gap between start positions, it turns each person into an interval of far-side targets. A lazy segment tree (a range-update tree) finds the deepest overlap. Each group costs O(k log k) for k people. Comparing every pair would cost O(n^2).
+
+Takeaway: shared crossing time reduces collisions to interval overlap.
 
 ## Why It Works
 
-A person starts at `x` and ends at `p = x + tan(a) * w` at time `t`.
+Equal heights force equal crossing times.
 
-Your path from start `s` to far-side point `q` crosses theirs exactly when `(s - x) * (q - p) <= 0`, and `s` never equals `x`.
+1. A person starting at `s` with angle `a` finishes at `q = s + w * tan(a)`.
+2. Both walkers cover the same height fraction at a given time, so matching heights need matching crossing times.
+3. The speed limit allows horizontal travel `D = sqrt((v * t)^2 - w^2)`.
+4. For a waiting point between two starts, a person collides when the start gap and finish gap have opposite signs.
+5. That test becomes one interval of far-side targets, clipped to `s - D` and `s + D`.
 
-The speed limit caps horizontal travel: `D = sqrt((v * t)^2 - w^2)`, so `q` lies between `s - D` and `s + D`.
+The terms are:
 
-For a start in a gap between two neighboring people, the reachable far-side points form one interval. Moving a person from the right set to the left set adds one to cells below its far-side point and subtracts one from cells above it.
+| Term | Meaning |
+| --- | --- |
+| `farCoord` | Far-side target coordinate of a walker |
+| `displacement` | Maximum horizontal travel `D` |
+| `gapIndex` | Waiting gap between two start positions |
+| `atom` | One point or open interval of far-side values |
+| `treeMax` | Largest interval overlap count |
 
-A delayed strategy has four unknowns: start point `s`, far-side time `B`, delay `A`, and `m = A * q - s * B`.
+`toleranceEps` keeps touching endpoints equal.
 
-A collision with person `j` becomes the linear equation `t_j * s + x_j * B - far_j * A + m = x_j * t_j`.
+A script checked the sample case:
 
-Four such equations determine a candidate strategy, and intersections with fixed-delay or fixed-time planes cover the remaining optima.
+| Crossing time | Max travel | Displacement `D` | Far-side targets |
+| --- | --- | --- | --- |
+| 1 second | 2 meters | unreachable | none |
+| 10 seconds | 20 meters | 0 meters | 0 and 0 |
 
-The sample has width 20 and speed cap 2, so the two people with crossing time 10 can only be met at the far edge, giving 2.
+Waiting at coordinate 0 hits both ten-second walkers at the far edge.
 
 ## Code
 
+**Constants and input buffer.**
+
 ```nim
+import algorithm, math
+
 {.passC: "-O3".}
-{.optimization: speed.}
-{.push checks: off.}
-{.push overflowChecks: off.}
-{.push rangeChecks: off.}
-{.push boundChecks: off.}
-{.push stackTrace: off.}
+{.passL: "-s".}
+{.push checks: off, assertions: off, stackTrace: off, lineDir: off.}
 
-import algorithm
-import math
+const
+  firstDigitValue = 48
+  flushBlockBytes = 1 shl 18
+  missingValue = -1_000_000_000
+  toleranceEps = 1e-10
+  infinityValue = 1e30
+  radiansPerMinute = PI / 10800.0
+  minStartCoord = -10000
+  maxStartCoord = 10000
+  coordSpan = maxStartCoord - minStartCoord + 1
+  unlimitedDispBound = 30000.0
 
-const firstDigitValue = 48
-const flushBlockBytes = 1 shl 18
-const infinityValue = 1e100
-const equalFarSideEpsilon = 1e-11
-const smallGroupLimit = 12
-const radiansPerMinute = 3.14159265358979323846 / 10800.0
-const missingValue = -1000000000
-const maximumCrossingTime = 10000
-const validEpsilon = 1e-7
-const solveEpsilon = 1e-10
+var inputData = ""
 ```
 
-The pragmas disable runtime checks in the release build. Constants name the scanner base, the flush size, and the geometric tolerances.
+Tangent uses radians per minute. The stamp array marks occupied start coordinates inside the legal range.
+
+**Bulk input and output.**
 
 ```nim
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
+proc readAllInput() =
+  var chunk = newString(flushBlockBytes)
+  var totalBytes = 0
+  while true:
+    let bytesRead = stdin.readBuffer(addr chunk[0], flushBlockBytes)
+    if bytesRead <= 0:
+      break
+    let previousLen = totalBytes
+    totalBytes += bytesRead
+    if inputData.len < totalBytes:
+      let nextCapacity = max(totalBytes, inputData.len * 2)
+      inputData.setLen(nextCapacity)
+    copyMem(addr inputData[previousLen], addr chunk[0], bytesRead)
+  inputData.setLen(totalBytes)
 
 var scanPos = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9') and data[position] != '-':
-    position += 1
-  var sign = 1
-  if position < data.len and data[position] == '-':
-    sign = -1
-    position += 1
+proc nextInt(): int {.inline.} =
+  let dataLen = inputData.len
+  while scanPos < dataLen and inputData[scanPos] != '-' and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
+    inc scanPos
+  var signValue = 1
+  if scanPos < dataLen and inputData[scanPos] == '-':
+    signValue = -1
+    inc scanPos
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
-  return value * sign
+  while scanPos < dataLen and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
+    value = value * 10 + int(inputData[scanPos]) - firstDigitValue
+    inc scanPos
+  return signValue * value
 
 var outputBuffer = ""
 
-proc appendOutput(text: string) =
-  outputBuffer.add text
+proc appendInt(value: int) {.inline.} =
+  outputBuffer.add($value)
+  outputBuffer.add('\n')
   if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
+    stdout.write(outputBuffer)
+    outputBuffer.setLen(0)
 ```
 
-The input loop reads the whole stream once. The scanner walks by index and keeps the minus sign. The output buffer flushes every 256 KiB.
+A chunked reader and a hand scanner handle signed integers. Answers flush in blocks.
+
+**Lazy segment tree.**
 
 ```nim
 var treeMax: seq[int] = @[]
 var treeLazy: seq[int] = @[]
 var treeSize = 0
 
-proc applyTree(node, delta: int) =
+proc applyTree(node, delta: int) {.inline.} =
   treeMax[node] += delta
   treeLazy[node] += delta
 
-proc pushTree(node: int) =
-  if treeLazy[node] != 0 and node < treeSize:
-    applyTree(node * 2, treeLazy[node])
-    applyTree(node * 2 + 1, treeLazy[node])
+proc pushTree(node: int) {.inline.} =
+  let pending = treeLazy[node]
+  if pending != 0 and node < treeSize:
+    applyTree(node shl 1, pending)
+    applyTree((node shl 1) or 1, pending)
     treeLazy[node] = 0
 
-proc addTree(node, low, high, fromIndex, toIndex, delta: int) =
-  if fromIndex <= low and high <= toIndex:
+proc addTree(node, lowIdx, highIdx, queryLow, queryHigh, delta: int) =
+  if queryLow <= lowIdx and highIdx <= queryHigh:
     applyTree(node, delta)
     return
   pushTree(node)
-  let middle = (low + high) div 2
-  if fromIndex <= middle: addTree(node * 2, low, middle, fromIndex, toIndex, delta)
-  if toIndex > middle: addTree(node * 2 + 1, middle + 1, high, fromIndex, toIndex, delta)
-  treeMax[node] = max(treeMax[node * 2], treeMax[node * 2 + 1])
+  let midIdx = (lowIdx + highIdx) shr 1
+  if queryLow <= midIdx:
+    addTree(node shl 1, lowIdx, midIdx, queryLow, queryHigh, delta)
+  if queryHigh > midIdx:
+    addTree((node shl 1) or 1, midIdx + 1, highIdx, queryLow, queryHigh, delta)
+  treeMax[node] = max(treeMax[node shl 1], treeMax[(node shl 1) or 1])
 
-proc queryTree(node, low, high, fromIndex, toIndex: int): int =
-  if fromIndex <= low and high <= toIndex: return treeMax[node]
+proc queryTree(node, lowIdx, highIdx, queryLow, queryHigh: int): int =
+  if queryLow <= lowIdx and highIdx <= queryHigh:
+    return treeMax[node]
   pushTree(node)
-  let middle = (low + high) div 2
+  let midIdx = (lowIdx + highIdx) shr 1
   var bestValue = missingValue
-  if fromIndex <= middle: bestValue = max(bestValue, queryTree(node * 2, low, middle, fromIndex, toIndex))
-  if toIndex > middle: bestValue = max(bestValue, queryTree(node * 2 + 1, middle + 1, high, fromIndex, toIndex))
+  if queryLow <= midIdx:
+    bestValue = max(bestValue, queryTree(node shl 1, lowIdx, midIdx, queryLow, queryHigh))
+  if queryHigh > midIdx:
+    bestValue = max(bestValue, queryTree((node shl 1) or 1, midIdx + 1, highIdx, queryLow, queryHigh))
   return bestValue
+
+proc buildTree(values: seq[int], count: int) =
+  treeSize = 1
+  while treeSize < count: treeSize = treeSize shl 1
+  treeMax.setLen(treeSize shl 1)
+  treeLazy.setLen(treeSize shl 1)
+  for i in 0..<(treeSize shl 1): treeLazy[i] = 0
+  for i in 0..<treeSize:
+    if i < count: treeMax[treeSize + i] = values[i]
+    else: treeMax[treeSize + i] = missingValue
+  for i in countdown(treeSize - 1, 1):
+    treeMax[i] = max(treeMax[i shl 1], treeMax[(i shl 1) or 1])
 ```
 
-The tree covers one point cell and one open interval cell per distinct far-side value. Updates and queries cost a logarithmic number of steps.
+`addTree` shifts whole covered ranges. `pushTree` passes pending shifts to children. `queryTree` returns the best overlap in a range.
+
+**Walker types and helpers.**
 
 ```nim
-proc solveGroup(width, maxSpeed, crossingTime: int, raws: seq[RawPedestrian]): int =
-  let speedTime = int64(maxSpeed) * int64(crossingTime)
-  if speedTime < int64(width): return 0
-  let widthSquared = int64(width) * int64(width)
-  let displacement = sqrt(float(speedTime * speedTime - widthSquared))
+type
+  Pedestrian = object
+    startCoord, crossingTime, angleMinutes: int
+  PlacedPedestrian = object
+    startCoord: int
+    farCoord: float
+
+proc compareFloat(left, right: float): int =
+  if left < right: return -1
+  if left > right: return 1
+  return 0
+
+proc comparePedestrianTime(left, right: Pedestrian): int =
+  if left.crossingTime != right.crossingTime:
+    return cmp(left.crossingTime, right.crossingTime)
+  return cmp(left.startCoord, right.startCoord)
+
+proc comparePlaced(left, right: PlacedPedestrian): int =
+  if left.startCoord != right.startCoord:
+    return cmp(left.startCoord, right.startCoord)
+  return compareFloat(left.farCoord, right.farCoord)
+
+proc lowerBoundFloat(values: seq[float], target: float): int {.inline.} =
+  var lowIdx = 0
+  var highIdx = values.len
+  while lowIdx < highIdx:
+    let midIdx = (lowIdx + highIdx) shr 1
+    if values[midIdx] < target: lowIdx = midIdx + 1
+    else: highIdx = midIdx
+  return lowIdx
+
+proc upperBoundFloat(values: seq[float], target: float): int {.inline.} =
+  var lowIdx = 0
+  var highIdx = values.len
+  while lowIdx < highIdx:
+    let midIdx = (lowIdx + highIdx) shr 1
+    if values[midIdx] <= target: lowIdx = midIdx + 1
+    else: highIdx = midIdx
+  return lowIdx
+
+proc exactTangent(angleMinutes: int): float {.inline.} =
+  if angleMinutes == 0: return 0.0
+  if angleMinutes == 2700: return 1.0
+  if angleMinutes == -2700: return -1.0
+  return tan(float(angleMinutes) * radiansPerMinute)
+
 ```
 
-This guard drops groups the speed limit cannot reach. The displacement is the largest horizontal travel at that crossing time.
+Comparators sort by time, start, and far coordinate. `exactTangent` avoids floating error at zero and right angles.
+
+**Group solver.**
 
 ```nim
-proc solveLinearSystem(rows: seq[LinearRow]): seq[float] =
-  let variableCount = 4
-  var matrix = newSeq[LinearRow](rows.len)
-  for rowIndex in 0 ..< rows.len:
-    matrix[rowIndex] = rows[rowIndex]
-  for column in 0 ..< variableCount:
-    var pivotRow = -1
-    for rowIndex in column ..< matrix.len:
-      if abs(matrix[rowIndex][column]) > solveEpsilon:
-        pivotRow = rowIndex
-        break
-    if pivotRow == -1: return @[]
+var occupiedStamp: array[coordSpan, int]
+var currentCaseStamp = 0
+
+proc isOccupiedCoord(coord: int): bool {.inline.} =
+  if coord < minStartCoord or coord > maxStartCoord:
+    return false
+  return occupiedStamp[coord - minStartCoord] == currentCaseStamp
+
+proc solveGroup(streetWidth, maxSpeed, crossingTime: int,
+                pedestrians: seq[Pedestrian], groupStart, groupStop: int): int =
+  let maxTravel = int64(maxSpeed) * int64(crossingTime)
+  let width64 = int64(streetWidth)
+  if maxTravel < width64: return 0
+  let zeroDisplacement = (maxTravel == width64)
+  let displacement =
+    if zeroDisplacement: 0.0
+    else: sqrt(float(maxTravel * maxTravel - width64 * width64))
+
+  let groupCount = groupStop - groupStart
+  var placed = newSeq[PlacedPedestrian](groupCount)
+  var farCoords = newSeq[float](groupCount)
+  let widthFloat = float(streetWidth)
+  for i in 0..<groupCount:
+    let person = pedestrians[groupStart + i]
+    let farValue = float(person.startCoord) + exactTangent(person.angleMinutes) * widthFloat
+    placed[i] = PlacedPedestrian(startCoord: person.startCoord, farCoord: farValue)
+    farCoords[i] = farValue
+
+  placed.sort(comparePlaced)
+  farCoords.sort(compareFloat)
+
+  var distinctFars: seq[float] = @[]
+  var ranks = newSeq[int](groupCount)
+  var rankCounts: seq[int] = @[]
+  for i in 0..<groupCount:
+    if i == 0 or farCoords[i] - distinctFars[distinctFars.len - 1] > toleranceEps:
+      distinctFars.add(farCoords[i])
+      rankCounts.add(1)
+    else:
+      inc rankCounts[rankCounts.len - 1]
+    ranks[i] = distinctFars.len - 1
+
+  let distinctCount = distinctFars.len
+  let atomCount = distinctCount * 2 + 1
+  var atomLow = newSeq[float](atomCount)
+  var atomHigh = newSeq[float](atomCount)
+  var initialCounts = newSeq[int](atomCount)
+
+  atomLow[0] = -infinityValue
+  atomHigh[0] = distinctFars[0]
+  initialCounts[0] = 0
+  var runningCount = 0
+  for rank in 0..<distinctCount:
+    runningCount += rankCounts[rank]
+    let pointIndex = rank * 2 + 1
+    atomLow[pointIndex] = distinctFars[rank]
+    atomHigh[pointIndex] = distinctFars[rank]
+    if zeroDisplacement and abs(distinctFars[rank]) < 1e9:
+      let nearestInt = int(round(distinctFars[rank]))
+      if abs(distinctFars[rank] - float(nearestInt)) <= toleranceEps and isOccupiedCoord(nearestInt):
+        initialCounts[pointIndex] = missingValue
+      else:
+        initialCounts[pointIndex] = runningCount
+    else:
+      initialCounts[pointIndex] = runningCount
+
+    let intervalIndex = rank * 2 + 2
+    atomLow[intervalIndex] = distinctFars[rank]
+    atomHigh[intervalIndex] = if rank + 1 < distinctCount: distinctFars[rank + 1] else: infinityValue
+    initialCounts[intervalIndex] = runningCount
+
+  buildTree(initialCounts, atomCount)
+
+  let unlimitedReach = displacement > unlimitedDispBound
+  var bestCollisions = 0
+  for gapIndex in 0..groupCount:
+    if gapIndex == 0 or gapIndex == groupCount or placed[gapIndex - 1].startCoord != placed[gapIndex].startCoord:
+      let firstAtom =
+        if gapIndex == 0 or unlimitedReach: 0
+        else: upperBoundFloat(atomHigh, float(placed[gapIndex - 1].startCoord) - displacement + toleranceEps)
+      var lastAtom =
+        if gapIndex == groupCount or unlimitedReach: atomCount - 1
+        else: lowerBoundFloat(atomLow, float(placed[gapIndex].startCoord) + displacement - toleranceEps) - 1
+      if lastAtom >= atomCount: lastAtom = atomCount - 1
+      if firstAtom <= lastAtom:
+        let candidate = queryTree(1, 0, treeSize - 1, firstAtom, lastAtom)
+        if candidate > bestCollisions: bestCollisions = candidate
+    if gapIndex < groupCount:
+      let rank = ranks[lowerBoundFloat(farCoords, placed[gapIndex].farCoord)]
+      addTree(1, 0, treeSize - 1, 0, rank * 2, 1)
+      addTree(1, 0, treeSize - 1, rank * 2 + 2, atomCount - 1, -1)
+  return bestCollisions
 ```
 
-Gaussian elimination solves the four-by-four systems used by the delayed pass. A zero pivot means the candidate set is degenerate and is skipped.
+Distinct far values become tree atoms. Each gap updates two ranges, then queries the best overlap. The tree resets through its build step.
+
+**Case driver.**
 
 ```nim
-  if peopleCount <= smallGroupLimit:
-    let delayed = delayedSolve(streetWidth, speedLimit, allPeople)
-    if delayed > best: best = delayed
+readAllInput()
+let caseCount = nextInt()
+for _ in 0..<caseCount:
+  let peopleCount = nextInt()
+  let streetWidth = nextInt()
+  let maxSpeed = nextInt()
+  inc currentCaseStamp
+  var pedestrians = newSeq[Pedestrian](peopleCount)
+  for i in 0..<peopleCount:
+    let startCoord = nextInt()
+    let crossingTime = nextInt()
+    let angleMinutes = nextInt()
+    pedestrians[i] = Pedestrian(startCoord: startCoord, crossingTime: crossingTime, angleMinutes: angleMinutes)
+    if startCoord >= minStartCoord and startCoord <= maxStartCoord:
+      occupiedStamp[startCoord - minStartCoord] = currentCaseStamp
+  pedestrians.sort(comparePedestrianTime)
+  var bestCollisions = 0
+  var groupStart = 0
+  while groupStart < peopleCount:
+    var groupStop = groupStart + 1
+    while groupStop < peopleCount and pedestrians[groupStop].crossingTime == pedestrians[groupStart].crossingTime:
+      inc groupStop
+    let groupBest = solveGroup(streetWidth, maxSpeed, pedestrians[groupStart].crossingTime,
+                               pedestrians, groupStart, groupStop)
+    if groupBest > bestCollisions: bestCollisions = groupBest
+    groupStart = groupStop
+  appendInt(bestCollisions)
+
+if outputBuffer.len > 0:
+  stdout.write(outputBuffer)
+  outputBuffer.setLen(0)
 ```
 
-The main driver buckets people by crossing time, runs the fast sweep on every bucket, and adds the delayed pass only for small cases. The answer is the best of both.
+People sort by crossing time, then split into equal-time groups. The largest group result becomes the answer.
 
 ## Complexity
 
-Reading and scanning cost O(total integers) time and O(input bytes) space.
+Sorting and tree updates dominate.
 
-One group costs O(n log n) to sort and O(n log n) to sweep, with O(n) tree space.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input | O(Total numbers) | O(Input size) |
+| Sort by time | O(n log n) | O(n) |
+| Group solve | O(n log n) total | O(n) |
+| Output | O(T) | O(1) |
 
-The delayed pass enumerates subsets up to size four and costs O(n^4) candidates times O(n) verification for a small group.
+Group sizes add to n across one case.
 
-Total time is O(N log n) for large groups plus the small-case pass. Total extra space is O(n) beyond the input buffer.
+| Measure | Bound |
+| --- | --- |
+| Time | O(n log n) per case |
+| Space | O(n) per case |
+
+Ten thousand people stay inside the time limit.
+
+Testing every walker pair would cost a hundred million checks.

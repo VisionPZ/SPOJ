@@ -1,21 +1,25 @@
+# BITMAP — Bitmap (SPOJ)
+<https://www.spoj.com/problems/BITMAP/>
+
 ## Problem
 
-Read t test cases, each with an n by m bitmap of '0' and '1' pixels, where '1' means white. For every pixel print the Manhattan distance to the nearest white pixel, as n rows of m space-separated integers. Blank lines separate test cases in the input.
+A black-and-white picture is stored as rows of '0' and '1' characters. Each cell needs the Manhattan distance (sum of row and column gaps) to the nearest white cell. Print the distances as rows of space-separated integers.
 
-The judge limits are these:
+Input starts with a case count t, and blank lines separate cases. Each case gives n and m, then n strings of length m where '1' means white. At least one cell is white. Output n rows of m integers per case.
+
+The bounds set the grid size:
 
 | Quantity | Bound |
 | --- | --- |
 | Rows n | 1 to 182 |
 | Columns m | 1 to 182 |
-| White pixels | at least one per bitmap |
-| Test cases t | given on the first line |
+| White cells | at least one per bitmap |
 | Time limit | 4000 ms |
 | Memory limit | 1536 MB |
 
-An 182 by 182 bitmap holds 33,124 cells, and the grid size sets the work per case.
+A full grid holds 33,124 cells, so two linear sweeps fit easily.
 
-Sample in, sample out:
+The sample input and output:
 
 ```
 1
@@ -31,48 +35,50 @@ Sample in, sample out:
 1 0 0 1
 ```
 
+The far top-left corner is three steps from the nearest white cell.
+
 ## Idea
 
-Compute a two-pass distance transform (a table of each cell's distance to the nearest white cell). Set white cells to zero and all other cells to a large value.
+Spread distances across the grid like ripples from several stones. Set white cells to zero and every other cell to a large number. Sweep from the top-left, then from the bottom-right, and keep the smaller value at each cell. This is a two-pass distance transform (a table that replaces a search).
 
-Sweep from the top-left, then sweep from the bottom-right, and keep the smaller value at each cell. The two sweeps replace a queue-based multi-source search, so no per-cell queue or visited state is needed.
+Each sweep visits each cell once and reads only the up, left, down, and right neighbours, so the cost is O(1) per cell. A queue-based multi-source search would push every cell and allocate queue state, which costs more on a 33,124-cell grid.
 
-Cost: O(1) work per cell per sweep.
-
-Checking every pair of a black pixel and a white pixel costs far more than two scans.
+Takeaway: two sweeps replace a full search.
 
 ## Why It Works
 
-A shortest Manhattan path from a white pixel enters the current cell through one of four neighbours.
+1. A white pixel has distance zero, so it anchors every ripple.
+2. Any neighbour of a cell with distance d has a distance of at most d + 1.
+3. The top-left sweep propagates influence from up and left; the bottom-right sweep propagates from down and right.
+4. A shortest Manhattan path to a white cell approaches from one of those four directions, so the two sweeps cover every case.
+5. The smaller of the two sweep values is the true minimum.
 
-The first sweep reads the upper and left neighbours. These cover white pixels above or left of the cell.
+The distance array uses one term per state.
 
-The second sweep reads the lower and right neighbours, which cover the remaining positions. Together the sweeps reach every white pixel.
+| Term | Meaning |
+| --- | --- |
+| distance[cellIndex] | best distance known for that cell |
+| infDistance | large stand-in for a cell not yet reached |
+| candidate | neighbour distance plus one |
+| nextBit | reads a single '0' or '1' token |
 
-The update at each cell follows this rule:
+Each row maps to one part of the code.
 
-distance[cell] = min(distance[cell], distance[neighbour] + 1)
+A script traced the sample grid:
 
-The term distance[cell] keeps the best value found so far. The term distance[neighbour] reads a cell already processed in that sweep. The term + 1 adds the single step from the neighbour to the current cell.
+| Cell (row, col) | White? | Distance |
+| --- | --- | --- |
+| (0, 0) | no | 3 |
+| (0, 2) | no | 1 |
+| (0, 3) | yes | 0 |
+| (2, 2) | yes | 0 |
+| (2, 3) | no | 1 |
 
-For a 3 by 5 grid with one white pixel in the middle of the second row, the generator prints this grid and these distances:
-
-```
-00000
-00100
-00000
-```
-
-```
-3 2 1 2 3
-2 1 0 1 2
-3 2 1 2 3
-```
-
-Each entry equals the row gap to the white pixel plus the column gap.
+Bottom-right white cells keep zero, and the corner reaches three.
 
 ## Code
 
+**Constants, scanner, and output helper.**
 ```nim
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
@@ -101,13 +107,7 @@ proc nextBit(data: string, pos: var int): int =
   let value = int(data[pos]) - firstDigitValue
   pos += 1
   return value
-```
 
-The read loop runs once per input line and stops at end of stream. The integer scanner skips blank lines and spaces, so the separator between cases needs no special case.
-
-The bit scanner consumes exactly one binary digit at a time. Parsing costs one pass over the input buffer.
-
-```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -115,7 +115,11 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
+The buffer gathers all input lines. `nextInt` skips non-digits, and `nextBit` skips to the next '0' or '1'. `appendOutput` flushes in blocks so the large output stays cheap.
 
+**Grid setup.**
+```nim
 let caseCount = nextInt(inputData, scanPos)
 var distance: seq[int] = @[]
 
@@ -130,9 +134,9 @@ for caseIndex in 0..<caseCount:
     else:
       distance[cellIndex] = infDistance
 ```
+Each case resets `distance` to cellCount entries. A '1' token sets a cell to zero, and a '0' token sets it to infDistance. The flat index i times columnCount plus j addresses a cell.
 
-The digit value 48 turns a character into its number, and the flush threshold caps memory at 256 KiB. The distance sequence is resized per case and reused across cases. White cells start at zero, so they act as sources that propagate outward.
-
+**Forward sweep.**
 ```nim
   for i in 0..<rowCount:
     for j in 0..<columnCount:
@@ -148,9 +152,9 @@ The digit value 48 turns a character into its number, and the flush threshold ca
         if candidate < distance[cellIndex]:
           distance[cellIndex] = candidate
 ```
+The first sweep reads the up and left neighbours. A candidate one step larger replaces the current value when it is smaller. The flat indices subtract columnCount and one.
 
-The row loop runs rowCount times and the column loop runs columnCount times. The guards `i > 0` and `j > 0` stop the program reading cells before the flat array. This sweep carries values from the top and left, and it costs one pass over all cells.
-
+**Backward sweep.**
 ```nim
   for k in 0..<rowCount:
     let i = rowCount - 1 - k
@@ -168,9 +172,9 @@ The row loop runs rowCount times and the column loop runs columnCount times. The
         if candidate < distance[cellIndex]:
           distance[cellIndex] = candidate
 ```
+The second sweep walks rows and columns in reverse. It reads the down and right neighbours by adding columnCount and one. Together the two sweeps settle every cell.
 
-The reversed loops reach the bottom-right cell first by walking k and l forward. The guards `i < rowCount - 1` and `j < columnCount - 1` stop reads past the flat array. This sweep carries values from the bottom and right, and it costs one more pass over all cells.
-
+**Output.**
 ```nim
   for i in 0..<rowCount:
     for j in 0..<columnCount:
@@ -182,11 +186,25 @@ The reversed loops reach the bottom-right cell first by walking k and l forward.
 stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
-
-Each row prints columnCount numbers with spaces between them and a newline at the end. The `j > 0` guard avoids a leading space on each line. The final write flushes any block still buffered after the last case.
+Each row prints m values separated by spaces. The final write flushes the buffer tail, so no distance stays unwritten.
 
 ## Complexity
 
-Reading input takes time proportional to its length and uses one buffer. Each case initializes the grid in O(n*m) time and O(n*m) space. Each of the two sweeps costs O(n*m) time, and printing also costs O(n*m) time.
+Work grows with the number of cells.
 
-Total time is O(t*n*m) and total working space is O(n*m), where n and m are at most 182. A search from every black pixel to every white pixel costs O(n*m*w) for w white pixels, which grows far faster.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | one pass over input bytes | input bytes |
+| Grid setup | O(n m) | cellCount integers |
+| Two sweeps | 2 times O(n m) | same array |
+| Output | one write per block | flushBlockBytes |
+| Total per case | O(n m) | O(n m) |
+
+Each cell is touched a constant number of times.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(n m) |
+| Space per case | O(n m) |
+
+Checking every black-white pair would cost O((n m)^2), while two sweeps reach the same answer in linear time.

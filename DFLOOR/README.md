@@ -1,58 +1,119 @@
+# DFLOOR — Dance Floor (SPOJ)
+<https://www.spoj.com/problems/DFLOOR/>
+
 ## Problem
 
-Read dance-floor grids and print tile presses that switch every light on. One press toggles the chosen tile and its up-to-four neighbours. Print `-1` when no sequence works. Any valid sequence is accepted.
+A singer steps on glowing tiles, flipping that tile and its four side neighbors.
+The program finds a short routine that lights them all.
 
-The judge bounds are fixed:
+Read several dance floors as grids of `0` and `1`.
+Stepping on a tile flips it and its four side neighbors, up, down, left, and right.
+Print the number of steps and the tile coordinates, or `-1` when no routine exists.
 
-| Quantity | Limit |
+Each case gives width `x` and height `y`, followed by `y` rows of `x` characters.
+Input ends with `0 0`.
+Print the step count first, then that many lines `i j`.
+Here `i` is the column and `j` is the row, both starting at 1.
+Any valid routine is accepted.
+
+The judge bounds follow.
+
+| Item | Bound |
 | --- | --- |
-| Width x and height y | 3 to 15 |
-| Time | 2400 ms |
-| Memory | 1536 MB |
-| Source | 50000 B |
+| Width `x` | 3 to 15 |
+| Height `y` | 3 to 15 |
+| Time limit | 2400 ms |
+| Memory limit | 1536 MB |
 
-Both sides stay at 15 or below, so one integer holds a whole grid row.
+The small grid lets one integer hold a whole row.
+
+The sample input and expected output follow verbatim.
+
+```
+4 3
+0111
+1010
+1000
+
+0 0
+```
+
+```
+3
+1 2
+1 3
+4 3
+```
+
+Three presses light the 4 by 3 floor in the sample.
 
 ## Idea
 
-Model each press as a binary variable and each tile as a linear equation over GF(2). Light chasing fixes every later row once the first row's presses are known. Rather than trying all 2^15 first rows, propagate the first row symbolically and solve one small linear system. The naive chase costs O(2^W * H) per grid; this method costs O(W^2 * H + W^3).
+Light chasing (sweeping rows so each step fixes the row above) turns a search into a fixed sweep.
+Once the upper rows are settled, only one choice per tile in the next row can fix the row above.
 
-Here W is the smaller side and H is the larger side.
+The program transposes the grid so the shorter side becomes the width.
+Each row is a bit mask (an integer whose bits are tiles).
+A `crossRow` operation applies a vertical press and its two horizontal neighbors.
+Row images and offsets carry one first-row choice down the floor.
+Gaussian elimination (solving equations by eliminating variables with xor) handles the final row.
+
+Cost per case is O(w³) bit operations for width w at most 15.
+Trying all 2^(x*y) press sets is impossible.
+Chase the light down, then solve one small linear system.
 
 ## Why It Works
 
-A press toggles its own tile and its four neighbours. Over GF(2) a toggle is XOR. A row of presses acts on its own row through H(v) = v xor (v shl 1) xor (v shr 1).
+Four facts prove the method.
 
-Each term has one job:
+1. Pressing a tile is its own inverse, so each tile needs at most one press.
+2. Once row `j - 1` is fixed, only a press in row `j` can change that row.
+   The press pattern of row `j` is therefore forced by the rows above.
+3. Row images follow `image[j + 1] = crossRow(image[j]) xor image[j - 1]`.
+   Offsets carry the target rows through the same recurrence.
+4. The last row gives `w` equations in the first-row presses.
+   Elimination over xor arithmetic either solves them or proves no routine exists.
+
+The main values and their roles follow.
 
 | Term | Meaning |
 | --- | --- |
-| v | press mask for one row, bit c for column c |
-| v shl 1 | toggles applied to the column on the right |
-| v shr 1 | toggles applied to the column on the left |
-| mask | clears bits that fall outside the row |
+| `crossRow` | value xor left neighbor xor right neighbor on a row mask |
+| `rowImages[j][k]` | effect on row `j` from pressing tile `k` in row zero |
+| `offsets[j]` | forced contribution from the target in row `j` |
+| `equations[l]` | bit `l` of the final-row system |
 
-The mask keeps the row inside W columns.
+A consistent system yields the first-row presses and the whole routine.
 
-After rows 1 through r are pressed, row r holds workRows[r] xor H(press[r]) xor press[r-1] xor press[r+1]. Setting that to allOn gives press[r+1] = workRows[r] xor allOn xor H(press[r]) xor press[r-1]. Each press row therefore depends only on the two rows above it.
+A script presses the three sample tiles and prints each intermediate floor.
 
-Write press[r] as A_r(p) xor b_r, where p is the first-row pattern. The images in rowImages and the shifts in offsets follow the same recurrence. The last row collapses to finalCoeff(p) = finalTarget, a system of W bit equations. Elimination solves it, and a zero row with a set right-hand side proves no solution exists.
+```
+start:
+  0111
+  1010
+  1000
+press (1,2):
+  1111
+  0110
+  0000
+press (1,3):
+  1111
+  1110
+  1100
+press (4,3):
+  1111
+  1111
+  1111
+all tiles alight after 3 steps
+```
 
-The sample grid gives this sequence:
-
-| Row | Initial tiles | Press columns |
-| --- | --- | --- |
-| 1 | 0111 | none |
-| 2 | 1010 | 1 |
-| 3 | 1000 | 1 and 4 |
-
-The presses print as 1 2, 1 3 and 4 3, and every tile ends alight.
+The last floor is all ones, so the three commands are valid.
 
 ## Code
 
-The input is read once into `inputData`. The scanner walks `i` by digits, and `emit` flushes the output in blocks.
+**Bulk input and scanner.**
 
-```
+```nim
 var inputData = stdin.readAll()
 var i = 0
 
@@ -67,7 +128,13 @@ proc nextInt(data: string, i: var int): int =
     value = value * 10 + (ord(data[i]) - 48)
     inc i
   return value
+```
 
+The whole stream is read into one buffer before parsing. skipWhitespace advances over separators by index. nextInt builds a number digit by digit. nextRowMask turns one grid row into a bit mask.
+
+**Cross operation and output buffer.**
+
+```nim
 proc nextRowMask(data: string, i: var int, width: int): int =
   skipWhitespace(data, i)
   var mask = 0
@@ -92,11 +159,11 @@ proc emit(text: string) =
     outputBuffer.setLen 0
 ```
 
-The row reader stops after exactly width characters, so unspaced digits are correct. The block flush keeps memory bounded. These steps cost O(input size).
+crossRow applies a press and its two horizontal neighbors in one xor. The output buffer flushes at 256 KiB. emit never writes one line at a time.
 
-The case header stores the grid in fixed arrays. When height is below width, the grid is transposed so the chased dimension stays smallest.
+**Build the propagation table.**
 
-```
+```nim
 while true:
   let width = nextInt(inputData, i)
   let height = nextInt(inputData, i)
@@ -128,13 +195,7 @@ while true:
       workRows[j] = sourceRows[j]
 
   let allOn = (1 shl workWidth) - 1
-```
 
-The transpose loop visits every cell once, so it costs O(width * height). The sentinel 0 0 ends the input.
-
-The row images and offsets are propagated once. The last row then yields the small system.
-
-```
   var rowImages: array[16, array[16, int]]
   var offsets: array[16, int]
   for k in 0 .. workWidth - 1:
@@ -148,7 +209,13 @@ The row images and offsets are propagated once. The last row then yields the sma
     offsets[j + 1] =
       crossRow(offsets[j], allOn) xor offsets[j - 1] xor
       workRows[j] xor allOn
+```
 
+The case loop stops at the `0 0` sentinel. A transpose keeps the smaller dimension as the width. rowImages and offsets follow a two-row recurrence down the floor. The double loop touches at most 15 by 15 bits.
+
+**Final-row equations.**
+
+```nim
   var finalCoeff: array[16, int]
   for k in 0 .. workWidth - 1:
     finalCoeff[k] =
@@ -167,11 +234,11 @@ The row images and offsets are propagated once. The last row then yields the sma
     equations[l] = equation
 ```
 
-The propagation loop stops at workHeight - 2, since the final row has no row beneath it. Each equation stores its right-hand side in bit workWidth. This phase costs O(W^2 * H).
+finalCoeff collects the effect of every first-row press on the last row. finalTarget adds the required final state. One row of the equation system is built per bit.
 
-Elimination marks one pivot column at a time. A zero row with a set right-hand side means the grid cannot be solved.
+**Elimination.**
 
-```
+```nim
   var pivotCount = 0
   var pivotColumns: array[16, int]
   for k in 0 .. workWidth - 1:
@@ -197,11 +264,11 @@ Elimination marks one pivot column at a time. A zero row with a set right-hand s
       inconsistent = true
 ```
 
-The outer loop runs at most workWidth times, so elimination costs O(W^3). Free columns stay zero, which gives one valid solution.
+The pivot loop chooses one equation per column. Xor elimination clears that column from all other rows. A remaining row with a set target bit proves the system inconsistent.
 
-The solver rebuilds the press rows and prints them in the original orientation.
+**Reconstruct the presses.**
 
-```
+```nim
   if inconsistent:
     emit("-1\n")
   else:
@@ -224,7 +291,13 @@ The solver rebuilds the press rows and prints them in the original orientation.
       for k in 0 .. workWidth - 1:
         if ((pressRows[j] shr k) and 1) != 0:
           inc stepCount
+```
 
+Back substitution recovers the first-row press pattern. The two-row recurrence then rebuilds every later row. Each press is stored as a single bit.
+
+**Emit the routine.**
+
+```nim
     emit($stepCount)
     emit("\n")
     for j in 0 .. workHeight - 1:
@@ -244,8 +317,26 @@ The solver rebuilds the press rows and prints them in the original orientation.
 stdout.write outputBuffer
 ```
 
-The back-substitution walks pivots in reverse order. The print loop swaps row and column indices when `transposed` is set, which restores the requested coordinates. Printing costs O(number of presses).
+The loops count set bits and print each pressed tile in 1-based coordinates. The transpose is undone when printing. The final write emits the remaining output bytes.
 
 ## Complexity
 
-Input parsing reads one buffer and costs O(input size). Each grid costs O(W^2 * H) to propagate the rows and O(W^3) to eliminate, with W and H both at most 15. Space is O(W * H) in fixed arrays, well under a kilobyte per grid. A brute-force chase costs O(2^W * H), roughly half a million row steps for a 15 by 15 grid.
+The phases and their costs for one case follow.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Read and transpose | O(x*y) | O(x*y) bits |
+| Propagation table | O(w²*h) | O(w*h) |
+| Elimination and back substitution | O(w³) | O(w²) |
+| Output | O(number of presses) | one output block |
+
+Here w is the smaller dimension and h is the larger one.
+
+The Big O summary follows.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(w³) per case |
+| Space | O(x*y) per case |
+
+Trying all 2^(x*y) press sets grows past a trillion for a 15 by 15 floor.

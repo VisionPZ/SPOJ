@@ -1,44 +1,100 @@
+# MMIND — The Game of Master-Mind (SPOJ)
+<https://www.spoj.com/problems/MMIND/>
+
 ## Problem
 
-Each test case gives a Master-Mind position: P pins, C colors, and M guesses with black and white hints. Print the smallest secret sequence that fits every hint. Print "You are cheating!" when no sequence fits.
+A phone game asks the player to find a hidden color code from past guesses. Each guess reports exact hits and misplaced hits.
 
-| Quantity | Range |
+The input starts with the case count. Each case gives pin count, color count, and guess count, followed by each guess and its two hint numbers. Print a valid code, or `You are cheating!`.
+
+The judge bounds are:
+
+| Item | Bound |
 | --- | --- |
-| Pins, P | 1 to 10 |
-| Colors, C | 1 to 100 |
-| Played guesses, M | 1 to 100 |
-| Time limit | 7000 ms |
-| Memory limit | 1536 MB |
+| Pins `P` | 1 to 10 |
+| Colors `C` | 1 to 100 |
+| Guesses `M` | 1 to 100 |
+| Cases | positive, large input warning |
+| Judge time | 7000 ms |
+| Memory | 1536 MB |
+| Source size | 50000 B |
 
-The output holds one line per test case.
+The answer must be the lexicographically smallest valid code.
+
+Sample input and output:
+
+Input:
+
+```
+3
+4 3 2
+1 2 3 2
+1 1
+2 1 3 2
+1 1
+4 6 2
+3 3 3 3
+3 0
+4 4 4 4
+2 0
+8 9 3
+1 2 3 4 5 6 7 8
+0 0
+2 3 4 5 6 7 8 9
+1 0
+3 4 5 6 7 8 9 9
+2 0
+```
+
+Output:
+
+```
+1 1 1 3
+You are cheating!
+9 9 9 9 9 9 9 9
+```
 
 ## Idea
 
-Build the secret one pin at a time, trying colors from small to large. Counts per guess prune each prefix that cannot reach a hint, and the first complete secret is the smallest valid one. Each color trial costs O(M), while scoring every full sequence costs O(M * P) for each of C^P sequences.
+Build the code one pin at a time and stop when a hint can no longer match. Think of trying keys on a ring, discarding each key that misses the first notch.
+
+The program backtracks (tries a choice, then undoes it) over colors in increasing order. Running counters check every past guess after each pin. Each candidate costs O(M) checks. Enumerating all C^P codes would be far slower.
+
+Takeaway: early pruning plus color order gives the smallest code.
 
 ## Why It Works
 
-A hint comes from a matching between secret pins and guess pins with equal colors. Exact matches form the black points first. The other matched pairs equal the overlap of the two color count vectors.
+Each hint splits into two countable parts.
 
-- Black points B: the count of pins where secret equals guess.
-- Total pairs B + W: the sum over colors of min(secretCount, guessCount).
-- White points W: total pairs minus black points.
+1. A black point means the guessed color sits on the same pin.
+2. Total points count matched colors across all pins, ignoring position.
+3. `needCount` stores how often a color appears in one guess.
+4. `blackSoFar` and `totalSoFar` grow as pins are assigned.
+5. Four checks prune a branch that overshoots or cannot reach a hint.
 
-A prefix fills d pins, so P - d pins remain. One more pin raises B or B + W by at most one. A hint stays reachable only while counted B is at least required B minus the remainder, and at most required B. The same holds for counted total. The search checks these bounds after each pin and undoes the counts on failure.
+The terms are:
 
-The code reads a guess color at `j * pinCount + depth`. It reads that color's count at `j * colourStride + candidateColour`.
+| Term | Meaning |
+| --- | --- |
+| `requiredBlack` | Black points demanded by a hint |
+| `requiredTotal` | Black plus white points demanded |
+| `remainingPins` | Pins still unassigned |
+| `secretCount` | Times a color appears in the partial code |
 
-This worked example uses P = 4, C = 3, and one guess. The hint is (0, 0), so the required total is 0.
+Pruning uses only these four values.
 
-| First pin color | Black count | Counted total | Rejection reason |
+A script checked the first sample case:
+
+| Guess | Hint | Black in `1 1 1 3` | Total in `1 1 1 3` |
 | --- | --- | --- | --- |
-| 1 | 1 | 1 | Black 1 exceeds 0 |
-| 2 | 0 | 1 | Total 1 exceeds 0 |
-| 3 | 0 | 1 | Total 1 exceeds 0 |
+| `1 2 3 2` | 1 black, 1 white | 1 | 2 |
+| `2 1 3 2` | 1 black, 1 white | 1 | 2 |
 
-No color survives, so the program prints "You are cheating!".
+The smallest valid code is `1 1 1 3`.
 
 ## Code
+
+**Constants and shared arrays.**
 
 ```nim
 const maxPins = 10
@@ -63,7 +119,9 @@ var blackSoFar: array[maxGuesses, int]
 var totalSoFar: array[maxGuesses, int]
 ```
 
-The arrays cover the largest legal case, so no case allocates memory. The stride leaves room for the unused color zero. Output flushes after 256 KiB of text.
+Flat arrays hold every guess and counter. `colourStride` leaves slot zero unused. No case allocates memory.
+
+**Integer scanner.**
 
 ```nim
 proc readNextInt(): int =
@@ -76,7 +134,9 @@ proc readNextInt(): int =
   value
 ```
 
-The scanner skips separators and reads one non-negative number. It never allocates a token string. The scan ends at the end of the input buffer.
+The scanner walks the whole input buffer once. It skips separators and builds values digit by digit.
+
+**Backtracking search.**
 
 ```nim
 proc searchSecret(depth: int): bool =
@@ -113,7 +173,9 @@ proc searchSecret(depth: int): bool =
   false
 ```
 
-The loop tries colours in increasing order, so the first full secret is the answer. The counter increments before the bound check, so rollback includes a rejected guess. Recursion ends after P pins, where the bounds force exact equality.
+Colors are tried from 1 upward, so the first success is smallest. Counters are undone after each failed trial.
+
+**Driver and output.**
 
 ```nim
 var lineBuffer = ""
@@ -157,10 +219,25 @@ for j in 0 ..< testCount:
 stdout.write outputBuffer
 ```
 
-The driver reads all input lines into one buffer before parsing. Each case rebuilds only the guess tables it uses. One output buffer collects every answer and flushes in blocks.
+The program reads all guesses first. It fills `needCount` per case and clears only the used colors. Failure prints the cheating message.
 
 ## Complexity
 
-Reading costs O(total input numbers). Each color trial costs O(M), and the search visits at most C^P prefixes, so the worst case is O(C^P * M). Hints cut that count sharply in practice.
+The search tree and hint checks dominate.
 
-The arrays hold O(M * C) counts and O(M * P) guess colors. A full-score baseline visits the same C^P sequences but recomputes P comparisons for every guess, costing O(C^P * M * P).
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input | O(Total numbers) | O(Input size) |
+| Search | O(C^P * M) worst case | O(P + C * M) |
+| Output | O(T * P) | O(1) |
+
+Pruning cuts most branches early.
+
+| Measure | Bound |
+| --- | --- |
+| Time | O(C^P * M) worst case |
+| Space | O(C * M) |
+
+Ten pins and one hundred colors are reachable because hints prune.
+
+Testing all codes without pruning would enumerate every color sequence.

@@ -1,46 +1,84 @@
+# INCARDS — Invitation Cards (SPOJ)
+<https://www.spoj.com/problems/INCARDS/>
+
 ## Problem
 
-Read several bus networks. Each network has numbered stops and one-way bus lines with a price. Stop 1 is the central checkpoint. A volunteer starts at stop 1 and travels to every other stop; at the end of the day every volunteer returns to stop 1. Print the smallest total fare for one network on one line.
+Volunteers leave a central bus stop each morning, visit every other stop, and return at night. The bus lines are one-way and have fares, and the troupe wants the smallest total daily fare.
 
-| Quantity | Bound |
+The first line holds a network count. Each network gives a stop count P and a line count Q, then Q lines of origin, destination, and price. Stop 1 is the central checkpoint. Prices are positive and their sum is below 1000000000, and every stop is reachable from every other. Print one line per network, the total fare for all volunteers.
+
+The judge limits are:
+
+| Item | Value |
 | --- | --- |
-| Networks per file | not fixed |
-| Stops `P` | 1 to 1,000,000 |
-| Lines `Q` | 1 to 1,000,000 |
-| Sum of prices | below 1,000,000,000 |
-| Time limit | 1000 ms |
+| Stops P | 1 to 1000000 |
+| Lines Q | 1 to 1000000 |
+| Sum of prices | below 1000000000 |
+| Time limit | 1 s |
 | Memory limit | 1536 MB |
 
-The stop count drives memory; the line count drives running time.
+The stop count drives memory, and the line count drives running time.
+
+The sample input reads:
+
+```text
+2
+2 2
+1 2 13
+2 1 33
+4 6
+1 2 10
+2 1 60
+1 3 20
+3 4 10
+2 4 5
+4 1 50
+```
+
+The sample output reads:
+
+```text
+46
+210
+```
 
 ## Idea
 
-Run Dijkstra's algorithm twice from stop 1. The first run uses the lines as given and sums the distances to all stops. The second run uses the reversed lines and sums the distances back to stop 1. Add the two sums and print the result.
-
-Each run visits every line once, so the cost per line is O(log Q) heap work. A fresh search for every volunteer would cost O(P · Q) instead.
+Run two delivery rounds, one outbound and one back, like sending a letter and its prepaid return envelope. Dijkstra's algorithm (shortest paths from one source with non-negative weights) gives the outbound fare to each stop. Running it on the reversed network gives each return fare, because reversing every line turns a return trip into an outbound trip. A heap (a priority queue returning the smallest tentative distance) keeps each run fast. Each run touches each line once, costing O(Q log Q). A fresh search for every volunteer would cost O(P times Q). Takeaway: search twice, once per direction, then add the two sums.
 
 ## Why It Works
 
-The fare from stop 1 to stop `v` is the shortest path in the given network. The fare from `v` back to stop 1 is the shortest path in the reversed network, because reversing every line turns a return path into an outbound path. The volunteers travel independently, so the daily fare is the sum of all these shortest paths.
+1. The fare from stop 1 to stop v is the shortest path in the given network.
+2. The fare from v back to stop 1 is the shortest path in the reversed network.
+3. Volunteers travel independently, so the daily fare is the sum of all these shortest paths.
+4. Dijkstra's algorithm keeps a tentative distance for each stop and settles the nearest unsettled one next.
+5. The heap may hold stale pairs, so a pair is skipped when its distance no longer matches the table.
+6. Relaxing line `(u, v, price)` replaces `distance[v]` only when `currentDistance + price` is smaller.
+7. Distances use 64 bits, because the sum of paths can exceed a 32-bit integer.
 
-Dijkstra's algorithm keeps a tentative distance for each stop. A heap returns the unsettled stop with the smallest distance. Relaxing one line `(u, v, price)` applies this rule:
+The table defines the terms.
 
-- `candidateDistance = currentDistance + price`
-- replace `distance[v]` only when `candidateDistance < distance[v]`
-- push the new pair into the heap for later processing
+| Term | Meaning |
+| --- | --- |
+| `forwardHead`, `reverseHead` | first edge slot per stop in each direction |
+| `heapNode`, `heapKey` | parallel arrays holding stop and distance |
+| `unreachableDistance` | large sentinel for an unvisited stop |
+| `candidateDistance` | proposed new distance through one line |
 
-Worked example for the first sample network:
+These terms name the search arrays and distances.
 
-| Direction | distance to stop 1 | distance to stop 2 | sum |
+A script ran both searches on the first sample network.
+
+| Direction | Distance to stop 1 | Distance to stop 2 | Sum |
 | --- | --- | --- | --- |
 | Outbound | 0 | 13 | 13 |
 | Return | 0 | 33 | 33 |
 
-The printed answer is `13 + 33 = 46`.
+The printed answer is 13 + 33 = 46, which matches the sample.
 
 ## Code
 
-The program reads all input at once and walks it with a digit scanner.
+**Input and scanner.** The program reads all input once and walks it with a digit scanner.
 
 ```nim
 const firstDigitValue = 48
@@ -66,9 +104,9 @@ proc nextInt(data: string, i: var int): int =
   return value
 ```
 
-The scanner skips line breaks and spaces, so blank lines need no special case. Every stop number and price is non-negative. Parsing one number visits each of its digits once.
+The scanner skips line breaks and spaces, so blank lines need no special case. All stop numbers and prices are non-negative. Parsing one number visits each of its digits once.
 
-The heap holds `(distance, stop)` pairs. Deleting a stale pair is cheaper than decreasing a key in place.
+**Heap operations.** Deleting a stale pair is cheaper than decreasing a key in place.
 
 ```nim
 proc heapPush(heapNode: var seq[int], heapKey: var seq[int64], heapSize: var int,
@@ -111,9 +149,9 @@ proc heapPop(heapNode: var seq[int], heapKey: var seq[int64], heapSize: var int)
   return (rootNode, rootKey)
 ```
 
-Each push or pop climbs at most `log Q` levels. The heap arrays are allocated once per network and reused by both searches.
+Each push or pop climbs at most log Q levels. The node and its distance live in parallel arrays. The heap arrays are allocated once per network and reused by both searches.
 
-One search fills the distance table and returns its sum.
+**One search.** The procedure fills the distance table and returns its sum.
 
 ```nim
 proc totalShortestDistance(nodeCount: int, edgeHead: seq[int], edgeTo: seq[int],
@@ -146,11 +184,19 @@ proc totalShortestDistance(nodeCount: int, edgeHead: seq[int], edgeTo: seq[int],
   return total
 ```
 
-The stale-pair check skips heap entries that no longer match the distance table. Each line leaves its settled stop exactly once. Distances use 64 bits because the sum can exceed 32 bits.
+The stale-pair check skips entries that no longer match the table. Each line leaves its settled stop exactly once. The final loop sums distances to all stops, including zero for the source.
 
-The driver stores both directions of every line in one flat pair of arrays, then runs the two searches.
+**Driver.** Two edge arrays store both directions, then the two searches run.
 
 ```nim
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
 let caseCount = nextInt(inputData, i)
 for j in 1..caseCount:
   let nodeCount = nextInt(inputData, i)
@@ -190,15 +236,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Two slots per line hold the forward edge and its reverse. A head array points at the first slot in each stop's chain. The output buffer flushes in blocks, never once per network.
+Two slots per line hold the forward edge and its reverse. A head array points to the first slot in each stop's chain. The output buffer flushes in blocks, never once per network.
 
 ## Complexity
 
 | Phase | Time | Space |
 | --- | --- | --- |
-| Read and store one network | O(P + Q) | O(P + Q) |
+| Read and store a network | O(P + Q) | O(P + Q) |
 | One Dijkstra search | O(Q log Q) | O(P) |
 | Two searches | O(Q log Q) | O(P + Q) |
 | Output | O(1) per network | one block |
 
-Total time is O(Q log Q) per network and total space is O(P + Q). A search from every stop would cost O(P · Q log Q) instead.
+The two searches do equal work.
+
+Both searches share the same edge arrays.
+
+| Measure | Bound |
+| --- | --- |
+| Per network | O(Q log Q) time |
+| Per network | O(P + Q) space |
+| Heap operations | O(log Q) each |
+
+A search from every stop would cost O(P times Q log Q) per network.

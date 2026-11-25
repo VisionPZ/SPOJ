@@ -1,99 +1,76 @@
+# BEADS — Glass Beads (SPOJ)
+<https://www.spoj.com/problems/BEADS/>
+
 ## Problem
 
-Read a count, then that many necklaces. Each necklace is a string of lowercase bead sizes. Print the 1-based bead where a cut gives the smallest string read around the circle; use the lowest position on ties.
+A necklace can be opened at any bead, and a weak joint depends on the bead sizes that end up in front.
+The inspector must find the opening that gives the smallest reading of sizes.
 
-The statement and judge table give these bounds.
+The first line gives the case count. Each next line holds one lowercase bead string of length up to 10000. Print the one-based index of the lexicographically smallest rotation (dictionary order), using the lowest index when ties occur.
 
-| item | bound |
-|---|---|
-| necklaces | positive count N, no upper bound in the spec |
-| beads per necklace | at most 10 000 |
-| bead letters | a through z |
-| judge limit | 500 ms, 1536 MB |
+The bounds and judge limits are:
 
-A rebuild of every rotation is too slow at 10 000 beads.
+| Constraint | Value |
+| --- | --- |
+| Beads per case | up to 10000 |
+| Bead letters | lowercase a to z |
+| Judge time | 500 ms |
+| Judge memory | 1536 MB |
+
+A linear rotation scan is needed to meet the tight half-second limit.
+
+The sample input and its expected output follow byte for byte.
+
+```
+4
+helloworld
+amandamanda
+dontcallmebfu
+aaabaaa
+```
+
+```
+10
+11
+6
+5
+```
+
 
 ## Idea
 
-Find the smallest rotation with Booth's two-pointer scan (Duval's algorithm) on the doubled necklace. Two candidate starts move forward together, and matching beads let one step skip a whole equal run. The larger next bead loses, so that pointer jumps past the run and no rotation string is built.
-
-Cost per bead: constant amortized work, since each bead is compared at most twice.
+Find the smallest rotation by racing two cursors around a doubled string, like comparing two runners who skip equal stretches together.
+The program concatenates the necklace with itself, so every rotation appears as a substring of the same length. Two cursors start at positions zero and one and compare characters with an offset.
+When a mismatch shows one cursor is larger, that cursor jumps past the whole matched block. Each cursor only moves forward, so the total work is linear.
+Building and sorting all rotations costs quadratic time and cannot meet the half-second limit.
+Two forward cursors locate the worst joint in one pass.
 
 ## Why It Works
 
-The doubled string holds every rotation as a window of n beads. When two starts match for a run of beads, no start inside that run can win. The pointer with the larger next bead moves, because that rotation is larger.
+1. Doubling the string makes every rotation a window of length n starting at some position.
+2. Two cursors compare windows with an offset, so equal stretches are skipped in one shared pass.
+3. If the character at i is larger, i jumps beyond the matched block; otherwise j jumps.
+4. When the two cursors meet, the loop advances one of them to break the tie.
+5. The smaller final cursor plus one is the printed bead number, using the lowest index on ties.
 
-These terms drive one step of the scan.
+Four terms carry the proof.
 
-| term | meaning |
-|---|---|
-| `doubled[i + matchCount]` | next bead of the left candidate |
-| `doubled[j + matchCount]` | next bead of the right candidate |
-| `i = i + matchCount + 1` | skip the left run after a loss |
-| `min(i, j)` | winning start, counted from zero |
+| Term | Meaning |
+| --- | --- |
+| doubled string | necklace followed by itself |
+| rotation | window of n beads from a start index |
+| cursor | candidate start index under comparison |
+| match length | equal prefix shared by two rotations |
 
-Each step removes at least one bead from the race, so the scan stays linear.
+They explain why two cursors finish in linear time.
 
-This trace uses the necklace aaabaaa from the sample.
-
-| start | rotation |
-|---|---|
-| 1 | aaabaaa |
-| 2 | aabaaaa |
-| 3 | abaaaaa |
-| 4 | baaaaaa |
-| 5 | aaaaaab |
-| 6 | aaaaaba |
-| 7 | aaaabaa |
-
-Start 5 gives the smallest rotation, so the answer is 5.
-
-The pointer trace reaches the same start.
-
-| step | left | right | equal beads | compared | next move |
-|---|---|---|---|---|---|
-| 0 | 0 | 1 | 2 | a vs b | right jumps to 4 |
-| 1 | 0 | 4 | 3 | b vs a | left becomes 5 |
-| 2 | 5 | 4 | 5 | b vs a | left jumps to 11 |
-
-The left start passes the bead count, so the loop ends and the right start wins.
+A script check of `aaabaaa` compares the doubled string with itself shifted.
+The smallest rotation starts at zero-based index 4 and reads `aaaaaab`.
+Adding one gives bead 5, which matches the sample output.
 
 ## Code
 
-**Input and scan position.**
-
-```nim
-var inputData = ""
-var inputLine = ""
-while stdin.readLine(inputLine):
-  inputData.add(inputLine)
-  inputData.add('\n')
-var i = 0
-```
-
-The read loop runs to EOF, so one pass loads all input. `i` begins at zero and survives every reader call. Cost: one pass over the input bytes.
-
-**Byte readers.**
-
-```nim
-proc skipToLowercase() =
-  while i < inputData.len and (inputData[i] < 'a' or inputData[i] > 'z'):
-    inc i
-
-proc readCaseCount(): int =
-  var value = 0
-  while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
-    inc i
-  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
-    value = value * 10 + (ord(inputData[i]) - 48)
-    inc i
-  return value
-```
-
-Both scanners stop at the first byte outside their class. `skipToLowercase` skips digits and spacing before a necklace. Cost: one pass over the bytes each call skips.
-
 **Necklace reader.**
-
 ```nim
 proc readNecklace(): string =
   skipToLowercase()
@@ -103,10 +80,9 @@ proc readNecklace(): string =
   return inputData[j .. i - 1]
 ```
 
-The slice ends at `i - 1`, the last bead byte. Reading by byte keeps stray spacing out of the necklace. Cost: one slice of n bytes per case.
+The reader skips non-lowercase characters. It returns the bead string between two cursors. The scan reuses one input buffer.
 
-**Smallest rotation.**
-
+**Two-cursor minimum rotation.**
 ```nim
 proc worstDisjoinStart(beads: string): int =
   let beadCount = beads.len
@@ -132,24 +108,9 @@ proc worstDisjoinStart(beads: string): int =
   return min(i, j)
 ```
 
-The outer loop stops when either start reaches `beadCount`. The inner loop counts equal beads, so one step skips a whole run. `doubled` holds every rotation, so no rotation string is built. Cost: O(n) comparisons per necklace.
+The routine doubles the necklace once. Cursor jumps skip blocks that are already equal. The loop returns the smaller zero-based start index.
 
-**Output buffer.**
-
-```nim
-var outputBuffer = ""
-const flushBlockBytes = 1 shl 18
-
-proc flushOutput() =
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write(outputBuffer)
-    outputBuffer.setLen(0)
-```
-
-`flushBlockBytes` is 256 KiB. `setLen(0)` reuses the buffer storage instead of allocating a new string. Cost: one write per 256 KiB of output.
-
-**Driver.**
-
+**Answer driver.**
 ```nim
 let caseCount = readCaseCount()
 for i in 0 ..< caseCount:
@@ -161,28 +122,26 @@ for i in 0 ..< caseCount:
 stdout.write(outputBuffer)
 ```
 
-`i` runs once per necklace. Adding 1 converts the zero-based start into the printed bead number. The final write covers the tail. Cost: one answer per necklace.
+The driver reads the case count first. It prints the one-based start for each necklace. A block flush keeps output writes infrequent.
+
 
 ## Complexity
 
-Costs by phase:
+Each cursor advances at most n positions, so comparisons stay linear overall.
 
-| phase | time | space |
-|---|---|---|
-| input read | one pass over all lines | input bytes |
-| one necklace | O(n) comparisons on the doubled string | 2n bytes |
-| output | one write per 256 KiB block | 256 KiB |
-| total over N cases | O(total beads plus input plus output) | longest necklace plus one block |
+| Phase | Time | Space |
+| --- | --- | --- |
+| read necklace | O(n) | one string |
+| double string | O(n) | one doubled string |
+| cursor scan | O(n) | constant |
 
-Space tracks the longest necklace, not the count of rotations.
+The small output buffer flushes only after many answers.
 
-Big O terms:
+Big O uses bead count n.
 
-| measure | form |
-|---|---|
-| time | O(N) for N total beads |
-| space | O(m) for the longest necklace m |
+| Measure | Big O |
+| --- | --- |
+| time | O(n) per case |
+| space | O(n) |
 
-No table of rotations is stored.
-
-Building all m rotations and sorting them costs O(m^2 log m) time and O(m^2) space. One pass over the doubled string stays linear.
+Sorting all n rotations would cost O(n squared log n) time.

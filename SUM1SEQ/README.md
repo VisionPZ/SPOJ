@@ -1,55 +1,102 @@
+# SUM1SEQ — Sum of one-sequence (SPOJ)
+
+<https://www.spoj.com/problems/SUM1SEQ/>
+
 ## Problem
 
-Each case gives a length and a target sum. Print a sequence of that length that starts at zero and changes by one at each step. The values must add up to the target sum. Print No when no such sequence exists. End each case with an empty line.
+A hiker starts at altitude zero and climbs or descends one meter at each step. Given the total of all visited altitudes, find a walk with the required length.
 
-The statement fixes these bounds:
+Input: `t` test cases, each separated by a blank line. A case gives `n` on one line and the target sum `S` on the next.
 
-| Quantity | Bound |
+Output: `n` integers, one per line, with a blank line after each case. Print `No` when no such walk exists.
+
+The statement gives these bounds:
+
+| Item | Bound |
 | --- | --- |
-| Sequence length | 1 to 10,000 |
-| Absolute target sum | up to 50,000,000 |
-| Case count | not stated |
-| Time limit | 3000 ms |
-| Memory limit | 1536 MB |
+| Sequence length `n` | 1 to 10,000 |
+| Target sum `S` | absolute value at most 50,000,000 |
+| Output size | `n` lines per feasible case |
+| Judge limit | 3000 ms, 1536 MB |
 
-The length sets the work per case, so the program builds each answer in one pass.
+The output can reach thousands of lines per case, so one shared buffer writes them.
+
+The sample input and output:
+
+```
+1
+8
+4
+```
+
+```
+0
+-1
+0
+-1
+0
+1
+2
+3
+
+```
 
 ## Idea
 
-Expand the sequence sum into signed weights from 1 to n-1. A step of +1 gives its weight a plus sign, and a step of -1 gives it a minus sign. A greedy pass from the largest weight down picks the minus signs. One more walk turns those signs into sequence values. Trying every step pattern would take 2^(n-1) attempts per case.
+Treat each step as a coin that adds a fixed weight to the final sum. Spend the largest coins first, like paying a bill with big bills before small ones.
 
-Cost per element: one sign lookup and one printed integer.
+The program uses a greedy construction on step weights. Step `i` changes every later altitude, so its weight is `n - i`.
+
+Flipping that step from up to down lowers the total by twice its weight. The greedy choice takes weights from `n - 1` down to 1, so one case costs `O(n)`.
+
+Trying all `2^(n - 1)` up-down patterns cannot reach `n = 10,000`. The greedy choice succeeds whenever the parity and size tests pass.
+
+Largest-first selection turns an exponential search into one descending pass.
 
 ## Why It Works
 
-Let step i be the change from value i to value i+1. Step i appears in exactly n-i later values. The target sum is therefore the signed sum of the weights n-1 down to 1.
+Four facts justify the construction.
 
-Call the sum of all weights T. Changing one sign from plus to minus subtracts twice that weight. A target is reachable only when its absolute value is at most T and matches T in parity.
+1. Starting at zero with unit steps gives `a_i` as the sum of the first `i - 1` steps.
+2. Each step at position `i` appears in `n - i` later altitudes, so it contributes weight `n - i` to the total.
+3. With all steps up, the total is `totalWeight = n(n - 1)/2`. Flipping one step lowers the total by `2 × weight`, so the target must match `totalWeight` in parity and not exceed it.
+4. The weights `1..n - 1` can sum to any value from 0 to `totalWeight`. Taking them from largest to smallest therefore empties `remainingSum` exactly.
 
-Every number from 0 to T is a sum of distinct weights from 1 to n-1. The greedy pass takes a weight whenever it fits the remaining amount. A target that passes both tests always gets a sequence.
+The quantities used by the driver:
 
-The program marks signs with these values:
-
-| Expression | Meaning |
+| Term | Meaning |
 | --- | --- |
-| totalWeight | sum of all weights, equal to n(n-1)/2 |
-| remainingSum | sum of minus-signed weights, equal to (totalWeight - targetSum)/2 |
-| weightValue | weight of step i, equal to n-i |
+| `totalWeight` | sum of all step weights, `n(n - 1)/2` |
+| `magnitudeSum` | absolute value of `S` |
+| `remainingSum` | half the gap from `totalWeight` down to `S` |
+| `isNegative[j]` | true when the step of weight `j` goes down |
+| `currentValue` | altitude after the current step |
 
-The greedy pass only needs these three values.
+The parity test uses `magnitudeSum` so negative targets follow the same rule.
 
-The generator prints this worked example:
+A script trace of the sample case:
 
 ```
-WORKED n=8 S=4 totalWeight=28 remainingSum=12 negative=[7, 5]
-WORKED sequence 0 -1 0 -1 0 1 2 3
+length 8, target 4, total weight 28, remaining 12
+weight 7: take=True, remaining=5
+weight 6: take=False, remaining=5
+weight 5: take=True, remaining=0
+weight 4: take=False, remaining=0
+weight 3: take=False, remaining=0
+weight 2: take=False, remaining=0
+weight 1: take=False, remaining=0
+chosen weights [7, 5]
+sequence [0, -1, 0, -1, 0, 1, 2, 3]
+sum 4
 ```
 
-The minus signs fall on weights 7 and 5, so the steps are -1, +1, -1, +1, +1, +1, +1. The walk starts at 0 and prints the listed values. Their sum is 4.
+Weights 7 and 5 lower the total by `2 × 12 = 24`, from 28 down to 4.
+
+The scanner keeps a sign branch, since `S` may be negative. Each case ends with one blank line, even when the answer is `No`.
 
 ## Code
 
-The input loop reads the whole stream into one buffer before any case runs.
+**Input, scanner, and output helper.** One buffer holds the stream, and the scanner accepts a minus sign.
 
 ```nim
 const firstDigitValue = 48
@@ -75,13 +122,7 @@ proc nextInt(data: string, position: var int): int =
     value = value * 10 + int(data[position]) - firstDigitValue
     position += 1
   return signValue * value
-```
 
-The scanner stops at the minus sign, so negative targets parse correctly. The digit loop runs once per input character.
-
-One growable buffer holds all output and flushes in blocks.
-
-```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -89,15 +130,17 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
-
-var isNegative = newSeq[bool](0)
 ```
 
-The flush keeps memory at one block and writes once per 256 KiB. The bool row grows only when a longer case arrives.
+The sign branch runs before the digit loop, so negative targets parse correctly.
+`appendOutput` flushes at 256 KiB to handle large outputs.
+The buffer `isNegative` starts empty and grows only when needed.
 
-The case loop checks reachability, then marks the minus-signed weights.
+**Case driver.** The program tests feasibility, then builds the walk.
 
 ```nim
+var isNegative = newSeq[bool](0)
+
 let caseCount = nextInt(inputData, scanPos)
 for caseIndex in 0..<caseCount:
   let sequenceLength = nextInt(inputData, scanPos)
@@ -118,13 +161,6 @@ for caseIndex in 0..<caseCount:
     else:
       isNegative[j] = false
     j -= 1
-```
-
-The while loop visits weights n-1 down to 1, so it costs O(n). Using magnitudeSum keeps the parity test valid for negative targets.
-
-The last block prints the walk and flushes the remaining output.
-
-```nim
   appendOutput("0\n")
   var currentValue = 0
   for i in 1..<sequenceLength:
@@ -141,10 +177,29 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The for loop prints n-1 values after the leading zero. The blank line closes each case, and the final write flushes the rest.
+The parity test rejects impossible targets before any construction.
+The descending loop takes a weight when it fits `remainingSum`.
+The print loop walks positions `1..n - 1` and converts each chosen weight back into a step.
 
 ## Complexity
 
-Reading takes time and space linear in the input size. Each case takes O(n) time for the greedy pass and O(n) bool space that the program reuses. Printing takes O(n) time per case because each value becomes one line.
+Each case performs a constant-time test plus two linear passes.
 
-Total time is O(input size plus printed values). Total space is O(n plus input size plus one output block). A search over step patterns would take O(2^(n-1)) time per case.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Feasibility test | O(1) per case | O(1) |
+| Greedy weights | O(n) from weight `n - 1` to 1 | O(n) for `isNegative` |
+| Sequence output | O(n) lines | 256 KiB block |
+| Total per case | O(n) | O(n) |
+
+At `n = 10,000` the program writes 10,000 lines through one buffer.
+
+The asymptotic bounds follow from the table:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n) per case, O(total length) overall |
+| Space | O(n) for the step flags, plus buffers |
+
+Enumerating all step-sign patterns takes `O(2^n)` time and cannot handle the length bound.

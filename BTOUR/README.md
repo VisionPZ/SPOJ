@@ -1,6 +1,11 @@
+# BTOUR — Tour de Byteland (SPOJ)
+<https://www.spoj.com/problems/BTOUR/>
+
 ## Problem
 
-Read a weighted undirected graph for each test case. The input gives intersections and street segments. Print the total length of the shortest simple loop and the number of distinct loops with that length. Print `0 0` when the graph has no loop.
+The mayor wants the shortest bicycle loop through Byteland's streets, plus a count of how many loops tie for shortest. Print both numbers for each street map, or `0 0` when no loop exists.
+
+Input starts with a case count t. Each case gives n intersections and m streets, then m lines of form u v d with u at most v. Output the loop length and the number of shortest loops.
 
 The judge bounds are listed below.
 
@@ -8,43 +13,82 @@ The judge bounds are listed below.
 | --- | --- |
 | Test cases | at most 200 |
 | Intersections | 1 to 1000 |
-| Street segments per intersection | 0 to 4 |
-| Street length | 1 to 1000000 |
-| Time limit | 17000 ms |
+| Streets per intersection | 0 to 4 |
+| Street length | 1 to 1,000,000 |
+| Time limit | 17,000 ms |
 | Memory limit | 1536 MB |
 
 At most four streets meet at an intersection, so every graph stays sparse.
 
+The sample input and output:
+
+```
+2
+3 2
+1 2 1
+1 3 2
+4 6
+1 2 5
+1 4 5
+2 3 4
+2 4 5
+3 4 5
+3 1 5
+```
+
+```
+0 0
+14 2
+```
+
+The second graph has two shortest loops of length 14.
+
 ## Idea
 
-Anchor each loop at its lowest numbered intersection. For each street out of the anchor, run Dijkstra on the subgraph of higher numbered intersections. Distances give loop lengths and path counts give loop counts, so every loop is counted once without enumerating them all.
+Anchor every loop at its lowest numbered intersection. Self-loops are counted directly. For each anchor, take pairs of streets leading to higher numbered intersections. Run Dijkstra (a shortest path method) on the subgraph of those higher intersections. The distance gives the loop length, and the path count gives the number of loops.
 
-Cost per street: one Dijkstra run over the remaining graph, O(m log n) time.
+Each street pair costs one Dijkstra run over the remaining graph, O(m log n). Enumerating every simple loop would be exponential.
+
+Takeaway: anchor at the smallest vertex, then count shortest paths between its neighbours.
 
 ## Why It Works
 
-A simple loop through an anchor uses exactly two streets at that anchor. Every other intersection on the loop has a higher number than the anchor. The rest of the loop is a shortest path between those two neighbours inside the restricted subgraph. Dijkstra adds the path counts of equal-distance predecessors, so it counts all shortest paths.
+1. A simple loop through an anchor uses exactly two streets at that anchor.
+2. Every other intersection on that loop has a higher number than the anchor, by the anchor choice.
+3. Removing intersections at or below the anchor cannot create a shorter route between the two neighbours, so the restricted subgraph is exact.
+4. Dijkstra adds the path counts of equal-distance predecessors, so it counts all shortest paths.
+5. A self-loop is already a simple loop of length d, so it is handled before the main search.
 
 The loop length has three terms.
 
-loop length = w(s, a) + dist(a, b) + w(s, b)
+| Term | Meaning |
+| --- | --- |
+| w(s, a) | weight of the first street from anchor s |
+| dist(a, b) | shortest path inside the subgraph above s |
+| w(s, b) | weight of the second street back to s |
+| ways(a, b) | number of shortest paths, which is the loop count |
 
-w(s, a) is the weight of the first street from the anchor s.
-dist(a, b) is the shortest path length with intersections at or below s removed.
-w(s, b) is the weight of the second street back to the anchor.
-ways(a, b) is the number of shortest paths, which is the number of loops for this pair.
+The three weights and one path count give both outputs.
 
-The generator writes the statement sample, and the program prints this output.
+The generator wrote the statement sample, and the program prints this output:
 
-    0 0
-    14 2
+```
+0 0
+14 2
+```
 
-The second graph has two loops of length 14, through intersections 1-2-3 and 2-3-4.
+The first graph is a tree with no loop. The second has two loops of length 14:
+
+| Loop | Streets | Total |
+| --- | --- | --- |
+| 1-2-3-1 | 5 + 4 + 5 | 14 |
+| 2-3-4-2 | 4 + 5 + 5 | 14 |
+
+Each loop is anchored once, so it is counted once.
 
 ## Code
 
-The input is read once into one buffer, and the output is flushed in blocks.
-
+**Constants, scanner, and output helper.**
 ```nim
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
@@ -58,13 +102,13 @@ while readLine(stdin, inputLine):
 
 var scanPos = 0
 
-proc nextInt(data: string, i: var int): int =
-  while i < data.len and (data[i] < '0' or data[i] > '9'):
-    i += 1
+proc nextInt(data: string, pos: var int): int =
+  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
+    pos += 1
   var value = 0
-  while i < data.len and data[i] >= '0' and data[i] <= '9':
-    value = value * 10 + int(data[i]) - firstDigitValue
-    i += 1
+  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
+    value = value * 10 + int(data[pos]) - firstDigitValue
+    pos += 1
   return value
 
 var outputBuffer = ""
@@ -75,92 +119,186 @@ proc appendOutput(text: string) =
     stdout.write outputBuffer
     outputBuffer.setLen 0
 ```
+The buffer gathers every line, and `nextInt` walks the digits. `appendOutput` flushes in blocks. `infinity` stays far below the int64 maximum so additions cannot overflow.
 
-The read loop runs once per input line, so stdin is read once.
-nextInt skips non-digits and builds each value one digit at a time.
-appendOutput writes a block only after the buffer reaches the flush size.
-Parsing costs O(total input bytes).
+**Graph arrays and heap.**
+```nim
+var nodeCount = 0
+var adjHead = newSeq[int](1005)
+var adjTo = newSeq[int](8200)
+var adjWeight = newSeq[int](8200)
+var adjNext = newSeq[int](8200)
+var bestDist = newSeq[int64](1005)
+var pathWays = newSeq[int64](1005)
+var heapDist = newSeq[int64](8200)
+var heapVert = newSeq[int](8200)
+var heapSize = 0
 
-The search keeps distances and path counts in flat arrays.
+proc heapPush(distValue: int64, vertex: int) =
+  var idx = heapSize
+  heapSize += 1
+  heapDist[idx] = distValue
+  heapVert[idx] = vertex
+  while idx > 0:
+    let parentIdx = (idx - 1) div 2
+    if heapDist[parentIdx] <= heapDist[idx]: break
+    swap heapDist[parentIdx], heapDist[idx]
+    swap heapVert[parentIdx], heapVert[idx]
+    idx = parentIdx
 
+proc heapPop(): tuple[dist: int64, vertex: int] =
+  result = (heapDist[0], heapVert[0])
+  heapSize -= 1
+  if heapSize > 0:
+    heapDist[0] = heapDist[heapSize]
+    heapVert[0] = heapVert[heapSize]
+    var idx = 0
+    while true:
+      let leftIdx = 2 * idx + 1
+      let rightIdx = 2 * idx + 2
+      var smallest = idx
+      if leftIdx < heapSize and heapDist[leftIdx] < heapDist[smallest]: smallest = leftIdx
+      if rightIdx < heapSize and heapDist[rightIdx] < heapDist[smallest]: smallest = rightIdx
+      if smallest == idx: break
+      swap heapDist[smallest], heapDist[idx]
+      swap heapVert[smallest], heapVert[idx]
+      idx = smallest
+
+```
+Adjacency uses one flat array of edge slots. `heapPush` and `heapPop` maintain a min-heap of distances, with each swap moving distance and vertex together.
+
+**Dijkstra with path counts.**
 ```nim
 proc runDijkstra(startVert, restrictAbove: int, pruneLimit: int64) =
-  for i in 0 .. nodeCount - 1:
-    distArr[i] = infinity
-    waysArr[i] = 0
+  for nodeIdx in 0 .. nodeCount - 1:
+    bestDist[nodeIdx] = infinity
+    pathWays[nodeIdx] = 0
   heapSize = 0
-  distArr[startVert] = 0
-  waysArr[startVert] = 1
+  bestDist[startVert] = 0
+  pathWays[startVert] = 1
   heapPush(0, startVert)
   while heapSize > 0:
-    let cur = heapPop()
-    let d = cur.d
-    let u = cur.v
-    if d > distArr[u]: continue
-    if d > pruneLimit: break
-    var e = adjHead[u]
-    while e != -1:
-      let t = adjTo[e]
-      if t > restrictAbove:
-        let nd = d + int64(adjW[e])
-        if nd < distArr[t]:
-          distArr[t] = nd
-          waysArr[t] = waysArr[u]
-          heapPush(nd, t)
-        elif nd == distArr[t]:
-          waysArr[t] += waysArr[u]
-      e = adjNext[e]
+    let topItem = heapPop()
+    let curDist = topItem.dist
+    let vertex = topItem.vertex
+    if curDist > bestDist[vertex]: continue
+    if curDist > pruneLimit: break
+    var edgeIdx = adjHead[vertex]
+    while edgeIdx != -1:
+      let neighbor = adjTo[edgeIdx]
+      if neighbor > restrictAbove:
+        let nextDist = curDist + int64(adjWeight[edgeIdx])
+        if nextDist < bestDist[neighbor]:
+          bestDist[neighbor] = nextDist
+          pathWays[neighbor] = pathWays[vertex]
+          heapPush(nextDist, neighbor)
+        elif nextDist == bestDist[neighbor]:
+          pathWays[neighbor] += pathWays[vertex]
+      edgeIdx = adjNext[edgeIdx]
 ```
+The run resets `bestDist` and `pathWays`, then relaxes edges to neighbours above `restrictAbove`. Equal-distance relaxations add `pathWays` instead of replacing it. `pruneLimit` stops work that cannot beat the current best.
 
-The heap loop ends when no node is left or the distance passes pruneLimit.
-restrictAbove removes the anchor and every lower intersection from the search.
-Equal-distance relaxations add to waysArr and count every shortest path.
-One run costs O(m log n) time and O(n) space.
-
-The main loop anchors the loops and updates the best answer.
-
+**Case input and self-loops.**
 ```nim
-  for s in 0 .. nodeCount - 1:
+let caseCount = nextInt(inputData, scanPos)
+for caseIdx in 0 .. caseCount - 1:
+  nodeCount = nextInt(inputData, scanPos)
+  let edgeCount = nextInt(inputData, scanPos)
+  for i in 0 .. nodeCount - 1: adjHead[i] = -1
+  var edgeSlot = 0
+  var bestLen = infinity
+  var bestCount: int64 = 0
+  for edgeIdx in 0 .. edgeCount - 1:
+    let fromVert = nextInt(inputData, scanPos) - 1
+    let toVert = nextInt(inputData, scanPos) - 1
+    let weight = nextInt(inputData, scanPos)
+    if fromVert == toVert:
+      let selfLen = int64(weight)
+      if selfLen < bestLen:
+        bestLen = selfLen
+        bestCount = 1
+      elif selfLen == bestLen:
+        bestCount += 1
+    else:
+      adjTo[edgeSlot] = toVert
+      adjWeight[edgeSlot] = weight
+      adjNext[edgeSlot] = adjHead[fromVert]
+      adjHead[fromVert] = edgeSlot
+      edgeSlot += 1
+      adjTo[edgeSlot] = fromVert
+      adjWeight[edgeSlot] = weight
+      adjNext[edgeSlot] = adjHead[toVert]
+      adjHead[toVert] = edgeSlot
+      edgeSlot += 1
+```
+The code reads each street into the adjacency arrays. A street with equal ends updates `bestLen` and `bestCount` directly. Other streets are stored in both directions.
+
+**Anchor loop and answer.**
+```nim
+  for rootVert in 0 .. nodeCount - 1:
     var neighborVert: array[8, int]
-    var neighborW: array[8, int]
+    var neighborWeight: array[8, int]
     var neighborCount = 0
-    var e = adjHead[s]
-    while e != -1:
-      let t = adjTo[e]
-      if t > s and neighborCount < 8:
-        neighborVert[neighborCount] = t
-        neighborW[neighborCount] = adjW[e]
+    var edgeIdx = adjHead[rootVert]
+    while edgeIdx != -1:
+      let neighbor = adjTo[edgeIdx]
+      if neighbor > rootVert and neighborCount < 8:
+        neighborVert[neighborCount] = neighbor
+        neighborWeight[neighborCount] = adjWeight[edgeIdx]
         neighborCount += 1
-      e = adjNext[e]
+      edgeIdx = adjNext[edgeIdx]
     if neighborCount < 2: continue
-    for i in 0 .. neighborCount - 1:
-      if i == neighborCount - 1: continue
-      let startVert = neighborVert[i]
-      let startW = neighborW[i]
-      var minEndW = 1000000000
-      for j in i + 1 .. neighborCount - 1:
-        if neighborW[j] < minEndW: minEndW = neighborW[j]
+    for firstIdx in 0 .. neighborCount - 1:
+      if firstIdx == neighborCount - 1: continue
+      let startVert = neighborVert[firstIdx]
+      let startWeight = neighborWeight[firstIdx]
+      var minEndWeight = 1000000000
+      for secondIdx in firstIdx + 1 .. neighborCount - 1:
+        if neighborWeight[secondIdx] < minEndWeight: minEndWeight = neighborWeight[secondIdx]
       var pruneLimit = infinity
       if bestLen < infinity:
-        if int64(startW + minEndW + 1) > bestLen: continue
-        pruneLimit = bestLen - int64(startW) - int64(minEndW)
-      runDijkstra(startVert, s, pruneLimit)
-      for j in i + 1 .. neighborCount - 1:
-        let endVert = neighborVert[j]
-        if distArr[endVert] >= infinity div 2: continue
-        let cycleLen = int64(startW) + distArr[endVert] + int64(neighborW[j])
+        if int64(startWeight + minEndWeight + 1) > bestLen: continue
+        pruneLimit = bestLen - int64(startWeight) - int64(minEndWeight)
+      runDijkstra(startVert, rootVert, pruneLimit)
+      for secondIdx in firstIdx + 1 .. neighborCount - 1:
+        let endVert = neighborVert[secondIdx]
+        if bestDist[endVert] >= infinity div 2: continue
+        let cycleLen = int64(startWeight) + bestDist[endVert] + int64(neighborWeight[secondIdx])
         if cycleLen < bestLen:
           bestLen = cycleLen
-          bestCount = waysArr[endVert]
+          bestCount = pathWays[endVert]
         elif cycleLen == bestLen:
-          bestCount += waysArr[endVert]
-```
+          bestCount += pathWays[endVert]
+  if bestLen == infinity:
+    appendOutput("0 0")
+  else:
+    appendOutput($bestLen)
+    outputBuffer.add ' '
+    appendOutput($bestCount)
+  outputBuffer.add '\n'
 
-The outer loop runs once per intersection, and the two inner loops cover each neighbour pair once.
-pruneLimit skips searches that cannot reach the current best loop.
-bestCount resets for a shorter loop and grows for an equal loop.
-This loop starts one Dijkstra run per street with a higher numbered neighbour.
+stdout.write outputBuffer
+outputBuffer.setLen 0
+```
+For each anchor, the code collects at most eight higher neighbours. Each neighbour pair triggers a Dijkstra run, and the three-part length updates the best loop and its count. The final line prints `0 0` when no loop was found.
 
 ## Complexity
 
-Reading and parsing cost O(total input bytes). Each undirected street starts one Dijkstra run, and each run costs O(m log n) time with O(n) space. The arrays are reused across runs, so a test case takes O(m² log n) time and O(n + m) space. Enumerating every simple loop instead would take exponential time.
+Degree at most four bounds the work per anchor.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | one pass over input bytes | input bytes |
+| Graph build | O(m) | O(m) edge slots |
+| Dijkstra runs | O(n times m log n) worst case | O(n) per run |
+| Answer selection | O(n) | O(n) |
+| Output | one write per block | flushBlockBytes |
+
+Sparse streets and the anchor rule keep the run count low.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(n m log n) worst case |
+| Space per case | O(n + m) |
+
+Listing every simple loop would be exponential, while anchored shortest paths count them all in polynomial time.

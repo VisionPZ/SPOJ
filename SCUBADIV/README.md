@@ -1,42 +1,86 @@
+# SCUBADIV — Scuba diver (SPOJ)
+<https://www.spoj.com/problems/SCUBADIV/>
+
 ## Problem
 
-The diver needs set amounts of oxygen and nitrogen for each trip. Each test case gives those amounts and a list of cylinders with gas volumes and a weight. Pick each cylinder at most once, meet both amounts, and print the smallest total weight on one line per case.
+A diver needs fixed amounts of oxygen and nitrogen for a trip. Each available cylinder holds some of each gas and has a weight. Choose cylinders so both needs are met with the smallest total weight.
 
-| Quantity | Bound |
+Input: an integer c, then c cases separated by blank lines. Each case gives oxygen t and nitrogen a, then cylinder count n, then n lines with oxygen, nitrogen and weight. Output: one integer per case, the minimum total weight.
+
+The statement sets these bounds.
+
+| Item | Bound |
 | --- | --- |
-| Oxygen needed | 1 to 21 litres |
-| Nitrogen needed | 1 to 79 litres |
-| Cylinders per case | 1 to 1000 |
-| Gas in one cylinder | 1 to 21 oxygen, 1 to 79 nitrogen litres |
-| Weight of one cylinder | 1 to 800 decagrams |
-| Time limit | 5000 ms |
-| Memory limit | 1536 MB |
+| Oxygen needed t | 1 to 21 litres |
+| Nitrogen needed a | 1 to 79 litres |
+| Cylinders n | 1 to 1000 |
+| Gas per cylinder | up to 21 oxygen and 79 nitrogen |
+| Weight per cylinder | 1 to 800 decagrams |
+| Judge time limit | 5000 ms |
+| Judge memory limit | 1536 MB |
 
-The two gas ranges bound the whole search table.
+The two gas ranges bound the whole table.
+
+The sample input:
+
+```
+1
+5 60
+5
+3 36 120
+10 25 129
+5 50 250
+1 45 130
+4 20 119
+```
+
+The sample output:
+
+```
+249
+```
 
 ## Idea
 
-Use a 0/1 knapsack (each cylinder is used once) over the two gas amounts. Each cell stores the lightest way to reach one oxygen amount and one nitrogen amount, both capped at the demand. One cylinder costs one pass over at most 22 times 80 cells, while listing all subsets would be exponential.
+Pack a knapsack with two measurements at once, like fitting items into a box with both a width and a height limit. Each cell stores the lightest way to reach one oxygen amount and one nitrogen amount. Both amounts cap at the demand.
+
+The program uses 0/1 knapsack, so each cylinder is taken at most once. One cylinder costs one pass over at most 22 times 80 cells. Indexes walk downward, so a write never feeds the same cylinder again. Listing all subsets would cost 2 to the n, which is impossible for 1000 cylinders.
+
+Two capped indexes keep the table small.
 
 ## Why It Works
 
-Capping a partial gas amount at the demand is safe. Extra gas never helps a later cylinder, so two states that cap to the same pair have the same future choices.
+Four facts carry the program.
 
-Both indexes walk down to zero. Every write lands on a cell with equal or larger indexes, so the current cylinder cannot be read again during its pass.
+1. Capping a partial gas amount at the demand is safe. Extra gas never helps a later cylinder, so two states that cap to the same pair have the same future choices.
+2. Both indexes walk down to zero. Every write lands on a cell with equal or larger indexes, so the current cylinder cannot be read again during its pass.
+3. `impossibleWeight` exceeds any real total, since 1000 cylinders weigh at most 800 each. Unreachable cells therefore lose every comparison.
+4. The answer sits at the demand cell, because larger amounts were capped into it.
 
-`impossibleWeight` exceeds any real total: at most 1000 cylinders weigh 800 each. Unreachable cells therefore lose every comparison.
+Each term has one job.
 
-The generator prints this trace for demand (2, 2) with cylinders (1, 2, 10), (2, 1, 10), and (1, 1, 15).
+| Term | Meaning |
+| --- | --- |
+| `bestWeight` | lightest total reaching a capped gas pair |
+| `nitrogenStride` | row width of 80 cells |
+| `oxygenDemand` | target oxygen amount |
+| `nitrogenDemand` | target nitrogen amount |
 
-| Cylinder | New state | New weight | Best at (2, 2) |
-| --- | --- | --- | --- |
-| 1: (1, 2, 10) | (1, 2) | 10 | unreachable |
-| 2: (2, 1, 10) | (2, 1) | 10 | 20 |
-| 3: (1, 1, 15) | (1, 1) | 15 | 20 |
+Every cell holds an integer weight, so no rounding occurs.
+
+A script traces demand 2, 2 with cylinders 1, 2, 10; 2, 1, 10; and 1, 1, 15.
+
+```text
+cylinder 1 (1,2,10): state (1,2) weight 10, target unreachable
+cylinder 2 (2,1,10): state (2,1) weight 10, target 20
+cylinder 3 (1,1,15): state (1,1) weight 15, target stays 20
+```
 
 The third cylinder cannot lower the 20 stored at the target.
 
 ## Code
+
+**Constants, reader and scanner.** One buffer holds the whole stream.
 
 ```nim
 const firstDigitValue = 48
@@ -72,7 +116,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-One read loop fills `inputData`, and `nextInt` skips the blank lines between cases. `flushBlockBytes` caps memory during output. The scanner touches each input byte a constant number of times.
+`nextInt` skips the blank lines between cases. `flushBlockBytes` caps memory during output. The scanner touches each input byte a constant number of times.
+
+**Table setup.** Each case clears only the cells it can reach.
 
 ```nim
 var bestWeight: array[maxCells, int]
@@ -87,7 +133,9 @@ for caseIndex in 0..<caseCount:
   bestWeight[0] = 0
 ```
 
-Each case clears `(oxygenDemand + 1) * nitrogenStride` cells, then marks amount zero free. The fixed array avoids a per-case allocation. Reset cost is at most 22 times 80 cells.
+The clear covers `(oxygenDemand + 1) * nitrogenStride` cells. Cell zero is free, since no gas costs nothing. The fixed array avoids a per-case allocation.
+
+**Knapsack pass.** Both loops run from the demand down to zero.
 
 ```nim
   for cylinderIndex in 0..<cylinderCount:
@@ -117,15 +165,33 @@ Each case clears `(oxygenDemand + 1) * nitrogenStride` cells, then marks amount 
   outputBuffer.add '\n'
 ```
 
-Both loops run from the demand down to zero, which keeps each cylinder single use. The two cap lines prevent an out-of-bounds cell. Work is at most 1000 times 22 times 80 comparisons per case.
+Downward indexes keep each cylinder single use. The two cap lines prevent an out-of-bounds cell. Work is at most 1000 times 22 times 80 comparisons per case.
+
+**Final write.** The tail leaves the buffer here.
 
 ```nim
 stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-One final write emits the remaining answer text.
+One write emits the remaining answer text. No write happens inside the cylinder loop.
 
 ## Complexity
 
-Reading and scanning take O(B) time for B input bytes. The DP takes O(n * t * a) time per case, at most 1000 x 22 x 80 steps. Output takes O(c) time for c cases. Total space is O(t * a) for the table plus O(B) for input. Trying every subset takes O(2^n) time per case.
+The table pass dominates each case.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | O(B) for B bytes | B bytes |
+| Table clear | O(t times a) per case | fixed array |
+| Cylinder pass | O(n times t times a) per case | O(t times a) |
+| Output | O(c) lines | one block |
+
+Here t is at most 21 and a is at most 79, so the table has 1760 cells.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n times t times a) per case |
+| Space | O(t times a) working, O(B) input |
+
+Trying every subset would cost O(2 to the n) time per case.

@@ -1,41 +1,102 @@
+# VONNY — Vonny and her dominos (SPOJ)
+
+<https://www.spoj.com/problems/VONNY/>
+
 ## Problem
 
-Count the arrangements of a standard double-six domino set that cover a labeled 7 by 8 box. Each square carries a label from 0 to 6. A domino covers two adjacent squares when its two numbers match those square labels in either order. Every one of the 28 dominoes is used once. Print one count per test case.
+Vonny owns a standard double-six domino set and a box with 56 labeled squares. She wants to lay all 28 dominoes flat so each bone covers two touching squares with matching labels. Count the number of distinct arrangements.
+
+Input starts with the test count. Each case holds 56 integers, the labels of a 7 by 8 grid in row order. Every label runs from 0 to 6. Output one count per case.
+
+A solvable box holds eight squares of each label, since the full set has eight ends of every value.
+
+The judge bounds are these.
 
 | Quantity | Bound |
 | --- | --- |
 | Test cases | given on the first input line |
 | Box size | 7 rows by 8 columns, 56 squares |
 | Labels | 0 to 6 |
+| Dominoes | 28 |
 | Time limit | 20000 ms |
 | Memory limit | 1536 MB |
 
-A solvable box holds eight squares of each label, because the full set has eight ends of every label.
+The fixed grid size keeps each search node small.
+
+The sample input and output follow verbatim.
+
+```
+2
+0 3 0 2 2 0 2 3 
+1 5 6 5 5 1 2 2 
+3 4 1 4 5 4 4 4 
+6 6 1 0 5 2 3 0 
+4 0 3 2 4 1 6 0 
+1 4 1 5 6 6 3 0 
+1 2 6 5 5 6 3 3 
+
+5 3 1 0 0 1 6 3 
+0 2 0 4 1 2 5 2 
+1 5 3 5 6 4 6 4 
+0 5 0 2 0 4 6 2 
+4 5 3 6 0 6 1 1 
+2 3 5 3 4 4 5 3 
+2 1 1 6 6 2 4 3 
+
+```
+
+```
+18
+1
+```
 
 ## Idea
 
-The program solves an exact cover problem with backtracking and two integer bitmaps. One bitmap marks covered squares, and the other marks used dominoes. Before each branch, the program picks the uncovered square with the fewest legal partners. A square with no partner ends that branch at once.
+Place one domino at a time, always covering the square with the fewest legal partners. Think of solving a jigsaw by grabbing the piece that fits in the fewest spots first.
 
-Each search node scans at most 56 squares and four neighbors each, so one node costs constant work. Enumerating every perfect matching of the grid first would test millions of tilings that fail the label rule.
+The program keeps two bitmaps. One marks covered squares, and the other marks used dominoes. At each step it scans the 56 squares and picks the uncovered square with the smallest number of valid placements. A square with no partner ends that branch. Otherwise the program branches over each free neighbor.
+
+Enumerating all perfect matchings of the grid first would test millions of tilings that fail the label rule. Choosing the hardest square prunes those branches early.
+
+Fewest choices first keeps the search tree small.
 
 ## Why It Works
 
-The full set holds each pair `(a, b)` with `a <= b <= 6` exactly once. That gives 28 pieces and 56 ends. Label `l` appears in `l` pieces with a smaller partner. It appears once in the double piece and in `6 - l` pieces with a larger partner. The sum is eight, so a solvable box has eight squares per label.
+Four facts justify the search.
 
-Any tiling pairs a chosen uncovered square with exactly one adjacent square. Trying each free neighbor in turn therefore lists every tiling once and never repeats one. Choosing the square with the fewest legal partners keeps all tilings and cuts dead branches early.
+1. The full set holds each pair `(a, b)` with `a <= b <= 6` once. That gives 28 pieces and 56 ends. Label `l` appears `l` times with a smaller partner, once in the double, and `6 - l` times with a larger partner. The sum is eight per label.
+2. Any tiling pairs a chosen uncovered square with one adjacent square. Trying each free neighbor in turn lists every tiling once and never repeats one.
+3. The minimum-remaining-values rule keeps all tilings, since it only changes the order of exploration. A square with zero partners proves that branch cannot complete, so the program returns at once.
+4. The bitmap tests are integer operations. The recursion depth never exceeds 28, one placement per piece.
 
-These marking rules give each piece and square a unique bit.
+The table assigns a unique bit to each piece and square.
 
-- `low * labelTotal + high - (low * (low + 1)) div 2` gives one id from a sorted pair.
-- `1 shl p` sets the bit for square `p`.
-- `covered or neighborMask[bestCell][k]` marks the two squares filled by a placement.
-- `usedDomino or used` records the consumed piece.
+| Term | Meaning |
+| --- | --- |
+| `cellMask[p]` | single-bit mask for square `p` |
+| `dominoIndex(low, high)` | id of the bone with ends `low` and `high` |
+| `neighborMask[p][k]` | both squares covered by one placement |
+| `covered` | bitmap of filled squares |
+| `usedDomino` | bitmap of consumed bones |
+| `allCellsMask` | all 56 squares set |
 
-The script in `gen.py` checks the first sample box at 18 arrangements and the second at 1.
+The generator checks the two sample boxes at 18 and 1 arrangements. A label count other than eight lets the program skip the search and print zero.
+
+| Label | Count in sample box 1 |
+| --- | --- |
+| 0 | 8 |
+| 1 | 8 |
+| 2 | 8 |
+| 3 | 8 |
+| 4 | 8 |
+| 5 | 8 |
+| 6 | 8 |
+
+All seven counts match, so the search runs and returns 18.
 
 ## Code
 
-The input is read once, and the hand scanner walks the single buffer. The output buffer flushes in large blocks.
+**Input setup.** Constants, bulk input, and the digit scanner set up parsing.
 
 ```nim
 const firstDigitValue = 48
@@ -66,9 +127,9 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-The scanner skips blank lines between cases. It never allocates a token object. Reading and scanning cost one pass over the input.
+The scanner skips blank lines between cases and allocates no token. Reading and scanning cost one pass over the input.
 
-The tables are built once. The neighbor list depends only on the grid shape, while each piece id depends on that case's labels.
+**Static tables.** Static tables describe the grid, while label tables depend on the case.
 
 ```nim
 var cellMask: array[cellTotal, int]
@@ -84,47 +145,47 @@ proc dominoIndex(low: int, high: int): int =
   return low * labelTotal + high - (low * (low + 1)) div 2
 
 proc prepareStatic() =
-  for p in 0 ..< cellTotal:
-    cellMask[p] = 1 shl p
-    allCellsMask = allCellsMask or cellMask[p]
-  for d in 0 ..< dominoTotal:
-    dominoMask[d] = 1 shl d
-  for p in 0 ..< cellTotal:
-    let row = p div rowWidth
-    let col = p mod rowWidth
+  for cellIdx in 0 ..< cellTotal:
+    cellMask[cellIdx] = 1 shl cellIdx
+    allCellsMask = allCellsMask or cellMask[cellIdx]
+  for dominoIdx in 0 ..< dominoTotal:
+    dominoMask[dominoIdx] = 1 shl dominoIdx
+  for cellIdx in 0 ..< cellTotal:
+    let row = cellIdx div rowWidth
+    let col = cellIdx mod rowWidth
     var count = 0
     if col + 1 < rowWidth:
-      neighborCell[p][count] = p + 1
+      neighborCell[cellIdx][count] = cellIdx + 1
       count += 1
     if row + 1 < rowTotal:
-      neighborCell[p][count] = p + rowWidth
+      neighborCell[cellIdx][count] = cellIdx + rowWidth
       count += 1
     if col > 0:
-      neighborCell[p][count] = p - 1
+      neighborCell[cellIdx][count] = cellIdx - 1
       count += 1
     if row > 0:
-      neighborCell[p][count] = p - rowWidth
+      neighborCell[cellIdx][count] = cellIdx - rowWidth
       count += 1
-    neighborCount[p] = count
-    for k in 0 ..< count:
-      let q = neighborCell[p][k]
-      neighborMask[p][k] = cellMask[p] or cellMask[q]
+    neighborCount[cellIdx] = count
+    for neighborIdx in 0 ..< count:
+      let adjCell = neighborCell[cellIdx][neighborIdx]
+      neighborMask[cellIdx][neighborIdx] = cellMask[cellIdx] or cellMask[adjCell]
 
 proc prepareLabels() =
-  for p in 0 ..< cellTotal:
-    for k in 0 ..< neighborCount[p]:
-      let q = neighborCell[p][k]
-      let low = cellLabel[p]
-      let high = cellLabel[q]
+  for cellIdx in 0 ..< cellTotal:
+    for neighborIdx in 0 ..< neighborCount[cellIdx]:
+      let adjCell = neighborCell[cellIdx][neighborIdx]
+      let low = cellLabel[cellIdx]
+      let high = cellLabel[adjCell]
       if low <= high:
-        neighborDomino[p][k] = dominoIndex(low, high)
+        neighborDomino[cellIdx][neighborIdx] = dominoIndex(low, high)
       else:
-        neighborDomino[p][k] = dominoIndex(high, low)
+        neighborDomino[cellIdx][neighborIdx] = dominoIndex(high, low)
 ```
 
-`prepareStatic` visits 56 squares once and stores at most four neighbors each. `prepareLabels` runs once per case over the same fixed neighbor pairs. The tables are reused, so no case allocates new storage.
+`prepareStatic` visits 56 squares once and stores at most four neighbors each. `prepareLabels` runs once per case over the same fixed pairs. The tables are reused, so no case allocates new storage.
 
-The search counts complete tilings. It stops at the first square with no legal partner and branches only over valid placements.
+**Backtracking search.** The search counts complete tilings after pruning dead branches.
 
 ```nim
 var answerCount: int64
@@ -135,34 +196,34 @@ proc search(covered: int, usedDomino: int) =
     return
   var bestCell = -1
   var bestCount = maxNeighbors + 1
-  for p in 0 ..< cellTotal:
-    if (covered and cellMask[p]) != 0:
+  for cellIdx in 0 ..< cellTotal:
+    if (covered and cellMask[cellIdx]) != 0:
       continue
     var count = 0
-    for k in 0 ..< neighborCount[p]:
-      if (covered and cellMask[neighborCell[p][k]]) != 0:
+    for neighborIdx in 0 ..< neighborCount[cellIdx]:
+      if (covered and cellMask[neighborCell[cellIdx][neighborIdx]]) != 0:
         continue
-      if (usedDomino and dominoMask[neighborDomino[p][k]]) == 0:
+      if (usedDomino and dominoMask[neighborDomino[cellIdx][neighborIdx]]) == 0:
         count += 1
     if count < bestCount:
       bestCount = count
-      bestCell = p
+      bestCell = cellIdx
       if count == 0:
         break
   if bestCount == 0:
     return
-  for k in 0 ..< neighborCount[bestCell]:
-    let q = neighborCell[bestCell][k]
-    if (covered and cellMask[q]) != 0:
+  for neighborIdx in 0 ..< neighborCount[bestCell]:
+    let adjCell = neighborCell[bestCell][neighborIdx]
+    if (covered and cellMask[adjCell]) != 0:
       continue
-    let used = dominoMask[neighborDomino[bestCell][k]]
+    let used = dominoMask[neighborDomino[bestCell][neighborIdx]]
     if (usedDomino and used) == 0:
-      search(covered or neighborMask[bestCell][k], usedDomino or used)
+      search(covered or neighborMask[bestCell][neighborIdx], usedDomino or used)
 ```
 
-The depth never exceeds 28 placements, one per piece. The bitmap tests keep each move to a few integer operations. Returning on a zero count removes a branch before any deeper work.
+The candidate scan costs constant work per node, since the grid is fixed. Returning on a zero count removes a branch before deeper work. The depth stays at most 28.
 
-The main loop rejects a box whose label counts differ from eight. Otherwise it resets the counter and runs the search.
+**Case driver.** The main loop rejects bad label counts and prints the answer.
 
 ```nim
 var outputBuffer = ""
@@ -176,14 +237,14 @@ proc appendOutput(text: string) =
 prepareStatic()
 let caseCount = nextInt(inputData, scanPos)
 for caseIdx in 0 ..< caseCount:
-  for p in 0 ..< cellTotal:
-    cellLabel[p] = nextInt(inputData, scanPos)
+  for cellIdx in 0 ..< cellTotal:
+    cellLabel[cellIdx] = nextInt(inputData, scanPos)
   var labelCount: array[labelTotal, int]
-  for p in 0 ..< cellTotal:
-    labelCount[cellLabel[p]] += 1
+  for cellIdx in 0 ..< cellTotal:
+    labelCount[cellLabel[cellIdx]] += 1
   var possible = true
-  for l in 0 ..< labelTotal:
-    if labelCount[l] != perLabelCount:
+  for labelIdx in 0 ..< labelTotal:
+    if labelCount[labelIdx] != perLabelCount:
       possible = false
   if not possible:
     appendOutput("0")
@@ -198,8 +259,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The count check scans 56 squares per case. `appendOutput` writes one block only after the buffer grows past the flush size, then writes the remainder once at the end.
+The count check scans 56 squares per case. `appendOutput` writes one block after the buffer passes the flush size, then writes the remainder once.
 
 ## Complexity
 
-Input scanning costs O(56T), and the static tables cost O(56 + 28). Each case spends O(56) on the count check and O(97) on piece ids, then enters the search. A search node scans at most 56 squares with four neighbors each, and the recursion is at most 28 levels deep. The total time is O(56T + N × 224), where N is the number of visited nodes. Memory stays at O(56 + 28) for the tables and one output block. A naive pass that enumerates all perfect matchings of the 7 by 8 grid checks millions of tilings that fail the label rule.
+The grid is fixed, so each node has a constant cost.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(56T) | one input string |
+| Static tables | O(56 + 28) once | fixed arrays |
+| Label check per case | O(56) | 7 counters |
+| Search | O(224) per visited node | recursion depth 28 |
+
+The node count depends on the box, but each node stays small.
+
+The totals use the case count and the visited node count.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(56T + N) where N counts search nodes |
+| Space | O(56 + 28) |
+
+Enumerating all perfect matchings of the grid checks millions of tilings that fail the label rule.

@@ -1,49 +1,102 @@
+# LITEPIPE — GX Light Pipeline Inc (SPOJ)
+<https://www.spoj.com/problems/LITEPIPE/>
+
 ## Problem
 
-Read a pipe outline. The upper wall is a list of bent points with increasing x. The lower wall repeats those points one unit lower. Light leaves the segment joining the two first points. Print the greatest x that light reaches, with two digits after the decimal point. Print the last x when light passes through the pipe.
+A light source shines into a bent pipe, and the design team needs the furthest point the light can reach. The pipe walls block every ray that leaves the corridor.
 
-The judge bounds each case but not the case count.
+The input holds many cases. Each starts with a bend count, then one pair of real coordinates per bend. A zero count ends the input. Print the furthest reachable x with two decimal places.
+
+The judge bounds are:
 
 | Item | Bound |
 | --- | --- |
-| Bent points per case | at most 200 |
-| Cases | until a line contains 0 |
-| Coordinates | real numbers |
-| Time | 1000 ms |
+| Bend points `n` | at most 200 |
+| Coordinate order | x values strictly increasing |
+| Output | two decimals, or final x |
+| Judge time | 1000 ms |
 | Memory | 1536 MB |
+| Source size | 50000 B |
 
-Every case must finish inside the same one-second limit.
+The small bend count allows pairwise tests.
+
+Sample input and output:
+
+Input:
+
+```
+4
+0.000000 1.000000
+2.000000 2.000000
+4.000000 1.000000
+6.000000 4.000000
+0
+```
+
+Output:
+
+```
+4.67
+```
 
 ## Idea
 
-Treat the upper wall as a function f(x) and the lower wall as f(x) minus one. A ray of slope m fits when f(x) minus the ray height stays inside [0, 1]. That is equivalent to the spread of f(x) minus m times x staying at most one. The program searches x and tests each trial with slope intervals. One check costs O(k²) for k points, while trying every ray direction costs much more.
+Find the furthest x where one straight ray still fits. Think of aiming a laser down a bent corridor and sliding the target outward.
+
+The program binary searches (halves a range) the reachable x. For a trial x, it intersects slope intervals from every pair of bend points. Each feasibility test costs O(n^2), and sixty halvings pin the answer. Sampling rays one by one could never certify the last reachable point.
+
+Takeaway: interval intersection decides a whole corridor at once.
 
 ## Why It Works
 
-Write the ray as y = ys + m(x - x1), where ys starts on the source segment. The ray stays inside exactly when 0 ≤ f(x) - y(x) ≤ 1 at every point up to the target.
+A ray exists exactly when its slope lies in every pairwise interval.
 
-Set c = f(x1) - ys, so c lies in [0, 1]. Set w(x) = f(x) - m x - (f(x1) - m x1). Then f(x) - y(x) equals c + w(x). A suitable c exists exactly when max w minus min w is at most one. The constant cancels, so that spread equals the spread of f(x) - m x.
+1. The pipe has height one, so the ray height at each bend lies between the upper point and that point minus one.
+2. Subtracting two bend constraints bounds their slope difference by one.
+3. Pair `i, j` then allows slopes between `(yj - yi - 1) / dx` and `(yj - yi + 1) / dx`.
+4. `feasibleAt` intersects all such intervals and adds a cut point at the trial x.
+5. `furthestReach` halves the range until the last feasible x is found.
 
-On a straight wall piece the spread ends at an endpoint. Only bent points and the trial x can bind the result.
+The terms are:
 
-For points a and b with x_a > x_b, let dx = x_a - x_b and s = (y_a - y_b) / dx. Their values differ by at most one exactly when m lies in [s - 1/dx, s + 1/dx]. The program intersects these intervals over all pairs. Feasibility only shrinks as x grows, so binary search finds the boundary.
+| Term | Meaning |
+| --- | --- |
+| `upperX`, `upperY` | Bend coordinates of the upper wall |
+| `span` | x gap across the cut point |
+| `slopeLow` | Lowest slope still allowed |
+| `slopeHigh` | Highest slope still allowed |
 
-For the sample wall at x = 14/3, the six pairs give these slope intervals.
+An empty intersection means no ray fits.
 
-| pair | dx | s | allowed m |
+A script traced the sample pipe:
+
+| Trial x | Cut height | Slope interval | Feasible |
 | --- | --- | --- | --- |
-| (0,1)-(2,2) | 2.00 | 0.500 | [0.000, 1.000] |
-| (0,1)-(4,1) | 4.00 | 0.000 | [-0.250, 0.250] |
-| (0,1)-(4.67,2) | 4.67 | 0.214 | [0.000, 0.429] |
-| (2,2)-(4,1) | 2.00 | -0.500 | [-1.000, 0.000] |
-| (2,2)-(4.67,2) | 2.67 | 0.000 | [-0.375, 0.375] |
-| (4,1)-(4.67,2) | 0.67 | 1.500 | [0.000, 3.000] |
+| 2.00 | no cut | [0.0000, 1.0000] | yes |
+| 4.00 | no cut | [0.0000, 0.0000] | yes |
+| 4.666667 | 2.0000 | [0.0000, 0.0000] | yes |
+| 4.67 | 2.0050 | [0.0011, 0.0000] | no |
 
-Their intersection is the single slope m = 0, and that horizontal ray reaches 4.67.
+The search prints `4.67`, and the printer rounds half up.
 
 ## Code
 
+**Constants.**
+
+```nim
+const
+  readChunkBytes = 1 shl 16
+  flushBlockBytes = 1 shl 18
+  firstDigitValue = 48
+  maxBentPoints = 200
+  searchIterations = 60
 ```
+
+`maxBentPoints` fixes the table size. Sixty iterations give far more precision than two decimals need.
+
+**Chunked input.**
+
+```nim
 var inputData = newString(readChunkBytes)
 var bytesRead = 0
 while true:
@@ -56,9 +109,90 @@ while true:
 inputData.setLen(bytesRead)
 ```
 
-The loop runs until a read returns zero bytes. Doubling keeps the number of read calls small. The cost is one pass over the input bytes.
+The input buffer doubles until the stream ends. One pass reads every case. No line parser is needed.
 
+**Integer and real scanners.**
+
+```nim
+proc skipWhite(data: string, i: var int) =
+  while i < data.len and (data[i] == ' ' or data[i] == '\n' or
+      data[i] == '\r' or data[i] == '\t'):
+    i += 1
+
+proc nextInt(data: string, i: var int): int =
+  skipWhite(data, i)
+  var negative = false
+  if i < data.len and data[i] == '-':
+    negative = true
+    i += 1
+  elif i < data.len and data[i] == '+':
+    i += 1
+  var value = 0
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    value = value * 10 + (ord(data[i]) - firstDigitValue)
+    i += 1
+  if negative:
+    value = -value
+  result = value
+
+proc nextReal(data: string, i: var int): float =
+  skipWhite(data, i)
+  var sign = 1.0
+  if i < data.len and data[i] == '-':
+    sign = -1.0
+    i += 1
+  elif i < data.len and data[i] == '+':
+    i += 1
+  var whole = 0.0
+  while i < data.len and data[i] >= '0' and data[i] <= '9':
+    whole = whole * 10.0 + float(ord(data[i]) - firstDigitValue)
+    i += 1
+  var fraction = 0.0
+  var scale = 1.0
+  if i < data.len and data[i] == '.':
+    i += 1
+    while i < data.len and data[i] >= '0' and data[i] <= '9':
+      scale = scale * 10.0
+      fraction += float(ord(data[i]) - firstDigitValue) / scale
+      i += 1
+  var exponent = 0
+  if i < data.len and (data[i] == 'e' or data[i] == 'E'):
+    i += 1
+    var exponentSign = 1
+    if i < data.len and data[i] == '-':
+      exponentSign = -1
+      i += 1
+    elif i < data.len and data[i] == '+':
+      i += 1
+    var exponentValue = 0
+    while i < data.len and data[i] >= '0' and data[i] <= '9':
+      exponentValue = exponentValue * 10 + (ord(data[i]) - firstDigitValue)
+      i += 1
+    exponent = exponentSign * exponentValue
+  var magnitude = whole + fraction
+  if exponent > 0:
+    var step = 0
+    while step < exponent:
+      magnitude *= 10.0
+      step += 1
+  elif exponent < 0:
+    var step = 0
+    while step > exponent:
+      magnitude /= 10.0
+      step -= 1
+  result = sign * magnitude
 ```
+
+`nextInt` and `nextReal` read signs, digits, fractions, and exponents in place. Each call allocates no string.
+
+**Feasibility and binary search.**
+
+```nim
+var upperX = newSeq[float](maxBentPoints + 2)
+var upperY = newSeq[float](maxBentPoints + 2)
+var pointX = newSeq[float](maxBentPoints + 2)
+var pointY = newSeq[float](maxBentPoints + 2)
+
 proc feasibleAt(limitX: float, count: int): bool =
   var pointCount = 0
   for k in 0 .. count - 1:
@@ -94,11 +228,7 @@ proc feasibleAt(limitX: float, count: int): bool =
       if slopeLow > slopeHigh:
         return false
   result = true
-```
 
-The pair loops run from 0 to pointCount - 2 and from i + 1 to pointCount - 1. The interpolated point lets a trial end inside a segment, not only at a bent point. Each check costs O(k²) interval intersections.
-
-```
 proc furthestReach(count: int): float =
   var low = upperX[0]
   var high = upperX[count - 1]
@@ -113,9 +243,13 @@ proc furthestReach(count: int): float =
   result = low
 ```
 
-The loop runs exactly searchIterations times, so 60 halvings. It keeps the largest feasible x in low. The cost is 60 calls to feasibleAt per case.
+A trial cut adds one interpolated bend. Every pair narrows the slope interval. The binary search returns the last feasible x.
 
-```
+**Fixed-two printer.**
+
+```nim
+var outputBuffer = ""
+
 proc appendFixedTwo(buf: var string, value: float) =
   var adjusted = value
   if adjusted < 0.0 and adjusted > -0.005:
@@ -157,9 +291,11 @@ proc appendFixedTwo(buf: var string, value: float) =
   buf.add '\n'
 ```
 
-The digit loop runs while the scaled value stays positive. It writes two fractional digits even for small values. The cost is O(digits) per case, a constant here.
+Values near zero clamp to zero. Scaling by one hundred and adding one half gives standard rounding.
 
-```
+**Driver and flush.**
+
+```nim
 while i < inputData.len:
   let count = nextInt(inputData, i)
   if count == 0:
@@ -177,10 +313,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The outer loop ends at the zero count, the inner loop after count point pairs. The buffer flushes only after flushBlockBytes bytes. Output cost is one write per block, not one per case.
+A zero bend count ends the run. Each answer appends to one buffer that flushes in blocks.
 
 ## Complexity
 
-Input scanning walks the buffer once, O(input bytes). Each case runs 60 feasibility checks. A check builds at most 202 points and intersects one interval per pair, O(n²). Each case therefore costs O(60 n²), and n ≤ 200 keeps that constant small. Output writes each answer into a block buffer, O(output bytes). Total time is O(input bytes + cases times n² + output bytes).
+Pairwise tests dominate each binary step.
 
-Space holds four arrays of at most 202 floats plus the input and output buffers, O(input bytes + n). A brute-force search over source points and ray slopes would test many more rays per case. That method loses the same bound and cannot meet the time limit.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input | O(Total bytes) | O(Input size) |
+| Feasibility | O(n^2) | O(n) |
+| Binary search | O(60 * n^2) | O(n) |
+| Output | O(T) | O(1) |
+
+T is the case count and n is at most 200.
+
+| Measure | Bound |
+| --- | --- |
+| Time | O(60 * n^2) per case |
+| Space | O(n) |
+
+Two hundred bends give about 2.4 million pair tests.
+
+Sampling candidate rays would still miss the exact boundary.

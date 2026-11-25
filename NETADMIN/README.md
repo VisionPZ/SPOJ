@@ -1,52 +1,103 @@
+# NETADMIN — Smart Network Administrator (SPOJ)
+<https://www.spoj.com/problems/NETADMIN/>
+
 ## Problem
 
-Read several test cases. Each case lists the number of houses, streets, and clients, then the client houses, then the street pairs. The administrator lives in house 1. Every client needs a cable from that house, and two cables of one color cannot use the same street. Print the fewest colors each case needs.
+A village finally gets one internet connection at the administrator's house. Every neighbor needs a cable from that house, and each cable must have its own color.
 
-| quantity | bound |
+Cables may share a street only when their colors differ. Find the smallest number of colors that serves every willing household.
+
+Input: the first integer is t, the number of cases. Each case gives n houses, m streets, and k clients. Then come k client house numbers and m street pairs. Output: one integer per case, the minimum color count.
+
+These are the bounds and the judge limits:
+
+| Item | Bound |
 | --- | --- |
-| test cases | up to 500 |
-| houses | up to 500 |
-| clients | at most houses minus one |
-| streets | at most every house pair |
-| time limit | 4072 ms |
-| memory limit | 1536 MB |
+| Test cases t | at most 500 |
+| Houses n | at most 500 |
+| Clients k | at most n |
+| Streets m | from the input |
+| Time limit | 4072 ms |
+| Memory limit | 1536 MB |
 
-The street count drives the running time, and each case prints one line.
+The sample has four clients in the first case and three in the second:
+
+```
+2
+5 5 4
+2 3 4 5
+1 2
+1 3
+2 3
+2 4
+3 5
+8 8 3
+4 5 7
+1 2
+1 8
+8 7
+1 3
+3 6
+3 2
+2 4
+2 5
+```
+
+```
+2
+1
+```
+
+The first case needs two colors; the second needs one.
 
 ## Idea
 
-Binary search the number of colors and test each guess with a flow computation. Give every street the guessed capacity, give each client a unit demand, and push flow toward the administrator. Push-relabel moves surplus flow locally and avoids the repeated searches that slow augmenting-path methods.
+Turn colors into street capacity, then search for the smallest capacity that works. Picture delivery vans on a street grid: one van per customer, and a street with c lanes carries at most c vans at once.
 
-Each guess rebuilds four arcs per street; the flow work grows with the arc count and the relabel count.
+The program builds a flow network. A super-source sends one unit to each client. Each client sends toward the administrator's house. Every street allows c units, where c is the tested color count.
+
+A maximum-flow (largest possible transport through a network) routine checks whether all k units arrive. Feasibility grows with c, so binary search finds the minimum in log k steps. Each flow uses a push-relabel (push excess toward the sink while relabeling heights) solver with reusable arrays.
+
+The search costs O(log k) flow computations. The naive approach tries every color count from 1 upward and pays up to k flows.
+
+Takeaway: capacity plus binary search replaces a linear scan of color counts.
 
 ## Why It Works
 
-One color may cross each street once. With C colors, a street can carry C cables, while each client still needs exactly one unit. The guess C works exactly when the flow network sends one unit to every client. A larger C never breaks a working guess, so the search can halve the interval.
+Four facts support the reduction.
 
-A cut proves the rule. Take any set of houses that contains the administrator. Let q be the clients inside and d the streets leaving the set. Those d streets must carry the other k minus q clients, so C times d must reach k minus q. The answer is the largest such requirement over all house sets.
+1. Give each client a unit of flow. Serving all k clients means sending k units to the administrator's house.
+2. A street used by more than c cables would repeat a color. Capacity c on every street enforces the color rule exactly.
+3. `enoughColors(c)` returns true exactly when the maximum flow reaches k. That is the definition of a feasible color count.
+4. If c colors work, then c + 1 colors also work. Monotone feasibility lets binary search find the smallest working c.
 
-Push-relabel keeps an excess value at each house. A house sends excess along an arc to a neighbor one level lower. When no such neighbor exists, the house raises its level above the lowest neighbor. A gap in the level counts proves that all taller houses cannot reach the sink, so the program lifts them out of the way. A periodic search from the sink restores exact distances and keeps the levels useful.
+The network layout uses these parts:
 
-A fixed unit-capacity flow gives a wrong shortcut. On the seven-house case in the generator, that flow is 2 and five clients wait, which suggests 3 colors. Capacity 2 already serves all five clients, so the answer is 2.
+| Term | Meaning |
+| --- | --- |
+| Node 0 | super-source, one unit sent to each client |
+| Node 1 | sink, the administrator's house |
+| `clientList` | houses that need a cable |
+| `edgeFirst`, `edgeSecond` | street endpoints |
+| `infiniteFlow` | capacity of a source-to-client arc |
+| `enoughColors` | true when a tested capacity serves every client |
 
-The index formulas are short:
-- `addArc(0, clientList[i], 1)` gives one client one unit of demand.
-- `addStreet(edgeFirst[i], edgeSecond[i], capacity)` gives a street the guessed capacity in both directions.
-- `enoughColors` returns `pushRelabel(0, 1) == clientList.len`, so only a full flow passes.
-- `activeQueue[queueBack mod activeQueue.len]` wraps the queue, so a node can re-enter it safely.
+A script traces the binary search on the first sample case:
 
-The script-generated example uses the first sample case. Its tested guesses are listed below.
-
+```
 | tested capacity | max flow | serves 4 clients? |
 | --- | --- | --- |
 | 2 | 4 | yes |
 | 1 | 2 | no |
 
-The smallest feasible capacity is 2, which matches the sample answer.
+smallest feasible capacity = 2, so the answer is 2
+```
+
+The flow of 2 at capacity 1 proves that one color cannot serve four clients.
 
 ## Code
 
-The scanner reads digits from one input buffer. Each arc stores its reverse beside it, so the partner index is a parity change.
+**Graph storage.** Flat arrays hold arcs and the push-relabel state.
 
 ```nim
 const firstDigitValue = 48
@@ -75,7 +126,13 @@ var nodeCount = 0
 var queueFront = 0
 var queueBack = 0
 var pushCounter = 0
+```
 
+Arrays grow once to the largest case, then get reused. No per-arc object is allocated. Setup cost is O(number of arcs).
+
+**Input.** The scanner reads the whole stream once.
+
+```nim
 proc nextInt(data: string, scanPos: var int): int =
   while scanPos < data.len and (data[scanPos] < '0' or data[scanPos] > '9'):
     scanPos += 1
@@ -83,7 +140,13 @@ proc nextInt(data: string, scanPos: var int): int =
   while scanPos < data.len and data[scanPos] >= '0' and data[scanPos] <= '9':
     result = result * 10 + (int(data[scanPos]) - firstDigitValue)
     scanPos += 1
+```
 
+The scan skips non-digits and stops at the buffer end. `scanPos` is a `var` parameter, so progress survives each call. The cost is one pass over the input bytes.
+
+**Arcs.** Each undirected street becomes two arcs in each direction.
+
+```nim
 proc reverseArcIndex(arcIndex: int): int =
   if arcIndex mod 2 == 0: arcIndex + 1 else: arcIndex - 1
 
@@ -108,9 +171,9 @@ proc addStreet(firstHouse, secondHouse, capacity: int) =
   addArc(secondHouse, firstHouse, capacity)
 ```
 
-The scanner loops over digits, so it builds no token strings. Two calls to `addArc` make a street usable in both directions. Each street costs four stored arcs, and `inHead` tracks arcs that enter a house.
+Paired arcs sit at even and odd indices, so `reverseArcIndex` is one addition. The residual arc starts at zero capacity. Each street adds four arcs at O(1) cost.
 
-The queue wraps around because a house can receive surplus more than once. The search from the sink walks incoming arcs and resets the levels. The gap step moves houses that cannot reach the sink above the useful range.
+**Labels.** The queue and two heuristics keep the flow solver fast.
 
 ```nim
 proc enqueueNode(nodeIndex: int) =
@@ -164,9 +227,9 @@ proc relabelNode(nodeIndex: int) =
         gapCount[nodeHeight[i]] += 1
 ```
 
-`enqueueNode` writes through a modulo index, which keeps the queue inside its array. `globalRelabel` visits each house once and updates the gap counts. `relabelNode` picks the lowest reachable neighbor, then applies the gap step.
+The queue wraps with `mod`, so no node is inserted twice. `globalRelabel` recomputes exact distances from the sink. The gap scan lifts nodes that can no longer reach it. Each pass costs O(arcs) or O(nodes).
 
-The push-relabel loop starts by saturating every arc out of the source. It then pushes and relabels active houses until their excess disappears.
+**Flow.** Push-relabel sends excess toward the sink.
 
 ```nim
 proc pushRelabel(sourceNode, sinkNode: int): int =
@@ -221,7 +284,13 @@ proc pushRelabel(sourceNode, sinkNode: int): int =
         else:
           iterArc[current] = nextArc[iterArc[current]]
   return nodeExcess[sinkNode]
+```
 
+The loop ends when no active node has excess. `iterArc` remembers the last scanned arc, so each node rescans arcs only after a relabel. The return value is the flow reaching the sink.
+
+**Feasibility.** One capacity test rebuilds the network and runs the flow.
+
+```nim
 proc enoughColors(capacity: int): bool =
   for i in 0..nodeCount:
     head[i] = -1
@@ -234,9 +303,9 @@ proc enoughColors(capacity: int): bool =
   return pushRelabel(0, 1) == clientList.len
 ```
 
-The sink excess is the flow value, and `enoughColors` compares it with the client count. Each guess resets only the heads and the arc count, so the arc arrays stay allocated. The wraparound queue keeps repeated enqueues safe.
+Client arcs carry one unit each. Street arcs carry `capacity` units. The test succeeds when the sink receives exactly `clientList.len` units. Rebuilding costs one pass over the stored street list.
 
-The main loop reads one case at a time and halves the color interval.
+**Driver.** Binary search finds the smallest feasible capacity.
 
 ```nim
 let inputData = stdin.readAll()
@@ -289,10 +358,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The arrays grow only when a larger case arrives, so later cases reuse the same memory. Clients and streets are stored once, before the guesses begin. The buffer flushes once it passes the block size, and one final write emits the rest.
+Arrays grow only when a case needs more space. The search starts with `upperBound = clientCount + 1`, which always works. About log(k) flow runs finish each case.
 
 ## Complexity
 
-Reading costs time linear in the number of integers. Storing the case costs O(streets plus clients). Each guess rebuilds O(streets plus clients) arcs, and push-relabel spends O(houses plus arcs) work per relabel phase. The search makes O(log clients) guesses.
+Network setup and the flow search carry the cost.
 
-Total time is O(test cases times log clients times relabel phases times (houses plus arcs)). Space is O(houses plus arcs) for the network arrays. Testing every color count in increasing order would repeat far more flow computations.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(total tokens) | O(input size) |
+| Network build per test | O(m + k) | O(m + n) |
+| One push-relabel run | O(n² √m) worst case | O(m + n) |
+| Binary search | O(log k) flow runs | O(m + n) |
+| Output | O(cases) | O(block size) |
+
+The binary search dominates, with about log(k) maximum-flow computations per case.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(log k × flow(n, m)) |
+| Space | O(n + m) |
+
+Testing capacities from 1 upward costs up to k flows instead of log k flows.

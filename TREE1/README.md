@@ -1,52 +1,97 @@
+# TREE1 — Tree (SPOJ)
+
+<https://www.spoj.com/problems/TREE1/>
+
 ## Problem
 
-Read a list of data sets. Each set gives n and n keys in prefix order; the keys describe a binary search tree whose keys run from 1 to n. Count the permutations of those keys whose insertion builds exactly that tree. Write one count per line.
+A teacher builds a binary search tree by inserting numbers one at a time. Given the finished tree shape, count how many insertion orders could have produced it.
 
-Input and answer bounds set the size of the program's work.
+Input: `d` data sets. Each set gives `n`, then the `n` keys in preorder.
+
+Output: one line per set, the count of consistent permutations. The count can exceed any machine integer.
+
+The statement gives these bounds:
 
 | Item | Bound |
 | --- | --- |
-| Data sets | at most 10 |
-| Tree keys | from 1 to 30 |
-| Time limit | 5000 ms |
-| Memory limit | 1536 MB |
+| Data sets `d` | at most 10 |
+| Keys `n` | 1 to 30 |
+| Key order | preorder of the tree |
+| Judge limit | 5000 ms, 1536 MB |
 
-The largest answer has 22 digits, so one machine integer cannot hold it.
+Thirty factorial has 33 digits, so the answer needs custom big-integer storage.
+
+The sample input and output:
+
+```
+5 
+3 
+2 1 3 
+3 
+1 2 3 
+1 
+1 
+4 
+2 1 3 4 
+4 
+1 4 2 3 
+```
+
+```
+2
+1
+1
+3
+1
+```
 
 ## Idea
 
-The first inserted key becomes the root, so every valid permutation starts with that key. Keys for the left and right subtrees then interleave, and C(L+R, L) counts their interleavings. Multiply that factor by the subtree counts and recurse down the prefix sequence.
+Treat the two subtrees as queues of guests that may interleave, while each queue keeps its own internal order. Count the interleavings at every node and multiply them.
 
-Cost per node: one binomial coefficient and one multiply of a three-limb integer.
+The program walks the preorder keys recursively and collects binomial (choose) factors. It then multiplies those small factors into a big number stored in base one billion limbs. Collecting factors costs `O(n²)`, and printing the answer costs one pass over its limbs.
+
+Enumerating all `n!` permutations and rebuilding the tree each time cannot reach `n = 30`. The factor product counts every valid order at once.
+
+Node-by-node interleaving captures the whole tree in one multiplication chain.
 
 ## Why It Works
 
-Inserting keys into an empty search tree fixes the root as the first key. Every smaller key goes left and every larger key goes right, so the two subtree key sets are fixed. An interleaving keeps the relative order inside each subtree, so each interleaving yields a distinct valid permutation.
+Five facts justify the factor product.
 
-The recursion multiplies counts for independent choices, which gives the product formula. C(L+R, L) counts the ways to choose L positions for left keys among L+R positions.
+1. The first inserted key of any subtree becomes that subtree's root. So the root key must precede all other keys in its subtree.
+2. Any order respecting that rule at every node builds the same tree. Left and right subtree insertions may interleave freely.
+3. For a subtree with `L` left keys and `R` right keys, there are `C(L + R, L)` ways to interleave the two subtrees.
+4. Multiplying that factor over every node gives `n!` divided by the product of subtree sizes. The recursion reads key ranges from the preorder list: left keys run from `lowKey` to `pivotKey - 1`.
+5. Each limb stores nine decimal digits, so a factor times a limb plus carry stays inside a 64-bit integer.
 
-The prefix sequence splits by key ranges, not by a stored child list.
+The helpers used by the program:
 
-- `i` points at the root key of the current subtree.
-- `pivotKey` is the key at `i`, and it roots the current subtree.
-- `leftKeyCount = pivotKey - lowKey` counts the smaller keys in the current interval.
-- `rightKeyCount = highKey - pivotKey` counts the larger keys in the current interval.
-- `i + 1 + leftKeyCount` points at the first key of the right subtree prefix.
-- `leftKeyCount + rightKeyCount` is the group size for the binomial coefficient.
+| Term | Meaning |
+| --- | --- |
+| `collectInterleaveFactors` | walks nodes and collects one choose factor each |
+| `binomialCoefficient` | computes `C(L + R, L)` by small steps |
+| `multiplyBySmall` | multiplies the big value by one factor with carry |
+| `baseValue` | one billion, the radix of each limb |
+| `appendBigAnswer` | prints the top limb, then nine-digit padded limbs |
 
-The sample tree with keys 2, 1, 3 gives this trace.
+The most significant limb prints without padding, so no leading zeros appear.
 
-| Pivot | Left keys | Right keys | Interleavings | Running product |
-| --- | --- | --- | --- | --- |
-| 1 | 0 | 0 | 1 | 1 |
-| 3 | 0 | 0 | 1 | 1 |
-| 2 | 1 | 1 | 2 | 2 |
+A script trace of the sample keys:
 
-The factors multiply to 2, which matches the sample.
+```
+keys [2, 1, 3]: factors [1, 1, 2], product 2
+keys [1, 2, 3]: factors [1, 1, 1], product 1
+keys [1]: factors [1], product 1
+keys [2, 1, 3, 4]: factors [1, 1, 1, 3], product 3
+keys [1, 4, 2, 3]: factors [1, 1, 1, 1], product 1
+```
+
+The first tree has a root with one left and one right child, giving two interleavings.
 
 ## Code
 
-The scanner reads one buffered copy of the input and advances a single cursor.
+**Constants and scanner.** The reader collects one flat string of digits.
 
 ```nim
 const baseValue = 1000000000
@@ -64,9 +109,11 @@ proc nextInt(inputData: string, i: var int): int =
   return numberValue
 ```
 
-The scanner walks `inputData` once, so `i` never resets between numbers. Its loops run once per digit of a token, which is at most two here. Skipping non-digits absorbs spaces and newlines without building token objects.
+`limbDigitCount = 9` matches `baseValue = 1,000,000,000`.
+`nextInt` skips non-digits, so trailing spaces in the sample cause no trouble.
+All tree keys are positive.
 
-The recursion collects one interleaving factor per node.
+**Choose factor.** One binomial coefficient needs at most thirty small steps.
 
 ```nim
 proc binomialCoefficient(groupSize: int, chooseCount: int): int =
@@ -74,7 +121,14 @@ proc binomialCoefficient(groupSize: int, chooseCount: int): int =
   for j in 1 .. chooseCount:
     coefficient = coefficient * (groupSize - chooseCount + j) div j
   return coefficient
+```
 
+The loop divides at each step, so the intermediate product stays integral.
+`chooseCount` never exceeds `n`, and `n` is at most 30.
+
+**Preorder walk.** The recursion splits key ranges around each pivot.
+
+```nim
 proc collectInterleaveFactors(prefixKeys: seq[int], i: int, lowKey: int, highKey: int, factors: var seq[int]) =
   let pivotKey = prefixKeys[i]
   let leftKeyCount = pivotKey - lowKey
@@ -86,9 +140,11 @@ proc collectInterleaveFactors(prefixKeys: seq[int], i: int, lowKey: int, highKey
   factors.add binomialCoefficient(leftKeyCount + rightKeyCount, leftKeyCount)
 ```
 
-The `j` loop runs `chooseCount` times, and `chooseCount` is at most 14. Dividing inside the loop keeps each intermediate value exact and small. The right subtree starts after exactly `leftKeyCount` keys, which avoids reading a child as a sibling.
+`leftKeyCount` is `pivotKey - lowKey`, since keys form a consecutive range.
+The left subtree starts at the next preorder slot, and the right starts after all left keys.
+The factor is appended after both children, so children are ready first.
 
-The product grows one decimal limb at a time.
+**Big multiplication.** One factor updates every limb with a carry.
 
 ```nim
 proc multiplyBySmall(bigValue: var seq[int], factor: int) =
@@ -102,9 +158,11 @@ proc multiplyBySmall(bigValue: var seq[int], factor: int) =
     carry = carry div baseValue
 ```
 
-The limb loop runs once per stored limb, at most three for this problem. The carry leaves the loop only while it still has digits, which grows the answer safely. A factor below 80 million keeps every product inside one machine word.
+The loop visits limbs from least to most significant.
+A carry beyond the top limb appends a new limb.
+Each step stays below nine billion, well within a 64-bit integer.
 
-The printer writes the highest limb first and pads the rest.
+**Big output.** Each limb prints as nine decimal digits.
 
 ```nim
 proc appendPaddedLimb(outputBuffer: var string, limbValue: int) =
@@ -125,9 +183,11 @@ proc appendBigAnswer(outputBuffer: var string, bigValue: seq[int]) =
   outputBuffer.add '\n'
 ```
 
-Both loops run `limbDigitCount` times, so the layout stays fixed at nine digits per limb. Writing the top limb without padding avoids a leading zero in the printed answer. The newline puts each data set on its own output line.
+`appendPaddedLimb` divides by decreasing powers of ten and writes one digit at a time.
+The top limb prints as a plain decimal.
+The answer ends with one newline.
 
-The driver parses every data set and flushes the output buffer in blocks.
+**Driver.** One loop handles all data sets and flushes the output buffer.
 
 ```nim
 var inputData = ""
@@ -158,19 +218,29 @@ if outputBuffer.len > 0:
   stdout.write outputBuffer
 ```
 
-The outer loop runs `dataSetCount` times, and the inner loop runs `treeSize` times. Reading all input first keeps parsing in one buffer and avoids a syscall per line. The buffer flushes only after `flushBlockBytes` bytes, which caps memory and write calls.
+`collectInterleaveFactors` fills a temporary factor list for each tree.
+`bigAnswer` starts at one, and each factor multiplies into it.
+The final conditional write covers the tail.
 
 ## Complexity
 
-Parsing reads each input token once, so it costs time linear in the input length. Each tree node costs one binomial of at most 14 steps and one multiply of at most three limbs. A data set has n nodes, so its work is O(n) with a small constant.
-
-The phases and their costs are as follows.
+Each tree contributes a small factor list and one big multiplication.
 
 | Phase | Time | Space |
 | --- | --- | --- |
-| Input scan | O(input length) | O(input length) |
-| Factor collection | O(n) | O(n) for factors |
-| Big-integer product | O(n) | O(1) for three limbs |
-| Output | O(output length) | O(1) block buffer |
+| Input read | one pass over input bytes | input bytes |
+| Preorder walk | O(n) nodes | O(n) for factors and stack |
+| Big multiplication | O(n × D) limb steps | O(D) for the answer |
+| Answer output | O(D) digits | 256 KiB block |
+| Total per data set | O(n × D) | O(n + D) |
 
-Total time is O(total input length plus total output length), and total space is O(input length). A naive check enumerates all n! permutations and rebuilds a tree for each one, which grows far faster than this count.
+At `n = 30` the answer occupies four limbs.
+
+The asymptotic bounds follow from the table:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n × D) per data set, with D answer limbs |
+| Space | O(n + D) per data set, plus buffers |
+
+Enumerating `n!` insertion orders is impossible at `n = 30`. The interleave product counts them all in a few dozen steps.

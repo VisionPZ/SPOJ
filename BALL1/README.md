@@ -1,60 +1,74 @@
+# BALL1 — Ball (SPOJ)
+<https://www.spoj.com/problems/BALL1/>
+
 ## Problem
 
-A ball rolls diagonally on a rectangular board of cells. It starts at a cell next to an edge, bounces off the edges, and stops when it enters that cell again. Each entered cell receives a point. Print the number of cells that receive an odd number of points, for each dataset.
+A ball rolls at forty-five degrees across a chessboard and bounces off each edge it meets.
+Count the squares that receive an odd number of visits before the ball returns.
 
-The limits are:
+The first line gives the dataset count. Each next line gives board width, board height, start column, and start row. The board holds at most 10 to the ninth power squares, and the start square touches an edge. Print one odd-square count per dataset.
 
-| Limit | Value |
+The bounds and judge limits are:
+
+| Constraint | Value |
 | --- | --- |
-| Datasets | at most 10 |
-| Board sides | each greater than 2 |
-| Cells | at most 10⁹ |
-| Start | next to an edge |
-| Time | 5000 ms |
-| Memory | 1536 MB |
+| Datasets d | 1 to 10 |
+| Board fields | at most 10 to the ninth power |
+| Start field | adjacent to an edge |
+| Judge time | 5 s |
+| Judge memory | 1536 MB |
 
-The board can be large, so the answer must come from arithmetic rather than a walk over every cell.
+A closed form replaces a bounce-by-bounce simulation over a billion fields.
+
+The sample input and its expected output follow byte for byte.
+
+```
+2
+13 6 1 5
+10 7 1 5
+```
+
+```
+2
+22
+```
+
 
 ## Idea
 
-Model the roll as steps between cell centers. Each step moves one cell sideways and one cell up or down, and a wall reflects the step. The path repeats after a fixed number of steps. Count how many cells get visited an odd number of times in one repeat. The greatest common divisor (gcd) of the two reduced board sides gives that count directly.
-
-Each dataset costs one gcd and a fixed number of arithmetic operations.
+Fold the bouncing path into a straight diagonal, like tracing a line through a corridor of mirrored copies of the board.
+The program reduces each board dimension by one, which converts cell indices to grid lines. It swaps the axes when the start row is not on the bottom edge, so one coordinate becomes zero.
+The gcd (greatest common divisor) of the two reduced dimensions gives the path period. A special case returns two, and the general case uses a closed formula for diagonal crossings.
+Simulating every bounce could visit up to a billion squares, while gcd and a few products finish at once.
+The geometry collapses to one divisor and one arithmetic expression.
 
 ## Why It Works
 
-The ball's center stays one radius from each wall. Its contact point therefore travels from the center of one cell to the center of a diagonal neighbor. One step enters exactly one new cell.
+1. Subtracting one from each dimension converts cell coordinates into grid-line coordinates.
+2. Swapping the axes when needed puts the start row on the bottom edge, which makes the path uniform.
+3. The gcd of the reduced dimensions gives the number of repeated diagonal segments.
+4. If the start column is a multiple of that gcd, exactly two squares receive an odd visit.
+5. Otherwise the closed form counts crossings over one period and returns the total.
 
-Let X and Y be the board sides minus one. Let g be their gcd. When the start's offset along the edge is a multiple of g, the ball reaches a corner and only two cells get odd counts. Otherwise the walk lasts 2XY/g steps. It revisits 2(X/g)(Y/g) − X/g − Y/g cells. The odd count equals the walk length minus twice that revisit count.
+Four terms describe the reduction.
 
-If the start lies on the horizontal edge instead, the code swaps the two axes. The offset that matters is then the coordinate along that edge.
+| Term | Meaning |
+| --- | --- |
+| reduced dimension | board side minus one |
+| gcd | divisor giving the path period |
+| period | repeated diagonal segment count |
+| odd square | field visited an odd number of times |
 
-Generated example for input `10 7 1 5`:
+They explain why no simulation loop appears in the program.
 
-```text
-board 10 by 7, start (1,5)
-X=6, Y=9, g=3
-along=4, across=0, along mod g=1
-widthSegments=2, heightSegments=3
-period=36, crossings=7, odd cells=22
-```
-
-The swap turns the vertical-edge start into a horizontal-edge start. Since 4 mod 3 is not zero, the walk length 36 and seven revisits give 22 odd cells.
+A script check of `13 6 1 5` reduces the board to 12 by 5. Swapping gives 5 by 12 with start (4,0).
+The gcd is 1, and 4 is a multiple of 1, so the answer is 2.
+For `10 7 1 5` the reduced board is 6 by 9 and the gcd is 3. The formula gives 36 minus 24 plus 4 plus 6, which is 22.
 
 ## Code
 
+**Integer parser.**
 ```nim
-const zeroDigitValue = 48
-const flushBlockBytes = 1 shl 18
-
-var inputData = ""
-var lineBuffer = ""
-while readLine(stdin, lineBuffer):
-  inputData.add lineBuffer
-  inputData.add '\n'
-
-var i = 0
-
 proc nextInteger(sourceData: string, i: var int): int64 =
   while i < sourceData.len and sourceData[i] < '0':
     i += 1
@@ -65,8 +79,9 @@ proc nextInteger(sourceData: string, i: var int): int64 =
   return parsedValue
 ```
 
-The read loop runs once per input line and appends to one buffer. The scanner skips separators and reads digits in place, so it allocates nothing. Parsing costs one pass over the input bytes.
+The parser reads board sizes and start coordinates as 64-bit integers. It skips all separators between values. One pass over the input buffer supplies every dataset.
 
+**Greatest common divisor.**
 ```nim
 proc greatestCommonDivisor(firstValue: int64, secondValue: int64): int64 =
   var leftValue = firstValue
@@ -78,11 +93,10 @@ proc greatestCommonDivisor(firstValue: int64, secondValue: int64): int64 =
   return leftValue
 ```
 
-Euclid's loop ends when the remainder reaches zero. It uses 64-bit values so the answer stays exact at the largest board. The loop takes O(log(min(X, Y))) steps.
+The loop applies Euclid's rule with repeated remainders. It stops when the remainder becomes zero. The result sets the path period.
 
+**Closed-form driver.**
 ```nim
-var outputBuffer = ""
-
 let dataSetCount = nextInteger(inputData, i)
 var j: int64 = 0
 while j < dataSetCount:
@@ -114,12 +128,26 @@ if outputBuffer.len > 0:
   stdout.write outputBuffer
 ```
 
-The loop runs exactly `dataSetCount` times. The swap keeps the edge coordinate in `startRow`, so `startColumn` always holds the offset that matters. Output collects in one buffer and flushes only after 256 KiB, which avoids a write per answer.
+The driver reduces dimensions and swaps axes when needed. It branches on whether the start column divides evenly. One answer line is appended per dataset.
+
 
 ## Complexity
 
-Input reading and scanning take time linear in the number of input bytes. Each dataset spends O(log(min(X, Y))) time in the gcd and O(1) time elsewhere. Total time is O(input bytes + d log(min(X, Y))).
+Only the gcd loop depends on the board size, and it takes logarithmic steps.
 
-The program stores the input buffer and an output buffer capped at the flush size. Space is O(input bytes + flushBlockBytes).
+| Phase | Time | Space |
+| --- | --- | --- |
+| input parse | O(d) | one buffer |
+| gcd | O(log max dimension) | constant |
+| closed form | O(1) | constant |
 
-A direct walk over the whole repeat takes O(XY/g) steps per dataset, which can approach 10⁹. The closed form removes that walk.
+The output buffer flushes at a block boundary across datasets.
+
+Big O uses dataset count d and largest board dimension M.
+
+| Measure | Big O |
+| --- | --- |
+| time | O(d log M) |
+| space | O(1) |
+
+Bounce simulation would touch up to 10 to the ninth power squares per case.

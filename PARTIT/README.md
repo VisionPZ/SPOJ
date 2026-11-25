@@ -1,44 +1,71 @@
+# PARTIT — Partition (SPOJ)
+<https://www.spoj.com/problems/PARTIT/>
+
 ## Problem
 
-Read t test cases. Each case gives a sum m, a component count n, and a rank k. A partition of m into n components is a non-decreasing sequence of n positive integers whose sum is m. Print the k-th partition in lexicographic order. Separate the printed values with spaces.
+A number can be split into sorted positive parts in many ways. A dictionary orders those splits from smallest first part upward. Given a position in that dictionary, find the split.
 
-Here are the limits:
+A partition of m into n components is a sorted sequence a₁ ≤ a₂ ≤ … ≤ aₙ with sum m. Sort all such sequences lexicographically. Print the k-th one.
 
-| Quantity | Bound |
+Input: the first integer is t, the number of cases. Each case gives m, n, and k on three separate lines. Output: the k components separated by spaces, one case per line.
+
+These are the bounds and the judge limits:
+
+| Item | Bound |
 | --- | --- |
-| Test cases t | not bounded in the statement |
+| Test cases t | from the input |
+| Parts n | 1 to 10 |
 | Sum m | 1 to 220 |
-| Component count n | 1 to 10 |
-| Rank k | 1 to the number of partitions |
+| Rank k | at most the number of partitions |
 | Time limit | 7000 ms |
 | Memory limit | 1536 MB |
 
-The small bounds on m and n let one counting table serve every case.
+The sample asks for the third partition of 9 into four parts:
+
+```
+1
+9
+4
+3
+```
+
+```
+1 1 3 4
+```
+
+The ordered partitions start 1 1 1 6, 1 1 2 5, then 1 1 3 4.
 
 ## Idea
 
-Count the partitions that begin with each possible value, then skip whole groups at once. A table of partition counts gives each group size in constant time. The program walks candidate values from small to large and subtracts group sizes until the rank lands in one group. It repeats the walk for every component.
+Count whole blocks of answers, then skip blocks until the target rank fits. Think of looking up a word in a dictionary: you skip all words starting with A before reading the B section.
 
-One case costs at most n times m candidate checks. Enumerating every partition costs far more.
+The program first fills a table `partitionWays`, where entry (i, j) counts partitions of i using parts no larger than j. During unranking, it tries each possible next part in increasing order. Each candidate owns a block of completions whose size comes from the table.
+
+The count table costs O(220 × 10) once. Each case tests at most 220 candidates per part, so unranking costs O(n × m). Listing every partition before picking the k-th would be far slower, because the largest case has over 1.7 billion partitions.
+
+Takeaway: a small count table turns unranking into a short walk over candidate values.
 
 ## Why It Works
 
-A non-decreasing sequence of L values, each at least v, has sum at least L times v. Subtract v from every value. The result is a partition of the leftover sum into at most L parts.
+Four facts make the unranking exact.
 
-Partitions of T into at most L parts equal partitions of T into parts no larger than L. Call that count ways(T, L). The table partitionWays stores it. The fill uses these rules:
+1. `partitionWays[i][j]` counts partitions of i using parts at most j. Such a partition either omits the part j, or removes one j and leaves a partition of i − j with parts at most j.
+2. Fix the next part to candidate c and keep L parts left. Subtract c from every remaining part. The leftovers form a partition of `remainingSum − L × c` into at most L − 1 parts.
+3. That leftover count is exactly `partitionWays[shiftedSum][partsLeft − 1]`. It is the number of answers starting with c, so it is one lexicographic block.
+4. Blocks appear in increasing c. If rank exceeds a block size, subtract that size and move on. Otherwise the target lies inside, so keep c and recurse.
 
-- ways(0, L) is 1, because one empty sum exists.
-- ways(T, 0) is 0 when T is positive.
-- ways(T, L) is ways(T, L-1) plus ways(T-L, L) when T is at least L.
+These are the quantities in one unranking step:
 
-After a prefix is fixed, keep remainingSum, partsLeft, and minValue. For a candidate v, partitionWays takes two indices:
+| Term | Meaning |
+| --- | --- |
+| `partitionWays[i][j]` | number of partitions of i with parts at most j |
+| `rank` | 1-based position of the wanted partition |
+| `remainingSum` | sum still to distribute |
+| `candidate` | next part value being tested |
+| `shiftedSum` | remainingSum − partsLeft × candidate |
+| `blockSize` | number of completions that start with candidate |
 
-- remainingSum minus partsLeft times v is the sum left after giving v to each open part.
-- partsLeft minus 1 is the number of parts still open.
-
-That table entry counts the completions of the prefix. If the rank exceeds the block, subtract the block and try the next value. Otherwise fix the value and move to the next component. The last part takes the whole remaining sum.
-
-The script in gen.py prints this trace for the sample:
+A script traces the sample case from rank 3:
 
 ```
 start remaining=9 partsLeft=4 minValue=1 rank=3
@@ -50,9 +77,11 @@ candidate 3: block 1, choose, rank 1 <= 1
 last part = 4
 ```
 
-The walk fixes 1, 1, and 3, then the final part 4. That matches the sample output.
+The chosen parts are 1, 1, 3, and 4. Counts reach about 1.79 × 10⁹, so the table uses 64-bit integers.
 
 ## Code
+
+**Input.** One buffer holds the stream, and the scanner returns 64-bit integers.
 
 ```nim
 const firstDigitValue = 48
@@ -78,10 +107,9 @@ proc nextInt(data: string, i: var int): int64 =
   return value
 ```
 
-The read loop ends when readLine fails, so all input lives in one string.
-The scanner skips line breaks, so the three-line layout needs no special case.
-It builds each 64-bit value by hand and allocates no token objects.
-Cost: one pass over the input.
+The scanner skips separators and stops at the buffer end. The 64-bit result avoids overflow on large counts. The cost is one pass over the input.
+
+**Counts.** A filled table stores every block size the unranking needs.
 
 ```nim
 var partitionWays: array[0..maxSum, array[0..maxParts, int64]]
@@ -97,10 +125,9 @@ for i in 0..maxSum:
         partitionWays[i][j] += partitionWays[i - j][j]
 ```
 
-The loops run i to 220 and j to 10.
-The base at zero stores one way to form an empty sum.
-The i check before the second term avoids a negative index.
-Cost: 2201 cells, filled once before any case.
+The base case gives one empty partition of zero. The `i >= j` guard skips a negative index. Filling the table costs O(maxSum × maxParts).
+
+**Output.** One buffer collects answer lines.
 
 ```nim
 var outputBuffer = ""
@@ -112,9 +139,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-appendOutput writes only when the buffer reaches flushBlockBytes.
-setLen reuses one string instead of allocating a new one.
-Cost: one write per 256 KiB of output.
+The flush triggers every `flushBlockBytes` bytes. No write happens inside a case. The cost is one pass over the answer text.
+
+**Driver.** Each case walks candidates and prints the chosen parts.
 
 ```nim
 var chosenParts: array[0..maxParts - 1, int]
@@ -134,14 +161,6 @@ for j in 0..<caseCount:
       k += 1
       partsLeft = 0
       break
-```
-
-chosenParts holds at most maxParts values.
-rank stays 64-bit, so large counts never overflow.
-The partsLeft == 1 branch ends the walk with the whole leftover sum.
-Cost: constant work per component.
-
-```nim
     var candidate = minValue
     var picked = false
     while candidate * partsLeft <= remainingSum:
@@ -172,14 +191,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The candidate loop stops at remainingSum divided by partsLeft, the largest first value.
-That bound keeps shiftedSum non-negative, so the table index stays valid.
-The not picked branch handles invalid input and keeps the walk finite.
-The output loop adds one space between values and one newline per case.
-Cost: at most 220 checks per component, plus one final flush.
+The last part takes the whole remainder, so the loop stops early. The condition `candidate × partsLeft ≤ remainingSum` keeps parts sorted. The final write flushes the tail.
 
 ## Complexity
 
-Filling the table takes O(220 * 10) time and O(220 * 10) space. Each case takes O(n * m) time and O(n) extra space. The total is O(t * n * m) time and O(m * n) space.
+A one-time count table supports every case.
 
-Enumerating partitions visits every partition before the answer, which is much slower for large ranks.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(total tokens) | O(input size) |
+| Count table | O(220 × 10) | O(220 × 10) |
+| Unranking per case | O(n × m) | O(n) |
+| Output | O(cases) | O(block size) |
+
+The unranking dominates, with at most n × 220 candidate tests per case.
+
+| Measure | Big O |
+| --- | --- |
+| Precomputation | O(m × n) |
+| Time per case | O(n × m) |
+| Working space | O(m × n) |
+
+Generating partitions in order until rank k takes up to the full partition count, which reaches 1788625426 here.

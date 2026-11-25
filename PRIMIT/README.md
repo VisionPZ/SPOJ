@@ -1,52 +1,94 @@
+# PRIMIT — Primitivus recurencis (SPOJ)
+
+<https://www.spoj.com/problems/PRIMIT/>
+
 ## Problem
 
-A primitivus code is a list of numbers. A feature is any pair of numbers that sit next to each other in that list. Read the required features and print the shortest list that contains every feature as a neighboring pair. Extra neighboring pairs are allowed.
+A biologist lists every consecutive pair seen in a creature's genetic code. Rebuild the shortest genetic code that contains all those pairs in order. The pairs alone do not tell you how the creature chained them together.
 
-These bounds shape the design.
+Input: `t` cases separated by blank lines. Each case starts with `n`, the number of distinct features, then `n` lines `l r`. Output: one integer per case, the length of the shortest code containing every feature.
 
-| Quantity | Bound |
-| --- | --- |
-| Test cases | not bounded by the statement; input is warned as enormous |
-| Features in one case | at most 999000 |
-| Number labels | 1 to 1000 |
-| Time limit | 1600 ms |
-| Memory limit | 1536 MB |
+The bounds from the statement:
 
-Only 1000 labels exist, so one small table per case handles even the largest input.
+| Item | Bound |
+|---|---|
+| Endpoint values | 1 ≤ l, r ≤ 1000 |
+| Features | distinct pairs, never `(p, p)` |
+| Cases | separated by blank lines |
+| Judge limit | 1600 ms, 1536 MB |
+
+The input and output are large, so the program reads once and writes in blocks.
+
+The sample input and output:
+
+```
+1
+12
+2 3
+3 9
+9 6
+8 5
+5 7
+7 6
+4 5
+5 1
+1 4
+4 2
+2 8
+8 6
+```
+
+```
+15
+```
 
 ## Idea
 
-Treat each feature as a directed edge and cover all edges with directed trails. A trail is a run of edges where each edge starts where the previous edge ends. Split a code at every neighboring pair that is not a feature, and each piece is a trail. If C trails cover the features, the shortest code has featureCount + C numbers. The program counts C from vertex degrees and weak components. Searching over feature subsets costs 2^n steps and cannot handle a large case.
+Treat each feature as a one-way arrow between two numbers, then find the fewest arrows you must add to make one continuous walk. Think of connecting train legs into the shortest itinerary that visits every leg.
 
-Each feature costs two degree updates and one union operation.
+The program builds a directed graph and groups numbers with union-find (a table that merges sets sharing any arrow). Each number records an out-degree and an in-degree. A component needs as many extra starts as its total positive imbalance, or one start when already balanced.
+
+The answer is the feature count plus those extra starts. Union-find runs in near-constant time per arrow, and the two passes over touched numbers cost O(V) with `V ≤ 1000`. Ordering all pairs by brute force would take factorial time.
+
+Imbalance counts tell the code exactly how many extra walks it needs.
 
 ## Why It Works
 
-Each trail begins at one number. A vertex with d more outgoing features than incoming features must begin at least d trails. Each pass through that vertex uses one feature in each direction. Add those surpluses inside one weak component to get its lower bound. A closed tour begins at one number even when every surplus is zero, so a component needs at least max(1, surplus) trails. Degree sequences with this surplus split into exactly that many trails, so the bound is tight.
+Four facts carry the method.
 
-outDeg[v] counts features leaving v. inDeg[v] counts features entering v. max(0, outDeg - inDeg) is the surplus at v. parent links two labels joined by a feature, so one root names one weak component. compImbalance[root] adds the surplus of every vertex in that component. trailCount adds max(1, compImbalance[root]) for each root.
+1. An Euler trail (a walk using every edge once) starts where out-degree exceeds in-degree. It ends where the reverse holds.
+2. A component whose positive imbalances sum to `P` needs `P` separate trails to cover every arrow. Each trail adds one new starting number to the code.
+3. A component with zero imbalance still needs one trail, so it contributes one start.
+4. Union-find groups all numbers joined by any feature. Clearing only touched numbers keeps components from leaking into the next case.
 
-The script in gen.py computes the sample walk.
+The values the program keeps:
 
-| Number | Out | In | Surplus |
-| --- | --- | --- | --- |
-| 1 | 1 | 1 | 0 |
-| 2 | 2 | 1 | 1 |
-| 3 | 1 | 1 | 0 |
-| 4 | 2 | 1 | 1 |
-| 5 | 2 | 2 | 0 |
-| 6 | 0 | 3 | 0 |
-| 7 | 1 | 1 | 0 |
-| 8 | 2 | 1 | 1 |
-| 9 | 1 | 1 | 0 |
+| Term | Meaning |
+|---|---|
+| `outDeg`, `inDeg` | arrows leaving and entering a number |
+| `compImbalance` | positive imbalance summed over a component |
+| `findRoot` | union-find representative of a component |
+| `trailCount` | number of extra starting points needed |
 
-features 12 surplus 3 components 1 trails 3 answer 15
+One component with positive imbalance `P` adds exactly `P` starts.
 
-Three surplus vertices give three trails, so 12 + 3 = 15 numbers.
+A script-traced example with the twelve sample features:
+
+```
+vertex   1   2   3   4   5   6   7   8   9
+out-in   0  +1   0  +1   0  -3   0  +1   0
+
+positive imbalance sum = 1 + 1 + 1 = 3
+all vertices share one component
+trailCount = 3
+answer = 12 features + 3 trails = 15
+```
+
+One shortest code of length 15 is `8 5 1 4 2 3 9 6 4 5 7 6 2 8 6`. Pairs `6 4` and `6 2` are the added bridges.
 
 ## Code
 
-The line loop reads every byte once into inputData. nextInt skips blank separators and stops at the first non-digit. Scanning costs one pass over the input.
+**Setup and scanner.** The input is read once, and vertex arrays stay fixed in size.
 
 ```nim
 {.push checks: off.}
@@ -72,7 +114,9 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-The tables hold 1000 labels and never grow with featureCount. findRoot compresses the path it walks, which keeps each union nearly constant. touchedVertices resets only what the case used.
+`vertexLimit = 1000` fixes the arrays. `nextInt` walks the buffer by index, so blank lines between cases cause no trouble.
+
+**Degree and membership arrays.** All vertex state lives in fixed arrays.
 
 ```nim
 var outDeg: array[0..vertexLimit, int]
@@ -83,7 +127,13 @@ var isTouched: array[0..vertexLimit, bool]
 var touchedVertices: seq[int]
 for vertex in 0..vertexLimit:
   parent[vertex] = vertex
+```
 
+`isTouched` records which vertices need clearing after a case. `touchedVertices` holds their numbers, so reset costs one pass over used vertices only.
+
+**Union-find.** `findRoot` compresses paths, and `unionVertices` merges two sets.
+
+```nim
 proc findRoot(vertex: int): int =
   var root = vertex
   while parent[root] != root:
@@ -100,9 +150,12 @@ proc unionVertices(firstVertex: int, secondVertex: int) =
   let secondRoot = findRoot(secondVertex)
   if firstRoot != secondRoot:
     parent[secondRoot] = firstRoot
+
 ```
 
-flushBlockBytes is 2^18. A block write avoids one stream call per answer. The buffer holds at most one block.
+The first loop in `findRoot` climbs to the root. The second loop rewrites each visited pointer to that root. Each merge attaches one root under the other.
+
+**Output helper.** Results gather in one buffer and flush in blocks.
 
 ```nim
 var outputBuffer = ""
@@ -114,7 +167,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The feature loop runs featureCount times. compImbalance is read after every union, so roots are stable. The else branch gives a balanced component one trail. The final write flushes the remainder.
+The 256 KiB threshold keeps writes rare. `setLen 0` reuses the allocation after a flush.
+
+**Case loop.** Each feature updates degrees and components, then the code counts trails.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -157,6 +212,28 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
+Each arrow raises `outDeg` of its left vertex and `inDeg` of its right vertex. Positive imbalances accumulate at component roots. A root with no positive imbalance still adds one trail. The last loop restores every touched array for the next case.
+
 ## Complexity
 
-Reading the input takes time proportional to its byte count. Each union costs nearly constant time, so one case takes O(n + v) time for n features and v used labels. Resetting touchedVertices costs O(v) per case. Output takes O(t) time for t cases. The total is O(B + n + v + t) for B input bytes. The tables use O(1000) integers, the input uses O(B) bytes, and the output buffer uses one block. A walk search over covered feature subsets costs O(v * 2^n) and cannot run on a large case.
+Each case scans features, then walks only touched vertices.
+
+| Phase | Time | Space |
+|---|---|---|
+| Input read | one pass over input bytes | input bytes |
+| Feature pass | O(n α(V)) with merges | O(V) |
+| Imbalance pass | O(V) over touched vertices | O(1) |
+| Reset | O(V) over touched vertices | O(1) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(n α(V)) | O(V) |
+
+With `V ≤ 1000`, every pass stays tiny.
+
+| Measure | Big O |
+|---|---|
+| Time | O(n α(V)) per case, V ≤ 1000 |
+| Space | O(V) for degree and union-find arrays |
+
+`α` is the near-constant inverse Ackermann function from union-find.
+
+Sorting the pairs into every possible order would take factorial time. Degree imbalance gives the same answer with one linear pass.

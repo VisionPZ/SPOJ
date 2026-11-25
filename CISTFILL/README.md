@@ -1,46 +1,104 @@
+# CISTFILL — Fill the Cisterns (SPOJ)
+
+<https://www.spoj.com/problems/CISTFILL/>
+
 ## Problem
 
-Read several data sets. Each data set lists cisterns and a water volume. A cistern (a rectangular tank) has a base level, a height, a width, and a depth. Print the level the water reaches, rounded to two fractional digits. Print OVERFLOW when the volume exceeds the total capacity of the cisterns.
+A row of cisterns waits for a measured pour of water. Some tanks start above the floor, so the water rises through several levels before it reaches them.
 
-The table lists every input bound and the judge limits.
+Input: one integer for the data-set count, then one data set per block. Each block starts with a cistern count, then one line of base, height, width, and depth per cistern, then the water volume.
 
-| quantity | bound |
-|----------|-------|
-| data sets | 1 to 30 |
-| cisterns per data set | 1 to 50000 |
-| base level | 0 to 1000000 |
-| height times width times depth | 1 to 40000 |
-| volume | 1 to 2000000000 |
-| time limit | 13000 ms |
-| memory limit | 1536 MB |
+Output: the level the water reaches, printed with two digits after the decimal point. Print `OVERFLOW` when the volume exceeds the total capacity.
+
+The statement and judge give these bounds:
+
+| Item | Bound |
+| --- | --- |
+| Data sets | 1 to 30 |
+| Cisterns per set | 1 to 50000 |
+| Base level | 0 to 1000000 |
+| Height times width times depth | 1 to 40000 |
+| Volume | 1 to 2000000000 |
+| Time limit | 13000 ms |
+| Memory limit | 1536 MB |
 
 The number of output lines equals the number of data sets.
 
+The sample input and output:
+
+```
+3
+2
+0 1 1 1
+2 1 1 1
+1
+4
+11 7 5 1
+15 6 2 2
+5 8 5 1
+19 4 8 1
+132
+4
+11 7 5 1
+15 6 2 2
+5 8 5 1
+19 4 8 1
+78
+```
+
+```
+1.00
+OVERFLOW
+17.00
+```
+
 ## Idea
 
-A sweep (a walk through increasing levels) solves each data set. At each level, the program starts new cisterns and removes finished ones. It keeps the active cross-section area (width times depth) of the cisterns that hold water. One level step adds that area to the filled volume. The walk stops when the filled volume reaches the injected volume. Each level costs constant work, and each cistern creates two events.
+Walk the water level upward, like reading a row of gauges from the bottom to the top. Each cistern opens at its base and closes at its top.
+
+The program records an area gain at each base and an area loss at each top. A sweep adds those changes level by level and keeps the active cross-section area. The filled volume grows by that area at every step.
+
+Each cistern creates two events, and each level costs constant work. Testing every candidate level against every cistern would cost O(n) work per trial.
+
+One sweep replaces all those repeated trials.
 
 ## Why It Works
 
-Water fills every cistern below the surface. A cistern at base b with height h and area a holds a times min of L minus b and h. Adding this term over all cisterns gives the volume below L. That sum grows with L and reaches the injected volume once.
+The volume below a level follows from one sum over the cisterns.
 
-The program adds area a at the base level and subtracts area a at the top level. After both changes, the active area covers the next level step. The filled volume grows by that area. When the remaining volume fits the step, the answer is the current level plus the remaining volume divided by the active area.
+1. A cistern at base b with height h and area a holds `a × min(L - b, h)` below level L.
+2. Summed over all cisterns, that volume grows with L. It crosses the poured volume once.
+3. Adding a at the base and subtracting a at the top leaves exactly the area active at the next level.
+4. When the remaining volume fits one level step, the answer is that level plus the remaining volume divided by the active area.
 
-The script-generated example uses the third sample data set with volume 78.
+The arrays and counters carry the following facts:
 
-| sweep level | area added | area removed | active area | volume before |
-|-------------|------------|--------------|-------------|---------------|
-| 5 | +5 | -0 | 0 | 0 |
-| 11 | +5 | -0 | 5 | 0 |
-| 13 | +0 | -5 | 10 | 30 |
-| 15 | +4 | -0 | 5 | 50 |
-| 18 | +0 | -5 | 9 | 60 |
+| Term | Meaning |
+| --- | --- |
+| `startArea[level]` | cross-section area starting at that level |
+| `endArea[level]` | cross-section area ending at that level |
+| `activeArea` | total area of cisterns holding water now |
+| `filledVolume` | water placed below the current level |
+| `highestLevel` | highest top level in the data set |
 
-The crossing happens at level 15 with active area 9. The remaining volume is 18, so the answer is 17.00.
+The numerator stays integral until the final division, which keeps rounding stable.
+
+A script traces the third sample data set, which pours volume 78:
+
+```
+level  event  active area  volume filled
+5      +5     5            5
+11     +5     10           30
+13     -5     5            50
+15     +4     9            60
+16     0      9            69
+```
+
+At level 16 the remaining volume is 9 and the active area is 9. The answer is `16 + 9/9 = 17.00`, which matches the sample.
 
 ## Code
 
-The two arrays store one entry per level. The scanner reads digits without building token strings.
+**Constants and scanner.** The two arrays span every legal level, and the scanner reads digits without building tokens.
 
 ```nim
 import strutils
@@ -60,9 +118,9 @@ proc nextInt(inputData: string, i: var int): int =
     inc i
 ```
 
-The digit loop ends at the first non-digit, so no token is allocated. Character codes use the constant 48, which works on the judge compiler. Global arrays avoid a large allocation inside the loop over data sets.
+The arrays are global, so no large allocation runs inside the data-set loop. The digit loop stops at the first non-digit and allocates no string. The value 48 converts a digit character to its number.
 
-The reading block clears only levels that the previous data set touched.
+**Case setup.** The program clears only levels touched by the previous data set.
 
 ```nim
 proc solve() =
@@ -91,9 +149,9 @@ proc solve() =
     let waterVolume = int64(nextInt(inputData, i))
 ```
 
-The clear loop runs from zero through clearedThrough, the highest level of the previous data set. Clearing touched levels keeps data sets independent. One pass through the buffer reads every integer.
+The clear loop ends at the previous highest level, so data sets stay independent. Each cistern writes two events in constant time. One pass through the buffer reads every integer.
 
-The sweep block walks one integer level at a time.
+**Level sweep.** One integer step adds the area change and tests the remaining volume.
 
 ```nim
     var activeArea: int64 = 0
@@ -113,9 +171,9 @@ The sweep block walks one integer level at a time.
       inc k
 ```
 
-The while loop runs at most highestLevel plus one times. Subtracting endArea at the same level stops a finished cistern from filling higher levels. The numerator stays integral until the final division, which keeps rounding stable.
+The loop visits at most `highestLevel + 1` levels. Subtracting `endArea` at the same level stops a finished cistern from filling higher levels. The division happens once, after the multiplication stays integral.
 
-The output block buffers lines and writes them in blocks.
+**Output.** Formatting uses two decimal places, and an oversized volume prints a word.
 
 ```nim
     if answerFound:
@@ -131,10 +189,27 @@ The output block buffers lines and writes them in blocks.
 solve()
 ```
 
-The flush triggers when the buffer passes flushBlockBytes bytes. formatFloat prints two fractional digits, and the literal OVERFLOW replaces a number when capacity is too small. The final write flushes the remaining lines.
+The flush triggers when the buffer passes 64 KiB. `formatFloat` prints exactly two fractional digits. The final write emits the remaining lines.
 
 ## Complexity
 
-Reading the integers costs time linear in their count. The sweep visits highestLevel plus one levels per data set, and each cistern changes two array entries. Output is one line per data set.
+Reading costs time linear in the integer count, and the sweep visits one level per step.
 
-Total time is O(k times (maxLevel plus n)), with k at most 30 and maxLevel at most 1040000. Space is O(levelLimit) for the two area arrays. A naive search would test each candidate level against every cistern, costing O(n) work per trial.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Event build | O(n) per data set | O(level limit) |
+| Level sweep | O(maxLevel) per data set | O(1) extra |
+| Output | one write per 64 KiB block | 64 KiB |
+| Total per set | O(maxLevel + n) | O(level limit) |
+
+At the largest base level the arrays hold about 1.05 million slots each.
+
+The asymptotic bounds are as follows:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(k × (maxLevel + n)) for k data sets |
+| Space | O(level limit) |
+
+Testing each level against every cistern would cost O(n × maxLevel) per data set.

@@ -1,55 +1,107 @@
+# SHAMAN — Shamans (SPOJ)
+<https://www.spoj.com/problems/SHAMAN/>
+
 ## Problem
 
-Read several test cases. Each case gives n peaks with integer coordinates. Print the largest area any four peaks can cover, with exactly one digit after the decimal point. A concave choice counts as the area of its convex hull.
+Four shamans pick mountain peaks and pray at the corners of the shape they form. The tribe wants the largest possible area. Pick four peaks that maximize the covered area and print it with one decimal digit.
 
-The judge bounds are:
+Input: an integer t, a blank line, then t cases separated by blank lines. Each case gives peak count n, followed by n lines with x and y. Output: one number per case with exactly one digit after the decimal point.
 
-| Quantity | Bound |
+The statement sets these bounds.
+
+| Item | Bound |
 | --- | --- |
 | Test cases | at most 80 |
-| Peaks per case | 4 to 2000 |
-| Coordinate range | -20000 to 20000 |
-| Time limit | 1000 ms |
-| Memory limit | 1536 MB |
+| Peaks n | 4 to 2000 |
+| Coordinates x and y | minus 20000 to 20000 |
+| Output precision | exactly one decimal digit |
+| Judge time limit | 1000 ms |
+| Judge memory limit | 1536 MB |
 
-The peak count makes a search over every group of four peaks too slow.
+A concave quadrangle counts as the area of its convex hull.
+
+The sample input:
+
+```
+2
+
+4
+0 0
+1 0
+1 1
+0 1
+
+4
+0 0
+0 1
+1 1
+1 0
+
+```
+
+The sample output:
+
+```
+1.0
+1.0
+```
 
 ## Idea
 
-Keep only the peaks on the convex hull. The corners of a largest shape always lie on that hull. Sweep a diagonal, a segment joining two hull vertices, through its antipodal positions. For each diagonal, take the farthest hull vertex on each side. Every index moves forward at most once around the hull.
+Wrap a rubber band around all the peaks before choosing corners, like finding the outline of a cluster of dots. A point inside that outline never helps maximize area. So the best four corners lie on the outline itself.
 
-Cost per hull vertex: constant time.
+The program builds the convex hull with a monotone chain sort. It then rotates two pairs of pointers around the hull with rotating calipers. For a fixed diagonal, the farthest points on each side give the largest area. Each pointer moves forward at most once around the hull, so the scan costs O(H), where H is the hull size. Sorting costs O(n log n). Trying every quadruple would cost O(n to the fourth).
+
+The hull shrinks the search from thousands of peaks to tens.
 
 ## Why It Works
 
-A hull corner can replace an interior corner without shrinking the covered area. The area of a quadrilateral is half the cross product of its two diagonals, so doubled area is an integer. The largest quadrilateral for a fixed diagonal uses the farthest vertex on each side of that diagonal.
+Four facts carry the program.
 
-The calipers visit antipodal diagonal pairs in order. The two diagonal endpoints advance one hull edge at a time. The two farthest vertices also advance forward, never backward. Each index crosses the hull once, so the sweep is linear.
+1. A convex hull encloses every peak. Moving a chosen corner outward onto the hull can only increase area, so an optimal quadrangle uses hull vertices.
+2. For a fixed diagonal, the area is half a cross product. That product uses the diagonal and the spread between the other two corners. Maximizing area means maximizing the product.
+3. Rotating calipers keep two pointers moving forward only. Cross products rise then fall as a pointer advances, so each best side point is found in one pass.
+4. Coordinates are integers, so twice the area is an integer. The program keeps that doubled value and prints either a zero or a five as the decimal digit.
 
-These terms drive the program:
+Each term has one job.
 
-- `hull`: boundary peaks in counterclockwise order.
-- `leftIndex`, `rightIndex`: endpoints of the current diagonal.
-- `lowerIndex`, `upperIndex`: farthest vertices on the two sides of that diagonal.
-- `crossAt`: signed cross product of two vectors from one point.
-- `quadArea2`: doubled area from the diagonal and the spread between the farthest vertices.
+| Term | Meaning |
+| --- | --- |
+| `convexHull` | outline vertices in counter-clockwise order |
+| `crossAt` | signed cross product at three points |
+| `quadArea2` | doubled area of one quadrangle |
+| `maxQuadArea2` | best doubled area from the rotating scan |
 
-The generator prints this worked example:
+No floating point is used, so no rounding error enters the computation.
 
+A script computes the doubled area for the first sample square.
+
+```text
+hull: (0,0) (1,0) (1,1) (0,1)
+diagonal (0,0) -> (1,1): (1, 1)
+spread (1,0) -> (0,1): (-1, 1)
+cross = 1*1 - 1*(-1) = 2
+doubled area 2, whole 2/2 = 1, digit 0
+output 1.0
 ```
-points [(0, 0), (6, 0), (6, 4), (0, 4), (2, 2), (3, 1)]
-hull [(0, 0), (6, 0), (6, 4), (0, 4)]
-doubled area 48
-answer 24.0
-```
 
-The two interior peaks drop out and the answer stays 24.0.
+An odd doubled area prints a final 5, which gives exact halves.
 
 ## Code
 
-The scanner reads signed integers from one input buffer.
+**Point type and scanner.** Negative coordinates need a sign branch.
 
 ```nim
+import algorithm
+
+const firstDigitValue = 48
+const flushBlockBytes = 1 shl 18
+
+type
+  Point = object
+    x: int64
+    y: int64
+
 proc nextInt(data: string, pos: var int): int =
   while pos < data.len and data[pos] != '-' and (data[pos] < '0' or data[pos] > '9'):
     pos += 1
@@ -66,11 +118,18 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-The minus branch keeps negative coordinates intact. The loop ends at the buffer end, so it reads at most one token per call. The scan costs one pass over the input bytes.
+The scanner skips to a digit or a minus sign, then reads the magnitude. One value costs one pass over its digits.
 
-Cross products use 64-bit integers and the hull uses a monotone chain.
+**Hull construction.** Sorting and duplicate removal come first.
 
 ```nim
+proc comparePoint(left, right: Point): int =
+  if left.x < right.x: return -1
+  if left.x > right.x: return 1
+  if left.y < right.y: return -1
+  if left.y > right.y: return 1
+  return 0
+
 proc crossAt(origin, first, second: Point): int64 =
   let deltaX = first.x - origin.x
   let deltaY = first.y - origin.y
@@ -107,9 +166,9 @@ proc convexHull(points: var seq[Point]): seq[Point] =
     result.add upper[i]
 ```
 
-Each point enters and leaves a chain once. A nonpositive turn drops the middle point and keeps only extreme corners. Sorting dominates this block at O(n log n).
+The monotone chain builds a lower and an upper chain. A non-positive cross product pops the middle point. Sorting costs O(n log n), and each chain costs O(n).
 
-The sweep advances four indexes and records the best doubled area.
+**Area of one quadrangle.** The doubled value stays an integer.
 
 ```nim
 proc quadArea2(hull: seq[Point], leftIndex, lowerIndex, rightIndex, upperIndex: int): int64 =
@@ -121,7 +180,13 @@ proc quadArea2(hull: seq[Point], leftIndex, lowerIndex, rightIndex, upperIndex: 
   if value < 0:
     return -value
   return value
+```
 
+The two diagonal vectors form a parallelogram. Its area equals twice the quadrangle area. The absolute value keeps the result positive.
+
+**Rotating scan.** Four pointers advance only forward.
+
+```nim
 proc maxQuadArea2(hull: seq[Point]): int64 =
   let hullSize = hull.len
   var lowest = hull[0].y
@@ -172,9 +237,9 @@ proc maxQuadArea2(hull: seq[Point]): int64 =
   return best
 ```
 
-The outer loop stops after the diagonal makes one half turn. The lowest and highest vertices give the first antipodal pair. The step guard prevents an endless loop on degenerate input. The whole sweep costs O(h).
+The scan starts from the lowest and highest hull vertices. The step count caps the loop, and the index match stops a full turn. Each pointer moves at most one lap, so the pass costs O(H).
 
-The driver writes one answer per case into one output buffer.
+**Driver.** One case prints one decimal digit.
 
 ```nim
 var inputData = ""
@@ -216,10 +281,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-A doubled area is even or odd, so the only decimal digits are 0 and 5. The buffer flushes in blocks and once more after the loop. Reading input once avoids a syscall per line.
+A hull of three peaks is a triangle, so its cross product is the whole answer. The decimal digit is exact because doubled area is an integer. Blank lines need no special handling because the scanner skips them.
 
 ## Complexity
 
-Input scanning costs O(n) per case. Sorting for the hull costs O(n log n) per case. The calipers sweep costs O(h) per case, where h is the hull size.
+Sorting and the rotating scan set the cost.
 
-Total time is O(n log n + h) per case and O(T n log n) for T cases. Space is O(n) per case. A search over all groups of four peaks costs O(n^4) per case.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | O(B) for B bytes | B bytes |
+| Convex hull | O(n log n) | O(n) |
+| Rotating calipers | O(H) | O(1) extra |
+| Output | O(t) lines | one block |
+
+H is the hull size, at most n.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n log n) per case |
+| Space | O(n) per case |
+
+Trying every quadruple would cost O(n to the fourth) time.

@@ -1,10 +1,18 @@
+# CHOCOLA — Chocolate (SPOJ)
+
+<https://www.spoj.com/problems/CHOCOLA/>
+
 ## Problem
 
-Read up to 20 test cases. Each case gives a bar with `columnCount` columns and `rowCount` rows. Then come the costs for every vertical line and every horizontal line. Print the smallest total cost to break the bar into single squares.
+A chocolate maker cuts a bar into single squares. Every straight cut has a price, and the maker wants the smallest total bill.
 
-The judge bounds are:
+Input: one integer for the test count, a blank line, then one case per test. Each case starts with `columnCount rowCount`, then lists `columnCount - 1` cut costs and `rowCount - 1` cut costs. A blank line separates cases.
 
-| Quantity | Bound |
+Output: one integer per case, the minimum total cost to separate every square.
+
+The statement and judge give these bounds:
+
+| Item | Bound |
 | --- | --- |
 | Test cases | at most 20 |
 | Bar side | 2 to 1000 |
@@ -12,42 +20,87 @@ The judge bounds are:
 | Time limit | 3000 ms |
 | Memory limit | 1536 MB |
 
-The bar size drives the design, since one case holds nearly 2000 cuts.
+One case holds nearly 2000 costs, so the program avoids sorting them.
+
+The sample input and output:
+
+```
+1
+
+6 4
+2
+1
+3
+1
+4
+4
+1
+2
+
+```
+
+```
+42
+```
 
 ## Idea
 
-Always cut along the most expensive remaining line. A cut crosses the whole bar, so its cost is paid once for every piece in the other direction. Counting costs by value replaces comparison sorting, and two downward scans merge the directions in one pass.
+Cut the dearest line first, like paying the largest bills before the small ones. A cut spans the whole bar, so its price is paid once per perpendicular piece.
 
-One cut costs constant time.
+The program counts how many cuts sit at each price. Two downward scans read the two cost groups from high to low and merge them into one greedy order. Each cut costs constant work after the scans reach the next nonempty price.
+
+Sorting every cut would cost O(c log c) for c cuts. Counting by price costs one pass over the 1000 possible prices instead.
+
+Counting by price keeps the greedy order linear in the bar size.
 
 ## Why It Works
 
-A vertical cut crosses every horizontal piece that already exists. Its cost is multiplied by the horizontal piece count. A horizontal cut works the same way with the vertical piece count.
+The greedy order follows from one fact about piece counts.
 
-Doing a cheap cut before an expensive one only raises the total, since piece counts never shrink. So each direction uses its cuts from highest cost to lowest. Equal costs give the same total in either order.
+1. A cut crosses every perpendicular piece that already exists, so its price multiplies that piece count.
+2. Piece counts only grow, so an early cheap cut raises the count that multiplies a later dear cut.
+3. Equal prices give the same total in either order, so a tie needs no special rule.
+4. A count array indexed by price lists cuts from high to low when its index walks downward.
 
-The count array is indexed by cost. Scanning its index from 1000 down to 1 lists the cuts in descending order without a sort.
+The arrays and counters carry the following facts:
 
-For each cut, the added cost is the cut cost times the perpendicular piece count. A vertical cut then raises `verticalPieces`, and a horizontal cut raises `horizontalPieces`.
+| Term | Meaning |
+| --- | --- |
+| `verticalCount[cost]` | uncut lines in the first direction at that price |
+| `horizontalCount[cost]` | uncut lines in the second direction at that price |
+| `verticalPieces` | strips in the first direction after the cuts so far |
+| `horizontalPieces` | strips in the second direction after the cuts so far |
+| `remainingVertical` | uncut lines left in the first direction |
 
-The generator prints each step for the sample.
+Both counts stay below the price bound, so the scans remain short.
 
-| Step | Cut | Multiplier | Added | Running total | Vertical / horizontal pieces |
-| --- | --- | --- | --- | --- | --- |
-| 1 | V 4 | 1 | 4 | 4 | 2 / 1 |
-| 2 | H 4 | 2 | 8 | 12 | 2 / 2 |
-| 3 | V 3 | 2 | 6 | 18 | 3 / 2 |
-| 4 | V 2 | 2 | 4 | 22 | 4 / 2 |
-| 5 | H 2 | 4 | 8 | 30 | 4 / 3 |
-| 6 | V 1 | 3 | 3 | 33 | 5 / 3 |
-| 7 | V 1 | 3 | 3 | 36 | 6 / 3 |
-| 8 | H 1 | 6 | 6 | 42 | 6 / 4 |
+A script prints one row per cut in the sample case:
 
-The final total is 42, which matches the sample output.
+```
+step cut multiplier added total vertical/horizontal pieces
+1    V4  1          4     4     2/1
+2    H4  2          8     12    2/2
+3    V3  2          6     18    3/2
+4    V2  2          4     22    4/2
+5    H2  4          8     30    4/3
+6    V1  3          3     33    5/3
+7    V1  3          3     36    6/3
+8    H1  6          6     42    6/4
+```
+
+The eight cuts add to 42, which matches the sample output.
 
 ## Code
 
+**Setup and input.** One buffer holds the stream, and a scanner reads each price by hand.
+
 ```nim
+{.push checks: off.}
+{.push overflowChecks: off.}
+{.push rangeChecks: off.}
+{.push boundChecks: off.}
+{.push stackTrace: off.}
+
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 const maximumCutCost = 1000
@@ -70,7 +123,9 @@ proc nextInt(data: string, position: var int): int =
   return value
 ```
 
-The read loop runs once per input line. All input lives in one buffer, so the scanner never reads from the stream. Skipping non-digits absorbs the blank lines between cases. The scan costs one pass over the input bytes.
+The read loop runs once per input line and appends a newline each time. The scanner skips the blank lines between cases because it ignores non-digits. One pass over the buffer supplies every price.
+
+**Output helper and price counts.** Both direction arrays have 1001 slots, one per legal price.
 
 ```nim
 var outputBuffer = ""
@@ -80,14 +135,16 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
-```
 
-The buffer flushes after 256 KiB and then reuses its storage. No write happens per answer. The cost is one write per full block.
-
-```nim
 var verticalCount: array[maximumCutCost + 1, int]
 var horizontalCount: array[maximumCutCost + 1, int]
+```
 
+The helper flushes at 256 KiB and reuses the same storage. No write happens per answer. The two arrays cover prices from 0 through 1000.
+
+**Greedy cut loop.** Two downward scans find the next price, and one comparison picks the direction.
+
+```nim
 let caseCount = nextInt(inputData, scanPos)
 for j in 0..<caseCount:
   let columnCount = nextInt(inputData, scanPos)
@@ -127,17 +184,32 @@ for j in 0..<caseCount:
       remainingHorizontal -= 1
   appendOutput($(totalCost))
   outputBuffer.add '\n'
-```
 
-The two count loops reset 1001 slots and then read exactly `columnCount - 1` and `rowCount - 1` costs. The variables `remainingVertical` and `remainingHorizontal` keep a case from reading the next case's data. The greedy loop stops when both counters reach zero. It scans at most 1000 values per direction and makes one cut per turn. The total uses `int64`, which covers the largest 1000 by 1000 case.
-
-```nim
 stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The last write flushes a short tail. Emptying the buffer keeps a second flush silent.
+The two read loops stop at `remainingVertical` and `remainingHorizontal`, so a case never eats the next case's data. The scans descend at most 1000 steps each. The total uses `int64`, which covers the largest legal bar.
 
 ## Complexity
 
-Reading and scanning take time linear in the input size. Each case resets two arrays of 1001 slots and scans at most 1000 values per direction. The greedy loop runs in O(columns + rows) time. The total is O(T * (columns + rows + 1000)) time and O(1000) space. Trying every ordering of the cuts instead grows factorially with the number of cuts.
+Each case reads its costs once and scans at most 1000 prices per direction.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Price reset | O(1000) slots | O(1000) |
+| Scans and cuts | O(1000 + cuts) per case | O(1000) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(1000 + columns + rows) | O(1000) |
+
+The price bound, not the bar area, limits the scan.
+
+With T (test count) cases, the asymptotic bounds are as follows:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(T × (1000 + columns + rows)) |
+| Space | O(1000) plus buffers |
+
+Sorting every cut would cost O(c log c) per case instead of one bounded scan.

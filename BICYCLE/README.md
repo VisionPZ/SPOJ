@@ -1,55 +1,96 @@
+# BICYCLE — Bicycle (SPOJ)
+<https://www.spoj.com/problems/BICYCLE/>
+
 ## Problem
 
-Read two circular bicycle lanes and a home point plus a school point on the lanes. Print the shortest travel distance along the lanes, or -1 when no route exists. Both points lie on one of the circles to high accuracy.
+Peter rides to school on two circular bike lanes. He starts at home and exits at school, and both points sit on a lane. Find the shortest ride along the lanes, or -1 when no route exists.
+
+Input begins with a case count t. Each case gives two circles as center x, center y, radius, then the home point and the school point as floating pairs. Output one distance per case with ten decimals, or -1.
+
+The limits fix the geometry size:
 
 | Quantity | Bound |
 | --- | --- |
-| Test cases | at most 100 |
+| Test cases t | at most 100 |
 | Center coordinates | -200 to 200 |
 | Radii | 0 to 200 |
+| Point error | within 10^-8 of a lane |
 | Time limit | 1000 ms |
 | Memory limit | 1536 MB |
 
-The small case count keeps exact geometry cheap.
+The graph holds at most four nodes, so each case stays tiny.
+
+The sample input and output:
+
+```
+3
+
+0 0 5
+4 0 3
+3.0 4.0
+1.878679656440357 -2.121320343559643
+
+0 0 5
+4 0 3
+4.0 3.0
+4.0 -3.0
+
+0 0 4
+10 0 4
+4.0 0.0
+6.0 0.0
+```
+
+```
+8.4875540166
+6.4350110879
+-1
+```
+
+The third case has no crossing, so it prints -1.
 
 ## Idea
 
-Build a graph of at most four points: home, school, and the one or two lane crossings. Join two points on the same circle by the shorter arc between them, then find the shortest route with Floyd-Warshall. Crossings are the only places to change lanes, so every useful route stays inside this graph. A dense angle sweep would sample many points per circle and still give an approximate answer.
+Treat the lanes as a tiny subway map. Home, school, and the circle crossings are the stations, and the arcs between them are the tracks. The shortest ride is then a shortest path on at most four nodes. The program builds this graph and runs Floyd-Warshall (an all-pairs shortest path method). Crossings are the only places to switch lanes, so no other point can improve the route.
 
-Cost per case is constant: at most four nodes, six edges, and one 4 by 4 relaxation.
+Each case costs constant time: at most four nodes, six edges, and one 4 by 4 relaxation. Sampling many angles on each circle would only approximate the distance and still miss an exact crossing. The graph gives the exact answer in fixed work.
+
+Takeaway: turn a geometry question into a four-node graph.
 
 ## Why It Works
 
-A crossing belongs to both circles, so it can hand a traveler from one lane to the other. Any route that leaves a circle does so at a crossing and returns at a crossing. The graph keeps home, school, and every crossing, so it contains an optimal route.
+1. A crossing lies on both circles, so a rider can switch lanes there.
+2. Any route leaves a circle only at a crossing and returns at a crossing.
+3. The graph keeps home, school, and every crossing, so it holds an optimal route.
+4. Coincident circles share all points, so one direct arc gives the answer.
+5. Floyd-Warshall relaxes every triple, so it finds the shortest path for all node pairs.
 
-The distance along one circle comes from the two radius vectors. For points first and second on the circle:
+The arc formula uses the two radius vectors from a circle center.
 
-cross = deltaFirstX * deltaSecondY minus deltaFirstY * deltaSecondX
-dot = deltaFirstX * deltaSecondX plus deltaFirstY * deltaSecondY
-arc = radius times atan2 of the absolute cross product and the dot product
+| Term | Meaning |
+| --- | --- |
+| cross | deltaFirstX times deltaSecondY minus deltaFirstY times deltaSecondX |
+| dot | deltaFirstX times deltaSecondX plus deltaFirstY times deltaSecondY |
+| arc | radius times atan2 of the absolute cross and the dot |
+| along | (d squared + r1 squared - r2 squared) divided by 2d |
+| height | square root of (r1 squared - along squared) |
 
-The crossing points come from the center distance d and the radii:
+The first three rows build an arc; the last two locate the crossings.
 
-along = (d squared + r1 squared minus r2 squared) divided by 2d
-height = square root of (r1 squared minus along squared)
+A script traced the first sample case:
 
-Coincident circles need no crossing, and the arc between the two points is the answer there.
+| Quantity | Value |
+| --- | --- |
+| Crossings | (4, 3) and (4, -3) |
+| Arc from home (3, 4) to (4, 3) | 1.4189705460 |
+| Arc from (4, 3) to school | 7.0685834706 |
+| Total shortest ride | 8.4875540166 |
 
-Worked example, generated from the first sample case:
-
-crossings: (4,3) and (4,-3)
-arc home to (4,3): 1.4189705460
-arc (4,3) to school: 7.0685834706
-route via (4,3): 8.4875540166
-route via (4,-3): 10.2101761242
-answer: 8.4875540166
-
-The crossing near both points gives the smaller route.
+The two arcs add to the printed answer.
 
 ## Code
 
-The program reads all input into one buffer, scans tokens by position, and flushes one output buffer in blocks.
-
+**Constants and input scanner.**
 ```nim
 import strutils, math
 
@@ -79,7 +120,11 @@ proc nextInt(data: string, pos: var int): int =
     value = value * 10 + int(data[pos]) - firstDigitValue
     pos += 1
   return signValue * value
+```
+The buffer collects every line, and the scanner skips non-digits before each integer. The sign branch keeps negative centers correct. Parsing costs one pass over the input bytes.
 
+**Float reader and output helper.**
+```nim
 proc nextFloat(data: string, pos: var int): float =
   let dataLength = data.len
   while pos < dataLength and data[pos] <= ' ':
@@ -96,7 +141,11 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
+`nextFloat` reads one whitespace-delimited token and converts it with `parseFloat`. `appendOutput` flushes after flushBlockBytes bytes, so writes stay in large blocks.
 
+**Arc length.**
+```nim
 proc arcLength(centerX: float, centerY: float, radius: float,
                firstX: float, firstY: float,
                secondX: float, secondY: float): float =
@@ -109,12 +158,12 @@ proc arcLength(centerX: float, centerY: float, radius: float,
   let crossMagnitude = if crossProduct == 0.0: 0.0 else: abs(crossProduct)
   return radius * arctan2(crossMagnitude, dotProduct)
 ```
+The helper takes one circle and two points on it. `arctan2` of the absolute cross product and the dot product returns the smaller central angle. Radius times that angle is the arc length.
 
-The sign branch in `nextInt` keeps negative center coordinates. The `crossMagnitude` line turns negative zero into positive zero, which avoids a negative angle. Each arc computation costs a handful of floating point operations.
-
-Each case reads its six lane integers and four point coordinates. The smaller circle error decides which lane holds a point.
-
+**Circle geometry per case.**
 ```nim
+let caseCount = nextInt(inputData, scanPos)
+
 for i in 0..<caseCount:
   let centerOneX = nextInt(inputData, scanPos)
   let centerOneY = nextInt(inputData, scanPos)
@@ -180,11 +229,9 @@ for i in 0..<caseCount:
         intersectionY[1] = baseY - crossHeight * unitX
         intersectionCount = 2
 ```
+The program reads both circles and both points. Errors to each circle decide which lane holds home and school. The intersection formula gives zero, one, or two crossings, with a separate branch for coincident circles.
 
-The loop runs once per test case. The `geometryEpsilon` test avoids division by zero for equal centers. Tangent circles produce one crossing, and separate circles produce none.
-
-The graph uses `distanceGrid` over `nodeCount` nodes, then relaxes every triple.
-
+**Graph and shortest path.**
 ```nim
   var answer: float
   if coincident:
@@ -253,11 +300,26 @@ The graph uses `distanceGrid` over `nodeCount` nodes, then relaxes every triple.
 stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
-
-The loops cover both circles and every pair of nodes on each circle. The `unreachableDistance` marker keeps missing edges from changing a route. The final flush writes the buffered answers once.
+Each node records which circles contain it. Arcs fill a 4 by 4 grid, and three nested loops relax every path. The final value becomes -1 when it stays above half of unreachableDistance.
 
 ## Complexity
 
-Input scanning costs one pass over the input bytes. Each case takes constant work: one intersection computation and Floyd-Warshall on at most four nodes. Output costs one pass over the answer bytes.
+Each phase does fixed work per case.
 
-Total time is O(t) for t cases, and total space is O(t) for the two buffers. Per-case space is O(1). A dense angle sweep would spend O(S) per case for S samples per circle and would still return an approximate answer.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | one pass over input bytes | input bytes |
+| Circle geometry | O(1) | O(1) |
+| Arc grid | at most six arcs | O(1) |
+| Floyd-Warshall | 4 cubed relaxations | O(1) |
+| Output | one buffered write per block | flushBlockBytes |
+
+Every phase is constant in the problem size.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(1) |
+| Total time | O(input bytes + t) |
+| Space | O(input bytes) |
+
+An angle-sampling search would test many points per circle and still return an approximation, while this graph returns the exact route in fixed time.

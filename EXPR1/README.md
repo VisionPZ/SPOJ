@@ -1,50 +1,107 @@
+# EXPR1 — Expression (SPOJ)
+<https://www.spoj.com/problems/EXPR1/>
+
 ## Problem
 
-Each data set gives an arithmetic expression and a target value. Operators `+` and `-` sit at odd positions, and digits from 0 to 9 sit at even positions. Add matching parentheses so the expression equals the target with the fewest pairs, or print `NO`. Print one line per data set.
+A student adds parentheses to an arithmetic expression to hit a target value with the fewest pairs.
+The program checks whether any placement works.
 
-The bounds fix the size of every table.
+Read `d` data sets. Each gives expression length `n` and target `k`, then the expression string.
+The string starts with an operator and alternates operator and digit.
+Operators are `+` and `-`, and digits range from 0 to 9.
+
+Add matching parentheses so the value equals `k`.
+Print the smallest number of pairs, or `NO` when no placement works.
+
+The judge bounds follow.
 
 | item | bound |
-|---|---|
+| --- | --- |
 | data sets | at most 10 |
 | expression length `n` | even, 2 to 40 |
-| digit count `m` | 1 to 20 |
 | target `k` | -180 to 180 |
-| judge limits | 5 s, 1536 MB |
+| Time limit | 5000 ms |
+| Memory limit | 1536 MB |
 
 A 40-character expression always fits the largest table.
 
+The sample input and expected output follow verbatim.
+
+```
+5
+6 -4
++5-4+5
+2 1
++1
+4 1
+-1+1
+4 0
+-1+1
+4 -2
+-1+1
+```
+
+```
+1
+0
+NO
+0
+1
+```
+
+The first expression needs one pair to reach -4.
+
 ## Idea
 
-Parentheses change a value only when a minus sign stands before them. Such a group flips every later digit inside it, so a left-to-right scan tracks flips with the count of open groups. Listing every parenthesization grows past a billion trees at the largest size, while the scan visits one digit at a time.
+Parentheses matter only after a minus sign, like flipping a row of dominoes.
+A group after `+` changes nothing.
+A group after `-` flips every digit after its first inside that group.
 
-Cost per digit: at most 21 group counts times 361 value slots, about 7 600 state updates.
+Scan left to right with dynamic programming (a table of best costs for each state).
+The state is the number of open groups and the running value.
+Closing a group is free, so any group count can drop to a smaller one.
+Opening a group costs one pair and needs a minus before the boundary.
+
+Cost per digit is at most 21 group counts times 361 value slots.
+Listing every parenthesization grows past a billion trees at the largest size.
+Track flips with a group count instead of enumerating trees.
 
 ## Why It Works
 
-A group after `+` leaves all signs unchanged. A group after `-` flips every digit after its first digit. The first digit inside a group keeps its sign, because the minus outside replaces its own operator. Only one operator precedes a digit, so at most one group starts at each boundary. A digit is flipped exactly when the number of open groups is odd. Closing a group costs nothing, so any group count can drop to any smaller count. Starting a group needs a minus sign before the boundary and adds one pair.
+Four facts prove the method.
 
-The table index combines the group count and the running value.
+1. A group after `+` leaves signs unchanged.
+   A group after `-` flips every digit after its first inside the group.
+2. The first digit inside a group keeps its sign, because the outside minus replaces its own operator.
+3. A digit is flipped exactly when the number of open groups is odd.
+4. Closing costs nothing, so a suffix minimum over open counts drops to any smaller count for free.
 
-The value index adds the offset of 180 to the running value.
+The table index and its parts follow.
 
-`i = l * valueCount + k`
+| Term | Meaning |
+| --- | --- |
+| `l` | number of open groups at the current boundary |
+| `k` | running value shifted by the offset |
+| `valueOffset` | 180, which maps -180 to 180 onto non-negative indices |
+| `i = l * valueCount + k` | index into the flat cost table |
 
-The offset of 180 maps every value from -180 to 180 onto a non-negative index.
+The offset keeps every value index non-negative.
 
-The scan for +5-4+5 and target -4 reaches the answer in three digit steps.
+A script traces the first sample expression `+5-4+5` with target -4.
 
-| digit position | sign | digit | open groups | value | pairs |
-|---|---|---|---|---|---|
+| Digit position | Sign | Digit | Open groups | Value | Pairs |
+| --- | --- | --- | --- | --- | --- |
 | 1 | + | 5 | 0 | 5 | 0 |
 | 2 | - | 4 | 0 | 1 | 0 |
 | 3 | + | 5 | 1 | -4 | 1 |
 
-The start at position 3 builds the expression +5-(4+5) with value -4 and one pair.
+The expression becomes +5-(4+5) with value -4 and one pair.
 
 ## Code
 
-```
+**Constants.**
+
+```nim
 const maxTermCount = 20
 const maxOpenGroups = 20
 const valueOffset = 180
@@ -54,9 +111,15 @@ const tableSize = (maxOpenGroups + 1) * valueCount
 const flushBlockBytes = 1 shl 17
 ```
 
-Seven constants bound the tables. The state space has (20 + 1) times 361 slots. The offset turns a negative value into an array index.
+The tables hold 21 open group counts and 361 values. valueOffset shifts negative values into array indices. The output block holds 128 KiB.
 
-```
+**Scanners and table clear.**
+
+```nim
+proc skipWhitespace(inputData: string, i: var int) =
+  while i < inputData.len and inputData[i] <= ' ':
+    i = i + 1
+
 proc nextSignedInt(inputData: string, i: var int): int =
   skipWhitespace(inputData, i)
   var negative = false
@@ -76,11 +139,18 @@ proc nextTokenBounds(inputData: string, i: var int): tuple[first: int, count: in
   while i < inputData.len and inputData[i] > ' ':
     i = i + 1
   result.first = first
-  result.count = i - first```
+  result.count = i - first
 
-The driver reads the whole stream once, and these procs walk that buffer. The sign branch keeps negative targets. Token bounds point into the same buffer without copying. Scanning costs one pass over the input characters.
-
+proc clearCosts(costs: var array[0..tableSize - 1, int]) =
+  for i in 0 .. tableSize - 1:
+    costs[i] = impossibleCost
 ```
+
+nextSignedInt keeps a leading minus on the target. nextTokenBounds records a span without copying the expression. clearCosts fills a table with the impossible cost. Each helper costs one pass over its input span.
+
+**Dynamic program.**
+
+```nim
 proc solveCase(termCount: int, targetValue: int, expressionStart: int, inputData: string): int =
   var termOperators: array[0..maxTermCount - 1, char]
   var termDigits: array[0..maxTermCount - 1, int]
@@ -143,9 +213,11 @@ proc solveCase(termCount: int, targetValue: int, expressionStart: int, inputData
   return -1
 ```
 
-The loops cover 21 boundaries, 21 group counts, and 361 values. The suffix minimum closes groups at no cost. The minus check gates the purchase of a new pair. Four tables keep the stages separate, so processing a digit needs no allocation.
+The loop covers all boundaries, group counts, and values. The suffix minimum closes groups at no cost. A minus sign gates the purchase of a new pair. Four tables keep the stages separate without allocation.
 
-```
+**Driver.**
+
+```nim
 var inputData: string
 var inputLine: string
 while readLine(stdin, inputLine):
@@ -171,8 +243,25 @@ for j in 1 .. caseCount:
 stdout.write outputBuffer
 ```
 
-The driver reads all input lines into one string. It flushes the output buffer in 128 KiB blocks. Output cost stays proportional to the number of answers.
+The driver reads all input into one string. It halves n to get the digit count. An impossible answer prints NO. Output is flushed in 128 KiB blocks.
 
 ## Complexity
 
-Input costs one pass over at most 400 expression characters and ten targets. Each case updates about 159 000 states and clears four small tables. The program stores four tables of 7 581 integers, about 243 KB. Total time is O(d times m squared times V), with m at most 20 and V equal to 361. Listing every parenthesization costs Catalan(m - 1) parses, about 1.8 billion at m = 20.
+The phases and their costs follow.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(input bytes) | one input buffer |
+| Per case | O(m * V) | four tables of 7581 integers |
+| Output | O(d) lines | one output block |
+
+Here m is at most 20 and V is 361.
+
+The Big O summary follows.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(d * m * V) |
+| Space | O(m * V) |
+
+Listing every parenthesization costs Catalan(m - 1) parses, about 1.8 billion at m = 20.

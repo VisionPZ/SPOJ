@@ -1,10 +1,18 @@
+# CMPLS — Complete the Sequence! (SPOJ)
+
+<https://www.spoj.com/problems/CMPLS/>
+
 ## Problem
 
-Read T test cases. Each case gives S sequence values and asks for C following values. Use the lowest-degree polynomial that fits the given values. Print each completed line as C space-separated integers.
+A puzzle book prints number sequences with the last few entries missing. The reader must extend each line using the lowest-degree polynomial that fits the given values.
 
-The bounds stay small per case, and the case count is large.
+Input: one integer for the case count, then one case per block. Each block starts with S (given values) and C (requested values), followed by the S given integers.
 
-| Quantity | Bound |
+Output: each completed line as C space-separated integers on its own line.
+
+The statement and judge give these bounds:
+
+| Item | Bound |
 | --- | --- |
 | Test cases T | about 5000 |
 | Given values S | 1 to 99 |
@@ -13,36 +21,76 @@ The bounds stay small per case, and the case count is large.
 | Time limit | 5000 ms |
 | Memory limit | 1536 MB |
 
-The case count dominates the run time. Every answer is non-negative and fits a standard integer.
+Every answer is non-negative and fits a standard integer.
+
+The sample input and output:
+
+```
+4
+6 3
+1 2 3 4 5 6
+8 2
+1 2 4 7 11 16 22 29
+10 2
+1 1 1 1 1 1 1 1 1 2
+1 10
+3
+```
+
+```
+7 8 9
+37 46
+11 56
+3 3 3 3 3 3 3 3 3 3
+```
 
 ## Idea
 
-Build a table of consecutive differences until one value remains. The last value of each row holds the state for the next term. Walk from the deepest row to the top, costing O(S) per term instead of solving coefficients again.
+Extend a table of differences, like continuing a column of numbers by copying the last change down. Each new row subtracts neighbouring values from the row above.
+
+The program builds rows until one value remains, then keeps only each row's last value. Walking from the deepest row upward adds one change at a time and produces the next term.
+
+Each extension costs O(S) work, where S is the number of given values. Solving for polynomial coefficients from scratch would cost O(S³) per term.
+
+The table turns extrapolation into repeated addition.
 
 ## Why It Works
 
-A degree d polynomial has constant d-th differences. The deepest nonzero row of the table is therefore constant. The interpolation polynomial of degree at most S minus one fits all given points, and no polynomial of lower degree fits them. Extending the table by one step evaluates this polynomial at the next integer.
+A polynomial of degree d has constant d-th differences.
 
-For row k and position i: differenceRow[position] = upperRow[position + 1] - upperRow[position].
-For the carried value: carriedValue = lastElements[k] + carriedValue.
+1. The deepest nonzero row of the difference table is therefore constant.
+2. The interpolation polynomial (the unique lowest-degree fit) of degree at most S minus one matches every given point.
+3. No polynomial of lower degree matches all points unless a shallower row is already constant.
+4. Adding the deepest change to each row above evaluates that same polynomial at the next integer.
 
-The first line subtracts the current point from the next point. The second line adds the deeper row's change to the row above.
+The table uses two formulas per row:
 
-Worked example for 1 2 4 7 11:
+| Term | Formula |
+| --- | --- |
+| `lowerRow[k]` | `upperRow[k + 1] - upperRow[k]` |
+| carried value | `lastElements[k] + carriedValue` |
+| stop condition | upper row length equals 1 |
 
-| Row | Values | Last |
-| --- | --- | --- |
-| r0 | 1 2 4 7 11 | 11 |
-| r1 | 1 2 3 4 | 4 |
-| r2 | 1 1 1 | 1 |
-| r3 | 0 0 | 0 |
-| r4 | 0 | 0 |
+The first line subtracts the current point from the next point. The second line adds the deeper change to the row above.
 
-The deepest carried value is zero. Row r2 becomes 1 + 0 = 1, then r1 becomes 4 + 1 = 5. Row r0 becomes 11 + 5 = 16, the next term.
+A script extends the first sample case, `1 2 3 4 5 6`:
+
+```
+r0: 1 2 3 4 5 6   last 6
+r1:   1 1 1 1 1   last 1
+r2:     0 0 0 0   last 0
+next 1: 6 + (1 + 0) = 7
+next 2: 7 + (1 + 0) = 8
+next 3: 8 + (1 + 0) = 9
+```
+
+The three next terms are 7, 8, and 9, which match the sample output.
 
 ## Code
 
-```
+**Scanner.** The hand scanner keeps a minus sign, so negative sequence values survive.
+
+```nim
 const flushBlockBytes = 1 shl 17
 
 proc nextInt(inputData: string, i: var int): int64 =
@@ -64,9 +112,11 @@ proc nextInt(inputData: string, i: var int): int64 =
   return value
 ```
 
-The scanner stops at the buffer end, so it runs at most one pass over the input. The minus branch keeps negative sequence values intact. Its cost is one byte check per skipped character.
+The scan stops at the buffer end, so it makes at most one pass. The minus branch runs before the digit loop. Each skipped byte costs one check.
 
-```
+**Input setup.** The readLine loop builds one buffer, and each appended newline keeps boundaries visible.
+
+```nim
 var inputData = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
@@ -78,9 +128,11 @@ let caseCount = int(nextInt(inputData, i))
 var outputBuffer = ""
 ```
 
-The readLine loop appends every line into one buffer. The added newline keeps number boundaries visible. The loop runs once per input line and allocates no token objects.
+The loop runs once per input line and allocates no token objects. The first parsed integer is the case count. The output buffer starts empty.
 
-```
+**Table build and extension.** Rows are built once, then only their last values are carried forward.
+
+```nim
 for j in 0 ..< caseCount:
   let sequenceLength = int(nextInt(inputData, i))
   let completionCount = int(nextInt(inputData, i))
@@ -120,11 +172,28 @@ for j in 0 ..< caseCount:
 stdout.write outputBuffer
 ```
 
-The table loop stops when the row length reaches one, so it runs S minus one times. Keeping only each row's last value avoids rewriting the full table during extension. The leading-space check keeps the output free of extra separators. The buffer flushes every flushBlockBytes bytes and caps memory.
+The table loop stops when a row reaches length one. Keeping only last values avoids rewriting the table for every requested term. The leading-space check keeps the output free of extra separators.
 
 ## Complexity
 
-Table build costs O(S^2) time and O(S^2) space per case, with S below 100.
-Extension costs O(C * S) time and O(S) extra space per case.
-The whole run costs O(T * (S^2 + C * S)) time and O(S^2) working space.
-Solving the full coefficient system for every requested term costs O(S^3) per term.
+Table build costs O(S²) time and space per case, and each extension costs O(S) time.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Difference table | O(S²) per case | O(S²) rows |
+| Last values | O(S) per case | O(S) |
+| Extension | O(C × S) per case | O(S) |
+| Output | one write per 128 KiB block | 128 KiB |
+| Total per case | O(S² + C × S) | O(S²) |
+
+With S below 100, one table holds fewer than 5000 integers.
+
+The asymptotic bounds are as follows:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(T × (S² + C × S)) for T cases |
+| Space | O(S²) working space |
+
+Solving the full coefficient system for every term would cost O(S³) each time.

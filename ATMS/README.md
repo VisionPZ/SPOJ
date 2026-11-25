@@ -1,86 +1,74 @@
+# ATMS — Automatic Teller Machines (SPOJ)
+<https://www.spoj.com/problems/ATMS/>
+
 ## Problem
 
-Read a client count, then that many loan amounts. Each amount is a positive decimal number with at most 30 digits. For every amount, print two lines: the ATM numbers used to receive the loan, then the ATM numbers used to return it. Print each list in decreasing order, or print "No" when the amount cannot be formed.
+A borrower must assemble an exact amount from 100 ATMs that pay or collect powers of two.
+The bank needs a recipe to obtain each loan and another to return it, or a refusal.
 
-| Quantity | Bound |
+The first line gives the client count. Each next line holds a positive integer below 10 to the thirtieth power, written with at most 30 digits. Print two lines per client with ATM numbers in decreasing order, or the word No.
+
+The bounds and judge limits are:
+
+| Constraint | Value |
 | --- | --- |
-| Clients | at most 10000 |
-| Loan amount | positive, below 10^30, at most 30 digits |
-| ATMs | 100, numbered 0 to 99 |
-| Time limit | 5000 ms |
-| Memory limit | 1536 MB |
+| Clients n | up to 10000 |
+| Amount | fewer than 30 decimal digits |
+| ATMs | numbered 0 to 99 |
+| Judge time | 5 s |
+| Judge memory | 1536 MB |
 
-The 30-digit amounts exceed machine integers, so the program works on decimal digits.
+Decimal digit arithmetic handles amounts far beyond 64 bits.
+
+The sample input and its expected output follow byte for byte.
+
+```
+2
+7
+633825300114114700748351602698
+```
+
+```
+4 3 1 0
+3 0
+No
+99 3 1
+```
+
 
 ## Idea
 
-Write each loan in base minus two, called negabinary here. An even ATM i pays 2^i ducats, and an odd ATM i receives 2^i ducats. Both effects equal (-2)^i, so choosing ATMs means writing the amount as a sum of distinct powers of -2. This is the negabinary representation, with digits 0 and 1. Every integer has exactly one such representation, so the program never searches. The return line uses the representation of the negated amount.
-
-Cost per line: at most 101 halvings of a 40-digit decimal value.
+Convert the amount to signed binary digits (plus or minus powers of two), like writing a number on a balanced scale.
+The program walks the decimal digits from low to high and keeps the current sign. On each step it records a used bit, adjusts the low digit by one, and divides the whole digit array by two.
+Two calls with opposite starting signs give the obtain recipe and the return recipe. Trying subsets of 100 ATMs is impossible, while this scan takes a few hundred digit steps.
+A signed bit expansion gives both recipes in one short loop.
 
 ## Why It Works
 
-For even i, (-2)^i = 2^i. For odd i, (-2)^i = -2^i. Each ATM therefore supplies one negabinary digit, and a set digit means that ATM is used.
+1. Even ATMs pay a power of two, and odd ATMs collect one. Each used bit therefore contributes a signed power of two.
+2. Dividing by two after the adjustment reveals the next bit of the signed expansion.
+3. With a negative sign, an odd digit is raised by one so the step subtracts one unit; otherwise it is lowered by one.
+4. `usedBits` records the exponents, and an exponent above 99 produces No.
+5. The decreasing output order follows directly from walking the bits downward.
 
-From a signed remainder v, the next digit r is v modulo 2, and the next remainder is (v - r) / (-2). The program stores only the magnitude in `workDigits` and the sign in `signNegative`. It adds r for a negative remainder, subtracts r for a positive remainder, halves the digits, and flips the sign. A set digit past `lastAtmIndex` needs an ATM outside the room, so the answer is "No".
-
-The program keeps four small pieces of state during each conversion.
+Four terms describe the scan.
 
 | Term | Meaning |
 | --- | --- |
-| `workDigits` | magnitude of the remaining value, units digit first |
-| `signNegative` | sign of that remaining value |
-| `oddDigit` | next negabinary digit, equal to the remainder modulo 2 |
-| `usedBits` | marks the ATM indices that appear in the answer |
+| signed bit | one used exponent with a plus or minus sign |
+| sign flag | current direction of the next adjustment |
+| used bit | ATM exponent chosen on this step |
+| digit array | decimal amount stored low digit first |
 
-These four values replace a big integer and a search over ATM subsets.
+They explain why one scan covers both recipes.
 
-The worked example comes from `gen.py`. It converts 7 by groups of four.
-
-| Value | Quotient | Remainder | Digit 2k | Digit 2k+1 | Next value |
-| --- | --- | --- | --- | --- | --- |
-| 7 | 1 | 3 | 1 | 1 | 2 |
-| 2 | 0 | 2 | 0 | 1 | 1 |
-| 1 | 0 | 1 | 1 | 0 | 0 |
-
-The set digits are 0, 1, 3, and 4, so the loan line is "4 3 1 0". The negated amount -7 uses digits 0 and 3, so the return line is "3 0".
+A script check of 7 records bits 0, 1, 3, and 4 with signs plus, minus, minus, plus.
+That sum is 16 minus 8 minus 2 plus 1, which equals 7.
+Printing the exponents downward gives 4 3 1 0, matching the sample.
 
 ## Code
 
-The whole input stream lands in one string before parsing begins.
-
-```nim
-{.checks: off.}
-{.optimization: speed.}
-
-const firstDigitValue = 48
-const flushBlockBytes = 1 shl 18
-const digitCapacity = 40
-const bitCapacity = 128
-const lastAtmIndex = 99
-
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
-
-var scanPos = 0
-
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
-  var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
-  return value
-```
-
-The loop reads every line before any case runs, so no syscall sits inside the case loop. `nextInt` handles the client count only. Amounts can overflow an int, so they need a separate scanner. The pass costs one scan of the input bytes.
-
-The scanner finds the end of a token, then walks back through it.
-
+**Digit loader.**
 ```nim
 proc nextDigits(data: string, position: var int, digits: var array[0..digitCapacity - 1, int]) =
   while position < data.len and (data[position] < '0' or data[position] > '9'):
@@ -99,19 +87,10 @@ proc nextDigits(data: string, position: var int, digits: var array[0..digitCapac
   position = tokenEnd
 ```
 
-Walking back puts the units digit at index 0, which the halving loop needs. Storing digits forward would break every later division. The loop writes at most 40 digits per amount.
+The loader stores the token low digit first. Old values are cleared before each client. The parser stops at the end of the digit token.
 
-One buffer collects every answer and flushes in large blocks.
-
+**Zero test.**
 ```nim
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
-
 proc digitsAreZero(digits: array[0..digitCapacity - 1, int]): bool =
   for i in 0..<digitCapacity:
     if digits[i] != 0:
@@ -119,10 +98,9 @@ proc digitsAreZero(digits: array[0..digitCapacity - 1, int]): bool =
   return true
 ```
 
-`appendOutput` never writes per number, so the stream layer stays out of the hot path. `digitsAreZero` checks all 40 digits on each halving. The check costs one compare per digit.
+The test checks the fixed digit array. It ends the main loop once every digit is zero. The cost is one pass over 40 slots.
 
-The conversion loops over signed remainders and records each negabinary digit.
-
+**Signed bit expansion.**
 ```nim
 proc appendAtmList(valueDigits: array[0..digitCapacity - 1, int], negative: bool) =
   var workDigits = valueDigits
@@ -170,10 +148,9 @@ proc appendAtmList(valueDigits: array[0..digitCapacity - 1, int], negative: bool
   outputBuffer.add '\n'
 ```
 
-The loop stops when `workDigits` becomes zero, after at most 101 steps. The sign branch adds or subtracts `oddDigit` before halving, which keeps the division exact for negative remainders. The last loop prints marked indices from `highestBit` down to zero. Each step touches 40 digits.
+An odd digit selects one ATM exponent. The low digit is raised or lowered based on the sign flag. A long division by two advances to the next exponent.
 
-Each client needs one parse and two conversions.
-
+**Client driver.**
 ```nim
 let caseCount = nextInt(inputData, scanPos)
 var valueDigits: array[0..digitCapacity - 1, int]
@@ -186,8 +163,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The first call converts the loan, and the second converts its negation. The final write flushes the remaining buffer after the loop. The loop runs once per client.
+Each client is processed twice, once per sign. The two calls emit the obtain and return lines. A single write flushes all collected text.
+
 
 ## Complexity
 
-Reading takes time linear in the input size and holds one input buffer. Each conversion takes O(101 × 40) digit operations, a constant under the bounds. The full run takes O(n × 101 × 40) time and O(input bytes + 40 + 128) space. Enumerating all ATM subsets would take O(2^100) time per client.
+The loop runs for a few hundred bit steps, each touching a fixed digit array.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| digit loading | O(D) | digit array |
+| signed expansion | O(bits times D) | used bit array |
+| output | O(bits) | one output block |
+
+The fixed arrays make the work predictable for the largest amount.
+
+Big O uses D as the digit count and B as the number of bit steps.
+
+| Measure | Big O |
+| --- | --- |
+| time | O(B times D) per client |
+| space | O(D) |
+
+Subset search over 100 ATMs would need two to the hundredth power trials.

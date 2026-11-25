@@ -1,41 +1,87 @@
+# SQRROOT — Square Root (SPOJ)
+
+<https://www.spoj.com/problems/SQRROOT/>
+
 ## Problem
 
-The program reads t, then t positive integers. Each integer is a perfect square with at most 800 decimal digits. Print the integer square root of each number on its own line.
+A librarian reads labels with up to 800 digits and must find the shelf number whose square each label shows. Ordinary machine integers hold about 19 digits, so the librarian works on paper.
 
-| Quantity | Bound |
+Input: `t` test cases, then `t` positive integers. Each integer is a perfect square with at most 800 digits. Output: exactly `t` lines, each holding the integer square root of one input number.
+
+The statement gives these bounds:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | at most 50 |
-| Input digits per number | at most 800 |
-| Time limit | 1000 ms |
-| Memory limit | 1536 MB |
+| Test cases `t` | at most 50 |
+| Digits per number | at most 800 |
+| Value | guaranteed perfect square |
+| Judge limit | 1000 ms, 1536 MB |
 
-800 digits exceed every machine integer, so the program stores numbers as decimal digit arrays.
+Eight hundred digits rule out every built-in integer type.
+
+The sample input and output:
+
+```
+3
+36
+81
+226576
+```
+
+```
+6
+9
+476
+```
 
 ## Idea
 
-The program uses the schoolbook digit-by-digit method, which fixes one root digit per step. It reads the number in two-digit groups and keeps a remainder. A new digit y fits when (20R + y)y stays within that remainder. Each step tries at most ten digits with small products, so it never needs big-integer division.
+Fix one root digit at a time, the way long division fixes one quotient digit. Think of reading a long number two digits at a time and asking which digit fits.
 
-Cost per two-digit group: O(P) digit work for a P-digit root, with at most ten trials.
+The program uses the schoolbook digit-by-digit method on decimal limbs. Each two-digit group tries at most ten digits and compares small products. A number with `D` digits needs `D / 2` groups and `O(D)` work per group, so `O(D²)` overall.
+
+Repeated big-integer division would multiply and divide full 800-digit values at every step. That costs far more than comparing a few short products.
+
+Fixed digits never get revised, so one left-to-right pass finds the whole root.
 
 ## Why It Works
 
-Let R be the root found so far. The groups already processed equal 100R² + remainder. Appending digit y gives root 10R + y, whose square is 100R² + 20Ry + y². The digit fits when (20R + y)y ≤ remainder. After subtracting that product, the invariant holds for the next group.
+Four facts prove the digit rule.
 
-- `remOffset -= 2` shifts the remainder two decimal places; the old digits stay in place.
-- `pairPos += 2` advances to the next two input digits.
-- `rootOffset -= 1` makes room for the new most significant digit.
+1. Group the input digits in pairs from the left. An odd digit count gets a virtual leading zero, which changes no value.
+2. After some groups, the processed prefix equals `100R² + remainder`, where `R` is the root found so far.
+3. Appending digit `y` gives the root `10R + y`. Its square is `100R² + (20R + y)y`, so `y` fits when `(20R + y)y` stays at most the remainder.
+4. Subtracting that product restores the invariant for the next group. The input is a perfect square, so the final remainder is zero.
 
-The table below comes from the generator script for the sample number 226576.
+The buffers used for the arithmetic:
 
+| Term | Meaning |
+| --- | --- |
+| `pairValue` | next two input digits as a number |
+| `remainderBuf` | current remainder, stored low digit first |
+| `trialBuf` | the value `20R` as decimal limbs |
+| `productBuf` | candidate value `(20R + y)y` |
+| `chosenDigit` | largest fitting digit `y` |
+
+Limb arrays let the program compare products without any big-integer library.
+
+A generator trace for `226576`:
+
+```
 | pair | before | base | digit | product | after | root |
 | --- | --- | --- | --- | --- | --- | --- |
 | 22 | 22 | 0 | 4 | 16 | 6 | 4 |
 | 65 | 665 | 80 | 7 | 609 | 56 | 47 |
 | 76 | 5676 | 940 | 6 | 5676 | 0 | 476 |
+```
 
 The last row leaves a zero remainder, so 476 is the exact root.
 
+The odd-length case uses `pairPos -= 1`, which supplies the virtual leading zero. Trailing zero limbs are dropped after each subtraction, so the remainder keeps its true length.
+
 ## Code
+
+**Constants, input, and scanner.** The case count is parsed digit by digit from one buffer.
 
 ```nim
 {.push checks: off.}
@@ -67,12 +113,16 @@ proc nextToken(data: string, pos: var int, start: var int, finish: var int) =
 
 proc parseCount(data: string, start: int, finish: int): int =
   var value = 0
-  for k in start..<finish:
-    value = value * digitBase + int(data[k]) - firstDigitValue
+  for idx in start..<finish:
+    value = value * digitBase + int(data[idx]) - firstDigitValue
   return value
 ```
 
-One readLine loop gathers all input into a single string. nextToken skips separators, so spaces and blank lines both work. parseCount handles at most two digits. The scan costs one pass over the input.
+`limbLimit = 1001` covers 800 input digits and their 400 root digits.
+`nextToken` returns the start and finish of a number without copying it.
+`parseCount` handles the small case count.
+
+**Working buffers.** Five fixed arrays hold every intermediate value.
 
 ```nim
 var remainderBuf: array[0..limbLimit - 1, int]
@@ -80,7 +130,15 @@ var rootBuf: array[0..rootStart, int]
 var trialBuf: array[0..limbLimit - 1, int]
 var productBuf: array[0..limbLimit - 1, int]
 var chosenBuf: array[0..limbLimit - 1, int]
+```
 
+Each array has static size, so no case allocates new memory.
+Limb zero holds the least significant digit.
+Offsets leave room to prepend digits by decrementing.
+
+**Digit-by-digit root.** One pass over two-digit groups builds the answer.
+
+```nim
 proc squareRoot(data: string, start: int, finish: int): string =
   var remOffset = remainderStart
   var remLen = 0
@@ -104,8 +162,8 @@ proc squareRoot(data: string, start: int, finish: int): string =
 
     var baseLen = 0
     var carry = 0
-    for k in 0..<rootLen:
-      let value = rootBuf[rootOffset + k] * trialFactor + carry
+    for limbIdx in 0..<rootLen:
+      let value = rootBuf[rootOffset + limbIdx] * trialFactor + carry
       trialBuf[baseLen] = value mod digitBase
       baseLen += 1
       carry = value div digitBase
@@ -119,8 +177,8 @@ proc squareRoot(data: string, start: int, finish: int): string =
     for digit in countdown(maxTrialDigit, 0):
       var prodLen = 0
       carry = 0
-      for k in 0..<baseLen:
-        let value = trialBuf[k] * digit + carry
+      for limbIdx in 0..<baseLen:
+        let value = trialBuf[limbIdx] * digit + carry
         productBuf[prodLen] = value mod digitBase
         prodLen += 1
         carry = value div digitBase
@@ -129,15 +187,15 @@ proc squareRoot(data: string, start: int, finish: int): string =
         prodLen += 1
         carry = carry div digitBase
       var extra = digit * digit
-      var k = 0
+      var addIdx = 0
       while extra > 0:
-        if k == prodLen:
+        if addIdx == prodLen:
           productBuf[prodLen] = 0
           prodLen += 1
-        let value = productBuf[k] + extra
-        productBuf[k] = value mod digitBase
+        let value = productBuf[addIdx] + extra
+        productBuf[addIdx] = value mod digitBase
         extra = value div digitBase
-        k += 1
+        addIdx += 1
       while prodLen > 0 and productBuf[prodLen - 1] == 0:
         prodLen -= 1
       var order = 0
@@ -146,29 +204,29 @@ proc squareRoot(data: string, start: int, finish: int): string =
       elif prodLen > remLen:
         order = 1
       else:
-        var m = prodLen - 1
-        while m >= 0 and productBuf[m] == remainderBuf[remOffset + m]:
-          m -= 1
-        if m >= 0:
-          order = (if productBuf[m] < remainderBuf[remOffset + m]: -1 else: 1)
+        var cmpIdx = prodLen - 1
+        while cmpIdx >= 0 and productBuf[cmpIdx] == remainderBuf[remOffset + cmpIdx]:
+          cmpIdx -= 1
+        if cmpIdx >= 0:
+          order = (if productBuf[cmpIdx] < remainderBuf[remOffset + cmpIdx]: -1 else: 1)
       if order <= 0:
         chosenDigit = digit
         chosenLen = prodLen
-        for k in 0..<prodLen:
-          chosenBuf[k] = productBuf[k]
+        for limbIdx in 0..<prodLen:
+          chosenBuf[limbIdx] = productBuf[limbIdx]
         break
 
     var borrow = 0
-    for k in 0..<remLen:
-      var value = remainderBuf[remOffset + k] - borrow
-      if k < chosenLen:
-        value -= chosenBuf[k]
+    for limbIdx in 0..<remLen:
+      var value = remainderBuf[remOffset + limbIdx] - borrow
+      if limbIdx < chosenLen:
+        value -= chosenBuf[limbIdx]
       if value < 0:
         value += digitBase
         borrow = 1
       else:
         borrow = 0
-      remainderBuf[remOffset + k] = value
+      remainderBuf[remOffset + limbIdx] = value
     while remLen > 0 and remainderBuf[remOffset + remLen - 1] == 0:
       remLen -= 1
 
@@ -178,11 +236,15 @@ proc squareRoot(data: string, start: int, finish: int): string =
     pairPos += 2
 
   result = newString(rootLen)
-  for k in 0..<rootLen:
-    result[rootLen - 1 - k] = char(rootBuf[rootOffset + k] + firstDigitValue)
+  for limbIdx in 0..<rootLen:
+    result[rootLen - 1 - limbIdx] = char(rootBuf[rootOffset + limbIdx] + firstDigitValue)
 ```
 
-Five global arrays hold the working digits, so no allocation happens inside the loop. The while pairPos < finish loop runs ceil(D/2) times for D input digits. The countdown tries digits from 9 down to 0, and the first fit wins. Comparison and subtraction work on digit arrays, not machine integers.
+The outer loop advances `pairPos` by two until it reaches `finish`.
+The candidate loop runs `digit` from 9 down to 0 and stops at the first fit.
+The borrow loop subtracts the chosen product limb by limb, and the root digit is stored at the new front offset.
+
+**Buffered output.** Each root becomes one line in a shared buffer.
 
 ```nim
 var outputBuffer = ""
@@ -197,7 +259,7 @@ var tokenStart = 0
 var tokenFinish = 0
 nextToken(inputData, scanPos, tokenStart, tokenFinish)
 let caseCount = parseCount(inputData, tokenStart, tokenFinish)
-for j in 0..<caseCount:
+for caseIdx in 0..<caseCount:
   nextToken(inputData, scanPos, tokenStart, tokenFinish)
   appendOutput(squareRoot(inputData, tokenStart, tokenFinish))
   outputBuffer.add '\n'
@@ -206,8 +268,29 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-appendOutput flushes at 256 KiB, and the final write clears the tail. Each result gets one newline. The output stays in one buffer, so the program writes at most two blocks.
+`appendOutput` flushes at 256 KiB, which bounds memory for 50 long answers.
+The final write covers the tail.
+`parseCount` reads the header before the case loop begins.
 
 ## Complexity
 
-Let D be the input digit count and P = D/2 pairs. One pair costs O(P) digit work for the base and up to ten trials. The total per number is O(P²), or O(D²). Five arrays of 1001 digits use about 40 KB. For 50 numbers of 800 digits the program performs roughly 16 million digit operations. A binary search over 400-digit candidates would need big-integer division at every probe.
+Each two-digit group compares at most ten candidates over short limb arrays.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| One two-digit group | O(10 × D) limb steps | O(D) limb arrays |
+| One number | O(D²) for `D / 2` groups | O(D) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total, 50 cases | O(50 × D²) | O(D) plus buffers |
+
+At `D = 800` the program handles 400 groups per case.
+
+The asymptotic bounds follow from the table:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(D²) per number, O(t × D²) overall |
+| Space | O(D) for limbs, plus input and output buffers |
+
+Full-width big-integer division at every digit would cost more than these short limb comparisons.

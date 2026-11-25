@@ -27,8 +27,8 @@ proc nextToken(data: string, pos: var int, start: var int, finish: var int) =
 
 proc parseCount(data: string, start: int, finish: int): int =
   var value = 0
-  for k in start..<finish:
-    value = value * digitBase + int(data[k]) - firstDigitValue
+  for idx in start..<finish:
+    value = value * digitBase + int(data[idx]) - firstDigitValue
   return value
 
 var remainderBuf: array[0..limbLimit - 1, int]
@@ -60,8 +60,8 @@ proc squareRoot(data: string, start: int, finish: int): string =
 
     var baseLen = 0
     var carry = 0
-    for k in 0..<rootLen:
-      let value = rootBuf[rootOffset + k] * trialFactor + carry
+    for limbIdx in 0..<rootLen:
+      let value = rootBuf[rootOffset + limbIdx] * trialFactor + carry
       trialBuf[baseLen] = value mod digitBase
       baseLen += 1
       carry = value div digitBase
@@ -75,8 +75,8 @@ proc squareRoot(data: string, start: int, finish: int): string =
     for digit in countdown(maxTrialDigit, 0):
       var prodLen = 0
       carry = 0
-      for k in 0..<baseLen:
-        let value = trialBuf[k] * digit + carry
+      for limbIdx in 0..<baseLen:
+        let value = trialBuf[limbIdx] * digit + carry
         productBuf[prodLen] = value mod digitBase
         prodLen += 1
         carry = value div digitBase
@@ -85,15 +85,15 @@ proc squareRoot(data: string, start: int, finish: int): string =
         prodLen += 1
         carry = carry div digitBase
       var extra = digit * digit
-      var k = 0
+      var addIdx = 0
       while extra > 0:
-        if k == prodLen:
+        if addIdx == prodLen:
           productBuf[prodLen] = 0
           prodLen += 1
-        let value = productBuf[k] + extra
-        productBuf[k] = value mod digitBase
+        let value = productBuf[addIdx] + extra
+        productBuf[addIdx] = value mod digitBase
         extra = value div digitBase
-        k += 1
+        addIdx += 1
       while prodLen > 0 and productBuf[prodLen - 1] == 0:
         prodLen -= 1
       var order = 0
@@ -102,29 +102,29 @@ proc squareRoot(data: string, start: int, finish: int): string =
       elif prodLen > remLen:
         order = 1
       else:
-        var m = prodLen - 1
-        while m >= 0 and productBuf[m] == remainderBuf[remOffset + m]:
-          m -= 1
-        if m >= 0:
-          order = (if productBuf[m] < remainderBuf[remOffset + m]: -1 else: 1)
+        var cmpIdx = prodLen - 1
+        while cmpIdx >= 0 and productBuf[cmpIdx] == remainderBuf[remOffset + cmpIdx]:
+          cmpIdx -= 1
+        if cmpIdx >= 0:
+          order = (if productBuf[cmpIdx] < remainderBuf[remOffset + cmpIdx]: -1 else: 1)
       if order <= 0:
         chosenDigit = digit
         chosenLen = prodLen
-        for k in 0..<prodLen:
-          chosenBuf[k] = productBuf[k]
+        for limbIdx in 0..<prodLen:
+          chosenBuf[limbIdx] = productBuf[limbIdx]
         break
 
     var borrow = 0
-    for k in 0..<remLen:
-      var value = remainderBuf[remOffset + k] - borrow
-      if k < chosenLen:
-        value -= chosenBuf[k]
+    for limbIdx in 0..<remLen:
+      var value = remainderBuf[remOffset + limbIdx] - borrow
+      if limbIdx < chosenLen:
+        value -= chosenBuf[limbIdx]
       if value < 0:
         value += digitBase
         borrow = 1
       else:
         borrow = 0
-      remainderBuf[remOffset + k] = value
+      remainderBuf[remOffset + limbIdx] = value
     while remLen > 0 and remainderBuf[remOffset + remLen - 1] == 0:
       remLen -= 1
 
@@ -134,8 +134,8 @@ proc squareRoot(data: string, start: int, finish: int): string =
     pairPos += 2
 
   result = newString(rootLen)
-  for k in 0..<rootLen:
-    result[rootLen - 1 - k] = char(rootBuf[rootOffset + k] + firstDigitValue)
+  for limbIdx in 0..<rootLen:
+    result[rootLen - 1 - limbIdx] = char(rootBuf[rootOffset + limbIdx] + firstDigitValue)
 
 var outputBuffer = ""
 
@@ -149,7 +149,7 @@ var tokenStart = 0
 var tokenFinish = 0
 nextToken(inputData, scanPos, tokenStart, tokenFinish)
 let caseCount = parseCount(inputData, tokenStart, tokenFinish)
-for j in 0..<caseCount:
+for caseIdx in 0..<caseCount:
   nextToken(inputData, scanPos, tokenStart, tokenFinish)
   appendOutput(squareRoot(inputData, tokenStart, tokenFinish))
   outputBuffer.add '\n'

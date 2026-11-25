@@ -1,46 +1,98 @@
+# STORE — Store-keeper (SPOJ)
+
+<https://www.spoj.com/problems/STORE/>
+
 ## Problem
 
-The store floor is a grid of square fields. One field holds a parcel, one holds the store-keeper, and one is the target. Cases block movement. Empty fields and the target do not.
+A store-keeper must push a parcel across a floor of fixed crates to a target square. Walking around the parcel costs nothing, but each push counts, and the keeper wants the smallest count.
 
-The keeper walks to a field beside the parcel, then pushes it one field. Print the fewest pushes that put the parcel on the target. Print `NO` when no push sequence can do this.
+Input: `t` test cases. Each case starts with `n m`, then `n` lines of `m` letters. `S` is a crate, `M` is the keeper, `P` is the parcel, `K` is the target, and `w` is empty floor.
 
-| Quantity | Bound |
+Output: `NO` when the target is unreachable, or the minimum number of pushes.
+
+The statement gives these bounds:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | given on the first line |
-| Grid height and width | at most 100 each |
-| Time limit | 7000 ms |
-| Memory limit | 1536 MB |
+| Grid size | `n`, `m` at most 100 |
+| Markers `M`, `P`, `K` | exactly one of each per case |
+| Judge limit | 7000 ms, 1536 MB |
 
-The grid size sets the number of cells the search can visit.
+A grid holds up to 10,000 squares, so a state must stay small.
+
+The sample input and output:
+
+```
+1
+10 12
+SSSSSSSSSSSS
+SwwwwwwwSSSS
+SwSSSSwwSSSS
+SwSSSSwwSKSS
+SwSSSSwwSwSS
+SwwwwwPwwwww
+SSSSSSSwSwSw
+SSSSSSMwSwww
+SSSSSSSSSSSS
+SSSSSSSSSSSS
+```
+
+```
+7
+```
 
 ## Idea
 
-The program searches states made of a parcel cell and the direction of the keeper's last cell. Walking costs no pushes, so the exact walking path never enters the state. One depth-first pass labels every free grid edge with a biconnected block. Two neighbors of a cell share a block exactly when a path joins them without passing through that cell.
+Forget the keeper's exact square and remember only which side of the parcel they stand on. Think of a moving crew that counts shoves, not footsteps.
 
-Cost per state: four label comparisons and at most four push checks.
+The program first labels edge blocks (groups of squares linked without a bridge) with Tarjan's low-link search. Inside one block, the keeper can walk to any standing square for free. A breadth-first search then explores states of parcel square plus standing side.
+
+A naive search tracks both the parcel square and the keeper square. That gives up to `(nm)²` states and cannot fit a 100 by 100 floor. The block search uses only `4nm` states.
+
+Free walking collapses many keeper positions into one state per parcel side.
 
 ## Why It Works
 
-A biconnected block is a set of edges that stays connected after any one vertex is removed. Two neighbors of a cell share a block when a cycle passes through the cell and both neighbors. That cycle gives a path between the neighbors that avoids the cell.
+Four facts justify the block state.
 
-- `delta[d]` is the row or column step for direction `d`.
-- `landingCell = parcelHere + delta[d]` is the cell the parcel enters.
-- `standDir = d xor 1` is the direction of the cell where the keeper must stand.
-- `edgeBlock[parcelHere * 4 + prevDir]` is the block of the keeper's edge into the parcel cell.
+1. A push needs the keeper on the square opposite the landing square, and both must be open.
+2. Two squares in the same edge block stay mutually reachable after removing any single square edge. The keeper can therefore change sides inside that block without a push.
+3. Tarjan's search assigns a block to each directed square edge when `lowLink` reaches the parent's discovery time.
+4. Breadth-first search over states uses unit cost per push, so the first arrival at the target has the fewest pushes.
 
-A push is legal when the landing cell is free and both standing cells carry the same block. The search stores the push count for each state, so the first state that reaches the target has the minimum count.
+The arrays that drive the search:
 
-A script reconstructs the minimum path for the sample. Coordinates start at one. The keeper starts at (8, 7), the parcel at (6, 7), and the target at (4, 10). The seven pushes move the parcel through:
+| Term | Meaning |
+| --- | --- |
+| `blocked[cell]` | true for a crate or the border ring |
+| `discTime`, `lowLink` | Tarjan discovery time and earliest reachable time |
+| `edgeBlock[cell * 4 + dir]` | block id of one directed edge |
+| `pushDist[state]` | fewest pushes reaching a parcel-side state |
+| `stateQueue` | queue of parcel-side states |
 
-```text
-(6, 7) -> (6, 8) -> (6, 9) -> (6, 10) -> (6, 11) -> (6, 10) -> (5, 10) -> (4, 10)
+The border ring keeps every neighbor index inside the flat arrays.
+
+A script trace of the pushes in the sample case, using one-based row and column:
+
+```
+parcel 6,7 keeper 8,7 target 4,10
+| push | parcel from | parcel to | pushes so far |
+| --- | --- | --- | --- |
+| 1 | 6,7 | 6,8 | 1 |
+| 2 | 6,8 | 6,9 | 2 |
+| 3 | 6,9 | 6,10 | 3 |
+| 4 | 6,10 | 6,11 | 4 |
+| 5 | 6,11 | 6,10 | 5 |
+| 6 | 6,10 | 5,10 | 6 |
+| 7 | 5,10 | 4,10 | 7 |
+answer = 7
 ```
 
-The parcel moves right four times, back left once, then up twice. The keeper must step around the parcel before the upward pushes.
+The fifth push steps back, then the keeper turns the parcel upward through the gap.
 
 ## Code
 
-The input goes into one buffer. The scanner walks that buffer by index and skips spaces and blank lines between cases.
+**Input and field reader.** One buffer holds the stream, and a scanner extracts numbers and grid letters.
 
 ```nim
 {.push checks: off.}
@@ -68,10 +120,10 @@ proc nextInt(data: string, pos: var int): int =
 
 proc nextField(data: string, pos: var int): char =
   while pos < data.len:
-    let c = data[pos]
-    if c == 'S' or c == 'M' or c == 'P' or c == 'K' or c == 'w':
+    let cellChar = data[pos]
+    if cellChar == 'S' or cellChar == 'M' or cellChar == 'P' or cellChar == 'K' or cellChar == 'w':
       pos += 1
-      return c
+      return cellChar
     pos += 1
   return 'S'
 
@@ -81,48 +133,57 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
-
 ```
 
-The scanner stops at the first field letter, so no grid word is read twice. Runtime checks stay off for the whole file. The scan costs one pass over the input.
+`nextField` skips whitespace and returns one of the five grid letters.
+The scanner handles only positive dimensions.
+The output helper flushes at 256 KiB.
 
-The padded grid puts a wall around the board. A depth-first search labels the free edges with biconnected blocks.
+**Shared search state.** Arrays are reused across cases to avoid repeated allocation.
 
 ```nim
 var stride = 0
 var delta: array[4, int]
 var blocked: seq[bool]
 var edgeBlock: seq[int]
-var disc: seq[int]
+var discTime: seq[int]
 var lowLink: seq[int]
 var parentCell: seq[int]
 var edgeStack: seq[int]
 var visitStamp: seq[int]
 var floodQueue: seq[int]
-var distArr: seq[int]
+var pushDist: seq[int]
 var stateQueue: seq[int]
 var stateHead = 0
 var stateTail = 0
 var stampCounter = 0
 var dfsTime = 0
 var blockCount = 0
+```
 
+`stride` is `cols + 2`, which leaves a crate ring around the grid.
+`delta` holds the four flat-array steps.
+All queues and distance arrays are rebuilt per case.
+
+**Edge blocks.** Tarjan's search labels each directed edge with a block id.
+
+```nim
 proc tarjanDfs(cell: int) =
   dfsTime += 1
-  disc[cell] = dfsTime
+  discTime[cell] = dfsTime
   lowLink[cell] = dfsTime
-  for d in 0..3:
-    let neighbor = cell + delta[d]
+  for dirIdx in 0..3:
+    let neighbor = cell + delta[dirIdx]
     if blocked[neighbor]:
       continue
-    if disc[neighbor] == 0:
+    if discTime[neighbor] == 0:
       parentCell[neighbor] = cell
       let stackTop = edgeStack.len
-      edgeStack.add(cell * 4 + d)
+      edgeStack.add(cell * 4 + dirIdx)
       tarjanDfs(neighbor)
       if lowLink[neighbor] < lowLink[cell]:
         lowLink[cell] = lowLink[neighbor]
-      if lowLink[neighbor] >= disc[cell]:
+      if lowLink[neighbor] >= discTime[cell]:
         blockCount += 1
         while edgeStack.len > stackTop:
           let edge = edgeStack[edgeStack.len - 1]
@@ -132,11 +193,19 @@ proc tarjanDfs(cell: int) =
           let toCell = fromCell + delta[fromDir]
           edgeBlock[fromCell * 4 + fromDir] = blockCount
           edgeBlock[toCell * 4 + (fromDir xor 1)] = blockCount
-    elif neighbor != parentCell[cell] and disc[neighbor] < disc[cell]:
-      edgeStack.add(cell * 4 + d)
-      if disc[neighbor] < lowLink[cell]:
-        lowLink[cell] = disc[neighbor]
+    elif neighbor != parentCell[cell] and discTime[neighbor] < discTime[cell]:
+      edgeStack.add(cell * 4 + dirIdx)
+      if discTime[neighbor] < lowLink[cell]:
+        lowLink[cell] = discTime[neighbor]
+```
 
+A spanning-tree edge enters the stack, and a back edge lowers `lowLink`.
+When `lowLink[neighbor] >= discTime[cell]`, the popped edges form one block.
+Both directions receive the same id, so free walking works either way.
+
+**Start states.** A flood fill finds which parcel sides the keeper can reach at no cost.
+
+```nim
 proc initStart(parcelCell: int, keeperCell: int) =
   blocked[parcelCell] = true
   stampCounter += 1
@@ -149,26 +218,26 @@ proc initStart(parcelCell: int, keeperCell: int) =
   while head < tail:
     let cell = floodQueue[head]
     head += 1
-    for e in 0..3:
-      let nextCell = cell + delta[e]
+    for dirIdx in 0..3:
+      let nextCell = cell + delta[dirIdx]
       if not blocked[nextCell] and visitStamp[nextCell] != stamp:
         visitStamp[nextCell] = stamp
         floodQueue[tail] = nextCell
         tail += 1
   blocked[parcelCell] = false
-  for d in 0..3:
-    if not blocked[parcelCell + delta[d]] and visitStamp[parcelCell + delta[d]] == stamp:
-      let state = parcelCell * 4 + d
-      distArr[state] = 0
+  for dirIdx in 0..3:
+    if not blocked[parcelCell + delta[dirIdx]] and visitStamp[parcelCell + delta[dirIdx]] == stamp:
+      let state = parcelCell * 4 + dirIdx
+      pushDist[state] = 0
       stateQueue[stateTail] = state
       stateTail += 1
-
-
 ```
 
-The search visits each free cell once and crosses each edge twice. `edgeStack` holds edges until a block closes. The start flood visits the keeper's reachable cells once.
+The parcel is marked blocked during the flood, then unblocked.
+`stampCounter` avoids clearing the whole visit array.
+Each reachable side seeds a state with distance zero.
 
-The search pairs each parcel cell with the direction of the keeper's last cell.
+**Case driver and push search.** Each push checks a landing square and a standing square in one block.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -182,15 +251,15 @@ for caseIndex in 0..<caseCount:
   delta[2] = -1
   delta[3] = 1
   blocked = newSeq[bool](cellTotal)
-  for i in 0..<cellTotal:
-    blocked[i] = true
+  for cellIdx in 0..<cellTotal:
+    blocked[cellIdx] = true
   var parcelCell = 0
   var keeperCell = 0
   var targetCell = 0
-  for i in 1..rows:
-    for j in 1..cols:
+  for rowIdx in 1..rows:
+    for colIdx in 1..cols:
       let field = nextField(inputData, scanPos)
-      let cell = i * stride + j
+      let cell = rowIdx * stride + colIdx
       blocked[cell] = (field == 'S')
       if field == 'P':
         parcelCell = cell
@@ -199,24 +268,24 @@ for caseIndex in 0..<caseCount:
       elif field == 'K':
         targetCell = cell
   edgeBlock = newSeq[int](cellTotal * 4)
-  for i in 0..<edgeBlock.len:
-    edgeBlock[i] = -1
-  disc = newSeq[int](cellTotal)
+  for edgeIdx in 0..<edgeBlock.len:
+    edgeBlock[edgeIdx] = -1
+  discTime = newSeq[int](cellTotal)
   lowLink = newSeq[int](cellTotal)
   parentCell = newSeq[int](cellTotal)
-  for i in 0..<cellTotal:
-    parentCell[i] = -1
+  for cellIdx in 0..<cellTotal:
+    parentCell[cellIdx] = -1
   edgeStack = newSeq[int](cellTotal * 4)
   dfsTime = 0
   blockCount = 0
-  for i in 0..<cellTotal:
-    if not blocked[i] and disc[i] == 0:
-      tarjanDfs(i)
+  for cellIdx in 0..<cellTotal:
+    if not blocked[cellIdx] and discTime[cellIdx] == 0:
+      tarjanDfs(cellIdx)
   visitStamp = newSeq[int](cellTotal)
   floodQueue = newSeq[int](cellTotal)
-  distArr = newSeq[int](cellTotal * 4)
-  for i in 0..<distArr.len:
-    distArr[i] = -1
+  pushDist = newSeq[int](cellTotal * 4)
+  for stateIdx in 0..<pushDist.len:
+    pushDist[stateIdx] = -1
   stateQueue = newSeq[int](cellTotal * 4)
   stateHead = 0
   stateTail = 0
@@ -230,20 +299,20 @@ for caseIndex in 0..<caseCount:
       stateHead += 1
       let parcelHere = state div 4
       let prevDir = state mod 4
-      let pushCount = distArr[state]
-      for d in 0..3:
-        let landingCell = parcelHere + delta[d]
+      let pushCount = pushDist[state]
+      for dirIdx in 0..3:
+        let landingCell = parcelHere + delta[dirIdx]
         if blocked[landingCell]:
           continue
-        let standDir = d xor 1
+        let standDir = dirIdx xor 1
         let standCell = parcelHere + delta[standDir]
         if blocked[standCell]:
           continue
         if edgeBlock[parcelHere * 4 + prevDir] != edgeBlock[parcelHere * 4 + standDir]:
           continue
         let nextState = landingCell * 4 + standDir
-        if distArr[nextState] == -1:
-          distArr[nextState] = pushCount + 1
+        if pushDist[nextState] == -1:
+          pushDist[nextState] = pushCount + 1
           if landingCell == targetCell:
             answer = pushCount + 1
             break
@@ -254,18 +323,33 @@ for caseIndex in 0..<caseCount:
   else:
     appendOutput($(answer))
   outputBuffer.add '\n'
-
-stdout.write outputBuffer
-outputBuffer.setLen 0
-{.pop.}
-{.pop.}
-
 ```
 
-The queue holds at most `cellTotal * 4` states. A state repeats only when a shorter push count arrives, and the search stops at the first push onto the target. Each state spends four comparisons and up to four push checks.
+`cellTotal` includes the border ring, so every `delta` step stays in range.
+The block equality test replaces a full walking search.
+The queue visits each state once, and the first target hit gives the minimum.
 
 ## Complexity
 
-Input scanning costs O(C) time for C input characters and uses one buffer. The depth-first pass and the start flood cost O(P) time each, where P is the padded cell count. The push search visits at most 4P states and spends O(1) work on each. Output costs one line per case.
+Both the block labeling and the state search are linear in grid squares.
 
-The total time and space are O(P). A search over the full parcel-and-keeper grid would track P^2 states and walk edges explicitly.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Grid build | O(nm) | O(nm) for `blocked` |
+| Tarjan blocks | O(nm) over four edges per square | O(nm) for arrays and stack |
+| Start flood fill | O(nm) | O(nm) for the queue |
+| Push search | O(nm) states, four transitions each | O(nm) for distances |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(nm) | O(nm) |
+
+At `n = m = 100` the search holds about 40,000 parcel-side states.
+
+The asymptotic bounds follow from the table:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(nm) per case |
+| Space | O(nm) per case, plus buffers |
+
+Tracking the keeper square as well would raise the state count to O((nm)²) and slow every case sharply.

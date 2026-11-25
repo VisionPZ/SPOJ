@@ -1,54 +1,111 @@
+# MAWORK — Men at Work (SPOJ)
+<https://www.spoj.com/problems/MAWORK/>
+
 ## Problem
 
-Read several test cases. Each case gives an N by N grid of open and blocked cells at time zero. A second N by N grid gives each cell a period digit from 0 to 9. A positive digit d makes the cell alternate between blocked and open every d time units. Zero freezes the cell. A car starts at the top-left cell at time zero. Each move to a neighbour or stay costs one unit. The destination cell must be open at arrival. Print the earliest arrival time at the bottom-right cell, or print NO.
+A driver crosses a city of streets that open and close on fixed schedules. The shortest trip must respect every roadblock on arrival.
 
-| Quantity | Bound |
+The input starts with the case count. Each case gives a grid size, an initial grid of open and blocked cells, and one period digit per cell. Print the earliest arrival time at the bottom-right cell, or `NO`.
+
+The judge bounds are:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | 10 |
-| Grid side | 25 |
-| Period digit | 9 |
-| Time limit | 9000 ms |
-| Memory limit | 1536 MB |
+| Cases | at most 10 |
+| Grid side `N` | 2 to 25 |
+| Period digit | 0 to 9 |
+| Judge time | 9000 ms |
+| Memory | 1536 MB |
+| Source size | 50000 B |
 
-The small grid hides a long time cycle that drives the design.
+The period cycle stays small enough for a state graph.
+
+Sample input and output:
+
+Input:
+
+```
+2
+10
+.*********
+........**
+*.******.*
+*.******.*
+*.******.*
+*........*
+*.******.*
+*.******.*
+*........*
+********..
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0123456780
+0000000000
+0000000000
+0123456780
+0000000000
+3
+...
+**.
+**.
+021
+002
+000
+```
+
+Output:
+
+```
+34
+NO
+```
 
 ## Idea
 
-Track time by its remainder modulo 5040. That number is the least common multiple of 2d for every digit d from 1 to 9. A cell state depends only on its cell index, its period digit, and time modulo 2d. So a search state is one cell plus one time remainder. Breadth-first search over these states returns the first arrival time. It checks five moves per state. A search over raw time would revisit the same cell and phase at many different times.
+Track time by its remainder on one shared clock. Think of blinking traffic lights whose periods all realign every 5040 seconds.
 
-Cost: five neighbour checks for each cell and remainder pair.
+The program runs breadth-first search (a shortest-path walk over states) on cell plus time remainder. Five moves leave each state: north, south, west, east, and stay. Each state costs five checks. A search over raw time would revisit the same cell and phase many times.
+
+Takeaway: the clock remainder makes the state graph finite.
 
 ## Why It Works
 
-A cell with digit d and initial state s is open at time t when the parity of t div d matches s. The cell state repeats every 2d units. The grid repeats every 5040 units, the least common multiple of 2, 4, 6, 8, 10, 12, 14, 16 and 18. Two visits to the same cell and remainder have identical future moves. The later visit can be dropped. Breadth-first search visits states in time order, so the first arrival is minimal.
+Every cell repeats its status on a common cycle.
 
-- `phaseIndex = (arrivalTime mod cycleLength) div duration` finds the alternating block at arrival.
-- `nextState = nextCell * cycleLength + (arrivalTime mod cycleLength)` packs a cell and a remainder into one number.
-- `seenGeneration[nextState]` stores the test case number of the first visit.
+1. A cell with period `d` alternates open and blocked in blocks of `d` seconds.
+2. The least common multiple of `2d` for digits 1 to 9 is 5040.
+3. `isCellOpen` flips the initial status when the phase index is odd.
+4. A state packs a cell index and `arrivalTime mod 5040`.
+5. Breadth-first search visits states by increasing time, so the first target hit is earliest.
 
-A script-generated trace shows the two edge shapes:
+The terms are:
 
-```
-2x2 all open, all period 0
-t=0 reachable (0,0); t=1 (0,1),(1,0); t=2 (1,1)
-answer 2
+| Term | Meaning |
+| --- | --- |
+| `cycleLength` | 5040, the shared period |
+| `periodLength` | Working and resting block length |
+| `currentState` | Cell index times 5040 plus time remainder |
+| `seenGeneration` | Visit stamp for the current case |
 
-3x3 sample: (1,2) has period 2 and starts open
-t=0 (0,2) period 1 open=True  (1,2) period 2 open=True
-t=1 (0,2) period 1 open=False  (1,2) period 2 open=True
-t=2 (0,2) period 1 open=True  (1,2) period 2 open=False
-t=3 (0,2) period 1 open=False  (1,2) period 2 open=False
-t=4 (0,2) period 1 open=True  (1,2) period 2 open=True
-t=5 (0,2) period 1 open=False  (1,2) period 2 open=True
-t=6 (0,2) period 1 open=True  (1,2) period 2 open=False
-t=7 (0,2) period 1 open=False  (1,2) period 2 open=False
-arriving at (1,2) from (0,2) always takes an odd time, so the car is stuck
-answer NO
-```
+One stamp per case avoids clearing the whole visited array.
 
-The car reaches (1,2) only at odd times, when that cell is blocked.
+A script checked the small sample grid:
+
+| Cell | Initial | Period | Status at times 0, 1, 2, 3 |
+| --- | --- | --- | --- |
+| (0, 0) | open | 0 | open, open, open, open |
+| (0, 1) | open | 2 | open, open, blocked, blocked |
+| (1, 2) | blocked | 2 | blocked, blocked, open, open |
+| (2, 2) | open | 0 | open, open, open, open |
+
+The fixed walls isolate the target, so the answer is `NO`.
 
 ## Code
+
+**Constants.**
 
 ```nim
 const firstDigitValue = 48
@@ -60,7 +117,9 @@ const maxStateCount = maxCellCount * cycleLength
 const stayDirection = 4
 ```
 
-Seven constants fix the buffers and the time cycle. Digit 8 needs a 16 unit cycle, so the full grid needs 5040. The constants cost no runtime work.
+`cycleLength` is the least common multiple of all doubled periods. `maxStateCount` sizes the queue and visit stamps.
+
+**Input and output helpers.**
 
 ```nim
 var inputData = ""
@@ -87,11 +146,7 @@ proc nextToken(data: string, position: var int): string =
   while position < data.len and data[position] > ' ':
     position += 1
   return data[tokenStart .. position - 1]
-```
 
-The input loop reads every line into one buffer. The token reader keeps leading zeros in schedule rows, which integer scanning would lose. Scanning costs one pass over the input.
-
-```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -101,7 +156,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-One output buffer collects the answers. It flushes every 256 KiB and reuses the same storage. Each answer costs one string add.
+The program joins input lines into one buffer. `nextToken` grabs each grid row without copying spaces. Answers collect in one output buffer.
+
+**Cell status.**
 
 ```nim
 var initialOpen = newSeq[bool](maxCellCount)
@@ -120,7 +177,9 @@ proc isCellOpen(cellIndex: int, arrivalTime: int): bool =
   return initialOpen[cellIndex]
 ```
 
-Four arrays are allocated once at the maximum size. The generation mark avoids clearing 3.15 million entries per case. The open test costs one division and one remainder.
+Period zero keeps the initial status. Other cells flip once per odd phase. One query costs one division.
+
+**Breadth-first search.**
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -188,15 +247,34 @@ for caseIndex in 0..<caseCount:
   outputBuffer.add '\n'
 ```
 
-The parse loop reads two N by N blocks per case. The target check runs before the seen test, so the first arrival wins. The queue holds one entry per state, and the search stops when that queue empties. Five moves cost five checks per state.
+The queue holds packed states. Each level adds one second of time. The search stops at the first arrival at the target.
+
+**Final flush.**
 
 ```nim
 stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The last flush writes any remaining answers. It runs once after all cases. The cost is one stream write.
+One write emits all remaining answers. The search leaves no per-case output writes.
 
 ## Complexity
 
-Parsing costs O(N squared) per case. The search visits at most N squared times 5040 states and checks five moves each. The seen array and the queue hold N squared times 5040 entries. Total time and space are O(N squared times C), with C equal to 5040. A raw-time search has no fixed bound and revisits identical cell and phase pairs.
+The state graph bounds the search.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input | O(Total characters) | O(Input size) |
+| Search | O(5 * N^2 * 5040) | O(N^2 * 5040) |
+| Output | O(T) | O(1) |
+
+Each cell has one state per time remainder.
+
+| Measure | Bound |
+| --- | --- |
+| Time | O(N^2 * 5040) per case |
+| Space | O(N^2 * 5040) per case |
+
+At most 3.15 million states fit the fixed arrays.
+
+Searching raw time would repeat states until the schedule gap grows without bound.

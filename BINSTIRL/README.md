@@ -1,51 +1,80 @@
+# BINSTIRL — Binary Stirling Numbers (SPOJ)
+<https://www.spoj.com/problems/BINSTIRL/>
+
 ## Problem
 
-Read d data sets from one input. Each data set holds two integers n and m with 1 ≤ m ≤ n ≤ 10^9. Write S(n,m) mod 2, the parity of the Stirling number of the second kind. That number counts the ways to split n items into m nonempty groups. Print one 0 or 1 per line. Write t for n - m and a for (m - 1) div 2.
+A teacher splits n students into m non-empty groups. The Stirling number S(n, m) counts the splits, and the problem asks only whether that count is odd. Print 1 for odd and 0 for even.
 
-The judge bounds are fixed:
+Input starts with a data set count d. Each following line holds two integers n and m with 1 ≤ m ≤ n ≤ 10^9. Output one bit per line.
+
+The bounds keep each answer tiny:
 
 | Value | Bound |
 | --- | --- |
-| Data sets d | 200 |
-| Items n | 10^9 |
-| Groups m | n |
-| Time | 3000 ms |
-| Memory | 1536 MB |
+| Data sets d | at most 200 |
+| Items n | up to 10^9 |
+| Groups m | 1 to n |
+| Time limit | 3000 ms |
+| Memory limit | 1536 MB |
 
-Every answer is one bit, so the output stays small.
+Each answer is one bit, so the output stays small.
+
+The sample input and output:
+
+```
+1
+4 2
+```
+
+```
+1
+```
+
+The single case asks for the parity of S(4, 2), which is 1.
 
 ## Idea
 
-The trick replaces the recurrence with one bitwise test. Write t for n - m and a for (m - 1) div 2; the answer is 1 exactly when t and a share no set bit. This costs O(1) per data set, while the recurrence fills an n by m table that cannot fit at n = 10^9.
+Replace the big counting table with one bitwise test. Write t for n - m and a for (m - 1) div 2. The answer is 1 exactly when t and a share no set bit. Think of two bit strings as two stacks of coins: adding them without a carry keeps every coin visible, so the parity survives.
+
+The program reads each pair and applies a single AND test. This is a closed form derived from the Stirling recurrence and Lucas's theorem (a rule for binomial coefficients modulo a prime). It costs O(1) per data set. Filling the recurrence table would need n times m entries and cannot fit at n = 10^9.
+
+Takeaway: one AND replaces a billion-cell table.
 
 ## Why It Works
 
-Set F_m(t) = S(t + m, m) mod 2, so t counts the items beyond one per group. The recurrence S(n,m) = m·S(n-1,m) + S(n-1,m-1) becomes a rule on F. Substituting n = t + m gives F_m(t) = (m mod 2)·F_m(t-1) + F_{m-1}(t).
+1. Let F_m(t) = S(t + m, m) mod 2, so t counts the items beyond one per group.
+2. The recurrence S(n, m) = m S(n-1, m) + S(n-1, m-1) becomes F_m(t) = (m mod 2) F_m(t-1) + F_{m-1}(t).
+3. A generating function (a polynomial whose coefficients form a sequence) turns that rule into a closed form. The result is P_m = 1 / (1 + z)^h, with h = (m + 1) div 2.
+4. The coefficient of z^t is C(t + h - 1, h - 1), and h - 1 equals a.
+5. Lucas's theorem makes that coefficient odd exactly when every 1-bit of a also appears in t + a.
+6. Adding t and a creates no carry precisely when t and a share no 1-bit, so the AND test decides parity.
 
-Let P_m(z) be the sum of F_m(t)·z^t over all t, with coefficients taken modulo 2. For even m, the rule gives P_m = P_{m-1}. For odd m, it gives (1 + z)·P_m = P_{m-1}.
+The terms map to code variables.
 
-Since S(t+1,1) = 1, the first polynomial is 1 + z + z^2 + ... . With coefficients modulo 2, dividing by 1 + z is the same as multiplying by that sum. The two rules give P_m = 1/(1+z)^h with h = (m+1) div 2.
+| Term | Meaning |
+| --- | --- |
+| t | extraItems, which is n - m |
+| a | maskBits, which is (m - 1) div 2 |
+| t and a | the bitwise AND written `(extraItems and maskBits)` |
+| result 1 | the AND is zero, so the parity is odd |
 
-The coefficient of z^t in 1/(1+z)^h is C(t + h - 1, h - 1), taken modulo 2. Here h - 1 equals a. Lucas's theorem says C(N,K) is odd when each 1-bit of K is also a 1-bit of N. Put N = t + a and K = a.
+Every pair reduces to those four entries.
 
-If t and a share no set bit, adding them creates no carry, so N keeps every 1-bit of a. If they share a bit, take the lowest shared position. No carry reaches that position from below, so 1 + 1 writes 0 there and N loses a 1-bit of a. Thus C(t+a,a) is odd exactly when t & a is zero.
-
-A script generated these two examples:
+A script generated two examples:
 
 | Quantity | n = 12, m = 5 | n = 10, m = 5 |
 | --- | --- | --- |
 | t = n - m | 7 = 0111 | 5 = 0101 |
-| a = (m-1) div 2 | 2 = 0010 | 2 = 0010 |
-| t & a | 2 = 0010 | 0 = 0000 |
-| answer | 0 | 1 |
+| a = (m - 1) div 2 | 2 = 0010 | 2 = 0010 |
+| t and a | 2 = 0010 | 0 = 0000 |
+| Answer | 0 | 1 |
 
-The first case shares a 1-bit and prints 0. The second case shares none and prints 1.
+The first pair shares a bit and prints 0; the second shares none and prints 1.
 
 ## Code
 
-This scanner reads one integer from the input buffer.
-
-```
+**Scanner and buffered input.**
+```nim
 proc nextInt(inputData: string, i: var int): int =
   const firstDigitValue = 48
   while i < inputData.len and ord(inputData[i]) < firstDigitValue:
@@ -54,13 +83,7 @@ proc nextInt(inputData: string, i: var int): int =
   while i < inputData.len and ord(inputData[i]) >= firstDigitValue:
     result = result * 10 + ord(inputData[i]) - firstDigitValue
     inc i
-```
 
-Every byte below the digit zero is a space or a line break. The scanner skips those bytes and builds a number from its digits. It walks the buffer once, so parsing costs O(input bytes).
-
-Nim 0.19.4 has no single call that reads all of stdin, so lines are appended to one string.
-
-```
 const flushBlockBytes = 1 shl 18
 
 var inputData = newStringOfCap(1 shl 16)
@@ -68,15 +91,13 @@ var inputLine: string
 while stdin.readLine(inputLine):
   inputData.add(inputLine)
   inputData.add('\n')
-```
 
-The added line break keeps the numbers separate for the scanner. This pass costs O(input bytes) time and space.
-
-The main loop reads both values, applies the bit test, and buffers the answer.
-
-```
 var outputBuffer = newStringOfCap(flushBlockBytes)
-var i = 0
+```
+The scanner skips bytes below the digit zero and builds each integer. `flushBlockBytes` sets the output block size. The line loop gathers the whole stream into `inputData`.
+
+**Main loop.**
+```nim
 let dataSetCount = nextInt(inputData, i)
 for j in 0 ..< dataSetCount:
   let totalItems = nextInt(inputData, i)
@@ -94,9 +115,24 @@ for j in 0 ..< dataSetCount:
 if outputBuffer.len > 0:
   stdout.write outputBuffer
 ```
-
-The loop runs dataSetCount times, the count read from the first line. maskBits is (m - 1) div 2, and the bitwise AND decides the answer. The buffer flushes after flushBlockBytes bytes, so output writes stay in large blocks.
+For each data set, the program reads `totalItems` and `subsetCount`. `extraItems` and `maskBits` hold t and a. A zero AND appends '1', otherwise '0', and the buffer flushes at the block boundary.
 
 ## Complexity
 
-Input reading takes O(input bytes) time and space. Each data set takes O(1) time: one subtraction, one division by two, one bitwise AND, and one byte added to the buffer. The output buffer holds at most flushBlockBytes bytes between writes. Total time is O(input size + d), and total space is O(input size + flushBlockBytes). The naive recurrence builds a table with n·m entries and runs in O(n·m) time.
+Input and output dominate a fixed amount of arithmetic.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Per data set | one subtraction, one division, one AND | O(1) |
+| Output | one write per block | flushBlockBytes |
+| Total | O(input bytes + d) | O(input bytes) |
+
+Work per data set never grows with n.
+
+| Measure | Big O |
+| --- | --- |
+| Time per data set | O(1) |
+| Space per data set | O(1) |
+
+The recurrence builds an n by m table in O(n m) time. That table cannot fit at n = 10^9. This closed form answers each case instantly.

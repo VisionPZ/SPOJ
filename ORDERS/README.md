@@ -1,58 +1,86 @@
+# ORDERS — Ordering the Soldiers (SPOJ)
+<https://www.spoj.com/problems/ORDERS/>
+
 ## Problem
 
-Soldiers line up in an unknown order. Each one holds a distinct rank from 1 to n. The number w[i] tells how many higher-ranked soldiers stand before the soldier at position i. Print the ranks from left to right.
+Soldiers stand in an unknown line, and each one remembers how many superiors he passed. The sergeant must rebuild the original rank order.
 
-The judge limits are:
+The input starts with the case count. Each case gives a soldier count and one walk distance per soldier. Print the ranks from left to right.
 
-| Quantity | Bound |
+The judge bounds are:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | at most 50 |
-| Soldiers per case | 1 to 200000 |
-| Walk count w[i] | 0 to i |
-| Time limit | 13000 ms |
-| Memory limit | 1536 MB |
+| Cases | at most 50 |
+| Soldiers `n` | 1 to 200000 |
+| Walk distance | 0 to `n - 1` |
+| Judge time | 13000 ms |
+| Memory | 1536 MB |
+| Source size | 50000 B |
 
-The total soldier count across all cases drives the running time.
+Large input and output need buffered IO.
+
+Sample input and output:
+
+Input:
+
+```
+2
+3
+0 1 0
+5
+0 1 2 0 1
+```
+
+Output:
+
+```
+2 1 3
+3 2 1 5 4
+```
 
 ## Idea
 
-Build the lineup from right to left. At step i, the ranks in later positions are already fixed. The free ranks are the ones left for positions zero through i.
+Fill the ranks from right to left, taking the next free rank that fits. Think of dealing numbered cards backward, skipping the cards already spoken for.
 
-The rank at position i must leave w[i] free ranks larger than itself. Those larger ranks fill earlier positions. So the answer is the (w[i]+1)-th largest free rank, or the (i+1-w[i])-th smallest free rank.
+The program uses a Fenwick tree (an indexed tree of partial counts) over free ranks. Binary lifting (jumping by powers of two) finds the k-th free rank in logarithmic steps. Each soldier costs O(log n). Rebuilding the sorted free list after every soldier would cost O(n^2).
 
-A Fenwick tree (an array that tracks counts over rank values) stores the free ranks. It finds the k-th smallest free rank and removes a rank in logarithmic time.
-
-Cost per soldier: one k-th query and one removal, each O(log n). Trying every rank for every position would cost O(n^2).
+Takeaway: a count tree turns rank selection into a short jump.
 
 ## Why It Works
 
-A stepping soldier passes each higher rank that stands before him. So w[i] counts the earlier ranks larger than the rank at position i.
+Walk distances determine ranks uniquely.
 
-Once positions after i are fixed, every free rank larger than the rank at i must go into an earlier position. Exactly w[i] earlier positions hold larger ranks. Therefore the rank at i is the (w[i]+1)-th largest free rank.
+1. A soldier with `wi` superiors to his left has `wi` higher ranks among positions `0..i`.
+2. When filling right to left, exactly `i + 1` ranks remain free.
+3. The target rank is the `(i + 1 - wi)`-th smallest free rank.
+4. `bitTree` stores subtree counts, so binary lifting locates that rank.
+5. Removing the used rank subtracts one from its tree path.
 
-Number positions from zero. The target index in the sorted free ranks is:
+The terms are:
 
-k = i + 1 - w[i]
+| Term | Meaning |
+| --- | --- |
+| `walkCounts[i]` | Superiors passed by soldier `i` |
+| `bitTree` | Fenwick tree of available ranks |
+| `highestStep` | Largest power of two at most `n` |
+| `targetRank` | Order statistic of the chosen rank |
 
-- i + 1 is the number of free ranks before placement.
-- w[i] is the number of those ranks larger than the chosen rank.
-- k is the one-based index of the chosen rank among free ranks.
+Binary lifting never scans the whole tree.
 
-The worked example uses w = 0 1 2 0 1 from the sample. A script in gen.py produces the table by removing ranks from a sorted list.
+A script traced the first sample case:
 
-| Position | w[i] | k | Chosen rank | Free ranks left |
+| Soldier | Free ranks before | Walk distance | Target order | Chosen rank |
 | --- | --- | --- | --- | --- |
-| 5 | 1 | 4 | 4 | 1 2 3 5 |
-| 4 | 0 | 4 | 5 | 1 2 3 |
-| 3 | 2 | 1 | 1 | 2 3 |
-| 2 | 1 | 1 | 2 | 3 |
-| 1 | 0 | 1 | 3 | (empty) |
+| 2 | 1, 2, 3 | 0 | 3rd | 3 |
+| 1 | 1, 2 | 1 | 1st | 1 |
+| 0 | 2 | 0 | 1st | 2 |
 
-Reading the chosen ranks from position 1 to 5 gives 3 2 1 5 4, the sample answer.
+The ranks read left to right as `2 1 3`.
 
 ## Code
 
-The program reads all input before it parses numbers, and it writes output in blocks.
+**Header and scanner.**
 
 ```nim
 {.push checks: off.}
@@ -76,7 +104,13 @@ proc nextInt(data: string, scanPos: var int): int =
     value = value * 10 + int(data[scanPos]) - firstDigitValue
     scanPos += 1
   return value
+```
 
+Checks are disabled for speed. The scanner reads all numbers from one input buffer. Separators are skipped in place.
+
+**Output helper.**
+
+```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -86,9 +120,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The loop reads every input line into inputData before parsing. nextInt walks the buffer with scanPos and builds values digit by digit. appendOutput flushes at flushBlockBytes, so no write happens per number.
+Answers collect in one string. A flush starts after `flushBlockBytes` bytes. This avoids a write per rank.
 
-The main loop builds the tree, places every rank, and emits the answer.
+**Fenwick selection.**
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -129,15 +163,37 @@ for j in 0..<caseCount:
       outputBuffer.add ' '
     appendOutput($(answer[i]))
   outputBuffer.add '\n'
+```
 
+The tree starts with one free rank per position. `highestStep` sets the lifting range. Each chosen rank is removed before the next soldier.
+
+**Final flush.**
+
+```nim
 stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The outer loop runs once per case, and soldierCount bounds every inner loop. Setting bitTree[i] to its low bit builds the prefix counters in O(n). The countdown loop visits positions from the last one down to zero. Binary lifting finds the target rank in O(log n), and the update loop removes it in O(log n).
+One write emits the last buffered ranks. The tree work ends once the answer line is built.
 
 ## Complexity
 
-Input parsing reads the stream once. It costs O(total bytes) time and space. Tree setup costs O(n) time and O(n) space per case. Placement costs O(n log n) time per case. Output costs O(n) time per case.
+Each soldier performs one tree search and one update.
 
-With T soldiers across all cases, the total time is O(T log n) and the peak space is O(n). A brute-force search over ranks costs O(n^2) per case.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input | O(Total numbers) | O(Input size) |
+| Tree build | O(n) | O(n) |
+| Rank selection | O(n log n) | O(n) |
+| Output | O(n) | O(1) |
+
+The tree is rebuilt for each case.
+
+| Measure | Bound |
+| --- | --- |
+| Time | O(n log n) per case |
+| Space | O(n) per case |
+
+Two hundred thousand soldiers take about eighteen steps each.
+
+Rescanning the free ranks for every soldier would cost O(n^2).

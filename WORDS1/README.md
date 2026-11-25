@@ -1,42 +1,81 @@
+# WORDS1 — Play on Words (SPOJ)
+
+<https://www.spoj.com/problems/WORDS1/>
+
 ## Problem
 
-Read T test cases. Each case gives N words. Order the words so that every word starts with the letter the previous word ends with. Use each word exactly once. Print one of two fixed sentences per case: "Ordering is possible." or "The door cannot be opened."
+A door holds magnetic plates, each with one word. Arrange the plates in a chain so every word begins with the letter the previous word ends with. Use every plate exactly once to open the door.
+
+Input starts with `T`, about 500. Each case gives `N`, from 1 to 100000, then `N` words of 2 to 1000 lowercase letters. A word may repeat. Print one sentence per case, and match its text exactly. Use `Ordering is possible.` when a chain exists.
+Otherwise print `The door cannot be opened.`
 
 | Quantity | Bound |
 | --- | --- |
-| Test cases T | about 500 |
-| Words per case N | 1 to 100000 |
+| Test cases `T` | about 500 |
+| Words per case `N` | 1 to 100000 |
 | Word length | 2 to 1000 lowercase letters |
 | Time limit | 20000 ms |
 | Memory limit | 1536 MB |
 
-All letters are lowercase. The output is one sentence per case.
+Only the first and last letter of each word matter for the chain.
+
+The sample input and output follow verbatim.
+
+```
+3
+2
+acm
+ibm
+3
+acm
+malform
+mouse
+2
+ok
+ok
+```
+
+```
+The door cannot be opened.
+Ordering is possible.
+The door cannot be opened.
+```
 
 ## Idea
 
-Model each letter as a vertex and each word as a directed edge. The edge runs from the first letter of the word to its last letter. The task then asks whether this directed graph has an Eulerian path that uses every edge once. Union-find checks that all letters with an edge share one connected component. Degree counts check the path endpoints. Each word costs one union and two counter updates. Trying every word ordering would be far slower.
+Model each word as a directed edge from its first letter to its last letter. Think of planning a delivery route that uses every one-way street exactly once. The question becomes whether that letter graph has an Eulerian path.
 
-Cost per word: O(1).
+Union-find checks that all letters with an edge share one connected component. Degree counts check the path endpoints. Each word costs one union and two counter updates.
+
+Trying all word orderings takes factorial time. The Eulerian conditions finish in linear time.
+
+An Eulerian path test replaces a factorial search.
 
 ## Why It Works
 
-A directed graph has an Eulerian path when two facts hold. First, every vertex with nonzero degree lies in one connected component of the underlying undirected graph. Second, the degrees must balance. In a circuit, every vertex has equal in and out degree. In an open path, one vertex has out degree one above in degree. One other vertex has in degree one above out degree. All remaining vertices stay balanced.
+Three facts give the Eulerian test.
 
-Union-find merges the two letters of each word. This builds the undirected component. The arrays `outDegree` and `inDegree` record the surplus at each letter.
+1. A directed graph has an Eulerian path when every vertex with nonzero degree lies in one component of the underlying undirected graph.
+2. The degrees must also balance. In a circuit, each vertex has equal in and out degree. In an open path, one vertex has out degree one above in degree, and one has the reverse. All others stay balanced.
+3. Union-find merges the two letters of each word, building the undirected component. The arrays `outDegree` and `inDegree` record the surplus at each letter.
 
-For an edge from first letter f to last letter l:
+The table names the degree values.
 
-- The `outDegree` entry for f grows by one.
-- The `inDegree` entry for l grows by one.
-- `unionLetters` joins the components of f and l.
+| Term | Meaning |
+| --- | --- |
+| `outDegree[k]` | words whose first letter is `k` |
+| `inDegree[k]` | words whose last letter is `k` |
+| `difference` | out degree minus in degree |
+| `referenceVertex` | first letter seen, anchoring connectivity |
+| `parent` | union-find parent over 26 letters |
 
-The sample's second case gives the edges below.
+The sample's second case gives these edges.
 
 | Word | Edge |
 | --- | --- |
-| acm | a -> m |
-| malform | m -> m |
-| mouse | m -> e |
+| acm | a to m |
+| malform | m to m |
+| mouse | m to e |
 
 Degree counts follow from those edges.
 
@@ -46,11 +85,11 @@ Degree counts follow from those edges.
 | e | 0 | 1 | -1 |
 | m | 2 | 2 | 0 |
 
-Letter a is the start and e is the end. All three letters connect. The ordering acm, malform, mouse works.
+Letter `a` is the start and `e` is the end. All three letters connect, so the ordering `acm`, `malform`, `mouse` works.
 
 ## Code
 
-Constants and hand scanners read the whole input buffer without per-token allocation.
+**Input setup.** Constants and hand scanners read the whole input buffer without per-token allocation.
 
 ```nim
 const flushBlockBytes = 1 shl 18
@@ -80,9 +119,9 @@ proc nextWordEnds(data: string, i: var int): tuple[first: char, last: char] =
   result.last = data[i - 1]
 ```
 
-`nextWordEnds` reads only the two edge letters. It skips the rest of each word. This avoids one string allocation per word.
+`nextWordEnds` reads only the two edge letters and skips the rest. This avoids one string allocation per word.
 
-Union-find keeps the 26 letters in components.
+**Union-find.** Union-find keeps the 26 letters in components.
 
 ```nim
 proc findRoot(parent: var array[letterCount, int], i: int): int =
@@ -101,7 +140,7 @@ proc unionLetters(parent: var array[letterCount, int], i: int, j: int) =
 
 Path halving keeps `findRoot` fast. The fixed array holds 26 integers.
 
-The program reads stdin once into `inputData`, then scans it with an index.
+**Input arrays.** The program reads stdin once, then scans it with an index.
 
 ```nim
 var inputData = ""
@@ -121,7 +160,7 @@ var inDegree: array[letterCount, int]
 
 One pass builds `inputData`. The three arrays are reused for every case.
 
-The main loop counts edges, checks connectivity, and checks degrees.
+**Case driver.** The main loop counts edges, checks connectivity, and checks degrees.
 
 ```nim
 for j in 0 ..< testCount:
@@ -175,10 +214,26 @@ for j in 0 ..< testCount:
 stdout.write outputBuffer
 ```
 
-Each case resets the arrays in O(26). `referenceVertex` anchors the connectivity check. The surplus loop accepts one start and one end, or a balanced circuit. Output is flushed in blocks of `flushBlockBytes`.
+Each case resets the arrays in `O(26)`. `referenceVertex` anchors the connectivity check. The surplus loop accepts one start and one end, or a balanced circuit. Output is flushed in blocks.
 
 ## Complexity
 
-Reading input takes O(total input bytes). Each word costs O(1) counting and union work. Connectivity and degree checks cost O(26) per case. Output costs O(T). Total time is O(total input bytes + T). Space is O(total input bytes) for the buffer plus O(26) for the arrays.
+Reading dominates, since each word costs constant work.
 
-A naive search tries all N! word orderings. That grows far faster than the linear scan used here.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | O(total input bytes) | one input string |
+| Edge counting per word | O(1) | constant |
+| Connectivity and degrees | O(26) per case | O(26) arrays |
+| Output | O(T) | one flush block |
+
+Only the first and last characters of each word are inspected.
+
+The totals use the input size and the case count.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(total input bytes + T) |
+| Space | O(total input bytes) |
+
+A naive search tries all `N!` word orderings, which grows far faster than the linear scan.

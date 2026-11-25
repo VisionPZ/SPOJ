@@ -1,12 +1,17 @@
+# FOOTBALL — Football (SPOJ)
+<https://www.spoj.com/problems/FOOTBALL/>
+
 ## Problem
 
-Read a simple closed polygon drawn along the edges of a classic football. The ball has 12 black pentagons and 20 white hexagons. Each case gives the polygon vertex count and the number of green pieces at each vertex. The closing edge joins two hexagons. Print the counts of black pieces, white pieces, and green pieces on the whole ball.
+Eric paints half of a classic soccer ball green and traces a loop along the seams. Given only the loop's vertices and the number of green faces at each corner, he wants the counts of black, white, and green pieces.
 
-The input bounds follow from the ball and the statement.
+The input starts with a test count t. Each case gives a vertex count n, then n values of 1 or 2, one per vertex. Value 1 means one green piece at that vertex, and value 2 means two. The closing edge always lies between two hexagons. Print three integers: black pieces, white pieces, and green pieces.
 
-| Item | Bound |
+The judge limits are:
+
+| Item | Value |
 | --- | --- |
-| Polygon vertices per case | 6 to 60 |
+| Vertices per case | 6 to 60 |
 | Green pieces at a vertex | 1 or 2 |
 | Closing edge | joins two hexagons |
 | Time limit | 100 ms |
@@ -14,59 +19,79 @@ The input bounds follow from the ball and the statement.
 
 A polygon visits each ball vertex at most once, so a case stays small.
 
+The sample input reads:
+
+```text
+1
+21 
+1 2 1 2 1 2 1 1 1 2 2 1 1 1 1 2 2 2 1 1 1 
+```
+
+The sample output reads:
+
+```text
+11 15 6 
+```
+
 ## Idea
 
-Euler's formula on the green disk counts green pentagons from the sum of vertex values, and a corner count gives the green hexagons. A three-state walk supplies that corner count in one pass, so each vertex costs O(1). Rebuilding the ball needs geometry the input does not give.
+Count faces with Euler's formula (a rule linking vertices, edges, and faces on a surface), like balancing a ledger instead of rebuilding the ball. The sum of vertex values gives the green pentagons after one substitution. A three-state walk along the loop supplies the corner count that fixes the green hexagons. Each vertex costs one state transition, so the work is linear. Rebuilding the ball would need geometry the input does not provide. Takeaway: sum corners, walk states, then apply two formulas.
 
 ## Why It Works
 
-Every ball vertex touches one pentagon and two hexagons. The polygon cuts the sphere into two disks. Let V, E, F count the green disk's vertices, edges and faces. Euler gives V - E + F = 1. Define S as the sum of vertex values, P as the green pentagons, and H as the green hexagons. Let Vi and Ei count interior vertices and interior edges.
+1. Every ball vertex touches one pentagon and two hexagons.
+2. Let V, E, and F count vertices, edges, and faces of the green disk; Euler gives V - E + F = 1.
+3. Let S be the sum of vertex values, P the green pentagons, and H the green hexagons.
+4. Counting face edges gives `5P + 6H = 2Ei + n`. Counting face corners gives `5P + 6H = 3Vi + S`, with Ei and Vi for interior items.
+5. Substituting into Euler yields `P = 2S - 3n + 6`.
+6. Counting pentagon corners at boundary vertices yields `H = (10P + S - 3Q) / 6`, where Q counts vertices with a green pentagon.
+7. The walk starts in the hexagon-edge state and updates its state from the incoming edge type and S's value at that vertex.
 
-Each term below follows from one count on the green disk.
+The table defines the terms.
 
-- 5P + 6H = 2Ei + n sums face edges; a boundary edge is seen once.
-- E = Ei + n = (5P + 6H + n)/2 isolates all green edges.
-- 5P + 6H = 3Vi + S sums face corners; a boundary vertex gives ai corners.
-- V = Vi + n = (5P + 6H - S)/3 + n isolates all green vertices.
-- Substituting V, E and F = P + H into Euler gives P = 2S - 3n + 6.
+| Term | Meaning |
+| --- | --- |
+| S | sum of the n green-piece counts |
+| P | number of green pentagons |
+| H | number of green hexagons |
+| Q | vertices whose pentagon is green |
+| greenPentagonVertices | the running value of Q |
 
-The complement gives the same equation, so count pentagon corners instead. Let Q be the number of polygon vertices where the pentagon is green. Then 5P = Vi + Q and 6H = 2Vi + S - Q, so H = (10P + S - 3Q)/6.
+These terms feed the two counting formulas.
 
-The closing edge joins two hexagons, so the walk starts in the HH state. At each vertex the incoming edge type and ai fix the next state and tell whether Q grows.
+A script replayed the sample walk. The state column names the edge leaving each vertex.
 
-The sample gives this trace. The state column describes the incoming edge.
-
-| Vertex | ai | Incoming edge state | Q |
+| Vertex | ai | State after vertex | Q |
 | --- | --- | --- | --- |
-| 1 | 1 | HH, green face hexagon | 0 |
+| 1 | 1 | PH, green face hexagon | 0 |
 | 2 | 2 | PH, green face hexagon | 0 |
-| 3 | 1 | PH, green face hexagon | 0 |
-| 4 | 2 | HH, green face hexagon | 1 |
+| 3 | 1 | HH, green face hexagon | 0 |
+| 4 | 2 | PH, green face pentagon | 1 |
 | 5 | 1 | PH, green face pentagon | 2 |
-| 6 | 2 | PH, green face pentagon | 3 |
-| 7 | 1 | HH, green face hexagon | 3 |
-| 8 | 1 | PH, green face hexagon | 3 |
-| 9 | 1 | HH, green face hexagon | 3 |
+| 6 | 2 | HH, green face hexagon | 3 |
+| 7 | 1 | PH, green face hexagon | 3 |
+| 8 | 1 | HH, green face hexagon | 3 |
+| 9 | 1 | PH, green face hexagon | 3 |
 | 10 | 2 | PH, green face hexagon | 3 |
 | 11 | 2 | PH, green face hexagon | 3 |
-| 12 | 1 | PH, green face hexagon | 3 |
-| 13 | 1 | HH, green face hexagon | 3 |
-| 14 | 1 | PH, green face hexagon | 3 |
-| 15 | 1 | HH, green face hexagon | 3 |
+| 12 | 1 | HH, green face hexagon | 3 |
+| 13 | 1 | PH, green face hexagon | 3 |
+| 14 | 1 | HH, green face hexagon | 3 |
+| 15 | 1 | PH, green face hexagon | 3 |
 | 16 | 2 | PH, green face hexagon | 3 |
 | 17 | 2 | PH, green face hexagon | 3 |
 | 18 | 2 | PH, green face hexagon | 3 |
-| 19 | 1 | PH, green face hexagon | 3 |
-| 20 | 1 | HH, green face hexagon | 3 |
-| 21 | 1 | PH, green face hexagon | 3 |
+| 19 | 1 | HH, green face hexagon | 3 |
+| 20 | 1 | PH, green face hexagon | 3 |
+| 21 | 1 | HH, green face hexagon | 3 |
 
-The walk ends in the HH state, and S = 29, P = 1, Q = 3 and H = 5 give 11 15 6.
+The walk ends on an HH edge. With S = 29, n = 21, and Q = 3, the formulas give P = 1 and H = 5. The answer is 11 black, 15 white, and 6 green pieces.
 
 ## Code
 
-The state set has three values, so the case statement covers every branch.
+**States and constants.** The three walk states cover every edge type the loop can follow.
 
-```
+```nim
 type BoundaryState = enum
   statePentagonFace, stateHexagonFace, stateHexagonEdge
 
@@ -74,11 +99,11 @@ const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 ```
 
-These constants name the three walk states, the digit base and the flush threshold.
+The enum names the three states, and the constants name the digit base and flush threshold. One state describes the most recent edge. The declarations cost no runtime work.
 
-The input lives in one buffer, and the scanner walks that buffer by index.
+**Input and scanner.** The program reads all input into one buffer and walks it by index.
 
-```
+```nim
 var inputData = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
@@ -97,11 +122,11 @@ proc nextInt(data: string, i: var int): int =
     i += 1
 ```
 
-readLine runs once per input line and appends to one buffer. The scanner skips separators and consumes digits in place. The parse visits each input byte once.
+`readLine` runs once per input line and appends to one buffer. The scanner skips separators and consumes digits in place. Parsing visits each input byte once. All values are non-negative, so no sign branch is needed.
 
-One output buffer collects answers and flushes in fixed blocks.
+**Output writer.** One buffer collects all answer lines.
 
-```
+```nim
 var outputBuffer = ""
 
 proc appendResult(blackCount, whiteCount, greenCount: int) =
@@ -116,11 +141,11 @@ proc appendResult(blackCount, whiteCount, greenCount: int) =
     outputBuffer.setLen 0
 ```
 
-The buffer flushes after 256 KiB, not after each answer. A per-case write enters the stream layer on every answer. The final write emits the remainder, and the cost is O(1) amortized per answer.
+The buffer flushes after 256 KiB, not after each answer. The trailing space in each line matches the sample bytes. The cost is O(1) amortized per answer.
 
-The outer loop runs caseCount times, and the inner loop runs vertexCount times.
+**State walk and driver.** The outer loop runs caseCount times and the inner loop runs vertexCount times.
 
-```
+```nim
 let caseCount = nextInt(inputData, i)
 for j in 0..<caseCount:
   let vertexCount = nextInt(inputData, i)
@@ -155,17 +180,24 @@ for j in 0..<caseCount:
 stdout.write outputBuffer
 ```
 
-The state branches add Q only at a vertex with a green pentagon. Both formulas use sums gathered in the same pass. The walk costs O(n) time and O(1) extra space per case.
+The state branches add Q only where a pentagon is green. Both formulas use sums gathered in the same pass. The walk costs O(n) time and O(1) extra space per case. The final write emits the remaining buffered bytes.
 
 ## Complexity
 
-The program reads once, walks each case, and writes in blocks.
-
 | Phase | Time | Space |
 | --- | --- | --- |
-| Input | O(total input bytes) | O(total input bytes) |
-| Per case | O(n) | O(1) |
-| Output | O(total output bytes) | O(256 KiB) |
-| Total | O(input + output) | O(input + 256 KiB) |
+| Read one case | O(n) | one input buffer |
+| Walk vertices | O(n) | O(1) |
+| Write answers | O(total output bytes) | one block |
 
-The walk is linear in the polygon length, and the two buffers dominate space. Big O per case is O(n), and the whole run is O(input bytes + output bytes). A naive rebuild of the ball and an exhaustive face count cost more per case and need data the input lacks.
+No phase grows faster than the vertex count.
+
+The walk is linear in the polygon length.
+
+| Measure | Bound |
+| --- | --- |
+| Per case | O(n) time, O(1) extra space |
+| Whole run | O(input bytes + output bytes) |
+| Buffers | input buffer plus one 256 KiB block |
+
+A naive program rebuilds the ball and counts faces by geometry. It costs more per case and needs data the input lacks.

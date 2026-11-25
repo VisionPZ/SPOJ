@@ -1,52 +1,76 @@
+# BAC — Bacterial (SPOJ)
+<https://www.spoj.com/problems/BAC/>
+
 ## Problem
 
-Each test case gives a rectangle plate and several bacterial samples at integer positions. All colonies grow at the same speed and stop where their fronts meet. A colony owns every point closer to its seed than to any other seed. Print each sample's id and owned area, ordered from largest area to smallest, with a blank line after each case.
+Bacteria spread across a plate until neighbouring colonies meet, and a lab wants the area each colony claims.
+A report must rank the colonies by their claimed area.
 
-| Quantity | Value |
+Each case gives plate width and height, then k, then k positions. A zero width or height ends the input, and blank lines separate cases. Print each sample id as three zero-padded digits and its area in fourteen columns with two decimals. List larger areas first and add a blank line after each case.
+
+The bounds and judge limits are:
+
+| Constraint | Value |
 | --- | --- |
 | Plate width and height | 1 to 1000 |
-| Samples per case | 1 to 100 |
-| Test cases | about 20000 |
-| Time limit | 1631 ms |
-| Memory limit | 1536 MB |
+| Samples k | 1 to 100 |
+| Cases | about 20000 |
+| Judge time | 1.631 s |
+| Judge memory | 1536 MB |
+
+The report format is checked byte for byte, including trailing blanks.
+
+The sample input and its expected output follow byte for byte.
+
+```
+10 10
+2
+5 5
+0 0
+
+0 0
+```
+
+```
+001         87.50
+002         12.50
+
+```
+
 
 ## Idea
 
-A colony's territory is its Voronoi cell, the region of points nearest to its seed. Start with the whole rectangle and cut it by each perpendicular bisector between the current seed and another seed. The remaining polygon is the cell. The shoelace formula turns that polygon into an area. Each cut reads only the current polygon's vertices, usually about six.
+Clip the plate by each halfway boundary between two colonies, like cutting a cake with straight cuts. This is half-plane clipping (trimming a polygon to one side of a line).
+The program starts every cell as the full plate polygon. For each rival site it clips the polygon with the perpendicular bisector, which keeps only points closer to the current site.
+The shoelace formula then gives the area of the remaining convex polygon. Each case costs O(k squared) clipping steps, while a grid simulation over a million cells per case cannot meet the limit.
+Half-plane clipping gives exact areas with a handful of vertices per cell.
 
 ## Why It Works
 
-The perpendicular bisector of two seeds is the line where their distances are equal. For seeds at `s` and `q`, the points owned by `s` satisfy `2p·(q−s) ≤ |q|² − |s|²`. Write this as `a*x + b*y ≤ c` with `a = 2(xq−xs)`, `b = 2(yq−ys)`, and `c = xq²+yq²−xs²−ys²`. Intersecting all these half-planes with the rectangle gives the cell exactly.
+1. Points closer to site j than to site i lie on one side of their perpendicular bisector, which is a half-plane.
+2. Clipping a convex polygon by a half-plane keeps it convex and crosses each edge at most once.
+3. `clipToHalfPlane` emits kept vertices and crossing points in border order.
+4. `polygonArea` sums edge cross products and halves the absolute value, the shoelace formula.
+5. The skip test against four times the farthest radius avoids clipping by sites too distant to cut the cell.
 
-The program skips a bisector when the other seed lies beyond twice the cell's farthest vertex distance. If `|s−q| > 2R`, every point in the cell stays closer to `s`, so that bisector cannot cut.
+Four terms carry the proof.
 
-A worked example uses the sample plate 10 by 10 with seeds at (5,5) and (0,0). For seed (0,0) the cut is `x+y ≤ 5`, leaving triangle (0,0), (5,0), (0,5) with area 12.50. For seed (5,5) the cut is `x+y ≥ 5`, leaving the square minus that triangle with area 87.50. The two areas add to 100, the plate area.
+| Term | Meaning |
+| --- | --- |
+| bisector | line where two sites are equally distant |
+| half-plane | one side of a bisector |
+| clip | trim a polygon to a half-plane |
+| shoelace formula | cross-product sum giving polygon area |
+
+They explain how straight cuts replace a cell-by-cell simulation.
+
+A script check of the sample uses a 10 by 10 plate with sites at (5,5) and (0,0).
+The bisector is x plus y equals 5. The first cell keeps 87.50 units, and the second keeps 12.50 units.
+The report prints 001 87.50 before 002 12.50, matching the sample.
 
 ## Code
 
-```nim
-const
-  maxSamples = 100
-  maxPolygonVertices = maxSamples + 8
-  flushBlockBytes = 1 shl 18
-
-type
-  Point = object
-    x: float64
-    y: float64
-
-proc nextInt(inputData: string, i: var int): int =
-  var value = 0
-  while i < inputData.len and (inputData[i] < '0' or inputData[i] > '9'):
-    inc i
-  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
-    value = value * 10 + (ord(inputData[i]) - 48)
-    inc i
-  value
-```
-
-The scanner skips blank lines and each non-digit byte between cases. It walks one buffer and allocates nothing. The loop ends at the first non-digit byte.
-
+**Half-plane clipper.**
 ```nim
 proc clipToHalfPlane(sourcePoly: array[maxPolygonVertices, Point], sourceCount: int,
                      destPoly: var array[maxPolygonVertices, Point], coefA: float64,
@@ -70,8 +94,9 @@ proc clipToHalfPlane(sourcePoly: array[maxPolygonVertices, Point], sourceCount: 
   outCount
 ```
 
-The loop runs exactly `sourceCount` times, once per directed edge. It copies inside vertices and appends one crossing point where the edge switches side. That keeps the polygon convex and ordered.
+The clipper walks polygon edges in order. It keeps vertices inside the half-plane and inserts crossing points. Convexity guarantees a clean ordered result.
 
+**Area and radius helpers.**
 ```nim
 proc polygonArea(poly: array[maxPolygonVertices, Point], vertexCount: int): float64 =
   if vertexCount < 3:
@@ -86,11 +111,7 @@ proc polygonArea(poly: array[maxPolygonVertices, Point], vertexCount: int): floa
   if doubled < 0:
     doubled = -doubled
   doubled * 0.5
-```
 
-The shoelace sum closes the ring with the modular index. Taking the absolute value handles either vertex winding. A polygon with fewer than three vertices has zero area.
-
-```nim
 proc farthestRadiusSquared(poly: array[maxPolygonVertices, Point], vertexCount: int,
                            siteX: float64, siteY: float64): float64 =
   var biggest = 0.0
@@ -105,8 +126,9 @@ proc farthestRadiusSquared(poly: array[maxPolygonVertices, Point], vertexCount: 
   biggest
 ```
 
-A convex polygon reaches its farthest point at a vertex. The loop scans all `vertexCount` vertices and stores the largest squared distance. The squared form avoids a square root.
+`polygonArea` applies the shoelace sum to the clipped polygon. `farthestRadiusSquared` finds the distance to the farthest vertex. That radius drives the distant-site skip test.
 
+**Report formatter.**
 ```nim
 proc appendResultLine(outBuf: var string, sampleId: int, areaValue: float64) =
   outBuf.add char(48 + sampleId div 100)
@@ -145,9 +167,22 @@ proc appendResultLine(outBuf: var string, sampleId: int, areaValue: float64) =
   outBuf.add '\n'
 ```
 
-The id always writes three zero-padded digits because it ranges from 1 to 100. The area writes into a 14-column field with two fractional digits. An exact halfway value rounds to the nearest even hundredth. Both values go straight into the shared output buffer.
+The formatter writes a three-digit zero-padded sample id. It scales the area and rounds with a tie rule. The area is right justified in fourteen columns.
 
+**Case loop and ranking.**
 ```nim
+while true:
+  let plateWidth = nextInt(inputData, i)
+  let plateHeight = nextInt(inputData, i)
+  if plateWidth == 0 or plateHeight == 0:
+    break
+  let sampleCount = nextInt(inputData, i)
+  var j = 0
+  while j < sampleCount:
+    siteXs[j] = float64(nextInt(inputData, i))
+    siteYs[j] = float64(nextInt(inputData, i))
+    inc j
+
   j = 0
   while j < sampleCount:
     let currentX = siteXs[j]
@@ -185,10 +220,53 @@ The id always writes three zero-padded digits because it ranges from 1 to 100. T
     areas[j] = polygonArea(poly, polyCount)
     sampleIds[j] = j + 1
     inc j
+
+  var k = 1
+  while k < sampleCount:
+    let heldArea = areas[k]
+    let heldId = sampleIds[k]
+    var l = k - 1
+    while l >= 0 and areas[l] < heldArea:
+      areas[l + 1] = areas[l]
+      sampleIds[l + 1] = sampleIds[l]
+      dec l
+    areas[l + 1] = heldArea
+    sampleIds[l + 1] = heldId
+    inc k
+
+  k = 0
+  while k < sampleCount:
+    appendResultLine(outputBuffer, sampleIds[k], areas[k])
+    inc k
+  outputBuffer.add '\n'
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
+if outputBuffer.len > 0:
+  stdout.write outputBuffer
 ```
 
-The outer loop runs `sampleCount` times, once for each seed. The rectangle starts as four counter-clockwise vertices. The inner loop tries every other seed and skips distant ones with the `4.0 * maxRadiusSq` test. Each surviving seed shrinks the cell and updates the farthest radius.
+Each site starts from the four plate corners. Every rival clips the current cell in turn. An insertion sort orders samples by descending area.
+
 
 ## Complexity
 
-For one cell, the cut loop makes `sampleCount` distance tests and at most that many polygon clips. Each clip scans the current polygon, which holds few vertices. One case therefore costs about O(k²) for k samples, with a small constant. Sorting the k results by insertion sort also costs O(k²). The program stores seeds, areas, and two polygons, so space is O(k). A grid sampler would need millions of probes per cell and still miss the required two decimals.
+Each cell is clipped by at most k bisectors, and the polygon stays small.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| input parse | O(k) | two coordinate arrays |
+| clipping | O(k squared) | two polygon arrays |
+| area and sort | O(k squared) worst | area and id arrays |
+
+The distant-site skip avoids most clip operations when a cell is already small.
+
+Big O uses sample count k.
+
+| Measure | Big O |
+| --- | --- |
+| time | O(k squared) per case |
+| space | O(k) |
+
+A cell-by-cell grid simulation would touch the whole plate for every case.

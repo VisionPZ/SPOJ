@@ -1,78 +1,79 @@
+# ASCIRC — Assembler Circuits (SPOJ)
+<https://www.spoj.com/problems/ASCIRC/>
+
 ## Problem
 
-Read a program of assignments over 26 registers and four binary operations. Each instruction gives an operation, two source registers, and a destination register. Print the fewest gates in an acyclic circuit that produces every final register value from the initial values.
+A company wants to replace small assembler programs with gate circuits, and each gate costs money.
+The task is to find the cheapest circuit that behaves like the given program.
 
-| Quantity | Bound |
+The first line gives the case count. Each case gives n, then n four-letter instructions with an operation A, B, C, or D and three register letters. Print the minimal gate count.
+
+The bounds and judge limits are:
+
+| Constraint | Value |
 | --- | --- |
-| Registers | 26 |
-| Operations | 4 |
-| Instructions per case | 1000 |
-| Time limit | 1000 ms |
-| Memory limit | 1536 MB |
+| Instructions n | 1 to 1000 |
+| Registers | up to 26 |
+| Operations | A, B, C, D |
+| Judge time | 1 s |
+| Judge memory | 1536 MB |
 
-Every final value is a function of the 26 initial values, so the circuit needs no state.
+The small register set keeps each instruction lookup constant.
+
+The sample input and its expected output follow byte for byte.
+
+```
+1
+8
+Afbc
+Bfbd
+Cddd
+Bcbc
+Afcc
+Afbf
+Cfbb
+Dfdb
+```
+
+```
+6
+```
+
 
 ## Idea
 
-The program names each value by the operation and the two earlier values that made it. Store that triple in a hash table so equal triples share one node. Dead instructions then cost no gates, and repeated work costs one gate. A naive circuit gives each instruction its own gate and keeps values that no final register uses.
-
-Cost: one hash probe per instruction and one visit per reachable node.
+Build one expression tree per register and share identical subtrees, like reusing the same prebuilt brick wherever a pattern repeats.
+The program starts with 26 leaf nodes (plain register inputs) for the input registers. Each instruction becomes a node keyed by its operation and the two source node ids. A hash table finds an existing equal node, so duplicate work maps to one gate.
+A depth-first walk from the final 26 register values counts reachable non-leaf nodes. Counting instructions directly would miss this sharing and overstate the cost.
+Hash-consing turns a program into a compact shared circuit in linear expected time.
 
 ## Why It Works
 
-A gate reads initial register values or earlier gate outputs. Each gate output is therefore an expression over the initial registers. Two expressions with the same operation and the same operand value IDs compute the same function. One gate can drive both uses. A value that no final register reaches needs no gate.
+1. Each register holds a node id, so an instruction either creates one node or reuses a matching one.
+2. `nextInstruction` packs the operation and three register letters into a single integer.
+3. The hash key combines the operation with the two source node ids, so equal work shares one gate.
+4. A stack walk from all 26 final register values visits exactly the nodes the circuit needs.
+5. Leaf nodes are plain register inputs and never add to the gate count.
 
-`packed` holds the four fields in base 26.
+Four terms carry the proof.
 
-- `destination = packed mod registerCount` gives the written register.
-- `sourceTwo = (packed div registerCount) mod registerCount` gives the second input.
-- `sourceOne = (packed div (registerCount * registerCount)) mod registerCount` gives the first input.
-- `operation = packed div (registerCount * registerCount * registerCount)` gives the operation.
+| Term | Meaning |
+| --- | --- |
+| leaf | register input node with no gate |
+| node | one operation applied to two source nodes |
+| hash key | packed operation and node pair |
+| reachable | needed by some final register value |
 
-The generator prints this trace for the sample.
+They explain how repeated expressions collapse to one gate.
 
-```
-Afbc  A(v5,v1) -> v26  new
-Bfbd  B(v5,v1) -> v27  new
-Cddd  C(v27,v27) -> v28  new
-Bcbc  B(v26,v1) -> v29  new
-Afcc  A(v5,v29) -> v30  new
-Afbf  A(v5,v1) -> v26  reuse
-Cfbb  C(v26,v1) -> v32  new
-Dfdb  D(v26,v28) -> v33  new
-final: b=v33 c=v30 d=v28 f=v26
-gates: 6
-```
-
-The sixth instruction reuses v26, and the missing v31 shows that a repeated triple creates no node.
+A script check of the sample reads 8 instructions and 26 leaves.
+The first instruction `Afbc` builds node (A, node f, node b) and stores it in register c.
+The reachability walk ends at 6 gate nodes, which is the printed answer.
 
 ## Code
 
+**Instruction packer.**
 ```nim
-const firstDigitValue = 48
-const firstUpperValue = 65
-const firstLowerValue = 97
-const registerCount = 26
-const leaveCount = 26
-const flushBlockBytes = 1 shl 18
-
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
-
-var scanPos = 0
-
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
-  var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
-  return value
-
 proc nextInstruction(data: string, position: var int): int =
   while position < data.len and (data[position] < 'A' or data[position] > 'D'):
     position += 1
@@ -84,28 +85,12 @@ proc nextInstruction(data: string, position: var int): int =
     packed = packed * registerCount + (int(data[position]) - firstLowerValue)
     position += 1
   return packed
-
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
 ```
 
-The read loop runs once per input line. The scanners skip blank lines between cases. The output buffer flushes at 256 KiB. Cost: one pass over the input bytes.
+The packer scans for the next uppercase operation. Three lowercase letters are folded into the same integer. One packed value carries the whole instruction.
 
+**Per-case setup.**
 ```nim
-let caseCount = nextInt(inputData, scanPos)
-var registerValue = newSeq[int](registerCount)
-var nodeOperation = newSeq[int](0)
-var nodeLeft = newSeq[int](0)
-var nodeRight = newSeq[int](0)
-var hashSlots = newSeq[int](0)
-var visited = newSeq[bool](0)
-var pending = newSeq[int](0)
-
 for i in 0..<caseCount:
   let instructionCount = nextInt(inputData, scanPos)
 
@@ -127,7 +112,12 @@ for i in 0..<caseCount:
   hashSlots.setLen(hashSize)
   for k in 0..<hashSize:
     hashSlots[k] = 0
+```
 
+The code seeds 26 leaf nodes and clears the hash slots. The table size grows to a power of two. Each register starts as its own leaf id.
+
+**Node hash-consing.**
+```nim
   for j in 0..<instructionCount:
     let packed = nextInstruction(inputData, scanPos)
     let destination = packed mod registerCount
@@ -154,8 +144,9 @@ for i in 0..<caseCount:
     registerValue[destination] = found
 ```
 
-The instruction loop runs instructionCount times. Slot zero means empty, so stored IDs start above zero. The table stays at least a quarter empty, which bounds each probe. Cost: constant time per instruction.
+The code decodes the destination, sources, and operation. A linear probe finds an equal node or inserts a new one. Equal subexpressions therefore share one gate.
 
+**Reachability count.**
 ```nim
   visited.setLen(nodeOperation.len)
   for k in 0..<visited.len:
@@ -183,15 +174,28 @@ The instruction loop runs instructionCount times. Slot zero means empty, so stor
 
   appendOutput($(gateCount))
   outputBuffer.add '\n'
-
-stdout.write outputBuffer
-outputBuffer.setLen 0
 ```
 
-The walk visits each reachable node once. Leaf IDs below 26 are circuit inputs and add no gate. The final write flushes the remaining bytes. Cost: one visit per node.
+The walk starts from all 26 final register values. Leaves are skipped, and each new gate adds one to the count. Visited flags stop a node from being counted twice.
+
 
 ## Complexity
 
-Input reading stores the stream once, using time and space linear in the input size. Hash consing uses O(n) time and O(n) space per case, where n is the instruction count. The final walk uses O(n) time and O(n) space. The total is O(n) per case plus the shared input buffer.
+Every instruction does one expected-constant hash lookup and one stack step.
 
-A naive circuit builds one gate per instruction, so it uses O(n) gates and keeps values that no final register needs.
+| Phase | Time | Space |
+| --- | --- | --- |
+| input parse | O(n) | one buffer |
+| node hash-consing | O(n) expected | node arrays plus hash |
+| reachability walk | O(n) | visited flags and stack |
+
+All arrays grow once per case and are reused on later cases.
+
+Big O uses instruction count n.
+
+| Measure | Big O |
+| --- | --- |
+| time | O(n) expected per case |
+| space | O(n) |
+
+Counting instructions without sharing would report more gates than the circuit needs.

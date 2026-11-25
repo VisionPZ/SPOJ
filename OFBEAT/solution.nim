@@ -1,365 +1,379 @@
-{.passC: "-O3".}
-{.optimization: speed.}
-{.push checks: off.}
-{.push overflowChecks: off.}
-{.push rangeChecks: off.}
-{.push boundChecks: off.}
-{.push stackTrace: off.}
+import algorithm, bitops
 
-const firstDigitValue = 48
-const flushBlockBytes = 1 shl 18
+{.passC: "-O3".}
+{.passL: "-s".}
+{.push checks: off, assertions: off, stacktrace: off, lineDir: off.}
+
+const
+  firstDigitValue = 48
+  flushBlockBytes = 1 shl 18
+  maxRows = 4096
+  maxWords = 64
 
 var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
+
+proc readAllInput() =
+  var chunk = newString(flushBlockBytes)
+  var totalBytes = 0
+  while true:
+    let bytesRead = stdin.readBuffer(addr chunk[0], flushBlockBytes)
+    if bytesRead <= 0:
+      break
+    let previousLen = totalBytes
+    totalBytes += bytesRead
+    if inputData.len < totalBytes:
+      let nextCapacity = max(totalBytes, inputData.len * 2)
+      inputData.setLen(nextCapacity)
+    copyMem(addr inputData[previousLen], addr chunk[0], bytesRead)
+  inputData.setLen(totalBytes)
 
 var scanPos = 0
 
-proc nextSigned(data: string, pos: var int): int =
-  while pos < data.len and data[pos] != '-' and (data[pos] < '0' or data[pos] > '9'):
-    pos += 1
+proc nextSigned(): int {.inline.} =
+  let dataLen = inputData.len
+  while scanPos < dataLen and inputData[scanPos] != '-' and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
+    inc scanPos
   var signValue = 1
-  if pos < data.len and data[pos] == '-':
+  if scanPos < dataLen and inputData[scanPos] == '-':
     signValue = -1
-    pos += 1
+    inc scanPos
   var value = 0
-  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    value = value * 10 + int(data[pos]) - firstDigitValue
-    pos += 1
+  while scanPos < dataLen and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
+    value = value * 10 + int(inputData[scanPos]) - firstDigitValue
+    inc scanPos
   return signValue * value
-
-proc sortValues(values: var seq[int]) =
-  for i in 1..<values.len:
-    let key = values[i]
-    var j = i - 1
-    while j >= 0 and values[j] > key:
-      values[j + 1] = values[j]
-      j -= 1
-    values[j + 1] = key
-
-proc buildVertices(lengths: seq[int], startVertical: bool): seq[int] =
-  var points: seq[int] = @[]
-  var x = 0
-  var y = 0
-  points.add x
-  points.add y
-  for i in 0..<lengths.len:
-    let step = lengths[i]
-    let vertical = ((i mod 2) == 0) == startVertical
-    if vertical:
-      y += step
-    else:
-      x += step
-    points.add x
-    points.add y
-  return points
-
-proc signedArea(points: seq[int]): int64 =
-  var areaSum: int64 = 0
-  let count = points.len div 2
-  for i in 0..<count:
-    let nextIndex = (i + 1) mod count
-    let x1 = int64(points[2 * i])
-    let y1 = int64(points[2 * i + 1])
-    let x2 = int64(points[2 * nextIndex])
-    let y2 = int64(points[2 * nextIndex + 1])
-    areaSum += x1 * y2 - x2 * y1
-  return areaSum
-
-proc indexOf(sortedValues: seq[int], target: int): int =
-  var low = 0
-  var high = sortedValues.len - 1
-  while low <= high:
-    let mid = (low + high) div 2
-    if sortedValues[mid] < target:
-      low = mid + 1
-    elif sortedValues[mid] > target:
-      high = mid - 1
-    else:
-      return mid
-  return -1
-
-proc floodFill(inside: var seq[bool], vWall: seq[bool], hWall: seq[bool],
-               width: int, height: int) =
-  var queue: seq[int] = @[]
-  queue.add 0
-  inside[0] = true
-  var head = 0
-  while head < queue.len:
-    let cell = queue[head]
-    head += 1
-    let i = cell div height
-    let j = cell mod height
-    if i + 1 < width and vWall[(i + 1) * height + j] == false:
-      let next = cell + height
-      if not inside[next]:
-        inside[next] = true
-        queue.add next
-    if i > 0 and vWall[i * height + j] == false:
-      let next = cell - height
-      if not inside[next]:
-        inside[next] = true
-        queue.add next
-    if j + 1 < height and hWall[i * height + (j + 1)] == false:
-      let next = cell + 1
-      if not inside[next]:
-        inside[next] = true
-        queue.add next
-    if j > 0 and hWall[i * height + j] == false:
-      let next = cell - 1
-      if not inside[next]:
-        inside[next] = true
-        queue.add next
-
-proc collectSegments(points: seq[int], lengths: seq[int], startVertical: bool,
-                     vSegX: var seq[int], vSegLow: var seq[int], vSegHigh: var seq[int],
-                     hSegY: var seq[int], hSegLow: var seq[int], hSegHigh: var seq[int]) =
-  var xs: seq[int] = @[]
-  var ys: seq[int] = @[]
-  for i in 0..<(points.len div 2):
-    xs.add points[2 * i]
-    ys.add points[2 * i + 1]
-  sortValues(xs)
-  sortValues(ys)
-  var uniqueXs: seq[int] = @[]
-  for value in xs:
-    if uniqueXs.len == 0 or uniqueXs[uniqueXs.len - 1] != value:
-      uniqueXs.add value
-  var uniqueYs: seq[int] = @[]
-  for value in ys:
-    if uniqueYs.len == 0 or uniqueYs[uniqueYs.len - 1] != value:
-      uniqueYs.add value
-  var xCoords: seq[int] = @[]
-  xCoords.add uniqueXs[0] - 1
-  for value in uniqueXs:
-    xCoords.add value
-  xCoords.add uniqueXs[uniqueXs.len - 1] + 1
-  var yCoords: seq[int] = @[]
-  yCoords.add uniqueYs[0] - 1
-  for value in uniqueYs:
-    yCoords.add value
-  yCoords.add uniqueYs[uniqueYs.len - 1] + 1
-  let width = xCoords.len
-  let height = yCoords.len
-  var vWall = newSeq[bool](width * height)
-  var hWall = newSeq[bool](width * height)
-  var x = 0
-  var y = 0
-  for i in 0..<lengths.len:
-    let step = lengths[i]
-    let vertical = ((i mod 2) == 0) == startVertical
-    let oldX = x
-    let oldY = y
-    if vertical:
-      y += step
-    else:
-      x += step
-    if vertical:
-      let ix = indexOf(xCoords, x)
-      let lo = min(oldY, y)
-      let hi = max(oldY, y)
-      for j in 0..<height - 1:
-        if yCoords[j] >= lo and yCoords[j + 1] <= hi:
-          vWall[ix * height + j] = true
-    else:
-      let jy = indexOf(yCoords, y)
-      let lo = min(oldX, x)
-      let hi = max(oldX, x)
-      for k in 0..<width - 1:
-        if xCoords[k] >= lo and xCoords[k + 1] <= hi:
-          hWall[k * height + jy] = true
-  var reached = newSeq[bool](width * height)
-  floodFill(reached, vWall, hWall, width, height)
-  for ix in 1..<width - 1:
-    var runStart = -1
-    for j in 0..<height - 1:
-      let present = (not reached[(ix - 1) * height + j]) or (not reached[ix * height + j])
-      if present:
-        if runStart == -1:
-          runStart = j
-      else:
-        if runStart != -1:
-          vSegX.add xCoords[ix]
-          vSegLow.add yCoords[runStart]
-          vSegHigh.add yCoords[j]
-          runStart = -1
-    if runStart != -1:
-      vSegX.add xCoords[ix]
-      vSegLow.add yCoords[runStart]
-      vSegHigh.add yCoords[height - 1]
-  for jy in 1..<height - 1:
-    var runStart = -1
-    for i in 0..<width - 1:
-      let present = (not reached[i * height + (jy - 1)]) or (not reached[i * height + jy])
-      if present:
-        if runStart == -1:
-          runStart = i
-      else:
-        if runStart != -1:
-          hSegY.add yCoords[jy]
-          hSegLow.add xCoords[runStart]
-          hSegHigh.add xCoords[i]
-          runStart = -1
-    if runStart != -1:
-      hSegY.add yCoords[jy]
-      hSegLow.add xCoords[runStart]
-      hSegHigh.add xCoords[width - 1]
-
-proc minCoverCount(coverSize: seq[seq[int]], universe: seq[seq[int]],
-                   spans: seq[int], universeCount: int): int =
-  if universeCount == 0:
-    return 0
-  let setCount = coverSize.len
-  var greedyChosen: seq[int] = @[]
-  var remaining = newSeq[bool](universeCount)
-  for i in 0..<universeCount:
-    remaining[i] = true
-  var remainingCount = universeCount
-  while remainingCount > 0:
-    var bestSet = -1
-    var bestGain = 0
-    for j in 0..<setCount:
-      var gain = 0
-      for item in coverSize[j]:
-        if remaining[item]:
-          gain += 1
-      if gain > bestGain:
-        bestGain = gain
-        bestSet = j
-    if bestSet < 0:
-      return 999999
-    greedyChosen.add bestSet
-    for item in coverSize[bestSet]:
-      if remaining[item]:
-        remaining[item] = false
-        remainingCount -= 1
-  var best = greedyChosen.len
-  var order = newSeq[int](universeCount)
-  for i in 0..<universeCount:
-    order[i] = i
-  for i in 1..<universeCount:
-    let key = order[i]
-    var k = i - 1
-    while k >= 0 and spans[key] < spans[order[k]]:
-      order[k + 1] = order[k]
-      k -= 1
-    order[k + 1] = key
-  var bestGlobal = best
-
-  proc packingBound(uncovered: seq[bool]): int =
-    var avail = newSeq[bool](universeCount)
-    for i in 0..<universeCount:
-      avail[i] = uncovered[i]
-    var count = 0
-    for item in order:
-      if avail[item]:
-        count += 1
-        for setIndex in universe[item]:
-          for other in coverSize[setIndex]:
-            avail[other] = false
-    return count
-
-  proc search(uncovered: seq[bool], depth: int) =
-    if depth + packingBound(uncovered) >= bestGlobal:
-      return
-    var pivot = -1
-    var pivotSize = 999999
-    for i in 0..<universeCount:
-      if uncovered[i] and universe[i].len < pivotSize:
-        pivotSize = universe[i].len
-        pivot = i
-    if pivot < 0:
-      if depth < bestGlobal:
-        bestGlobal = depth
-      return
-    var candidates = newSeq[int]()
-    for setIndex in universe[pivot]:
-      candidates.add setIndex
-    for i in 1..<candidates.len:
-      let key = candidates[i]
-      var gainKey = 0
-      var gainPrev = 0
-      for item in coverSize[key]:
-        if uncovered[item]: gainKey += 1
-      for item in coverSize[candidates[i - 1]]:
-        if uncovered[item]: gainPrev += 1
-      if gainKey > gainPrev:
-        var k = i - 1
-        while k >= 0:
-          var gk = 0
-          var gp = 0
-          for item in coverSize[key]:
-            if uncovered[item]: gk += 1
-          for item in coverSize[candidates[k]]:
-            if uncovered[item]: gp += 1
-          if gk <= gp: break
-          candidates[k + 1] = candidates[k]
-          k -= 1
-        candidates[k + 1] = key
-    for setIndex in candidates:
-      var nextUncovered = newSeq[bool](universeCount)
-      for i in 0..<universeCount:
-        nextUncovered[i] = uncovered[i]
-      for item in coverSize[setIndex]:
-        nextUncovered[item] = false
-      if depth + 1 < bestGlobal:
-        search(nextUncovered, depth + 1)
-
-  var initial = newSeq[bool](universeCount)
-  for i in 0..<universeCount:
-    initial[i] = true
-  search(initial, 0)
-  return bestGlobal
 
 var outputBuffer = ""
 
-proc appendOutput(text: string) =
-  outputBuffer.add text
+proc appendInt(value: int) {.inline.} =
+  outputBuffer.add($value)
+  outputBuffer.add('\n')
   if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
+    stdout.write(outputBuffer)
+    outputBuffer.setLen(0)
 
-let caseCount = nextSigned(inputData, scanPos)
-for caseIndex in 0..<caseCount:
-  let sectionCount = nextSigned(inputData, scanPos)
-  var lengths: seq[int] = @[]
+type
+  Point = object
+    x, y: int
+  WallEdge = object
+    axisCoord, lowCoord, highCoord: int
+  ActiveSpan = object
+    lowCoord, highCoord, birthCoord: int
+  StreetSegment = object
+    axisCoord, lowCoord, highCoord: int
+
+proc compareInt(left, right: int): int =
+  if left < right: return -1
+  if left > right: return 1
+  return 0
+
+proc compareWallEdge(left, right: WallEdge): int =
+  if left.axisCoord != right.axisCoord:
+    return compareInt(left.axisCoord, right.axisCoord)
+  return compareInt(left.lowCoord, right.lowCoord)
+
+proc extractAxisSegments(vertices: seq[Point], swapAxes: bool): seq[StreetSegment] =
+  let edgeCount = vertices.len - 1
+  var wallEdges = newSeqOfCap[WallEdge](edgeCount div 2)
+  for i in 0..<edgeCount:
+    let firstX = if swapAxes: vertices[i].y else: vertices[i].x
+    let firstY = if swapAxes: vertices[i].x else: vertices[i].y
+    let secondX = if swapAxes: vertices[i + 1].y else: vertices[i + 1].x
+    let secondY = if swapAxes: vertices[i + 1].x else: vertices[i + 1].y
+    if firstX == secondX:
+      if firstY < secondY:
+        wallEdges.add(WallEdge(axisCoord: firstX, lowCoord: firstY, highCoord: secondY))
+      else:
+        wallEdges.add(WallEdge(axisCoord: firstX, lowCoord: secondY, highCoord: firstY))
+  wallEdges.sort(compareWallEdge)
+
+  var activeSpans: seq[ActiveSpan] = @[]
+  var nextSpans: seq[ActiveSpan] = @[]
+  var updatedRanges: seq[tuple[lowCoord, highCoord: int]] = @[]
+  var cutCoords: seq[int] = @[]
+  var mergedRanges: seq[tuple[lowCoord, highCoord: int]] = @[]
+  result = newSeqOfCap[StreetSegment](edgeCount)
+
+  var edgeStart = 0
+  let wallCount = wallEdges.len
+  while edgeStart < wallCount:
+    let currentAxis = wallEdges[edgeStart].axisCoord
+    var edgeStop = edgeStart
+    while edgeStop < wallCount and wallEdges[edgeStop].axisCoord == currentAxis:
+      inc edgeStop
+
+    cutCoords.setLen(0)
+    for span in activeSpans:
+      cutCoords.add(span.lowCoord)
+      cutCoords.add(span.highCoord)
+    for k in edgeStart..<edgeStop:
+      cutCoords.add(wallEdges[k].lowCoord)
+      cutCoords.add(wallEdges[k].highCoord)
+    cutCoords.sort(compareInt)
+    var uniqueLen = 0
+    for k in 0..<cutCoords.len:
+      if uniqueLen == 0 or cutCoords[k] != cutCoords[uniqueLen - 1]:
+        cutCoords[uniqueLen] = cutCoords[k]
+        inc uniqueLen
+    cutCoords.setLen(uniqueLen)
+
+    updatedRanges.setLen(0)
+    var activeIdx = 0
+    var edgeIdx = edgeStart
+    for k in 0..<(uniqueLen - 1):
+      let segLow = cutCoords[k]
+      let segHigh = cutCoords[k + 1]
+      while activeIdx < activeSpans.len and activeSpans[activeIdx].highCoord <= segLow:
+        inc activeIdx
+      while edgeIdx < edgeStop and wallEdges[edgeIdx].highCoord <= segLow:
+        inc edgeIdx
+      let inActive = (activeIdx < activeSpans.len) and
+                     (activeSpans[activeIdx].lowCoord <= segLow) and
+                     (segHigh <= activeSpans[activeIdx].highCoord)
+      let inWall = (edgeIdx < edgeStop) and
+                   (wallEdges[edgeIdx].lowCoord <= segLow) and
+                   (segHigh <= wallEdges[edgeIdx].highCoord)
+      if inActive xor inWall:
+        if updatedRanges.len > 0 and updatedRanges[updatedRanges.len - 1].highCoord == segLow:
+          updatedRanges[updatedRanges.len - 1].highCoord = segHigh
+        else:
+          updatedRanges.add((segLow, segHigh))
+
+    var untouched = newSeq[bool](activeSpans.len)
+    var touchIdx = edgeStart
+    for spanIdx in 0..<activeSpans.len:
+      let span = activeSpans[spanIdx]
+      while touchIdx < edgeStop and wallEdges[touchIdx].highCoord < span.lowCoord:
+        inc touchIdx
+      let isTouched = (touchIdx < edgeStop) and (wallEdges[touchIdx].lowCoord <= span.highCoord)
+      if not isTouched:
+        untouched[spanIdx] = true
+      else:
+        if currentAxis - span.birthCoord >= 2:
+          result.add(StreetSegment(axisCoord: span.birthCoord + 1,
+                                   lowCoord: span.lowCoord,
+                                   highCoord: span.highCoord))
+
+    mergedRanges.setLen(0)
+    var leftCursor = 0
+    var rightCursor = 0
+    while leftCursor < activeSpans.len or rightCursor < updatedRanges.len:
+      var rangeLow, rangeHigh: int
+      if rightCursor == updatedRanges.len or
+         (leftCursor < activeSpans.len and activeSpans[leftCursor].lowCoord <= updatedRanges[rightCursor].lowCoord):
+        rangeLow = activeSpans[leftCursor].lowCoord
+        rangeHigh = activeSpans[leftCursor].highCoord
+        inc leftCursor
+      else:
+        rangeLow = updatedRanges[rightCursor].lowCoord
+        rangeHigh = updatedRanges[rightCursor].highCoord
+        inc rightCursor
+      if mergedRanges.len > 0 and rangeLow <= mergedRanges[mergedRanges.len - 1].highCoord:
+        if rangeHigh > mergedRanges[mergedRanges.len - 1].highCoord:
+          mergedRanges[mergedRanges.len - 1].highCoord = rangeHigh
+      else:
+        mergedRanges.add((rangeLow, rangeHigh))
+
+    var matchCursor = 0
+    for merged in mergedRanges:
+      while matchCursor < activeSpans.len and activeSpans[matchCursor].lowCoord < merged.lowCoord:
+        inc matchCursor
+      let skipUnchanged = (matchCursor < activeSpans.len) and untouched[matchCursor] and
+                          (activeSpans[matchCursor].lowCoord == merged.lowCoord) and
+                          (activeSpans[matchCursor].highCoord == merged.highCoord)
+      if not skipUnchanged:
+        result.add(StreetSegment(axisCoord: currentAxis,
+                                 lowCoord: merged.lowCoord,
+                                 highCoord: merged.highCoord))
+
+    nextSpans.setLen(0)
+    var oldCursor = 0
+    for updated in updatedRanges:
+      while oldCursor < activeSpans.len and activeSpans[oldCursor].lowCoord < updated.lowCoord:
+        inc oldCursor
+      if oldCursor < activeSpans.len and untouched[oldCursor] and
+         activeSpans[oldCursor].lowCoord == updated.lowCoord and
+         activeSpans[oldCursor].highCoord == updated.highCoord:
+        nextSpans.add(activeSpans[oldCursor])
+      else:
+        nextSpans.add(ActiveSpan(lowCoord: updated.lowCoord,
+                                 highCoord: updated.highCoord,
+                                 birthCoord: currentAxis))
+    swap(activeSpans, nextSpans)
+    edgeStart = edgeStop
+
+type Bitset = array[maxWords, uint64]
+
+var colMask: array[maxRows, Bitset]
+var colDegree: array[maxRows, int32]
+var activeRows: Bitset
+var rowColsFlat: seq[int32] = @[]
+var rowStart: array[maxRows + 1, int32]
+var rowOrder: array[maxRows, int32]
+var witnessCol: array[maxRows, int32]
+var witnessRow: array[maxRows, int32]
+var witnessDegree: array[maxRows, int32]
+
+proc solveChordalSetCover(rowCount, colCount: int, rowAdj: seq[seq[int32]]): int =
+  if rowCount == 0: return 0
+  let wordCount = (rowCount + 63) div 64
+  for wordIdx in 0..<wordCount: activeRows[wordIdx] = 0'u64
+  for rowIdx in 0..<rowCount:
+    activeRows[rowIdx shr 6] = activeRows[rowIdx shr 6] or (1'u64 shl uint(rowIdx and 63))
+    witnessRow[rowIdx] = -1'i32
+    rowOrder[rowIdx] = int32(rowIdx)
+
+  for colIdx in 0..<colCount:
+    colDegree[colIdx] = 0'i32
+    for wordIdx in 0..<wordCount: colMask[colIdx][wordIdx] = 0'u64
+
+  rowColsFlat.setLen(0)
+  for rowIdx in 0..<rowCount:
+    rowStart[rowIdx] = int32(rowColsFlat.len)
+    let rowWord = rowIdx shr 6
+    let rowBit = 1'u64 shl uint(rowIdx and 63)
+    for colIdx in rowAdj[rowIdx]:
+      rowColsFlat.add(colIdx)
+      colMask[colIdx][rowWord] = colMask[colIdx][rowWord] or rowBit
+      inc colDegree[colIdx]
+  rowStart[rowCount] = int32(rowColsFlat.len)
+
+  var maxDegree = 0
+  for rowIdx in 0..<rowCount:
+    let deg = int(rowStart[rowIdx + 1] - rowStart[rowIdx])
+    if deg > maxDegree: maxDegree = deg
+  var bucketOffset = newSeq[int32](maxDegree + 2)
+  for rowIdx in 0..<rowCount:
+    inc bucketOffset[int(rowStart[rowIdx + 1] - rowStart[rowIdx]) + 1]
+  for deg in 1..maxDegree:
+    bucketOffset[deg] += bucketOffset[deg - 1]
+  for rowIdx in 0..<rowCount:
+    let deg = int(rowStart[rowIdx + 1] - rowStart[rowIdx])
+    rowOrder[bucketOffset[deg]] = int32(rowIdx)
+    inc bucketOffset[deg]
+
+  var remainingRows = rowCount
+  var coverCount = 0
+  var removedRows: array[maxRows, int32]
+
+  while remainingRows > 0:
+    var chosenCol = -1'i32
+    for orderIdx in 0..<rowCount:
+      let rowIdx = int(rowOrder[orderIdx])
+      if (activeRows[rowIdx shr 6] and (1'u64 shl uint(rowIdx and 63))) == 0'u64:
+        continue
+      let savedWitness = witnessRow[rowIdx]
+      if savedWitness >= 0:
+        if (activeRows[int(savedWitness) shr 6] and (1'u64 shl uint(int(savedWitness) and 63))) != 0'u64 and
+           colDegree[witnessCol[rowIdx]] == witnessDegree[rowIdx]:
+          continue
+
+      let sliceStart = int(rowStart[rowIdx])
+      let sliceStop = int(rowStart[rowIdx + 1])
+      if sliceStop - sliceStart == 1:
+        chosenCol = rowColsFlat[sliceStart]
+        break
+
+      var dominantCol = rowColsFlat[sliceStart]
+      var bestDegree = colDegree[dominantCol]
+      for k in (sliceStart + 1)..<sliceStop:
+        let colIdx = rowColsFlat[k]
+        let deg = colDegree[colIdx]
+        if deg > bestDegree:
+          bestDegree = deg
+          dominantCol = colIdx
+
+      var dominatesAll = true
+      var blockingRow = -1'i32
+      for k in sliceStart..<sliceStop:
+        let colIdx = rowColsFlat[k]
+        if colIdx == dominantCol or colDegree[colIdx] == 0: continue
+        for wordIdx in 0..<wordCount:
+          let uncovered = colMask[colIdx][wordIdx] and not colMask[dominantCol][wordIdx]
+          if uncovered != 0'u64:
+            dominatesAll = false
+            blockingRow = int32((wordIdx shl 6) + countTrailingZeroBits(uncovered))
+            break
+        if not dominatesAll: break
+
+      if dominatesAll:
+        chosenCol = dominantCol
+        break
+      else:
+        witnessCol[rowIdx] = dominantCol
+        witnessRow[rowIdx] = blockingRow
+        witnessDegree[rowIdx] = bestDegree
+
+    if chosenCol < 0:
+      var fallbackCol = 0'i32
+      for colIdx in 1..<colCount:
+        if colDegree[colIdx] > colDegree[fallbackCol]:
+          fallbackCol = int32(colIdx)
+      chosenCol = fallbackCol
+
+    inc coverCount
+    var removedCount = 0
+    for wordIdx in 0..<wordCount:
+      var wordBits = colMask[chosenCol][wordIdx]
+      if wordBits != 0'u64:
+        activeRows[wordIdx] = activeRows[wordIdx] and not wordBits
+        while wordBits != 0'u64:
+          let bitPos = countTrailingZeroBits(wordBits)
+          wordBits = wordBits and (wordBits - 1'u64)
+          removedRows[removedCount] = int32((wordIdx shl 6) + bitPos)
+          inc removedCount
+    remainingRows -= removedCount
+    for i in 0..<removedCount:
+      let rowIdx = int(removedRows[i])
+      let rowWord = rowIdx shr 6
+      let clearMask = not (1'u64 shl uint(rowIdx and 63))
+      let sliceStart = int(rowStart[rowIdx])
+      let sliceStop = int(rowStart[rowIdx + 1])
+      for k in sliceStart..<sliceStop:
+        let colIdx = int(rowColsFlat[k])
+        colMask[colIdx][rowWord] = colMask[colIdx][rowWord] and clearMask
+        dec colDegree[colIdx]
+
+  return coverCount
+
+readAllInput()
+let caseCount = nextSigned()
+for _ in 0..<caseCount:
+  let sectionCount = nextSigned()
+  var sectionLengths = newSeq[int](sectionCount)
   for i in 0..<sectionCount:
-    lengths.add nextSigned(inputData, scanPos)
-  let startVertical = signedArea(buildVertices(lengths, true)) < 0
-  let vertices = buildVertices(lengths, startVertical)
-  var vSegX: seq[int] = @[]
-  var vSegLow: seq[int] = @[]
-  var vSegHigh: seq[int] = @[]
-  var hSegY: seq[int] = @[]
-  var hSegLow: seq[int] = @[]
-  var hSegHigh: seq[int] = @[]
-  collectSegments(vertices, lengths, startVertical, vSegX, vSegLow, vSegHigh, hSegY, hSegLow, hSegHigh)
-  let vCount = vSegX.len
-  let hCount = hSegY.len
-  var coverByH: seq[seq[int]] = @[]
-  var coverByV: seq[seq[int]] = @[]
-  for i in 0..<vCount:
-    coverByH.add @[]
-  for j in 0..<hCount:
-    coverByV.add @[]
-  for i in 0..<vCount:
-    for j in 0..<hCount:
-      if hSegLow[j] <= vSegX[i] and vSegX[i] <= hSegHigh[j] and
-         vSegLow[i] <= hSegY[j] and hSegY[j] <= vSegHigh[i]:
-        coverByH[i].add j
-        coverByV[j].add i
-  var vSpans: seq[int] = @[]
-  var hSpans: seq[int] = @[]
-  for i in 0..<vCount:
-    vSpans.add vSegHigh[i] - vSegLow[i]
-  for j in 0..<hCount:
-    hSpans.add hSegHigh[j] - hSegLow[j]
-  let firstPart = minCoverCount(coverByV, coverByH, vSpans, vCount)
-  let secondPart = minCoverCount(coverByH, coverByV, hSpans, hCount)
-  appendOutput($(firstPart + secondPart))
-  outputBuffer.add '\n'
+    sectionLengths[i] = nextSigned()
 
-stdout.write outputBuffer
-outputBuffer.setLen 0
+  var vertices = newSeq[Point](sectionCount + 1)
+  var posX = 0
+  var posY = 0
+  vertices[0] = Point(x: 0, y: 0)
+  for i in 0..<sectionCount:
+    if (i and 1) == 0: posY += sectionLengths[i]
+    else: posX += sectionLengths[i]
+    vertices[i + 1] = Point(x: posX, y: posY)
+
+  let verticalStreets = extractAxisSegments(vertices, false)
+  let horizontalStreets = extractAxisSegments(vertices, true)
+  let verticalCount = verticalStreets.len
+  let horizontalCount = horizontalStreets.len
+
+  var horizontalAdj = newSeq[seq[int32]](horizontalCount)
+  var verticalAdj = newSeq[seq[int32]](verticalCount)
+  for i in 0..<verticalCount:
+    let streetX = verticalStreets[i].axisCoord
+    let streetLow = verticalStreets[i].lowCoord
+    let streetHigh = verticalStreets[i].highCoord
+    for j in 0..<horizontalCount:
+      if horizontalStreets[j].lowCoord <= streetX and streetX <= horizontalStreets[j].highCoord and
+         streetLow <= horizontalStreets[j].axisCoord and horizontalStreets[j].axisCoord <= streetHigh:
+        verticalAdj[i].add(int32(j))
+        horizontalAdj[j].add(int32(i))
+
+  let verticalCover = solveChordalSetCover(horizontalCount, verticalCount, horizontalAdj)
+  let horizontalCover = solveChordalSetCover(verticalCount, horizontalCount, verticalAdj)
+  appendInt(verticalCover + horizontalCover)
+
+if outputBuffer.len > 0:
+  stdout.write(outputBuffer)
+  outputBuffer.setLen(0)

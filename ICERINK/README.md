@@ -1,39 +1,112 @@
+# ICERINK — Icerink (SPOJ)
+
+<https://www.spoj.com/problems/ICERINK/>
+
 ## Problem
 
-A skater starts at one point of a square rink and must reach a finish point. Obstacles are orthogonal polygons with no shared points. A slide runs along an axis until it meets the first wall whose interior lies ahead of the slide, or until it passes the finish point. Write the minimum number of slides, or `NO` when no route reaches the finish.
+A skater crosses a square rink dotted with polygon obstacles. Each push slides in a straight line until a wall stops the motion.
+
+Read `t` cases. Each case gives start `x`, start `y`, finish `x`, finish `y`, and an obstacle count. Each obstacle then gives its wall count and that many vertex pairs.
+
+Print the fewest slides that reach the finish, or `NO` when no route exists.
+
+The bounds and judge limits:
 
 | Quantity | Bound |
 | --- | --- |
 | Rink side | 10000 |
-| Obstacles per case | 2500 |
-| Total walls per case | 10000 |
+| Obstacles per case | at most 2500 |
+| Total walls per case | at most 10000 |
 | Coordinates | 0 to 10000 |
 | Time limit | 1000 ms |
 | Memory limit | 1536 MB |
 
 The wall count, not the rink area, sets the work per case.
 
+The sample case:
+
+```
+1
+40 10
+5 40
+3
+6
+0 15
+0 60
+20 60
+20 55
+5 55
+5 15
+12
+30 55
+30 60
+60 60
+60 0
+0 0
+0 5
+55 5
+55 35
+50 35
+50 40
+55 40
+55 55
+6
+30 25
+15 25
+15 30
+35 30
+35 15
+30 15
+```
+
+```
+4
+```
+
 ## Idea
 
-Model every obstacle wall as a state and slide from one wall to the next wall that faces the motion. A sweep over x and a sweep over y compute the landing wall for every state and both slide directions. Breadth-first search over those transitions gives the minimum slide count.
-One state costs two direction checks and constant work.
+Picture a city where you slide down an avenue until a building faces you, then turn. Each wall you hit becomes a new decision point.
+
+The model uses one state per directed wall. Two sweeps, one along `x` and one along `y`, compute the landing wall for every state in both directions. A Fenwick tree (a prefix-count array with fast prefix sums) finds the nearest active wall at each sweep line.
+
+Breadth-first search then walks those landings in slide order, so the first finish hit is shortest.
+
+Each state costs two direction checks and O(log 10000) sweep work. Scanning every wall from every state would cost O(V) per slide instead of one table read. A precomputed landing table keeps the search cheap.
 
 ## Why It Works
 
-A slide stops at the nearest perpendicular wall whose interior is on the far side. Walls parallel to the slide never stop it.
-At a sweep line, the active walls are exactly the walls crossing that line. A Fenwick tree holds their positions and finds the nearest active wall in logarithmic time.
-At a reflex corner, the slide stops on the adjacent wall. The `isLeft` test finds those corners after both sweeps.
-The `landing` table stores the next wall for each state and direction. Breadth-first search visits states in slide order, so the first finish hit is minimal.
+Five facts make the search exact.
 
-`cell` coordinates are not needed. State `i` denotes the wall starting at vertex `i`, and `nextVertex[i]` ends that wall.
+1. A slide stops at the nearest perpendicular wall whose interior lies ahead of the motion. Walls parallel to the slide never stop it.
+2. At a sweep line, active walls are exactly the walls crossing that line. A Fenwick tree holds their positions and finds the nearest active wall in logarithmic time.
+3. At a reflex corner, the slide stops on the adjacent wall. `isRightCorner` rejects a wall that does not bound the interior toward the sliding point.
+4. The `landing` table stores the next wall for each state and direction. Breadth-first search visits states in slide order, so the first finish hit is minimal.
+5. `isLeft` multiplies with `int64`, so coordinates up to 10000 cannot overflow the cross product.
 
-A script in `gen.py --example` traces the sample. Its output is:
+The main structures and their roles:
 
-`(40,10) -> E(55,10) -> S(55,35) -> W(5,35) -> S(5,40)`
+| Term | Meaning |
+| --- | --- |
+| `Solver` | holds wall rings, landing table, and search state |
+| `nextVertex` | ring successor ending each directed wall |
+| `landing` | next wall for each state and slide direction |
+| `treeFind` | nearest active wall on a requested side |
+| `isRightCorner` | test for a reflex corner facing the slide |
+| `depth` | current slide count |
 
-That route uses four slides, which matches the sample output.
+These fields let one wall lookup serve every slide from that state.
+
+A script traces the sample route through the rink:
+
+```
+(40,10) -> E(55,10) -> S(55,35) -> W(5,35) -> S(5,40)
+```
+
+The route uses four slides: east, south, west, and south again. The finish point `(5,40)` is reached at slide four, which matches the sample output.
 
 ## Code
+
+**Setup and scanner.** The read loop loads one buffer, and a hand scanner parses coordinates.
 
 ```nim
 {.push checks: off.}
@@ -73,7 +146,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The read loop stores all input in one string. The scanner skips the blank lines between cases. Sweep buffers are allocated once and reused, so many small cases stay cheap.
+The scan skips blank lines between cases. Sweep buffers are allocated once and reused. Output leaves in 256 KiB blocks.
+
+**State and corner test.** `isLeft` uses an int64 cross product, and `isRightCorner` filters reflex corners.
 
 ```nim
 type
@@ -104,9 +179,22 @@ proc isRightCorner(solver: Solver, vertex, pointX, pointY: int): bool =
   return first or second
 ```
 
-The object holds the wall rings and the landing table. `isRightCorner` rejects a wall that does not bound the interior toward the sliding point. The cross product uses `int64` so large coordinates cannot overflow.
+The object stores wall endpoints and both landing directions. The corner test keeps only walls facing the slide. `int64` products avoid overflow at the rink edge.
+
+**Horizontal slide.** The queue receives the landing wall, its corner, and the continuing edge.
 
 ```nim
+proc addQueue(solver: var Solver, dirIndex, vertex: int, qOne: var seq[int], qTwo: var seq[int]) =
+  if vertex == 0:
+    return
+  if solver.seen[vertex] <= solver.depth + dirIndex:
+    return
+  solver.seen[vertex] = solver.depth + dirIndex
+  if dirIndex == 1:
+    qOne.add vertex
+  else:
+    qTwo.add vertex
+
 proc routeX(solver: var Solver, dirRight: bool, state, landing: int,
             qOne: var seq[int], qTwo: var seq[int]) =
   if solver.py[state] == solver.finishY:
@@ -134,9 +222,19 @@ proc routeX(solver: var Solver, dirRight: bool, state, landing: int,
     solver.addQueue(2, solver.prevVertex[state], qOne, qTwo)
 ```
 
-The finish check compares the slide endpoint with the landing wall. The queue receives the landing wall and the corner at the same height. The second queue receives the wall reached by continuing along the current edge. `routeY` mirrors this block for vertical slides.
+The finish check compares the slide endpoint with the landing wall. `addQueue` rejects a state already seen at this depth. The two queues split slides that finish this round from slides that continue.
+
+**Wall rings.** Each obstacle becomes a closed ring with alternating wall parity.
 
 ```nim
+proc solveCase(startX, startY, finishX, finishY: int, pointXs, pointYs, begins: seq[int]): int =
+  var solver = Solver(
+    px: @[startX], py: @[startY], nextVertex: @[0], prevVertex: @[0],
+    landing: [@[0], @[0]],
+    startX: startX, startY: startY, finishX: finishX, finishY: finishY,
+    vertexCount: 0, depth: 0, answer: -1, seen: @[]
+  )
+  var count = 0
   for k in 0..<begins.len:
     let first = begins[k]
     let last = if k + 1 < begins.len: begins[k + 1] else: pointXs.len
@@ -164,11 +262,49 @@ The finish check compares the slide endpoint with the landing wall. The queue re
     for j in count - wallTotal + 1..<count:
       solver.nextVertex.add j + 1
     solver.nextVertex.add count - wallTotal + 1
+
+  solver.vertexCount = count
+  solver.nextVertex.setLen(count + 1)
+  solver.prevVertex.setLen(count + 1)
+  for i in 0..count:
+    solver.prevVertex[solver.nextVertex[i]] = i
+  solver.landing[0].setLen(count + 1)
+  solver.landing[1].setLen(count + 1)
+  for i in 0..count:
+    solver.landing[0][i] = 0
+    solver.landing[1][i] = 0
+  solver.seen = newSeq[int](count + 1)
+  for i in 0..count:
+    solver.seen[i] = infinity
 ```
 
-The loop walks every polygon and closes each ring. When the first edge is horizontal, it rotates the ring so odd vertices start vertical walls. This keeps parity meaningful for the two sweeps.
+The loop walks every polygon and closes each ring. A horizontal first edge rotates the ring so odd states start vertical walls. Parity then selects the sweep direction.
+
+**Nearest active wall.** The Fenwick tree answers a nearest-wall query in logarithmic time.
 
 ```nim
+  type Tree = object
+    bit: seq[int]
+    leaf: seq[int]
+  proc treeAdd(tree: var Tree, coord, value: int) =
+    tree.leaf[coord] = value
+    var idx = coord + 1
+    while idx <= rinkExtent + 1:
+      tree.bit[idx] += 1
+      idx += idx and (-idx)
+  proc treeDel(tree: var Tree, coord: int) =
+    tree.leaf[coord] = 0
+    var idx = coord + 1
+    while idx <= rinkExtent + 1:
+      tree.bit[idx] -= 1
+      idx += idx and (-idx)
+  proc treeSum(tree: Tree, coord: int): int =
+    var idx = coord + 1
+    var total = 0
+    while idx > 0:
+      total += tree.bit[idx]
+      idx -= idx and (-idx)
+    return total
   proc treeFind(tree: Tree, pos: int, dirRight: bool): int =
     if dirRight:
       let before = treeSum(tree, pos)
@@ -205,7 +341,9 @@ The loop walks every polygon and closes each ring. When the first edge is horizo
       return tree.leaf[idx]
 ```
 
-The tree holds one wall per active coordinate. `treeFind` returns the nearest active wall on the requested side, or zero. Each query walks fourteen levels, so it takes logarithmic time.
+The tree holds one wall per active coordinate. `treeFind` walks fourteen levels, then returns the leaf for the nearest wall. A zero result means no wall lies on that side.
+
+**Sweep events.** Walls enter at their low coordinate and leave at their high coordinate.
 
 ```nim
       for kk in 0..1:
@@ -223,9 +361,17 @@ The tree holds one wall per active coordinate. `treeFind` returns the nearest ac
               solver.landing[0][solver.nextVertex[q]] = treeFind(tree, solver.py[q], solver.px[q] < solver.px[solver.nextVertex[q]])
 ```
 
-Walls enter the tree at their low coordinate and leave at their high coordinate. The sweep writes `landing` only at wall endpoints. The two directions use separate table entries.
+The sweep writes `landing` only at wall endpoints. The two directions use separate table entries. Each event costs one logarithmic tree query.
+
+**Breadth-first search.** The two queues swap each round, so `depth` counts slides.
 
 ```nim
+  for i in 1..solver.vertexCount:
+    if solver.isLeft(solver.px[solver.prevVertex[i]], solver.py[solver.prevVertex[i]], solver.px[i], solver.py[i],
+                     solver.px[solver.nextVertex[i]], solver.py[solver.nextVertex[i]]):
+      solver.landing[1][solver.prevVertex[i]] = i
+      solver.landing[0][i] = solver.prevVertex[i]
+
   while true:
     solver.depth += 1
     var qZero = qOne
@@ -244,9 +390,28 @@ Walls enter the tree at their low coordinate and leave at their high coordinate.
       return -1
 ```
 
-The search swaps the two queues each round, so `depth` counts slides. Parity selects the vertical or horizontal wall family. An empty next queue ends the search with `NO`.
+Reflex corners get their landing entries before the search starts. Parity picks vertical or horizontal walls. Empty queues end the search with no route.
+
+**Driver.** The case loop reads obstacles and prints one answer per case.
 
 ```nim
+let caseCount = nextInt(inputData, scanPos)
+for caseNumber in 0..<caseCount:
+  let startX = nextInt(inputData, scanPos)
+  let startY = nextInt(inputData, scanPos)
+  let finishX = nextInt(inputData, scanPos)
+  let finishY = nextInt(inputData, scanPos)
+  let obstacleCount = nextInt(inputData, scanPos)
+  var pointXs: seq[int] = @[]
+  var pointYs: seq[int] = @[]
+  var begins: seq[int] = @[]
+  for k in 0..<obstacleCount:
+    begins.add pointXs.len
+    let wallCount = nextInt(inputData, scanPos)
+    for l in 0..<wallCount:
+      pointXs.add nextInt(inputData, scanPos)
+      pointYs.add nextInt(inputData, scanPos)
+  let answer = solveCase(startX, startY, finishX, finishY, pointXs, pointYs, begins)
   if answer < 0:
     appendOutput("NO")
   else:
@@ -257,17 +422,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Every case writes one line. The final write flushes the remaining buffer.
+`begins` marks where each polygon starts in the flat point arrays. Each case writes one line. The final write flushes the remaining buffer.
 
 ## Complexity
 
-Let V be the vertex count.
+Let `V` be the total wall count in one case.
 
 | Phase | Time | Space |
 | --- | --- | --- |
-| Input scan | O(V) | O(V) |
-| Wall ring setup | O(V) | O(V) |
-| Both sweeps | O(V log 10000) | O(10000) |
-| Breadth-first search | O(V) | O(V) |
+| Input scan | O(V) | input buffer |
+| Wall ring setup | O(V) | O(V) wall arrays |
+| Both sweeps | O(V log 10000) | O(10000) tree arrays |
+| Breadth-first search | O(V) | O(V) landing and seen arrays |
 
-Total time is O(V log 10000) and total space is O(V + 10000). Scanning every wall from every state would cost O(V) per slide instead of one table read.
+The fixed rink extent keeps every tree query shallow.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(V log 10000) per case |
+| Space | O(V + 10000) per case |
+
+Scanning every wall from every slide state costs O(V) per slide instead of one landing-table read.

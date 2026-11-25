@@ -1,109 +1,92 @@
+# POUR1 — Pouring water (SPOJ)
+
+<https://www.spoj.com/problems/POUR1/>
+
 ## Problem
 
-Read a case count, then three positive integers per case. The first two are the
-capacities of the vessels. The third is the wanted amount. Print the fewest steps
-that leave exactly that amount in either vessel. Print -1 when no sequence of
-steps can reach it.
+Two jugs of different sizes stand empty on a table. You may fill a jug, empty it, or pour one into the other until it is full or empty. Find the fewest moves that leave exactly the target amount in either jug.
 
-The bounds keep every number small.
+Input: `t`, the number of test cases, then `t` triples `a b c`, each on its own line. Output: one integer per case, the minimum number of steps, or −1 when the target cannot be measured.
 
-| item | bound |
+The bounds from the statement:
+
+| Item | Bound |
 |---|---|
-| test cases | at most 100 |
-| capacity of each vessel | at most 40000 |
-| wanted amount | at most 40000 |
-| judge limit | 2 s, 1536 MB |
+| Test cases `t` | 1 ≤ t ≤ 100 |
+| Capacity and target values | positive integers ≤ 40000 |
+| Allowed moves | fill, empty, pour until full or empty |
+| Judge limit | 2000 ms, 1536 MB |
 
-Both capacities fit in sixteen bits, and the case count stays tiny.
+Both jugs start empty, and only one jug must hold the target amount.
 
-The sample uses capacities 5 and 2 with target 3, then capacities 2 and 3 with
-target 4. The answers are 2 and -1. The output holds one answer per case.
+The sample input and output:
+
+```
+2
+5
+2
+3
+2
+3
+4
+```
+
+```
+2
+-1
+```
 
 ## Idea
 
-Two directed procedures cover the shortest answer. One keeps filling the left
-vessel and pours it into the right vessel, and it empties the right vessel when
-the right one fills. The other does the same with the vessels swapped. Each
-fill, empty, and pour counts as one step. A full search over pairs of amounts
-visits far more states than either walk.
+Act out the pouring with one fixed routine, like measuring flour with two cups by always filling the left cup first. The program checks reachability, then plays out two pouring orders and keeps the shorter one.
 
-Each simulated step costs a fixed handful of arithmetic operations. The step
-count stays below twice the capacity sum divided by the greatest common
-divisor.
+Reachability has two simple rules. The target cannot exceed the larger jug. It must also divide evenly by the greatest common divisor (the largest shared factor) of the two capacities. If either rule fails, the answer is −1.
+
+`stepsFor` simulates one direction: fill the first jug, pour into the second, and empty the second when it fills. The driver calls it with both jugs swapped, then takes the smaller count. A step ceiling of 2^20 stops any runaway simulation.
+
+Cost per case: two simulations of at most 2^20 constant-time steps. A search over all `(a + 1)(b + 1)` fill states would reach 1.6 × 10^9 states at the limits.
+
+Two short simulations and one divisor test replace a huge state search.
 
 ## Why It Works
 
-Three facts prove the program.
+Four facts carry the program.
 
-1. After every step, at least one vessel is full or empty. The start has both
-   vessels empty, and each fill, empty, or pour keeps that property.
-2. Both amounts stay multiples of the greatest common divisor of the
-   capacities. The target must also be a multiple of that divisor, and it must
-   fit in at least one vessel.
-3. The directed walk reaches every reachable goal before it repeats. Every goal
-   sits on that boundary, so the first visit gives the step count in that
-   direction. The swapped walk covers the other direction. A shortest path
-   keeps one direction, so the smaller first visit is the answer.
+1. A fill, empty, or pour always changes each amount by a multiple of `gcd(a, b)`. A target outside that divisor pattern can never appear.
+2. Neither jug holds more than its own capacity, so a target above both capacities is impossible.
+3. The fixed routine (fill first, pour, empty when full) walks a definite chain of states. The first time the target appears, the step count is valid for that direction.
+4. Sweeping the jugs in both orders covers the cheaper route, since one order often needs far fewer steps. The ceiling keeps every trial finite.
 
-Two tests decide reachability before the simulation.
+The values the program tracks:
 
-| test | meaning |
+| Term | Meaning |
 |---|---|
-| target > larger capacity | no vessel can hold the wanted amount |
-| target mod gcd != 0 | the target is not a multiple of the measurable unit |
+| `gcdOf` | greatest common divisor of the two capacities |
+| `stepsFor` | step count for one pouring order |
+| `stepCeiling` | cap of 2^20 simulated steps |
+| `firstAmount`, `secondAmount` | litres currently in each jug |
 
-A case that passes both tests always has an answer.
+Trying both orders captures the shortest of the two deterministic paths.
 
-For capacities 7 and 3 with target 5, the left-first walk visits these states.
+A script-traced example with `a = 5`, `b = 2`, `c = 3`:
 
-| step | first vessel | second vessel | action |
-|---|---|---|---|
-| 0 | 0 | 0 | fill first |
-| 1 | 7 | 0 | pour 3 |
-| 2 | 4 | 3 | empty second |
-| 3 | 4 | 0 | pour 3 |
-| 4 | 1 | 3 | empty second |
-| 5 | 1 | 0 | pour 1 |
-| 6 | 0 | 1 | fill first |
-| 7 | 7 | 1 | pour 2 |
-| 8 | 5 | 3 | goal |
+```
+start              (0, 0)  step 0
+fill first jug     (5, 0)  step 1
+pour into second   (3, 2)  step 2
+first jug holds 3  -> answer 2
+```
 
-The left walk reaches the target at step 8.
-
-The swapped walk visits these states.
-
-| step | first vessel | second vessel | action |
-|---|---|---|---|
-| 0 | 0 | 0 | fill first |
-| 1 | 3 | 0 | pour 3 |
-| 2 | 0 | 3 | fill first |
-| 3 | 3 | 3 | pour 3 |
-| 4 | 0 | 6 | fill first |
-| 5 | 3 | 6 | pour 1 |
-| 6 | 2 | 7 | empty second |
-| 7 | 2 | 0 | pour 2 |
-| 8 | 0 | 2 | fill first |
-| 9 | 3 | 2 | pour 3 |
-| 10 | 0 | 5 | goal |
-
-The right walk reaches the target at step 10. The answer is 8.
+The second sample case has `a = 2`, `b = 3`, `c = 4`. Here 4 exceeds both capacities, so the answer is −1.
 
 ## Code
 
-The ceiling exceeds twice the largest possible capacity sum, so a reachable
-target always appears before the loop stops. The block size keeps each write
-near 128 KiB.
+**Constants and divisor.** The ceiling bounds each simulation, and `gcdOf` uses repeated remainders.
 
 ```nim
 const flushBlockBytes = 1 shl 17
 const stepCeiling = 1 shl 20
-```
 
-The gcd loop shrinks the pair until the smaller value reaches zero. The mod
-operation gives the remainder, and Nim spells the remainder operation as mod.
-The loop runs once per Euclidean division.
-
-```nim
 proc gcdOf(leftValue, rightValue: int): int =
   var larger = leftValue
   var smaller = rightValue
@@ -114,10 +97,9 @@ proc gcdOf(leftValue, rightValue: int): int =
   return larger
 ```
 
-The walk stops at the target or at the step ceiling. The pour amount is the
-smaller of the amount on hand and the room left in the other vessel. That
-choice avoids a spill and keeps both amounts inside their capacities. Each
-turn costs a few comparisons and additions.
+`stepCeiling` equals 2^20. The Euclidean loop in `gcdOf` runs O(log smaller) times and uses integer remainders only.
+
+**Pouring simulation.** One order is played out until the target appears or the ceiling is hit.
 
 ```nim
 proc stepsFor(firstCapacity, secondCapacity, target: int): int =
@@ -141,9 +123,9 @@ proc stepsFor(firstCapacity, secondCapacity, target: int): int =
   return -1
 ```
 
-The scanner walks the input buffer by index and builds each integer from its
-digits. It needs no sign branch because the spec gives only positive values.
-Work grows with the number of input bytes.
+The loop checks both jugs before each move, so an already-correct start counts zero steps. The three branches cover fill, empty-on-full, and pour. `poured` is capped by the free space in the second jug.
+
+**Scanner and driver.** The program reads all cases, filters impossible targets, then compares both orders.
 
 ```nim
 proc nextInt(inputData: string, i: var int): int =
@@ -153,14 +135,7 @@ proc nextInt(inputData: string, i: var int): int =
     value = value * 10 + int(inputData[i]) - 48
     i = i + 1
   return value
-```
 
-The read loop collects whole lines into one buffer before scanning. The case
-loop runs exactly caseCount times, and each turn appends one answer and a
-newline. The flush guard writes a block when it fills, and the last write
-emits the tail. The program uses one input buffer and one output buffer.
-
-```nim
 var inputData: string
 var lineBuffer: string
 while readLine(stdin, lineBuffer):
@@ -193,22 +168,27 @@ for j in 1 .. caseCount:
 stdout.write outputBuffer
 ```
 
+`nextInt` scans the buffered input by index. Over-large targets and targets outside the gcd pattern return −1 at once. Both `stepsFor` calls use the ceiling, and `max` recovers the existing count when one direction fails.
+
 ## Complexity
 
-| phase | time | space |
+Each case does one divisor test and at most two bounded simulations.
+
+| Phase | Time | Space |
 |---|---|---|
-| input read | one pass over lines, then one pass over digits | input bytes |
-| gcd and reachability | one Euclidean division per round | a few integers |
-| one directed walk | one pass per step up to the ceiling | constant |
-| output write | one write per 128 KiB block | one block |
+| Input read | one pass over input bytes | input bytes |
+| `gcdOf` | O(log min(a, b)) | O(1) |
+| Two simulations | at most 2 × 2^20 steps | O(1) |
+| Output | one write per 128 KiB block | 128 KiB |
+| Total per case | bounded by the step ceiling | O(1) |
 
-The case count bounds the total work at one hundred times the per-case walk.
+The ceiling keeps every case finite and predictable.
 
-| measure | Big O |
+| Measure | Big O |
 |---|---|
-| time | O(capacity sum / gcd) per case |
-| space | O(input bytes) for the buffer, plus constant work space |
+| Time | O(log min(a, b) + stepCeiling) per case |
+| Space | O(1) per case, plus input and output buffers |
 
-A breadth-first search stores every reachable pair of amounts, which costs
-O(capacity sum) states and a queue for each case. The directed walks use no
-state table and stop at the first visit.
+Capacities stay small, so the bound is a few million steps per case.
+
+A breadth-first search over all fill states would hold `(a + 1)(b + 1)` pairs, up to 1.6 × 10^9 at the limits. The gcd test and two simulations avoid that memory cost.

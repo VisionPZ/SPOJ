@@ -1,116 +1,29 @@
 #!/usr/bin/env python3
-import itertools
 import math
 import random
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 RADIANS_PER_MINUTE = math.pi / 10800.0
-NEAR_ZERO = 1e-7
-SMALL_CASE = 12
+EPS = 1e-10
+
+
+def exact_tan(angle):
+    if angle == 0:
+        return 0.0
+    if angle == 2700:
+        return 1.0
+    if angle == -2700:
+        return -1.0
+    return math.tan(angle * RADIANS_PER_MINUTE)
 
 
 def far_side(bottom, angle, width):
-    return bottom + math.tan(angle * RADIANS_PER_MINUTE) * width
+    return bottom + exact_tan(angle) * width
 
 
-def solve_linear(rows):
-    size = 4
-    matrix = [list(row[0]) + [row[1]] for row in rows]
-    for column in range(size):
-        pivot = None
-        for index in range(column, len(matrix)):
-            if abs(matrix[index][column]) > 1e-10:
-                pivot = index
-                break
-        if pivot is None:
-            return None
-        matrix[column], matrix[pivot] = matrix[pivot], matrix[column]
-        scale = matrix[column][column]
-        matrix[column] = [value / scale for value in matrix[column]]
-        for index in range(len(matrix)):
-            if index != column and abs(matrix[index][column]) > 1e-15:
-                factor = matrix[index][column]
-                matrix[index] = [matrix[index][k] - factor * matrix[column][k]
-                                 for k in range(size + 1)]
-    for row in matrix[size:]:
-        if abs(row[size]) > 1e-5:
-            return None
-    return [row[size] for row in matrix[:size]]
-
-
-def count_collisions(width, speed, people, far_sides, strategy):
-    start, finish_time, delay, combined = strategy
-    if delay <= NEAR_ZERO or delay > finish_time + NEAR_ZERO:
-        return 0
-    far_x = (combined + start * finish_time) / delay
-    duration = finish_time - delay
-    horizontal = far_x - start
-    if speed * duration + NEAR_ZERO < math.hypot(width, horizontal):
-        return 0
-    if any(abs(start - person[0]) < 1e-6 for person in people):
-        return 0
-    hits = 0
-    for (bottom, crossing, angle), far_value in zip(people, far_sides):
-        if crossing > duration + NEAR_ZERO:
-            ratio = delay / (crossing - duration)
-            if ratio <= 1 + NEAR_ZERO:
-                if abs(start + horizontal * ratio -
-                       (bottom + (far_value - bottom) * ratio)) < 1e-6:
-                    hits += 1
-        elif crossing >= duration - NEAR_ZERO and delay <= NEAR_ZERO:
-            denominator = horizontal - (far_value - bottom)
-            if abs(denominator) > NEAR_ZERO:
-                ratio = (bottom - start) / denominator
-                if -NEAR_ZERO <= ratio <= 1 + NEAR_ZERO and abs(start - bottom) > NEAR_ZERO:
-                    hits += 1
-    return hits
-
-
-def delayed_oracle(width, speed, people):
-    count = len(people)
-    if count == 0:
-        return 0
-    far_sides = [far_side(person[0], person[2], width) for person in people]
-    rows = []
-    for (bottom, crossing, angle), far_value in zip(people, far_sides):
-        rows.append(((float(crossing), float(bottom), -far_value, 1.0),
-                     float(bottom) * float(crossing)))
-    delay_values = [0.0, 1.0, 2.0, 3.0]
-    finish_values = []
-    for person in people:
-        crossing = float(person[1])
-        delay_values.extend([crossing, crossing / 2.0, crossing - 1.0])
-        finish_values.extend([crossing, crossing - 1.0, crossing - 2.0,
-                              crossing - 3.0, crossing + 1.0, crossing / 2.0])
-    delay_values = sorted(set(delay_values))
-    finish_values = sorted(set(finish_values))
-    best = 0
-    for size in (4, 3, 2):
-        for subset in itertools.combinations(range(count), size):
-            base = [rows[index] for index in subset]
-            if size == 4:
-                candidates = [base]
-            elif size == 3:
-                candidates = [base + [((0.0, 0.0, 1.0, 0.0), value)]
-                              for value in delay_values]
-                candidates += [base + [((0.0, 1.0, 0.0, 0.0), value)]
-                               for value in finish_values]
-            else:
-                candidates = []
-                for delay_value in delay_values:
-                    for finish_value in finish_values:
-                        if finish_value > delay_value:
-                            candidates.append(base + [((0.0, 0.0, 1.0, 0.0), delay_value),
-                                                      ((0.0, 1.0, 0.0, 0.0), finish_value)])
-            for system in candidates:
-                solution = solve_linear(system)
-                if solution is not None:
-                    best = max(best, count_collisions(width, speed, people, far_sides, solution))
-    return best
-
-
-def synchronized_oracle(width, speed, people):
+def oracle_case(width, speed, people):
+    forbidden_x = {bottom for bottom, crossing, angle in people}
     groups = {}
     for bottom, crossing, angle in people:
         groups.setdefault(crossing, []).append((bottom, angle))
@@ -120,37 +33,46 @@ def synchronized_oracle(width, speed, people):
         if reach < width:
             continue
         displacement = math.sqrt(float(reach) ** 2 - float(width) ** 2)
-        bottoms = sorted(set(bottom for bottom, angle in walkers))
-        far_sides = [far_side(bottom, angle, width) for bottom, angle in walkers]
-        marks = sorted(set(bottoms + far_sides))
-        candidates = list(marks)
-        candidates += [value + shift for value in marks for shift in (-1e-6, 1e-6)]
-        candidates += [(marks[k] + marks[k + 1]) / 2.0 for k in range(len(marks) - 1)]
-        candidates += [marks[0] - 1, marks[-1] + 1]
-        for start in candidates:
-            choices = candidates + [start - displacement, start + displacement]
-            for raw_end in choices:
-                finish = max(start - displacement, min(start + displacement, raw_end))
-                if abs(finish - start) > displacement + 1e-9:
+        items = [(bottom, far_side(bottom, angle, width)) for bottom, angle in walkers]
+        xs = sorted(bottom for bottom, _ in items)
+        fars = sorted(f for _, f in items)
+        marks = sorted(set(fars + xs + [x - displacement for x in xs] + [x + displacement for x in xs]))
+        qs = set()
+        for m in marks:
+            qs.add(m)
+            qs.add(m - 1e-5)
+            qs.add(m + 1e-5)
+        for i in range(len(marks) - 1):
+            qs.add((marks[i] + marks[i + 1]) / 2.0)
+        for q in qs:
+            cands_s = set()
+            if displacement == 0.0:
+                if all(abs(q - fx) > EPS for fx in forbidden_x):
+                    cands_s.add(q)
+            else:
+                lo, hi = q - displacement, q + displacement
+                pts = [lo, hi] + [x for x in xs if lo < x < hi]
+                pts.sort()
+                for p in pts:
+                    if lo <= p - 1e-6 <= hi:
+                        cands_s.add(p - 1e-6)
+                    if lo <= p + 1e-6 <= hi:
+                        cands_s.add(p + 1e-6)
+                for i in range(len(pts) - 1):
+                    cands_s.add((pts[i] + pts[i + 1]) / 2.0)
+            for s in cands_s:
+                if abs(q - s) > displacement + EPS:
+                    continue
+                if any(abs(s - fx) <= EPS for fx in forbidden_x):
                     continue
                 hits = 0
-                for bottom, angle in walkers:
-                    top = far_side(bottom, angle, width)
-                    if abs(start - bottom) < NEAR_ZERO:
-                        continue
-                    if start < bottom and finish >= top - 1e-9:
+                for bottom, top in items:
+                    if s < bottom and q >= top - EPS:
                         hits += 1
-                    elif start > bottom and finish <= top + 1e-9:
+                    elif s > bottom and q <= top + EPS:
                         hits += 1
                 if hits > best:
                     best = hits
-    return best
-
-
-def oracle_case(width, speed, people):
-    best = synchronized_oracle(width, speed, people)
-    if len(people) <= SMALL_CASE:
-        best = max(best, delayed_oracle(width, speed, people))
     return best
 
 
@@ -179,8 +101,10 @@ SAMPLE = [
 ]
 
 assert oracle_case(20, 2, SAMPLE) == 2
-assert oracle_case(5, 20, [(-2, 2, 2700), (2, 5, 2700)]) == 2
+assert oracle_case(20, 2, [(-20, 10, 2700), (20, 10, -2700), (0, 1, 0)]) == 1
+assert oracle_case(20, 2, [(-20, 10, 2700), (0, 10, 0)]) == 1
 assert oracle_case(10, 10, [(0, 1, 0)]) == 0
+assert oracle_case(10, 10, [(0, 1, 2700)]) == 1
 assert oracle_case(10, 20, [(-5, 1, 2700), (5, 1, -2700)]) == 2
 assert oracle_case(10, 20, [(0, 1, 0)]) == 1
 
@@ -188,14 +112,16 @@ random.seed(20261124)
 EDGE_CASES = [
     (10, 1, [(0, 5, 0)]),
     (10, 10, [(0, 1, 0)]),
+    (10, 10, [(0, 1, 2700)]),
+    (20, 2, [(-20, 10, 2700), (20, 10, -2700), (0, 1, 0)]),
+    (20, 2, [(-20, 10, 2700), (0, 10, 0)]),
+    (10, 20, [(0, 1, 3600)]),
     (10, 20, [(-5, 1, 2700), (5, 1, -2700)]),
     (100, 10000, [(-10000, 10000, 0), (10000, 10000, 0)]),
     (1, 10000, [(0, 1, 5000), (1, 1, -5000), (-1, 2, 0)]),
     (100, 2, [(-10000, 100, 5000), (10000, 100, -5000), (0, 50, 0)]),
     (7, 13, [(x, 3, angle) for x, angle in zip(range(-9, 0), [0, 60, -60, 4000, -4000, 5000, -5000, 2700, -2700])]),
     (50, 5, [(-56, 10, -1), (-6, 10, -2700)]),
-    (5, 20, [(-2, 2, 2700), (2, 5, 2700)]),
-    (50, 100, [(18, 63, -2700), (-6, 53, 2700), (5, 64, 2700), (8, 88, 2700)]),
 ]
 
 WIDE_CASES = []

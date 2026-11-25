@@ -39,58 +39,58 @@ proc toChunks(data: string, start: int, finish: int): seq[int] =
   while right >= start:
     var chunk = 0
     var place = 1
-    var k = 0
-    while right >= start and k < digitGroup:
+    var digitIdx = 0
+    while right >= start and digitIdx < digitGroup:
       chunk += (int(data[right]) - firstDigitValue) * place
       place *= 10
       right -= 1
-      k += 1
+      digitIdx += 1
     result.add chunk
   while result.len > 1 and result[result.len - 1] == 0:
     result.setLen(result.len - 1)
 
-proc fft(re: var seq[float], im: var seq[float], invert: bool) =
-  let n = re.len
-  var j = 0
-  for i in 1 .. n - 1:
-    var bit = n div 2
-    while (j and bit) != 0:
-      j = j xor bit
+proc fft(realPart: var seq[float], imagPart: var seq[float], invert: bool) =
+  let size = realPart.len
+  var revIdx = 0
+  for idx in 1 .. size - 1:
+    var bit = size div 2
+    while (revIdx and bit) != 0:
+      revIdx = revIdx xor bit
       bit = bit div 2
-    j = j xor bit
-    if i < j:
-      swap re[i], re[j]
-      swap im[i], im[j]
-  var len = 2
-  while len <= n:
-    let angle = (if invert: 2.0 else: -2.0) * piValue / float(len)
+    revIdx = revIdx xor bit
+    if idx < revIdx:
+      swap realPart[idx], realPart[revIdx]
+      swap imagPart[idx], imagPart[revIdx]
+  var blockLen = 2
+  while blockLen <= size:
+    let angle = (if invert: 2.0 else: -2.0) * piValue / float(blockLen)
     let stepRe = cos(angle)
     let stepIm = sin(angle)
-    var i = 0
-    while i < n:
+    var blockStart = 0
+    while blockStart < size:
       var twiddleRe = 1.0
       var twiddleIm = 0.0
-      let half = len div 2
-      var k = 0
-      while k < half:
-        let leftRe = re[i + k]
-        let leftIm = im[i + k]
-        let rightRe = re[i + k + half] * twiddleRe - im[i + k + half] * twiddleIm
-        let rightIm = re[i + k + half] * twiddleIm + im[i + k + half] * twiddleRe
-        re[i + k] = leftRe + rightRe
-        im[i + k] = leftIm + rightIm
-        re[i + k + half] = leftRe - rightRe
-        im[i + k + half] = leftIm - rightIm
+      let half = blockLen div 2
+      var offset = 0
+      while offset < half:
+        let leftRe = realPart[blockStart + offset]
+        let leftIm = imagPart[blockStart + offset]
+        let rightRe = realPart[blockStart + offset + half] * twiddleRe - imagPart[blockStart + offset + half] * twiddleIm
+        let rightIm = realPart[blockStart + offset + half] * twiddleIm + imagPart[blockStart + offset + half] * twiddleRe
+        realPart[blockStart + offset] = leftRe + rightRe
+        imagPart[blockStart + offset] = leftIm + rightIm
+        realPart[blockStart + offset + half] = leftRe - rightRe
+        imagPart[blockStart + offset + half] = leftIm - rightIm
         let nextRe = twiddleRe * stepRe - twiddleIm * stepIm
         twiddleIm = twiddleRe * stepIm + twiddleIm * stepRe
         twiddleRe = nextRe
-        k += 1
-      i += len
-    len *= 2
+        offset += 1
+      blockStart += blockLen
+    blockLen *= 2
   if invert:
-    for i in 0 .. n - 1:
-      re[i] = re[i] / float(n)
-      im[i] = im[i] / float(n)
+    for idx in 0 .. size - 1:
+      realPart[idx] = realPart[idx] / float(size)
+      imagPart[idx] = imagPart[idx] / float(size)
 
 proc multiply(first: seq[int], second: seq[int]): seq[int] =
   let need = first.len + second.len - 1
@@ -101,25 +101,25 @@ proc multiply(first: seq[int], second: seq[int]): seq[int] =
   var firstIm = newSeq[float](size)
   var secondRe = newSeq[float](size)
   var secondIm = newSeq[float](size)
-  for i in 0 .. first.len - 1:
-    firstRe[i] = float(first[i])
-  for i in 0 .. second.len - 1:
-    secondRe[i] = float(second[i])
+  for idx in 0 .. first.len - 1:
+    firstRe[idx] = float(first[idx])
+  for idx in 0 .. second.len - 1:
+    secondRe[idx] = float(second[idx])
   fft(firstRe, firstIm, false)
   fft(secondRe, secondIm, false)
-  for i in 0 .. size - 1:
-    let newRe = firstRe[i] * secondRe[i] - firstIm[i] * secondIm[i]
-    firstIm[i] = firstRe[i] * secondIm[i] + firstIm[i] * secondRe[i]
-    firstRe[i] = newRe
+  for idx in 0 .. size - 1:
+    let newRe = firstRe[idx] * secondRe[idx] - firstIm[idx] * secondIm[idx]
+    firstIm[idx] = firstRe[idx] * secondIm[idx] + firstIm[idx] * secondRe[idx]
+    firstRe[idx] = newRe
   fft(firstRe, firstIm, true)
   var digits = newSeq[int](size + 1)
-  for i in 0 .. size - 1:
-    digits[i] = int(round(firstRe[i]))
+  for idx in 0 .. size - 1:
+    digits[idx] = int(round(firstRe[idx]))
   var carry = 0
-  for i in 0 .. size - 1:
-    var value = digits[i] + carry
+  for idx in 0 .. size - 1:
+    var value = digits[idx] + carry
     carry = value div digitBase
-    digits[i] = value mod digitBase
+    digits[idx] = value mod digitBase
   digits[size] = carry
   while digits.len > 1 and digits[digits.len - 1] == 0:
     digits.setLen(digits.len - 1)
@@ -139,14 +139,14 @@ proc appendNumber(digits: seq[int]) =
     return
   let top = digits.len - 1
   appendOutput($digits[top])
-  var i = top - 1
-  while i >= 0:
-    if digits[i] < 10:
+  var chunkIdx = top - 1
+  while chunkIdx >= 0:
+    if digits[chunkIdx] < 10:
       appendOutput("00")
-    elif digits[i] < 100:
+    elif digits[chunkIdx] < 100:
       appendOutput("0")
-    appendOutput($digits[i])
-    i -= 1
+    appendOutput($digits[chunkIdx])
+    chunkIdx -= 1
 
 let caseCount = readCount(inputData, scanPos)
 for caseIndex in 0 .. caseCount - 1:

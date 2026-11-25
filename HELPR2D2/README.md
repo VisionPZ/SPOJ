@@ -1,41 +1,75 @@
+# HELPR2D2 — Help R2-D2! (SPOJ)
+<https://www.spoj.com/problems/HELPR2D2/>
+
 ## Problem
 
-Each test case gives a ship capacity K, a container count n, and a sequence of container volumes. A container entry is one volume, or the letter b with a repeat count r and a volume v. The second form means r containers of volume v.
+R2-D2 loads containers into a row of starships, always choosing the first ship with enough free space. He wants the number of ships used and the total wasted volume after the sequence.
 
-R2-D2 places every container into the lowest numbered ship with enough free space. He opens a new ship when none fits. Print the number of ships used and the total unused volume for each case.
+Each case starts with a ship capacity K, a container count n, then n entries. An entry is one volume, or the letter `b` with a repeat count r and a volume v, meaning r containers of volume v. Print the ship count and the total unused volume on one line.
 
-The statement fixes these bounds:
+The judge limits are:
 
-| Quantity | Bound |
+| Item | Value |
 | --- | --- |
 | Test cases T | at most 10 |
 | Ship capacity K | at most 1000 |
 | Containers per case n | 1 to 1000000 |
 | Starships used | at most 100000 |
-| Changes of ship | at most 100000 |
-| Time limit | 7000 ms |
+| Ship changes | at most 100000 |
+| Time limit | 7 s |
 | Memory limit | 1536 MB |
 
-The container count and the ship count drive the design, while the printed answer is two numbers per case.
+The container and ship counts drive the design, while the answer holds two numbers.
+
+The sample input reads:
+
+```text
+2
+100
+3
+50
+25
+70
+100
+4
+50
+b 2 40
+20
+```
+
+The sample output reads:
+
+```text
+2 55
+2 50
+```
 
 ## Idea
 
-A segment tree (a binary tree of range maxima over ship indices) stores free space and finds the lowest fitting ship in 17 steps. Inside a block the volume stays fixed, so a ship below that volume never fits again and the program fills ships in index order. Each block costs one descent and one update per ship visited; scanning all ships for every container costs O(n times s).
+Keep the ships in a row and always fill the leftmost one with room, like a loader using the nearest open bin. A segment tree (a binary tree storing the maximum free space of each range) finds that ship in about 17 steps. Inside a block the volume stays fixed. A ship that no longer fits stays unusable, so the loader walks ships in index order. Each visit costs one tree update of 17 steps. Scanning every ship for every container would cost O(n times s). Takeaway: use a tree for the search, then sweep ships once per block.
 
 ## Why It Works
 
-The greedy rule always takes the lowest numbered ship that fits. Free space only decreases, so a ship with less free space than the block volume stays unusable for the rest of that block. The program therefore visits ships in increasing index order inside a block and never revisits one.
+1. The greedy rule always takes the lowest numbered ship with enough free space.
+2. Free space only decreases, so a ship below the block volume stays unusable for the rest of that block.
+3. The tree stores the maximum free space in each range of ship indices.
+4. `leftmostFitting` descends to the lowest leaf whose free space reaches the threshold, or returns -1 when the root maximum is smaller.
+5. `updateCapacity` writes one leaf and recomputes each parent as the larger of its two children.
+6. The `fitCount` value divides remaining capacity by block volume. `take` is the smaller of that value and the remaining count.
+7. Opening a ship stores `capacity - take * blockVolume` as its free space.
 
-The tree stores the maximum free space in each range of ship indices. These lines define the search and the update:
+The table names the terms.
 
-- `leftmostFitting` descends to the lowest leaf with free space at least the threshold, and returns -1 when the root maximum is smaller.
-- `leftChild` holds the maximum of the left half of the current range. A left maximum of at least the threshold puts the answer in the left half.
-- `updateCapacity` writes one leaf and recomputes each parent as the larger of its two children.
-- `fitCount = remainingCapacity[i] div blockVolume` counts the containers that fit in one ship.
-- `take` is the smaller of the remaining block count and fitCount.
-- Opening a ship stores `capacity - take * blockVolume` as its free space.
+| Term | Meaning |
+| --- | --- |
+| `treeSize` | 2^17, one leaf per possible ship |
+| `remainingCapacity` | free space left in one ship |
+| `leftmostFitting` | lowest ship index with enough free space |
+| `fitCount` | containers that fit in one ship during a block |
 
-The generator prints this trace for the first sample case:
+These four terms guide each block.
+
+A script replayed the first sample case.
 
 | Container | Volume | Action | Ship | Remaining capacities |
 | --- | --- | --- | --- | --- |
@@ -43,11 +77,11 @@ The generator prints this trace for the first sample case:
 | 2 | 25 | reuse | S0 | 25 |
 | 3 | 70 | open ship | S1 | 25, 30 |
 
-Result: 2 ships, waste 55.
+The waste is 25 + 30 = 55, so the program prints `2 55`.
 
 ## Code
 
-The read loop runs once per input line and appends to one buffer. The scanner skips separators and builds each integer digit by digit. The output helper writes only when the buffer reaches the flush size.
+**Input and output helpers.** The code reads once, scans integers by hand, and buffers answers.
 
 ```nim
 const
@@ -86,7 +120,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The tree has one leaf per ship, because treeSize is a power of two above the ship limit. The update climbs from leaf to root and recomputes one parent per level. The search tests the left child at each level and returns the leaf index minus treeSize. Each call costs about 17 steps.
+`treeSize` is a power of two above the ship limit. `skipSpaces` lets the driver test for the block letter before parsing numbers. The digit loop visits each input byte once. The output helper writes only after the buffer reaches 256 KiB.
+
+**Tree search and update.** One leaf per ship holds its free space.
 
 ```nim
 var tree: array[2 * treeSize, int]
@@ -118,7 +154,9 @@ proc leftmostFitting(threshold: int): int =
   return node - treeSize
 ```
 
-The outer loop runs while the block still has containers. The first branch opens new ships that each hold capacity div blockVolume containers. The inner loop fills ships in index order and stops when the block is empty. One update per visited ship keeps the tree current.
+The update climbs from leaf to root and recomputes one parent per level. The search tests the left child at each level, so it always reaches the lowest fitting leaf. Each call costs about 17 steps. Returning `node - treeSize` converts a leaf index into a ship index.
+
+**Placement.** The outer loop repeats while a block still has containers.
 
 ```nim
 proc placeContainers(repeatCount: int, blockVolume: int) =
@@ -147,7 +185,9 @@ proc placeContainers(repeatCount: int, blockVolume: int) =
           i += 1
 ```
 
-The case loop reads the capacity and the container count, then clears the tree and the ship count. Each token either starts a block or gives one volume. The waste sums the free space of the used ships, and one final write flushes the buffer.
+The first branch opens new ships that each hold `capacity div blockVolume` containers. The inner loop fills ships in index order and stops when the block is empty. One update per visited ship keeps the tree current. A ship that cannot fit is skipped for the rest of the block.
+
+**Driver.** Each case reads its capacity, container count, and entries, then sums the waste.
 
 ```nim
 let caseCount = nextInt(inputData, i)
@@ -180,8 +220,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
+The tree is cleared once per case, and the ship count restarts at zero. A `b` entry adds `repeatCount` processed containers at once. The waste sums the free space of used ships as a 64-bit value. The final write flushes the remaining output bytes.
+
 ## Complexity
 
-Reading costs one pass over the input buffer. Each block costs one tree descent, and each visited ship costs one tree update that climbs 17 levels. Clearing the tree costs 2 times treeSize operations per case.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Read one case | O(input bytes) | one buffer |
+| Clear tree | O(2 * treeSize) | O(treeSize) |
+| One tree descent or update | O(log 100000) | O(1) |
 
-Total time is O(input tokens plus visited ships times log 100000). Space is O(100000 plus treeSize). The naive form scans every ship for every container and costs O(n times s) per case.
+The tree dominates each container visit.
+
+Each visited ship costs one 17-level climb.
+
+| Measure | Bound |
+| --- | --- |
+| Per case | O(input tokens + visited ships * log 100000) |
+| Space | O(100000 + treeSize) |
+| Waste sum | O(ships used) |
+
+The naive form scans every ship for every container and costs O(n times s) per case.

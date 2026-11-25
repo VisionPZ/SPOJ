@@ -4,14 +4,14 @@
 
 Each test case lists up to 100 000 boys with their PESEL code and their old
 recruitment office code, then up to 100 000 redirections `old office new office`,
-then up to 100 000 PESEL codes of the boys who are actually recruited. For every
+then up to 100 000 PESEL codes of the boys who are recruited. For every
 recruited boy print the PESEL and the office code it reaches after following the
 redirections. Test cases are separated by an empty line in the output.
 
 ## Idea
 
 Every office code is given a slot in a table of all office codes of the test case,
-and each redirection `old new` just writes `parent[old] = new`. Following a chain of
+and each redirection `old new` writes `parent[old] = new`. Following a chain of
 closures then becomes a `find` on that parent array, with path compression, so a
 long chain is walked once and later queries jump straight to the final office.
 Boys are found by sorting the PESEL records and binary searching them.
@@ -22,7 +22,7 @@ PESEL codes are 11 digits, so they overflow a 32 bit integer; keeping them as te
 avoids that and still supports exact lookup, which is all the queries need. Sorting
 the records gives a binary search per query, and the parent array is exactly the
 "office is replaced by at most one other office" relation, so walking parents with
-path compression gives the office the army really uses. The step cap in `findTerminal`
+path compression gives the office the army uses. The step cap in `findTerminal`
 keeps a cyclic list from looping forever.
 
 ## Code

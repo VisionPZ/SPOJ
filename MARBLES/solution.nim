@@ -1,3 +1,5 @@
+import math
+
 const flushBlockBytes = 1 shl 17
 
 proc nextInt(inputData: string, i: var int): int =
@@ -14,7 +16,15 @@ proc combineCount(marbleCount, colorCount: int): int64 =
     chosenColors = marbleCount - chosenColors + 1
   var ways: int64 = 1
   for step in 1 .. chosenColors - 1:
-    ways = ways * int64(marbleCount - step) div int64(step)
+    let numerator = int64(marbleCount - step)
+    let denominator = int64(step)
+    let firstDivisor = gcd(denominator, ways)
+    let reducedWays = ways div firstDivisor
+    let reducedDenominator = denominator div firstDivisor
+    let secondDivisor = gcd(reducedDenominator, numerator)
+    let reducedNumerator = numerator div secondDivisor
+    let finalDenominator = reducedDenominator div secondDivisor
+    ways = reducedWays * reducedNumerator div finalDenominator
   return ways
 
 var inputData: string

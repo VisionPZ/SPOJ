@@ -60,22 +60,47 @@ When `42` is the first line, no write happens at all.
 ## Code
 
 ```nim
-import std/strutils
+const flushBlockBytes = 1 shl 18
 
-for line in lines(stdin):
-  let numberText = line.strip
-  if numberText == "42": break
-  echo numberText
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var outputBuffer = ""
+
 ```
 
 `strip` comes from `std/strutils`. It is the only import, and it is used for that
 one call.
 
 ```nim
-for line in lines(stdin):
-  let numberText = line.strip
-  if numberText == "42": break
-  echo numberText
+let totalLen = inputData.len
+while lineStart < totalLen:
+  var lineEnd = lineStart
+  while lineEnd < totalLen and inputData[lineEnd] != '\n':
+    lineEnd += 1
+  var trimStart = lineStart
+  while trimStart < lineEnd and inputData[trimStart] <= ' ':
+    trimStart += 1
+  var trimEnd = lineEnd
+  while trimEnd > trimStart and inputData[trimEnd - 1] <= ' ':
+    trimEnd -= 1
+  if trimEnd - trimStart == 2 and inputData[trimStart] == '4' and inputData[trimStart + 1] == '2':
+    break
+  for charIdx in trimStart..<trimEnd:
+    outputBuffer.add inputData[charIdx]
+  outputBuffer.add '\n'
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+  lineStart = lineEnd + 1
+
+if outputBuffer.len > 0:
+  stdout.write outputBuffer
+  outputBuffer.setLen 0
+
 ```
 
 `lines(stdin)` yields one line at a time, so memory holds a single line. `let numberText` binds the stripped text once per line. The `if numberText == "42": break` line sits above

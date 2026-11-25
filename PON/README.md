@@ -1,87 +1,97 @@
+# PON — Prime or Not (SPOJ)
+
+<https://www.spoj.com/problems/PON/>
+
 ## Problem
 
-Read a count, then one integer per line. Print YES when that integer is prime and NO otherwise. Values reach 2^63 - 1, so trial division is too slow.
+A gate guard at the pyramid asks one question about every number that passes: is it prime? Five hundred numbers arrive in one batch, so each answer must come back fast. Print YES or NO for each number.
 
-| Quantity | Bound |
-| --- | --- |
-| Test cases | at most 500 |
-| Candidate value | 2 <= N <= 2^63 - 1 |
-| Time limit | 21 000 ms |
-| Memory limit | 1536 MB |
+Input: `t`, the number of test cases, then `t` lines. Each line holds one integer `N`. Output: one line per case, `YES` when `N` is prime and `NO` otherwise.
 
-The value bound, not the case count, decides the algorithm.
+The bounds from the statement:
+
+| Item | Bound |
+|---|---|
+| Test cases `t` | at most 500 |
+| Candidate `N` | 2 ≤ N ≤ 2^63 − 1 |
+| Output | `YES` or `NO` per case |
+| Judge limit | 21000 ms, 1536 MB |
+
+`N` can hold 19 digits, so dividing by every smaller number cannot finish in time.
+
+The sample input and output:
+
+```
+5
+2
+3
+4
+5
+6
+```
+
+```
+YES
+YES
+NO
+YES
+NO
+```
 
 ## Idea
 
-Use deterministic Miller-Rabin testing with twelve fixed bases; doubling replaces 128-bit multiplication. Each base costs about 64 squarings, so one candidate costs 12 x 64 x 64 small steps. Trial division would need about 3 billion divisions for a 64-bit prime.
+Probe a number with a few clever arithmetic questions instead of dividing by every smaller number. Think of a guard who recognizes a guest by asking a few secret questions, not by searching the whole guest list.
 
-Cost per candidate: 12 bases x 63 squarings x 64 doubling steps.
+The program uses the Miller–Rabin primality test (a residue test made deterministic by fixed bases). Write `N − 1` as `d · 2^s` with `d` odd. For each base `a`, raise `a` to `d` modulo `N`, then square up to `s` times.
+
+A prime always reaches 1 or `N − 1` in that chain. A composite fails for at least one of the twelve chosen bases. Modular multiplication uses double-and-add, and modular powers use exponentiation by squaring.
+
+Cost per case: twelve bases, each with about 63 squaring steps of constant size. Trial division would try roughly √N candidates, about 3 × 10^9 divisions at the largest input.
+
+A dozen fixed bases turn a slow search into a fast fingerprint check.
 
 ## Why It Works
 
-Fermat's little theorem says that a prime n divides a^(n-1) - 1 for every base a below n. The strong form writes n - 1 as an odd part times a power of two. It squares the first power repeatedly and checks the sequence.
+Four facts carry the test.
 
-A composite fails at least one base. The twelve bases from 2 to 37 cover every value below 2^64. Each candidate is below 2^63, so the set is enough.
+1. Fermat's little theorem states that a prime `p` makes `a^(p−1) ≡ 1 (mod p)` whenever `gcd(a, p) = 1`.
+2. Miller–Rabin refines this. Write `N − 1 = d · 2^s` with odd `d`. A prime makes `a^d` equal 1 or `N − 1`, or reach `N − 1` after squaring.
+3. For every `N < 2^64`, the bases 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37 give a deterministic verdict.
+4. Double-and-add keeps every intermediate product below 2^64, so unsigned 64-bit arithmetic never overflows.
+
+The quantities the program computes:
 
 | Term | Meaning |
-| --- | --- |
-| `oddPart` | odd factor of candidate minus one |
-| `twosCount` | number of factors of two in candidate minus one |
-| `modMultiply` | one modular product, built by repeated doubling |
-| `witnessBases` | twelve bases that prove primality below 2^64 |
+|---|---|
+| `d`, `s` | `N − 1` written as odd `d` times `2^s` |
+| witness base `a` | one of the twelve fixed probes |
+| `modMultiply` | product modulo `N` by repeated doubling |
+| `modularPower` | `a^d mod N` by exponentiation by squaring |
+| `witnessed` | the squaring chain reached `N − 1` |
 
-The table gives every name used by the test. The update formulas are:
+The bases cover every 64-bit composite, so no random choice is needed.
 
-```
-n - 1 = oddPart * 2^twosCount
-term = base^oddPart mod n
-term = term^2 mod n, repeated twosCount - 1 times
-product = product + doubled; if product >= modulus: product -= modulus
-doubled = doubled + doubled; if doubled >= modulus: doubled -= modulus
-```
-
-Both `product` and `doubled` stay below the modulus before each add. The modulus is at most 2^63 - 1, so twice the modulus fits in `uint64`. No 128-bit type is needed.
-
-A script produced this trace for a composite that fools bases 2, 3, 5 and 7:
+A script-traced example with `N = 341`, a Carmichael number (a composite that fools the plain Fermat test):
 
 ```
-n=3215031751 oddPart=1607515875 twosCount=1
-base  2: passes with final term 1
-base  3: passes with final term 3215031750
-base  5: passes with final term 1
-base  7: passes with final term 3215031750
-base 11: FAILS with final term 2129160099
+N - 1 = 340 = 85 * 2^2, so d = 85 and s = 2
+base 2: 2^85 mod 341 = 32; square -> 1; never 340 -> composite witness
+base 3: 3^85 mod 341 = 254; square -> 67; never 340 -> composite witness
+prime 13: 13 - 1 = 12 = 3 * 2^2; 2^3 mod 13 = 8; square -> 12 = 13 - 1 -> prime
 ```
 
-Base 11 exposes the composite, so the answer is NO. The doubling trace for 7 x 11 mod 13 is:
-
-```
-step remaining doubled product
-   0         5       1       7
-   1         2       2       8
-   2         1       4       8
-   3         0       8      12
-result 12
-```
-
-The result 12 is correct and no intermediate value exceeds 26.
+Base 2 rejects 341, while the prime 13 passes. The squaring chain is where the test decides.
 
 ## Code
 
-The constants hold the digit offset, the output block size and the witness set.
+**Constants and scanner.** The input goes into one buffer, and the scanner walks it by index.
 
 ```nim
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 const witnessBases: array[12, uint64] = [2'u64, 3'u64, 5'u64, 7'u64, 11'u64, 13'u64,
                                          17'u64, 19'u64, 23'u64, 29'u64, 31'u64, 37'u64]
-```
 
-Twelve bases cover every value below 2^64. `flushBlockBytes` is 256 KiB. The array is built at compile time, so it costs nothing at run time.
-
-The token scanner reads digits by index.
-
-```nim
 proc nextUint(data: string, i: var int): uint64 =
   while i < data.len and (data[i] < '0' or data[i] > '9'):
     i += 1
@@ -92,11 +102,9 @@ proc nextUint(data: string, i: var int): uint64 =
   return value
 ```
 
-The scan advances `i` past separators, then over digits. `i` is a var parameter, so the position survives between calls.
+`witnessBases` fixes the twelve probes once. `nextUint` skips separators and reads each unsigned value by index. The scanner costs one pass over the input bytes.
 
-The input has no negative values, so no sign branch is needed. The cost is one pass over the input bytes.
-
-The modular product uses only 64-bit additions and shifts.
+**Modular multiplication.** Doubling builds the product without overflow.
 
 ```nim
 proc modMultiply(leftValue, rightValue, modulusValue: uint64): uint64 =
@@ -113,11 +121,9 @@ proc modMultiply(leftValue, rightValue, modulusValue: uint64): uint64 =
   return product
 ```
 
-The loop runs once per bit of `rightValue`, at most 64. Each add keeps the product below the modulus. Each doubling keeps `doubled` below the modulus too.
+The loop runs once per bit of `rightValue`, at most 64 times. Each addition and doubling reduces modulo `modulusValue` at once. The `shl` and `shr` steps replace multiplication and division by two.
 
-Since the modulus is at most 2^63 - 1, twice the modulus fits in `uint64`.
-
-Modular exponentiation applies that product in square-and-multiply order.
+**Modular power.** Exponentiation by squaring raises a base to `oddPart`.
 
 ```nim
 proc modularPower(baseValue, exponentValue, modulusValue: uint64): uint64 =
@@ -132,9 +138,9 @@ proc modularPower(baseValue, exponentValue, modulusValue: uint64): uint64 =
   return power
 ```
 
-The loop runs once per bit of `exponentValue`, at most 63. One running power accumulates the answer. The cost is at most 126 calls to `modMultiply`.
+The loop runs once per bit of `exponentValue`. It squares the factor on every round and multiplies the power only on set bits. Each multiplication goes through `modMultiply`, so no intermediate value overflows.
 
-The test rejects small factors, then runs the strong witness check.
+**Primality test.** The small-base checks run first, then the Miller–Rabin chain.
 
 ```nim
 proc isPrime(candidate: uint64): bool =
@@ -162,11 +168,9 @@ proc isPrime(candidate: uint64): bool =
   return true
 ```
 
-The first loop accepts the bases themselves and rejects candidates with a small factor. The second loop tests every base. `twosCount` counts factors of two in candidate minus one.
+The first loop rejects exact base values and their multiples. The next loop splits `N − 1` into odd `oddPart` and `twosCount`. Each base passes on `1` or `N − 1`, or after repeated squaring. One failing base returns `false`.
 
-The inner loop squares `term` until it reaches candidate minus one or runs out of rounds. The cost is at most 12 x 126 modular products per candidate.
-
-The driver reads once and writes in blocks.
+**Input and driver.** One verdict per case, with block output.
 
 ```nim
 var inputData = ""
@@ -194,25 +198,28 @@ while caseIndex < caseCount:
 stdout.write outputBuffer
 ```
 
-The read loop appends every line to one buffer, so spacing cannot desync the scan. `caseCount` bounds the main loop.
-
-`outputBuffer` flushes every 256 KiB, and the final write covers the tail. The cost is one pass over input and output bytes.
+`readLine` accumulates the whole stream before any test runs. The loop runs exactly `caseCount` times. Output flushes at 256 KiB, and the final write covers the tail.
 
 ## Complexity
 
-| Phase | Time | Space |
-| --- | --- | --- |
-| Input | one pass over input bytes | input size |
-| Modular product | up to 64 doubling steps | constant |
-| Primality test | 12 bases x at most 126 products | constant |
-| Output | one write per 256 KiB block | 256 KiB |
-| Total at t = 500 | about 36 million doubling steps | input size plus 256 KiB |
+Each case runs the same fixed chain of modular steps.
 
-The table splits the run by phase. All primality work is constant per candidate, and the input buffer is the only large allocation.
+| Phase | Time | Space |
+|---|---|---|
+| Input read | one pass over input bytes | input bytes |
+| `modMultiply` | at most 64 doubling steps | O(1) |
+| `modularPower` | at most 63 squarings per base | O(1) |
+| `isPrime` | twelve bases times that chain | O(1) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total, 500 cases | about 500 × 12 × 63 modular steps | O(1) |
+
+The work stays constant per case, even at 500 cases.
 
 | Measure | Big O |
-| --- | --- |
-| Time | O(t * log^3 N), with log N at most 63 |
-| Space | O(input bytes) |
+|---|---|
+| Time | O(1) per case for 64-bit inputs, O(T) for T cases |
+| Space | O(1) per case, plus input and output buffers |
 
-The second table gives the asymptotic form. Trial division by every integer up to sqrt(N) costs about 3 billion divisions for one 64-bit prime.
+Fixed bases keep the cost independent of input size.
+
+Trial division up to √N needs about 3 × 10^9 divisions at the largest candidate. These twelve bases need a few thousand modular steps.

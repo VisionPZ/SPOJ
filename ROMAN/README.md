@@ -1,56 +1,101 @@
+# ROMAN — Converting number formats (SPOJ)
+
+<https://www.spoj.com/problems/ROMAN/>
+
 ## Problem
 
-Read a count, then that many numbers. Each number appears as uppercase English digit words on one line. Print two lines per number: an overline marker and an extended Roman numeral. An underscore marks a value times one thousand, and a lowercase letter marks a value times one million.
+An archive stores numbers as spelled-out English words. The catalogue needs "butchered" Roman numerals instead, with overlines and lowercase letters for large values. Translate each number into two lines of text.
 
-The bounds are:
+Input: a count `n`, spelled out like every other number, then `n` lines of spelled-out values. Output: two lines per value, an overline bar line followed by the numeral line.
 
-| Quantity | Bound |
-| --- | --- |
-| Test cases | spelled digits on the first line |
-| Number value | 0 through 4294967295 |
-| Time limit | 1052 ms |
-| Memory limit | 1536 MB |
+The bounds from the statement:
 
-The numeral width drives the design, since one value can fill twenty characters on each line.
+| Item | Bound |
+|---|---|
+| Values | positive integers below 2^32 |
+| Count `n` | given in the same spelled-out format |
+| Source limit | 2048 bytes, strictly enforced |
+| Judge limit | 1052 ms, 1536 MB |
+
+The first sample word, THREE, is the number of cases, not a case itself.
+
+The sample input and output:
+
+```
+THREE
+FOUR OH
+ONE NINE NINE NINE NINE NINE NINE NINE NINE NINE
+ONE TWO THREE ZERO FOUR FIVE
+```
+
+```
+  
+XL
+       ______      
+mcmxcixCMXCIXCMXCIX
+___      
+CXXMMMXLV
+```
 
 ## Idea
 
-Three lookup strings indexed by decimal place give the symbol and underscore for every digit, so one pass writes both lines. A recursive converter would repeat work at each magnitude. Cost per number: at most ten places times four symbols.
+Read each word by its first letter, then print each decimal digit as a fixed Roman fragment. Think of a translator with two small lookup tables: one for word-to-digit, one for digit-to-symbols.
+
+The program uses lookup strings. `firstDigit` maps a word's first letter to its digit, with corrections for ONE, TWO, SIX, and FOUR. `brTransData` lists the symbol kinds each digit uses. `brEquivData` supplies the character, and `brBarData` supplies the overline underscore.
+
+Parsing a line costs a few steps per word. Rendering walks nine decimal places and emits a fixed number of symbols. Both are constant-time work.
+
+Two compact lookup tables turn the spelling and numeral rules into simple indexing.
 
 ## Why It Works
 
-Each decimal place owns a fixed set of Roman symbols and a fixed overline pattern. The brTransData string stores how many symbols a digit uses, then which columns supply them. The brEquivData string stores the symbol for each place and column. The brBarData string stores the matching underscore. Three index formulas drive the lookup:
+Four facts carry the translation.
 
-transStart equals digitValue times five, which selects one digit row.
-equivStart equals digitPlace times four, which selects one place row.
-symbolKind is the trans column value minus 48, which picks a symbol column.
+1. Every value is spelled with English words. The first letter separates most digits, so `firstDigit` needs only a few corrections.
+2. OH acts as ZERO, and word length separates ONE, TWO, SIX, and FOUR from other words starting with the same letter.
+3. Each decimal place uses a fixed Roman fragment. `brTransData` gives the symbol count and kinds; `brEquivData` chooses uppercase, overlined uppercase, or lowercase forms.
+4. Rendering prints the bar line first, so each underscore sits above the symbol it modifies.
 
-A worked example for 123045 follows. A dot marks a space in the overline line.
+The lookup tables:
+
+| Term | Meaning |
+|---|---|
+| `firstDigit` | first-letter lookup from word to digit |
+| `brTransData` | symbol kinds used by one decimal digit |
+| `brEquivData` | character printed for each symbol kind |
+| `brBarData` | underscore printed above a symbol needing an overline |
+
+The two output lines stay aligned because both use the same symbol order.
+
+A script-traced example with the three sample values:
 
 ```
-place 5 digit 1 -> numeral C    overline _
-place 4 digit 2 -> numeral XX   overline __
-place 3 digit 3 -> numeral MMM  overline ...
-place 1 digit 4 -> numeral XL   overline ..
-place 0 digit 5 -> numeral V    overline .
-joined numeral: CXXMMMXLV
-joined overline: ___......
-```
+count = THREE = 3
 
-The joined overline has three underscores followed by six spaces, which matches the sample.
+FOUR OH                     = 40
+  bar "  " / numeral "XL"
+
+ONE NINE x8                 = 1999999999
+  bar "       ______      "
+  numeral "mcmxcixCMXCIXCMXCIX"
+  1,999,000,000 + 999,000 + 999
+
+ONE TWO THREE ZERO FOUR FIVE = 123045
+  bar "___      "
+  numeral "CXXMMMXLV"
+  120,000 (CXX, overlined) + 3,000 (MMM) + 45 (XLV)
+```
 
 ## Code
+
+**Lookup tables and input.** Four strings hold the whole translation dictionary.
 
 ```nim
 const firstDigit = "....84.......90...62.....0"
 const brTransData = "00000100002000030000212001200022100321104211121300"
 const brEquivData = "IIVXXXLCCCDMMIVXXXLCCCDMMivxxxlcccdmmivx"
 const brBarData = "             ____________            ___"
-```
 
-Each row of brEquivData and brBarData has four entries. Each row of brTransData has five entries. One lookup per emitted symbol keeps the work constant.
-
-```nim
 var inputBuf = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
@@ -58,7 +103,13 @@ while readLine(stdin, inputLine):
   inputBuf.add '\n'
 
 var scanPos = 0
+```
 
+`firstDigit` is indexed by the first letter's offset from A. The other three tables share symbol positions, so one index serves all of them.
+
+**Word parser.** Each word becomes one decimal digit.
+
+```nim
 proc nextValue(data: string, pos: var int): int =
   var value = 0
   while pos < data.len and data[pos] != '\n':
@@ -79,7 +130,9 @@ proc nextValue(data: string, pos: var int): int =
   return value
 ```
 
-The read loop ends at EOF. The scanner stops at a newline, so one line yields one number. The first letter and word length select the digit, which costs one pass over inputBuf.
+`nextValue` reads one line and stops at the newline. The length tests distinguish ONE, TWO, SIX, and FOUR from same-letter words. Digits accumulate left to right into the value.
+
+**Output helper.** Both output lines travel in one buffer.
 
 ```nim
 var outputBuf = ""
@@ -89,7 +142,13 @@ proc appendOutput(text: string) =
   if outputBuf.len >= (1 shl 18):
     stdout.write outputBuf
     outputBuf.setLen 0
+```
 
+The flush threshold is 256 KiB. `setLen 0` reuses the same allocation.
+
+**Renderer.** Each decimal place appends symbols to both lines.
+
+```nim
 var numLine = ""
 var barLine = ""
 
@@ -116,7 +175,9 @@ proc renderValue(value: int) =
   appendOutput(barLine & "\n" & numLine & "\n")
 ```
 
-The place loop runs from nine down to zero. The symbol loop runs at most four times. Matching rows keep the underscore aligned with the numeral, so trailing spaces survive.
+`digitPlace` runs from 9 down to 0, so `place` shrinks by ten each round. `brTransData` controls how many symbols a digit emits. `appendOutput` writes the bar line first, then the numeral line.
+
+**Driver.** The count is parsed first, then each value is rendered.
 
 ```nim
 let caseCount = nextValue(inputBuf, scanPos)
@@ -126,12 +187,27 @@ for i in 0..<caseCount:
 stdout.write outputBuf
 ```
 
-The case loop runs caseCount times. The final write flushes the remaining outputBuf. Each case adds two output lines.
+`nextValue` serves both the count and the cases, so no special parser exists. The final write covers the tail.
 
 ## Complexity
 
-Input scanning takes time linear in the input size. Rendering takes at most forty appends per number. Writing takes time linear in the output bytes. The total is O(input + output).
+Each value is parsed and rendered with fixed tables.
 
-Space holds inputBuf, one outputBuf block, and the two line buffers. The block is 256 KiB. The total is O(input + block).
+| Phase | Time | Space |
+|---|---|---|
+| Input read | one pass over input bytes | input bytes |
+| Word parse | O(words in one line) | O(1) |
+| Render | nine decimal places | O(1) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | constant work | O(1) |
 
-A recursive converter builds and discards a string at every magnitude. This program emits each symbol once.
+The four lookup strings replace all rule logic.
+
+| Measure | Big O |
+|---|---|
+| Time | O(1) per number |
+| Space | O(1) plus input and output buffers |
+
+A general word dictionary and repeated-subtraction numeral builder cost more work and more code per value.
+
+Looking up each word and digit in a fixed string is faster and shorter than searching a general dictionary.

@@ -1,92 +1,80 @@
+# BABTWR — Tower of Babylon (SPOJ)
+<https://www.spoj.com/problems/BABTWR/>
+
 ## Problem
 
-Read block types case by case. Each type gives three side lengths, and zero ends the input. Rotate each block as needed and copy it without limit. A block rests on another only when both base sides are strictly shorter. Print the tallest possible tower per case.
+A museum stacks stone blocks into the tallest tower it can build, and each block can be turned three ways.
+A block rests on another only when both sides of its base are shorter.
 
-The stated bounds and judge limits follow.
+Each case starts with n block types, followed by n lines of height, width, and depth. A line with n=0 ends the input. Print one line with the tallest tower height.
 
-| Quantity | Bound |
+The bounds and judge limits are:
+
+| Constraint | Value |
 | --- | --- |
-| Block types per case | 1 to 30 |
-| Largest side | 2,500 |
-| Test cases | Unbounded; zero ends input |
-| Time limit | 3,000 ms |
-| Memory limit | 1,536 MB |
+| Block types n | up to 30 |
+| Each dimension | at most 2500 |
+| Input end | case with n = 0 |
+| Judge time | 3 s |
+| Judge memory | 1536 MB |
 
-At most 90 candidate blocks describe any single case.
+At most 90 orientations keep the quadratic dynamic program small.
+
+The sample input and its expected output follow byte for byte.
+
+```
+5
+31 41 59
+26 53 58
+97 93 23
+84 62 64
+33 83 27
+1
+1 1 1
+0
+```
+
+```
+342
+1
+```
+
 
 ## Idea
 
-An orientation is one choice of which side stands upright, and each block type gives three of them. Rotating each base so the long side comes first lets us sort all orientations by base from large to small. One scan adds each height to the best earlier tower with both sides smaller, costing O(n) per orientation instead of enumerating stacks.
+Turn each block into three orientations (choices of height axis) and sort them by base, like stacking plates from the widest base upward.
+The program stores each orientation by its large base, its small base, and its height. Sorting puts the widest bases first, so every legal support appears earlier in the array.
+For each orientation, the code scans earlier orientations with strictly larger bases and keeps the tallest chain. That costs O(n squared) with at most 90 items.
+Trying every stack and rotation order is exponential, while one pass over sorted orientations settles each case.
+Sorting by base turns stacking into a short dynamic program.
 
 ## Why It Works
 
-Both base sides shrink at every step down a tower. The bases therefore form a strict order, no base repeats, and one scan visits every possible lower block before the current one. The stored tower total already includes everything under that block.
+1. Three orientations per block cover every choice of which dimension becomes the height.
+2. Sorting by large base, then small base, places every legal support earlier in the array.
+3. A block fits only when both stored base dimensions are strictly larger, which the comparison checks.
+4. `towerHeight[i]` holds the best tower ending at orientation i, so each support is examined once.
+5. The maximum entry is the tallest complete tower, since any stack ends somewhere in the array.
 
-Each formula below records one step of the scan.
+Four terms carry the proof.
 
-- `baseLarge[orientationCount] = max(givenWidth, givenDepth)` keeps the wider base side first.
-- `baseSmall[orientationCount] = min(givenWidth, givenDepth)` keeps the narrower base side second.
-- `baseLarge[j] > baseLarge[i] and baseSmall[j] > baseSmall[i]` tests both sides strictly.
-- `towerHeight[i] = blockHeight[i] + bestBelow` extends a whole lower tower by one block.
+| Term | Meaning |
+| --- | --- |
+| orientation | one block with a chosen height axis |
+| base pair | large and small base side of an orientation |
+| support | earlier orientation with a strictly larger base |
+| tower height | best total height ending at an orientation |
 
-The trace below uses the two block types 1 2 3 and 2 3 4.
+They explain why one sorted scan finds the tallest stack.
 
-| Base | Height | Best lower tower | Tower total |
-| --- | --- | --- | --- |
-| 4 x 3 | 2 | 0 | 2 |
-| 4 x 2 | 3 | 0 | 3 |
-| 3 x 2 | 1 | 2 | 3 |
-| 3 x 2 | 4 | 2 | 6 |
-| 3 x 1 | 2 | 3 | 5 |
-| 2 x 1 | 3 | 6 | 9 |
-
-The last row gives the answer 9.
+A script check of the sample follows bases (97,93), (84,64), (64,62), (59,41), (41,31), and (33,27).
+Their heights are 23, 62, 84, 31, 59, and 83.
+The sum is 342, which matches the first sample answer.
 
 ## Code
 
-```
-const
-  spaceCode = 32
-  firstDigitCode = 48
-  flushBlockBytes = 1 shl 18
-  maxBlockTypes = 30
-  orientationsPerType = 3
-  maxOrientations = maxBlockTypes * orientationsPerType
-
-var
-  inputData = ""
-  i = 0
-  outputBuffer = ""
-  baseLarge: array[maxOrientations, int]
-  baseSmall: array[maxOrientations, int]
-  blockHeight: array[maxOrientations, int]
-  towerHeight: array[maxOrientations, int]
-```
-
-The fixed arrays hold 90 slots, three times the type cap. No allocation happens inside the case loop, and each slot keeps one base pair and one height.
-
-```
-proc loadInput() =
-  var lineContents = ""
-  while readLine(stdin, lineContents):
-    inputData.add lineContents
-    inputData.add '\n'
-
-proc skipWhitespace() =
-  while i < inputData.len and ord(inputData[i]) <= spaceCode:
-    inc i
-
-proc readInteger(): int =
-  skipWhitespace()
-  result = 0
-  while i < inputData.len and inputData[i] >= '0' and inputData[i] <= '9':
-    result = result * 10 + (ord(inputData[i]) - firstDigitCode)
-    inc i
-```
-
-The read loop runs once per input line and stores all bytes in one buffer. The scanner walks that buffer by index and absorbs carriage returns as whitespace. This costs one pass over the input.
-
-```
+**Orientation builder.**
+```nim
 proc buildOrientations(blockTypeCount: int) =
   var orientationCount = 0
   for i in 0 ..< blockTypeCount:
@@ -107,9 +95,10 @@ proc buildOrientations(blockTypeCount: int) =
     inc orientationCount
 ```
 
-The loop runs exactly blockTypeCount times and writes three orientations each time. Each base stores its long side first. This costs O(n) per case.
+The builder writes three orientations per block type. Each one picks a different height axis. The base pair always stores the larger side first.
 
-```
+**Base sort.**
+```nim
 proc sortOrientations(orientationCount: int) =
   for i in 1 ..< orientationCount:
     var j = i
@@ -130,9 +119,10 @@ proc sortOrientations(orientationCount: int) =
       dec j
 ```
 
-The outer loop runs to orientationCount minus one, and the inner loop walks back to the start. Insertion sort is cheap for at most 90 items. This puts every possible lower block earlier in the array.
+Insertion sort orders bases from widest to narrowest. The large side breaks ties before the small side. After this pass, every possible support sits earlier.
 
-```
+**Tallest chain dynamic program.**
+```nim
 proc tallestTower(orientationCount: int): int =
   var bestTower = 0
   for i in 0 ..< orientationCount:
@@ -147,18 +137,10 @@ proc tallestTower(orientationCount: int): int =
   result = bestTower
 ```
 
-The outer loop runs orientationCount times and the inner loop scans all earlier slots. The compatibility test rejects equal sides, so a block never rests on itself. This costs O(n²) per case.
+The outer loop fixes one orientation as the top block. The inner loop keeps the best strictly larger support. The running maximum is the case answer.
 
-```
-proc flushOutput(forceAll: bool) =
-  if forceAll or outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
-```
-
-The buffer flushes at 256 KiB or at the end of input. No write happens per tower. This keeps write calls rare.
-
-```
+**Input and output driver.**
+```nim
 loadInput()
 while true:
   skipWhitespace()
@@ -174,18 +156,26 @@ while true:
 flushOutput(true)
 ```
 
-The loop reads cases until zero or end of input. Each case emits one line, so output stays small. This costs one pass over all cases.
+The driver reads cases until it sees zero. Each case rebuilds the orientation arrays. A block flush emits all answers together.
+
 
 ## Complexity
 
-Costs use c cases and n orientations, where n is at most 90.
+The dynamic program is quadratic in the number of orientations, which is at most 90.
 
 | Phase | Time | Space |
 | --- | --- | --- |
-| Input load | O(total input bytes) | O(total input bytes) |
-| Orientation build | O(n) per case | O(n) |
-| Sort | O(n²) per case | O(1) extra |
-| Tower scan | O(n²) per case | O(1) extra |
-| Output | O(c) bytes | O(1) beyond the block |
+| parsing and orientations | O(n) | three arrays |
+| base sort | O(n squared) worst | constant extra |
+| tallest chain | O(n squared) | one height array |
 
-Total time is O(input + c n²) and total space is O(input + n). Enumerating every stack takes exponential time, so the scan replaces a search over all orders with one pass over 90 slots.
+Unlimited copies still fit this model, because repeats cannot share a base size.
+
+Big O uses block types n.
+
+| Measure | Big O |
+| --- | --- |
+| time | O(n squared) per case |
+| space | O(n) |
+
+Enumerating stacks and rotations would grow far faster than this sorted scan.

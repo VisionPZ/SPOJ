@@ -1,54 +1,79 @@
+# ALTARS — The Altars (SPOJ)
+<https://www.spoj.com/problems/ALTARS/>
+
 ## Problem
 
-Read several test cases, each holding up to 1000 temples. Each temple gives its north-west corner, its south-east corner, and one of E, W, S, N for its door. An evil spirit travels in a straight line from the altar at the rectangle center, out through the door. Print the ascending numbers of temples the spirit can leave, or print NONE when no temple qualifies.
+An evil spirit leaves each temple altar in a straight line, and a temple is profaned when one ray escapes every wall.
+The task is to list the temples that have such a ray.
 
-| Quantity | Bound |
+The first line gives the case count. Each case gives n, then n lines with four integers and an entrance letter E, W, S, or N. Print the numbers of escaping temples in ascending order, or the word NONE.
+
+The bounds and judge limits are:
+
+| Constraint | Value |
 | --- | --- |
-| Test cases | not stated |
-| Temples per case | 1 to 1000 |
+| Temples n | 1 to 1000 |
 | Corner coordinates | 0 to 8000 |
-| Time limit | 1318 ms |
-| Memory limit | 1536 MB |
+| Judge time | 1.318 s |
+| Judge memory | 1536 MB |
 
-The temple count drives the design, since each temple needs its own escape test.
+Integer slope keys avoid floating-point tests at this scale.
+
+The sample input and its expected output follow byte for byte.
+
+```
+1
+6
+1 7 4 1 E
+3 9 11 8 S
+6 7 10 4 N
+8 3 10 1 N
+11 4 13 1 E
+14 8 20 7 W
+```
+
+```
+1
+2
+5
+6
+```
+
 
 ## Idea
 
-Scale coordinates by four and rotate the scene until each temple faces east. The door admits a wedge of slopes, and each wall east of the altar blocks one angular interval. A scaled integer key preserves slope order, so a sweep finds a free slope in O(n log n) per temple, beating direction-by-direction tests.
+Treat each wall as a blocked slope interval, like spotting a gap in a fence viewed edge on.
+The program collects slope events (begin and end marks for blocked angles) from walls ahead of the entrance. It sorts them and sweeps a counter to find a free angle. It repeats the sweep four times after rotating the whole scene by ninety degrees, which turns each entrance direction into the east case.
+Each altar costs one event sort, so a case stays near O(n squared log n). Trying sample rays one by one cannot cover a continuous range of directions.
+A slope sweep turns a geometric escape test into sorted integers.
 
 ## Why It Works
 
-The door spans the middle half of its wall. The two extreme rays from the altar then have slopes h / (2w) and -h / (2w). Here w is the width and h the height. Scaling by four keeps the altar and both door ends at whole coordinates. A wall segment seen from the altar covers the slopes of its two ends, clipped to that wedge. Rotating the scene by a quarter turn maps north to east and advances the facing code. Each temple faces east in exactly one pass.
+1. Coordinates are scaled by four, so an entrance is exactly half a wall and every slope key stays an integer.
+2. A wall segment in front of the altar blocks one contiguous interval of slopes. Begin and end events mark that interval.
+3. `floorRatio` computes a scaled slope key with integer division, which avoids floating-point drift.
+4. Sorting events and sweeping an active count finds a free angular gap in linear time after the sort.
+5. Rotating the scene by ninety degrees maps a north, west, or south entrance onto the east case.
 
-The slope of a wall end is its height minus the altar height, divided by its east distance from the altar. The program stores floor(height * 2^40 / distance) as an integer key. Distinct slopes differ by at least one key unit, because every distance is at most 32000. A begin event opens a blocked interval, and an end event closes it. A gap with no active interval lets the spirit through.
+Four terms describe the sweep.
 
-The script in `gen.py` computes the blocked slopes for temple 1 of the sample. Its wedge is (-1, 1).
+| Term | Meaning |
+| --- | --- |
+| slope key | scaled vertical change per horizontal change |
+| event | start or end of a blocked slope interval |
+| active count | number of walls blocking the current angle |
+| rotation | ninety-degree turn of the whole scene |
 
-| Temple blocking temple 1 | Low slope | High slope |
-| --- | --- | --- |
-| 2 | -6/11 = -0.5455 | -2/15 = -0.1333 |
-| 4 | -6/17 = -0.3529 | 0 |
-| 3 | 0 | 6/7 = 0.8571 |
-| 5 | 6/35 = 0.1714 | 8/23 = 0.3478 |
-| 6 | 8/17 = 0.4706 | 1 |
+They show why a sorted list of events replaces a ray search.
 
-The first interval starts at -0.5455, which leaves (-1, -0.5455) free and profanes temple 1.
+A script check of temple 1 in the sample reads corners (1,7) and (4,1), scaled to (4,28) and (16,4).
+Its center is (10,16), the half span is 6, and the doorway distance is 6.
+The doorway spans slope keys from -1 to 1 in units of 2 to the fortieth power.
+No wall ahead covers that whole span, so temple 1 escapes and appears in the output.
 
 ## Code
 
-```nim
-proc nextInt(data: string, pos: var int): int =
-  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
-    pos += 1
-  var value = 0
-  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    value = value * 10 + int(data[pos]) - firstDigitValue
-    pos += 1
-  return value
-```
-
-The loops stop at the end of the one input buffer. Skipping non-digits absorbs the blank line between cases. The cost is one pass over the input bytes.
-
+**Slope key helpers.**
 ```nim
 proc floorRatio(height, distance: int): int64 =
   let numerator = int64(height) * slopeScale
@@ -66,25 +91,59 @@ proc unpackAngle(packed: int64): int64 =
   let quotient = packed div 2
   if packed < 0 and packed mod 2 != 0: return quotient - 1
   return quotient
-
-proc quickSort(data: var openArray[int64], lowIndex, highIndex: int) =
-  var leftIndex = lowIndex
-  var rightIndex = highIndex
-  let pivot = data[(leftIndex + rightIndex) div 2]
-  while leftIndex <= rightIndex:
-    while data[leftIndex] < pivot: leftIndex += 1
-    while data[rightIndex] > pivot: rightIndex -= 1
-    if leftIndex <= rightIndex:
-      swap data[leftIndex], data[rightIndex]
-      leftIndex += 1
-      rightIndex -= 1
-  if lowIndex < rightIndex: quickSort(data, lowIndex, rightIndex)
-  if leftIndex < highIndex: quickSort(data, leftIndex, highIndex)
 ```
 
-The packed key sets the event type in its low bit. Floor division keeps the key ordered for negative slopes. The in-place sort avoids a fresh temporary buffer per temple.
+`floorRatio` scales a height by 2 to the fortieth power before division. `packEvent` folds a begin flag into the low bit. `unpackAngle` recovers the key with a floor division.
 
+**Escape sweep.**
 ```nim
+proc canEscape(altar: Altar, hlines: seq[HLine], vlines: seq[VLine]): bool =
+  let centerX = (altar.x1 + altar.x2) div 2
+  let centerY = (altar.y1 + altar.y2) div 2
+  let halfSpan = (altar.y2 - altar.y1) div 4
+  let doorDistance = altar.x2 - centerX
+  let lowKey = floorRatio(-halfSpan, doorDistance)
+  let highKey = floorRatio(halfSpan, doorDistance)
+  var events: seq[int64] = @[]
+
+  for hline in hlines:
+    if hline.x2 <= altar.x2: continue
+    let localX1 = hline.x1 - centerX
+    let localX2 = hline.x2 - centerX
+    let localY = hline.y - centerY
+    let rightKey = floorRatio(localY, localX2)
+    if localY > 0:
+      if rightKey >= highKey: continue
+      events.add(packEvent(rightKey, true))
+      if localX1 > 0:
+        let leftKey = floorRatio(localY, localX1)
+        if leftKey < highKey:
+          events.add(packEvent(leftKey, false))
+    elif localY < 0:
+      if rightKey <= lowKey: continue
+      events.add(packEvent(rightKey, false))
+      if localX1 > 0:
+        let leftKey = floorRatio(localY, localX1)
+        if lowKey < leftKey:
+          events.add(packEvent(leftKey, true))
+        else:
+          events.add(packEvent(lowKey, true))
+      else:
+        events.add(packEvent(lowKey, true))
+
+  for vline in vlines:
+    if vline.x <= altar.x2: continue
+    let localX = vline.x - centerX
+    let lowEnd = floorRatio(vline.y1 - centerY, localX)
+    let highEnd = floorRatio(vline.y2 - centerY, localX)
+    if not (lowEnd < highKey and lowKey < highEnd): continue
+    if lowKey < lowEnd:
+      events.add(packEvent(lowEnd, true))
+    else:
+      events.add(packEvent(lowKey, true))
+    if highEnd < highKey:
+      events.add(packEvent(highEnd, false))
+
   if events.len == 0: return true
   if events.len > 1: quickSort(events, 0, events.len - 1)
   var activeCount = 0
@@ -98,8 +157,9 @@ The packed key sets the event type in its low bit. Floor division keeps the key 
   return activeCount == 0 and lastKey < highKey
 ```
 
-The loop visits one sorted event per wall end. End events precede begin events at equal angles, so a single touch never reads as a gap. Sorting and sweeping cost O(k log k) for k events.
+The routine turns each wall segment into slope events. Only walls ahead of the entrance can matter. A zero active count over a free gap means the spirit escapes.
 
+**Rotation driver.**
 ```nim
   var escapes: seq[int] = @[]
   for k in 0..<4:
@@ -122,10 +182,39 @@ The loop visits one sorted event per wall end. End events precede begin events a
                         x2: -altar.y1, y2: altar.x2,
                         direction: (altar.direction + 1) mod 4,
                         id: altar.id)
+
+  if escapes.len == 0:
+    appendOutput("NONE\n")
+  else:
+    escapes.sort(system.cmp[int])
+    for idValue in escapes:
+      appendOutput($(idValue))
+      appendOutput("\n")
+
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-The outer loop runs four quarter turns. The facing code advances with the walls, so each temple is tested once in its east-facing frame. Each turn rebuilds the wall lists in O(n).
+The loop tests altars facing east, then rotates every line and altar. Escaping ids are collected and sorted at the end. An empty result prints NONE.
+
 
 ## Complexity
 
-Reading and scanning take time linear in the input size. Building walls costs O(n) per case, and testing one temple sorts up to O(n) events. The total is O(n^2 log n) time and O(n) space for walls and events. A naive version samples many directions and tests each against every wall, which costs more for the same n.
+Each altar sorts its own events, so the sweep cost is quadratic per case.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| parse and scale walls | O(n) | wall arrays |
+| event sort per altar | O(n log n) | one event list |
+| four direction passes | O(n squared log n) | rotating arrays |
+
+The rotation reuses the same sweep code for all four entrances.
+
+Big O uses temple count n.
+
+| Measure | Big O |
+| --- | --- |
+| time | O(n squared log n) |
+| space | O(n) |
+
+Testing infinitely many sample rays would never give a clean boundary, so the sweep wins.

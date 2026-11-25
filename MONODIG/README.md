@@ -1,55 +1,89 @@
+# MONODIG — Monodigital Representations (SPOJ)
+<https://www.spoj.com/problems/MONODIG/>
+
 ## Problem
 
-Each case gives a digit K and up to ten numbers. For each number, print the shortest length of a K-representation, or NO when that length exceeds eight. A K-representation is an expression built from K, KK, KKK, and so on, using addition, subtraction, multiplication, and exact division.
+A puzzle builds numbers using only repeated copies of one digit. Each expression may use at most eight copies.
+
+The input starts with the case count. Each case gives a digit and a list of target numbers. Print the shortest representation length, or `NO`.
 
 The judge bounds are:
 
-| Quantity | Bound |
+| Item | Bound |
 | --- | --- |
-| Digit K | 1 to 9 |
+| Digit `K` | 1 to 9 |
 | Numbers per case | 1 to 10 |
-| Query value | 1 to 32000 |
-| Length limit | 8 |
-| Time limit | 1647 ms |
-| Memory limit | 1536 MB |
+| Target value | 1 to 32000 |
+| Maximum length | 8 digits |
+| Judge time | 1647 ms |
+| Memory | 1536 MB |
+| Source size | 50000 B |
 
-The length limit and the small value range let one precomputation serve every query.
+One precomputation per digit serves every query.
+
+Sample input and output:
+
+Input:
+
+```
+1
+5
+2
+12
+31168
+```
+
+Output:
+
+```
+4
+NO
+```
 
 ## Idea
 
-Build one answer table per digit before reading the queries. Each table stores the shortest digit count for every value up to 32000. Combine values of two shorter counts with the four operations to fill the next count. A query then reads one cell from the prepared table.
+Precompute every short expression once per digit. Think of a recipe book that lists every dish made with at most eight spoons of one ingredient.
 
-One generated value costs a few hash probes. One query costs one array read.
+The program grows values by total digit count. It combines two shorter values with addition, subtraction, multiplication, or exact division. A hash table (a key-to-value lookup) keeps the shortest length seen. Each query then costs one lookup. Searching expressions per query would repeat the same work.
+
+Takeaway: one shared table turns queries into constant-time lookups.
 
 ## Why It Works
 
-Every expression has a root operator joining two smaller expressions. The root adds their digit counts. A shorter expression for the same value never raises the total count, so one count per value is enough.
+Every expression tree splits at its last operator.
 
-The program walks total counts from two to eight. For each total, it splits the count into leftLength and rightLength. Both operand buckets are complete before the program reads them.
+1. The leaves are repdigits such as 5, 55, and 555.
+2. A root operator joins two subexpressions whose lengths add.
+3. Buckets group values by their exact digit count.
+4. `noteValue` keeps only the smallest length for a value.
+5. Division runs only when the remainder is zero.
 
-The marking rules are:
+The terms are:
 
-- `repdigit = repdigit * 10 + digit` builds K, KK, and so on, at lengths 1 to 8.
-- `rightLength = totalLength - leftLength` pairs the two operand lengths.
-- `noteValue(leftValue + rightValue)` records a result at cost totalLength.
-- `if rightValue != 0 and leftValue mod rightValue == 0` guards exact division.
+| Term | Meaning |
+| --- | --- |
+| `repdigit` | A number made of one repeated digit |
+| `valueBuckets` | Values grouped by digit count |
+| `lengthTable` | Hash table of shortest lengths |
+| `currentTotal` | Digit count of the expression being built |
 
-The generator also produces the reachable values below, listed up to 100:
+Length order ensures the first entry is minimal.
 
-```
-length 1: [5]
-  12 present at length 1? False
-length 2: [0, 1, 10, 25, 55]
-  12 present at length 2? False
-length 3: [0, 2, 4, 5, 6, 11, 15, 20, 30, 50, 60]
-  12 present at length 3? False
-length 4: [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 15, 16, 20, 24, 25, 26, 30, 35, 45, 50, 54, 55, 56, 65, 75, 80, 100]
-  12 present at length 4? True
-```
+A script checked digit 5 against sample values:
 
-The value 12 first appears at length 4, from (55+5)/5.
+| Value | Expression | Length |
+| --- | --- | --- |
+| 5 | `5` | 1 |
+| 10 | `5 + 5` | 2 |
+| 11 | `55 / 5` | 3 |
+| 12 | `(55 + 5) / 5` | 4 |
+| 31168 | none within eight digits | NO |
+
+The sample answers match the table.
 
 ## Code
+
+**Constants and bulk input.**
 
 ```nim
 const
@@ -71,13 +105,15 @@ while true:
   if bytesRead <= 0: break
   filledBytes += bytesRead
 inputData.setLen(filledBytes)
-
-var scanPos = 0
 ```
 
-The loop grows the buffer while bytes remain. `setLen(filledBytes)` removes unused bytes before scanning. One bulk read pass handles the whole input.
+A one-megabyte chunk fills the input buffer. The capacity doubles until the stream ends. One read pass handles all cases.
+
+**Integer scanner and output helper.**
 
 ```nim
+var scanPos = 0
+
 proc nextInt(data: string, position: var int): int =
   while position < data.len and (data[position] < '0' or data[position] > '9'):
     position += 1
@@ -96,7 +132,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The scanner skips blanks between cases and builds each value by hand. It ignores minus signs because the spec lists positive values only. The output buffer flushes in blocks, never per number.
+The scanner skips separators and reads digits in place. Output collects in a buffer and flushes in blocks.
+
+**Length hash table.**
 
 ```nim
 type
@@ -136,12 +174,14 @@ proc putLength(table: var LengthTable, key, value: int) =
   table.occupied[slot] = true
   table.keys[slot] = key
   table.lengths[slot] = value
+
 ```
 
-Linear probing fixes the hash collision by moving to the next slot. The table keeps negative values from subtraction. All probes stay inside 65536 slots.
+Open addressing keeps lookups fast. `slotFor` mixes the key and masks it to the capacity. Linear probing resolves collisions.
+
+**Value recording.**
 
 ```nim
-var lengthTable = newLengthTable()
 var valueBuckets: array[maxRepresentationLength + 1, seq[int]]
 var currentTotal = 0
 
@@ -150,7 +190,13 @@ proc noteValue(value: int) =
   if existing == 0 or existing > currentTotal:
     putLength(lengthTable, value, currentTotal)
     valueBuckets[currentTotal].add value
+```
 
+A value is recorded only when its length improves. The matching bucket then gains that value.
+
+**Expression build and precompute.**
+
+```nim
 proc buildAnswers(digit: int): seq[int] =
   clearLengthTable(lengthTable)
   for i in 0..maxRepresentationLength:
@@ -176,15 +222,17 @@ proc buildAnswers(digit: int): seq[int] =
   result = newSeq[int](maxQueryValue + 1)
   for value in 1..maxQueryValue:
     result[value] = getLength(lengthTable, value)
-```
 
-The total loop runs from 2 to 8. Its split always uses two shorter buckets, so a bucket is complete before the program reads it. Division runs only on exact multiples.
-
-```nim
 var answers: array[10, seq[int]]
 for digit in 1..9:
   answers[digit] = buildAnswers(digit)
+```
 
+Buckets combine in increasing total length. Each pair contributes four operations. The last loop copies answers into a flat table per digit.
+
+**Query loop.**
+
+```nim
 let caseCount = nextInt(inputData, scanPos)
 for caseIndex in 0..<caseCount:
   let digit = nextInt(inputData, scanPos)
@@ -202,15 +250,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Nine digits are prepared once, before the first query. A zero length means NO because the search stopped at eight. The final write flushes the remaining block.
+Each query reads one value and prints its row entry. Zero means `NO`. The final write flushes pending text.
 
 ## Complexity
 
-Costs by phase:
+Precomputation dominates the runtime.
 
 | Phase | Time | Space |
 | --- | --- | --- |
-| Precompute | O(9 · 85000 combinations) | O(65536 slots + 9500 values) |
-| Query loop | O(number of queries) | O(32001 cells per digit) |
+| Input | O(Total digits) | O(Input size) |
+| Precompute | O(9 * B^3) | O(32000) |
+| Queries | O(1) each | O(32000 * 9) |
+| Output | O(Total queries) | O(1) |
 
-Big O is O(9C + Q) time and O(9V + H) space, where C counts combinations per digit and Q counts queries. Naive expression-tree enumeration grows exponentially with the length limit.
+B is the bucket size at length eight.
+
+| Measure | Bound |
+| --- | --- |
+| Time | O(9 * B^3) once, then O(1) per query |
+| Space | O(Hash capacity + answer rows) |
+
+Every query reuses the same nine tables.
+
+Building expressions separately for each query would repeat millions of combinations.

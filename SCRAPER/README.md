@@ -1,39 +1,91 @@
+# SCRAPER — Skyscraper Floors (SPOJ)
+<https://www.spoj.com/problems/SCRAPER/>
+
 ## Problem
 
-Read several skyscrapers. Each has floors numbered from zero, several elevators, and two floors named `A` and `B`. An elevator with step `X` and start `Y` stops at floors `Y`, `Y + X`, `Y + 2X`, and so on below the top floor. Decide whether a piece of furniture can travel from `A` to `B` using only elevators. Print one sentence per skyscraper.
+A large piece of furniture must move between two floors of a skyscraper. Each elevator starts at a floor and stops every X floors above it. The high-capacity elevator is broken, so transfers happen only where two elevators share a floor.
 
-| Quantity | Bound |
+Input: an integer N, then N cases. Each case gives floors F, elevators E, and floors A and B, followed by E lines with step X and start Y. Output: one sentence per case, either `It is possible to move the furniture.` or `The furniture cannot be moved.`
+
+The statement sets these bounds.
+
+| Item | Bound |
 | --- | --- |
-| Skyscrapers per file | about 2000 |
-| Floors `F` | 1 to 49,999,999 |
-| Elevators `E` | 1 to 99 |
-| Time limit | 13000 ms |
-| Memory limit | 1536 MB |
+| Cases | about 2000 |
+| Floors F | 1 to 49999999 |
+| Elevators E | 1 to 99 |
+| Step X and start Y | positive X, nonnegative Y |
+| Judge time limit | 13000 ms |
+| Judge memory limit | 1536 MB |
 
-The floor count can be large, so the program never stores one entry per floor.
+The floor count is huge, so the program never stores one entry per floor.
+
+The sample input:
+
+```
+2
+22 4 0 6
+3 2
+4 7
+13 6
+10 0
+1000 2 500 777
+2 0
+2 1
+```
+
+The sample output:
+
+```
+It is possible to move the furniture.
+The furniture cannot be moved.
+```
 
 ## Idea
 
-Treat every elevator as a node in a small graph. Add an edge between two elevators when their lines meet on some floor below the top. Start from every elevator that serves floor `A`, then walk the graph. If a reached elevator serves floor `B`, the furniture can move.
+Picture every elevator as a station and every shared floor as a connecting corridor. You start at the stations serving floor A and walk the corridors. If you reach a station serving floor B, the furniture can move.
 
-Each pair of elevators is tested once with a congruence solver, so the cost per case is O(E²). Walking all floors instead would cost O(F · E).
+The program builds that graph on the fly. A congruence solver decides whether two elevators meet on a floor below the top. It uses the greatest common divisor and a modular inverse. Each pair is tested once, so a case costs O(E squared). Walking every floor instead would cost O(F times E), which is impossible for millions of floors.
+
+A small graph replaces a huge floor list.
 
 ## Why It Works
 
-An elevator connects every pair of floors on its own line, in both directions. A trip is therefore a chain of elevators where consecutive lines share a floor. The graph captures exactly those chains.
+Four facts carry the program.
 
-Two lines meet when a floor `f` satisfies both `f = Y₁ + t₁X₁` and `f = Y₂ + t₂X₂`. This system has a solution only when `Y₂ - Y₁` is divisible by `gcd(X₁, X₂)`. When it is, the following steps build the smallest shared floor at least `max(Y₁, Y₂)`:
+1. An elevator connects every pair of floors on its own line, in both directions. A trip is a chain of elevators where consecutive lines share a floor.
+2. Two lines meet when a floor f satisfies both `f = Y1 + t1 * X1` and `f = Y2 + t2 * X2`. A solution exists only when `Y2 - Y1` is divisible by the gcd of the steps.
+3. Dividing steps and difference by the gcd makes the steps coprime. A modular inverse then gives one meeting floor, and the cycle length is the least common multiple.
+4. Adding whole cycles lifts that floor to at least the higher start. The candidate is valid only below the top floor F. Equal origin and target always succeed.
 
-- divide both steps and the difference by the gcd
-- solve `t ≡ (difference / gcd) · inverse(step₁ / gcd) (mod step₂ / gcd)`
-- form `f = Y₁ + t · X₁`, then reduce it modulo `lcm(X₁, X₂)`
-- add whole lcm cycles until `f` reaches the lower bound
+Each term has one job.
 
-The candidate is valid only when it stays below `F`. If `A` equals `B`, the answer is yes even with no elevators.
+| Term | Meaning |
+| --- | --- |
+| `divisor` | greatest common divisor of the two steps |
+| `reducedSecondStep` | second step divided by the divisor |
+| `cycleLength` | least common multiple of the two steps |
+| `meetingFloor` | smallest shared floor above both starts |
+
+Every value uses 64 bits, so floors near 50 million stay exact.
+
+A script traces one pair with steps 3 and 4 and starts 2 and 7.
+
+```text
+divisor gcd(3, 4) = 1
+start difference 7 - 2 = 5, divisible by 1
+reduced step 4, inverse of 3 mod 4 is 3
+offset 5 mod 4 times 3 mod 4 = 3
+cycle length 3 times 4 = 12
+meeting floor 2 + 3 times 3 = 11 mod 12 = 11
+11 is above both starts and below the top
+```
+
+The elevators share floor 11, so an edge joins them. No rounding appears because all values are integers.
 
 ## Code
 
-The program reads all input at once and parses it with a digit scanner.
+**Constants and scanner.** Input numbers are nonnegative and fit in 64 bits.
 
 ```nim
 const firstDigitValue = 48
@@ -59,9 +111,9 @@ proc nextInt(data: string, i: var int): int64 =
   return value
 ```
 
-Floor numbers fit in 64 bits, and every input number is non-negative. Parsing one number visits each digit once.
+The read loop appends into one buffer, so parsing never calls the stream. Each number costs one pass over its digits. The two messages are constants, so output never builds sentences.
 
-The helpers test one floor and solve the two-line congruence.
+**Congruence helpers.** Euclid solves the two-line meeting test.
 
 ```nim
 proc greatestCommonDivisor(firstValue: int64, secondValue: int64): int64 =
@@ -118,11 +170,19 @@ proc elevatorsShareFloor(firstStep: int64, firstStart: int64,
   return meetingFloor < topFloor
 ```
 
-The inverse step exists because the reduced steps are coprime. When the reduced second step is one, the first start already satisfies both lines. The final comparison enforces the top floor bound.
+The inverse exists because the reduced steps are coprime. When the reduced second step is one, the first start already works. The final comparison enforces the top floor bound.
 
-The driver builds the queue and walks the elevator graph.
+**Graph walk.** A queue discovers elevators reachable from floor A.
 
 ```nim
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
 let caseCount = nextInt(inputData, i)
 for j in 1..caseCount:
   let floorCount = nextInt(inputData, i)
@@ -174,15 +234,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The queue is an array of elevator indices with two moving ends. A reached elevator is never tested again. The output buffer flushes in blocks, never once per case.
+The queue holds elevator indices with two moving ends. A reached elevator is never tested again. The output buffer flushes in blocks, never once per case.
 
 ## Complexity
+
+Parsing, pair tests and the queue walk make up each case.
 
 | Phase | Time | Space |
 | --- | --- | --- |
 | Parse one case | O(E) | O(E) |
-| Shared-floor tests | O(E² log F) | O(1) extra |
+| Shared-floor tests | O(E squared log F) | O(1) extra |
 | Queue walk | O(E) | O(E) |
 | Output | O(1) per case | one block |
 
-Total time is O(E² log F) per case and total space is O(E). Enumerating floors would cost O(F · E) per case instead.
+E is at most 99, so the pair tests stay small.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(E squared log F) per case |
+| Space | O(E) per case |
+
+Enumerating floors would cost O(F times E) per case instead.

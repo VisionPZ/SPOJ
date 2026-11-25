@@ -1,34 +1,67 @@
+# INUMBER — Interesting number (SPOJ)
+<https://www.spoj.com/problems/INUMBER/>
+
 ## Problem
 
-Read a count, then that many integers n. For each n, print the smallest positive integer whose digit sum equals n and whose value is divisible by n. Print one answer per line, without leading zeros.
+For a given n, find the smallest positive integer divisible by n whose digits add up to n. The answer may need many digits, so guessing numbers one by one wastes time.
 
-| Quantity | Bound |
+The first line holds a test count t of at most 50. Each following line holds one integer n from 1 to 1000. Print the required number per line, without leading zeros.
+
+The judge limits are:
+
+| Item | Value |
 | --- | --- |
-| Test cases | 50 or fewer |
+| Test cases t | at most 50 |
 | Each n | 1 to 1000 |
-| Time limit | 7000 ms |
+| Time limit | 7 s |
 | Memory limit | 1536 MB |
 | Source size | 4096 bytes |
 
 The bound on n fixes the state table, and the source limit keeps the program compact.
 
+The sample input reads:
+
+```text
+2
+1
+10
+```
+
+The sample output reads:
+
+```text
+1
+190
+```
+
 ## Idea
 
-Build the answer digit by digit with a queue that visits shorter numbers first, called a breadth-first search. Each state holds a remainder and a digit sum, and ten transitions per state replace a scan of every candidate integer. At most n(n+1) states exist, so one flat table bounds the work.
+Build the answer digit by digit, like trying shorter lock codes before longer ones. A breadth-first search (a queue that visits shorter numbers first) keeps a state of remainder and digit sum. Appending one digit updates both in constant time, so ten transitions replace a scan of every candidate integer. At most n(n+1) states exist, and the first target state gives the smallest number. Each case costs O(n²) time. Testing integers in order can take time exponential in the answer length. Takeaway: search states, not numbers.
 
 ## Why It Works
 
-Appending digit d to a number with remainder r gives remainder (10r + d) mod n. The digit sum grows by d, and a state never needs a sum above n. The queue holds numbers in numeric order within each length layer, so the first target state gives the smallest answer. Revisiting a state cannot help, because the earlier number is smaller.
+1. Appending digit d to a number with remainder r gives remainder `(10*r + d) mod n`.
+2. The digit sum grows by d, and no state needs a sum above n.
+3. The queue holds numbers in numeric order within each length layer, so the first target state is smallest.
+4. Revisiting a state cannot help, because the earlier number reaching it is smaller.
+5. The state index mixes remainder with digit sum, with `stride = 1001` separating the two parts.
+6. Seeds run from digit 1 to 9, so printed answers never start with zero.
+7. A case mark avoids clearing the visit table for every test case.
 
-The state index mixes a remainder with a digit sum:
+The table defines the terms.
 
-- `remainder` runs from 0 to n−1.
-- `digitSum` runs from 0 to n.
-- `stride` equals 1001, which is one more than the largest n.
+| Term | Meaning |
+| --- | --- |
+| `remainder` | current value modulo the target n |
+| `digitSum` | sum of digits used so far |
+| `state` | `remainder * stride + digitSum` |
+| `caseMark` | stamp that marks states visited in one case |
 
-The trace below lists the states with digit sum 10 in queue order for n = 10.
+These four terms define one queue state.
 
-| digit string | remainder mod 10 | digit sum |
+A script listed states with digit sum 10 in queue order for n = 10.
+
+| Digit string | Remainder mod 10 | Digit sum |
 | --- | --- | --- |
 | 19 | 9 | 10 |
 | 28 | 8 | 10 |
@@ -45,7 +78,7 @@ The first state with remainder 0 belongs to 190, so the answer for 10 is 190.
 
 ## Code
 
-The constants fix the table size and the buffer flush size.
+**Constants.** The table sizes follow from the largest allowed n.
 
 ```nim
 {.passC: "-O2".}
@@ -57,7 +90,9 @@ const stride = 1001
 const maxStates = stride * maxN
 ```
 
-The input loop reads every line once, and the scanner walks that one buffer by index.
+`stride` is one more than the largest n. `maxStates` bounds both the visit table and the queue. The pragmas remove checks from the hot search loop.
+
+**Input and scanner.** The program slurps input once and walks it by index.
 
 ```nim
 var inputData = ""
@@ -77,7 +112,9 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-Six arrays are allocated once. The mark array avoids clearing tables for each case.
+The read loop appends one newline per input line. The scanner skips separators and consumes digits in place. Parsing one number visits each digit once.
+
+**Persistent arrays.** Six arrays are allocated once for all cases.
 
 ```nim
 var visitMark = newSeq[int32](maxStates)
@@ -88,7 +125,9 @@ var remainderTable = newSeq[int16](maxN * 10 + 10)
 var caseMark = int32(0)
 ```
 
-The answer builder follows parent links back to the first digit, then reverses them.
+`visitMark` replaces clearing the whole table per case. `parentState` and `parentDigit` remember the path back to the first digit. `remainderTable` holds remainders for values up to ten times n. The arrays use narrow integer types to cap memory.
+
+**Answer reconstruction.** The program follows parent links, then reverses the digits.
 
 ```nim
 proc buildAnswer(startState: int): string =
@@ -103,7 +142,9 @@ proc buildAnswer(startState: int): string =
   return answerText
 ```
 
-The search seeds digits 1 to 9, then expands each state with digits 0 to 9. The break on nextSum skips sums above n, and the visit mark keeps the queue bounded.
+The walk runs once per output digit. Reversing gives the number in normal order. The result has no leading zeros because seeds start at digit 1. Reconstruction costs O(answer length).
+
+**Breadth-first search.** Seeds use digits 1 to 9, then each state expands with digits 0 to 9.
 
 ```nim
 proc solve(target: int): string =
@@ -143,7 +184,9 @@ proc solve(target: int): string =
   return ""
 ```
 
-The output buffer flushes by size, not by line. The final flush writes any remaining bytes.
+The break on `nextSum` skips sums above the target. The visit mark keeps the queue bounded. Division and modulo recover the two halves of a state. The first target state ends the search immediately.
+
+**Driver.** The loop writes each answer and flushes output by size.
 
 ```nim
 var outputBuffer = ""
@@ -163,6 +206,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
+The loop runs exactly `caseCount` times. Flushing by size avoids one write per answer. The final flush emits any remaining bytes.
+
 ## Complexity
 
-Input scanning costs O(bytes). Table setup costs O(10 maxN) per case, and reconstruction costs O(answer length). The search visits at most n(n+1) states with ten transitions each, so a case costs O(n²) time and O(n²) space. The total is O(t n²) time and O(n²) space, with about 17 MB of arrays. Enumerating integers up to the answer instead can take exponential time in the answer length.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Scan input | O(bytes) | O(input bytes) |
+| Build remainder table | O(10 n) | O(10 n) |
+| Search states | O(n²) | O(n²) |
+| Reconstruct answer | O(answer length) | O(answer length) |
+
+The state search dominates one case.
+
+Each state has at most ten outgoing digit transitions.
+
+| Measure | Bound |
+| --- | --- |
+| Per case | O(n²) time |
+| Per case | O(n²) space |
+| All cases | O(t n²) time |
+
+The arrays hold about 17 MB. Testing integers up to the answer instead can take exponential time in the answer length.

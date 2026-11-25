@@ -1,312 +1,308 @@
+# ABWORDS — AB-words (SPOJ)
+<https://www.spoj.com/problems/ABWORDS/>
+
 ## Problem
 
-Each test case gives a set S of nice ab-words. A nice word has equal counts of a and b, and every prefix has at least as many a as b. Two words are similar under an inductive rule set. Print the largest size of a subset of S with no similar pair.
+A museum keeps balanced a/b strings and wants a display with no two alike.
+Its likeness rule is not transitive, so the curator must find the largest pairwise-unlike set.
 
-| Quantity | Bound |
+The first line gives the case count. Each case starts with n, then n strings built from a and b. Every string has length 1 to 200. Print one integer per case: the level of diversity, which is the largest subset with no similar pair.
+
+The bounds and judge limits are:
+
+| Constraint | Value |
 | --- | --- |
-| Test cases | given on the first line |
-| Words per case | 1 to 1000 |
-| Word length | 1 to 200 |
-| Time limit | 2640 ms |
-| Memory limit | 1536 MB |
+| Strings per case | 1 to 1000 |
+| String length | 1 to 200 |
+| Judge time | 2.640 s |
+| Judge memory | 1536 MB |
 
-The word count and length set the cost of the pairwise checks.
+These bounds keep each case small enough for pairwise graph checks.
+
+The sample input and its expected output follow byte for byte.
+
+```
+1
+3
+aabaabbbab
+abababaabb
+abaaabbabb
+```
+
+```
+2
+```
+
 
 ## Idea
 
-Similarity is an inductive relation, not an equivalence relation. The program decides it with a fast separable-matching test and keeps an exact substring DP as a fallback.
-
-A hash of each word's nesting tree gives a necessary condition. Words with different hashes are never similar, so they need no comparison. The program groups words by that hash and checks pairs only inside a group.
-
-Inside a group, words are compared using their top-level primitive components. A separable matching of those components proves similarity without the expensive substring DP. The DP still decides every case the fast test cannot prove. A bitset branch-and-bound then finds the largest subset with no similar pair.
+Treat each string as a nested fork and give every fork a canonical shape (children sorted into a fixed order). This is like sorting a family tree before comparing two copies.
+The program interns each word into an exact id and a canonical id. It then builds a similarity graph inside each canonical group.
+Two words are similar when their child sequences match under separable splits or mirror splits, checked by a memoized dynamic program.
+The final answer is a maximum independent set (largest group with no similar pair) in that graph, solved with bitsets and branch and bound.
+Testing every subset is exponential, while grouping by canonical shape first keeps each comparison local.
+Canonical shapes turn a fuzzy relation into small graphs and a fast answer.
 
 ## Why It Works
 
-A nice word splits into top-level components. Each component has the form a + inner + b. Similar words have the same length and the same nesting tree when child order is ignored. That tree hash is therefore a safe grouping key.
+1. A nice word splits at each place where the prefix holds equal counts of a and b. The parser stores each nest as a child list.
+2. Two trees share a canonical shape exactly when their sorted child shape lists match. That id check prunes most comparisons.
+3. A split is separable when child kinds form blocks that merge inward. A stack in `isSeparablePermutation` decides this in linear time.
+4. Prefix hashes compare candidate cuts in constant time. The dynamic program then visits only reachable span states.
+5. The answer is a maximum independent set, because chosen words must have no similarity edge between them. Greedy coloring bounds the search.
 
-The similarity rules at the top level are a direct split and a crossed split. A direct split matches a prefix of one word with a prefix of the other. A crossed split matches a prefix of one word with a suffix of the other. Repeating those two operations gives exactly the separable permutations of the components.
+Five terms carry the proof.
 
-The fast test searches for such a decomposition. At every split it compares multisets of component tree keys. At a leaf it compares two primitive components: equal strings prove similarity, and otherwise the same search is applied to their interiors. A successful search therefore only reports pairs that really are similar.
+| Term | Meaning |
+| --- | --- |
+| exact id | tree shape with child order kept |
+| canonical id | tree shape after sorting children |
+| separable permutation | child order formed by nested blocks |
+| universal shape | every word of that shape is similar |
+| independent set | words with no similarity edge |
 
-When two alphabets of component strings are the only types present, equal multisets always have a separable matching. The program handles that common case with a single count comparison.
+Together they reduce similarity to cheap id checks and a small graph search.
 
-The substring DP mirrors the three definition rules when the fast test fails. Let `equalPart` mean the parts starting at a and b with 2 * half letters are similar.
-
-- A zero half gives the empty parts, which are similar.
-- Wrap: both parts start with a, end with b, and their inner parts are similar.
-- Straight split: the prefix parts match and the suffix parts match.
-- Crossed split: the prefix of one part matches the suffix of the other.
-
-The sample has three words. The first and third share the same tree, so they are similar. The second has a different tree. The answer is 2.
-
-A second example shows why grouping alone fails. Take four distinct words A, B, C, D of length 6. The words CADB, ACBD and ABCD share one tree. The first two are similar, and the last two are similar, but the first and last are not. The answer for that set is 2, while the number of tree hashes is 1.
+A script check of the sample gives 3 words and answer 2. That means one similar pair and one word outside it.
+The program picks the outsider plus one member of the pair. The reported diversity is 2.
 
 ## Code
 
-The input is read once into one buffer. The scanner walks that buffer by index and builds integers from digit values.
-
+**Bulk input scanner.**
 ```nim
-const firstDigitValue = 48
-const flushBlockBytes = 1 shl 18
-const hashBasis: uint64 = 1469598103934665603'u64
-const mixA: uint64 = 0xbf58476d1ce4e5b9'u64
-const mixB: uint64 = 0x94d049bb133111eb'u64
-
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
+proc readAllInput() =
+  var chunk = newString(flushBlockBytes)
+  var totalBytes = 0
+  while true:
+    let bytesRead = stdin.readBuffer(addr chunk[0], flushBlockBytes)
+    if bytesRead <= 0:
+      break
+    let previousLen = totalBytes
+    totalBytes += bytesRead
+    if inputData.len < totalBytes:
+      let nextCapacity = max(totalBytes, inputData.len * 2)
+      inputData.setLen(nextCapacity)
+    copyMem(addr inputData[previousLen], addr chunk[0], bytesRead)
+  inputData.setLen(totalBytes)
 
 var scanPos = 0
 
-proc nextInt(data: string, position: var int): int =
-  while position < data.len and (data[position] < '0' or data[position] > '9'):
-    position += 1
+proc nextInt(): int {.inline.} =
+  let dataLen = inputData.len
+  while scanPos < dataLen and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
+    inc scanPos
   var value = 0
-  while position < data.len and data[position] >= '0' and data[position] <= '9':
-    value = value * 10 + int(data[position]) - firstDigitValue
-    position += 1
+  while scanPos < dataLen and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
+    value = value * 10 + int(inputData[scanPos]) - firstDigitValue
+    inc scanPos
   return value
-
-proc nextWord(data: string, position: var int): string =
-  while position < data.len and (data[position] != 'a' and data[position] != 'b'):
-    position += 1
-  result = ""
-  while position < data.len and (data[position] == 'a' or data[position] == 'b'):
-    result.add data[position]
-    position += 1
 ```
 
-The scanner stops at the first letter that is not a or b, so no word is scanned twice. Each word is at most 200 letters long.
+The scanner reads the whole stream into one buffer and walks it by index. `nextInt` skips non-digits and folds digits into a value. One read avoids a syscall per line.
 
-The tree hash mixes child keys with a commutative sum. Order inside a component is ignored; order inside the whole word is still kept by the similarity check.
-
+**Balanced word parser.**
 ```nim
-proc forestKey(children: var seq[uint64]): uint64 =
-  if children.len == 0:
-    return 0
-  var total: uint64 = 0
-  for key in children:
-    var part = key + hashBasis
-    part = (part xor (part shr 30)) * mixA
-    part = (part xor (part shr 27)) * mixB
-    total += part xor (part shr 31)
-  return total
-```
-
-The empty tree gets key 0. The mixer spreads each child key over 64 bits before adding it. A collision would only merge two groups, which would add extra comparisons, not wrong answers.
-
-The substring table holds a key for each balanced part of one word. The loop runs from right to left so inner keys exist before their parents.
-
-```nim
-proc canonicalIds(word: string): seq[uint64] =
-  let numberLength = word.len
-  let rowLength = numberLength + 1
-  result = newSeq[uint64]((numberLength div 2 + 1) * rowLength)
-  for position in 0..<result.len:
-    result[position] = 0xffffffffffffffff'u64
-  for start in 0..numberLength:
-    result[start] = 0
-  var matching = newSeq[int](numberLength)
-  var openings: seq[int] = @[]
-  for position in 0..<numberLength:
-    if word[position] == 'a':
-      openings.add position
+proc parseWordToExactId(startPos, stopPos: int): int32 =
+  var depth = 0
+  var stackTop = 0
+  parseFrameStart[0] = 0
+  for pos in startPos..<stopPos:
+    if inputData[pos] == 'a':
+      inc depth
+      parseFrameStart[depth] = stackTop
     else:
-      let opening = openings[openings.len - 1]
-      openings.setLen(openings.len - 1)
-      matching[opening] = position
-  for start in countdown(numberLength - 1, 0):
-    if word[start] != 'a':
-      continue
-    var children: seq[uint64] = @[]
-    var pos = start
-    while pos < numberLength and word[pos] == 'a':
-      let closing = matching[pos]
-      let innerHalf = (closing - pos - 1) div 2
-      let innerId = result[innerHalf * rowLength + pos + 1]
-      if innerId == 0xffffffffffffffff'u64:
-        break
-      children.add innerId
-      pos = closing + 1
-      let half = (pos - start) div 2
-      result[half * rowLength + start] = forestKey(children)
+      let frameBase = parseFrameStart[depth]
+      let childCount = stackTop - frameBase
+      let nodeId = internExact(parseChildStack, frameBase, childCount)
+      stackTop = frameBase
+      dec depth
+      parseChildStack[stackTop] = nodeId
+      inc stackTop
+  return internExact(parseChildStack, 0, stackTop)
 ```
 
-The matching array gives the closing letter of each opening letter in one pass. A part is balanced only when its tree key exists; the largest unsigned value rejects the other parts.
+Each `a` opens a frame and each `b` closes one. Closing a frame interns the children gathered since its start. The parser turns ten letters into a compact tree id.
 
-Component records are built once for a whole canonical class. Each record stores the exact string id, the tree key id, the position, and a lazily built sequence of its interior components. Prefix sums of two 64-bit weights make a multiset comparison at a split a constant-time check.
-
+**Nesting order test.**
 ```nim
-proc getRecord(wordLocal, start: int): int =
-  let existing = compAt[wordLocal][start]
-  if existing >= 0:
-    return existing
-  let closing = wordMatching[wordLocal][start]
-  let length = closing - start + 1
-  let rowLength = classWords[wordLocal].len + 1
-  let key = classCanonical[wordLocal][(length div 2) * rowLength + start]
-  let typ = internTypeKey(key)
-  let text = classWords[wordLocal][start .. closing]
-  let exact = internComponent(text)
-  compRecords.add CompRec(exactId: exact, typeId: typ, startPos: start,
-                          length: length, wordLocal: wordLocal, innerSeq: -1)
-  let index = compRecords.len - 1
-  compAt[wordLocal][start] = index
-  return index
+proc isSeparablePermutation(perm: openArray[int], length: int): bool {.inline.} =
+  var stackLow: array[maxComponents, int]
+  var stackHigh: array[maxComponents, int]
+  var stackTop = 0
+  for i in 0..<length:
+    var rangeLow = perm[i]
+    var rangeHigh = rangeLow
+    while stackTop > 0:
+      if stackHigh[stackTop - 1] + 1 == rangeLow:
+        rangeLow = stackLow[stackTop - 1]
+        dec stackTop
+      elif rangeHigh + 1 == stackLow[stackTop - 1]:
+        rangeHigh = stackHigh[stackTop - 1]
+        dec stackTop
+      else:
+        break
+    stackLow[stackTop] = rangeLow
+    stackHigh[stackTop] = rangeHigh
+    inc stackTop
+  return stackTop == 1
 ```
 
-The separable search tries every split of the current interval pair. A direct split keeps the order, and a crossed split reverses it. A hash table with per-pair stamps memoizes interval states.
+The stack merges adjacent kind ranges until one range remains. A separable order of children means a valid series of nested splits. The test costs linear time in the child count.
 
+**Universal similarity dynamic program.**
 ```nim
-  for m in 1..<len:
-    if px1[xLo + m] - px1[xLo] == py1[yLo + m] - py1[yLo] and
-       px2[xLo + m] - px2[xLo] == py2[yLo + m] - py2[yLo]:
-      if recSeq(sidX, sidY, xLo, yLo, m) and
-         recSeq(sidX, sidY, xLo + m, yLo + m, len - m):
-        answer = true
-        break
-    if px1[xLo + m] - px1[xLo] == py1[yHi] - py1[yHi - m] and
-       px2[xLo + m] - px2[xLo] == py2[yHi] - py2[yHi - m]:
-      if recSeq(sidX, sidY, xLo, yHi - m, m) and
-         recSeq(sidX, sidY, xLo + m, yLo, len - m):
-        answer = true
-        break
-```
+proc dpUniversal(leftStart, rightStart, spanLen: int): bool =
+  if spanLen <= 3 or leftStart + spanLen <= int(dpLeftPtr.easyEnd[leftStart]):
+    return true
+  let statePos = spanLen * dpStride + leftStart * dpRowLen + rightStart
+  if dpStamp[statePos] == dpCurStamp:
+    return dpValue[statePos] == 1
 
-A leaf either finds equal strings or searches the interiors of the two components. If the search exceeds a state budget it reports failure, and the exact DP decides the pair.
-
-The fallback DP uses the same recurrence as before. Stamps avoid clearing the table between pairs.
-
-```nim
-proc equalPart(x, y: string, cx, cy: seq[uint64], rowLength, stride: int, a, b, half: int): bool =
-  let leftId = cx[half * rowLength + a]
-  if leftId == 0xffffffffffffffff'u64 or leftId != cy[half * rowLength + b]:
-    return false
-  let position = half * stride + a * rowLength + b
-  if simStamp[position] == stampCounter:
-    return simValue[position] == 1
-  var answer = false
-  if half == 0:
-    answer = true
-  elif x[a] == 'a' and y[b] == 'a' and x[a + 2 * half - 1] == 'b' and y[b + 2 * half - 1] == 'b' and equalPart(x, y, cx, cy, rowLength, stride, a + 1, b + 1, half - 1):
-    answer = true
+  var matched = false
+  let leftFirst = dpLeftPtr.symbols[leftStart]
+  let leftLast = dpLeftPtr.symbols[leftStart + spanLen - 1]
+  let rightFirst = dpRightPtr.symbols[rightStart]
+  let rightLast = dpRightPtr.symbols[rightStart + spanLen - 1]
+  if leftFirst == rightFirst and dpUniversal(leftStart + 1, rightStart + 1, spanLen - 1):
+    matched = true
+  elif leftFirst == rightLast and dpUniversal(leftStart + 1, rightStart, spanLen - 1):
+    matched = true
+  elif leftLast == rightLast and dpUniversal(leftStart, rightStart, spanLen - 1):
+    matched = true
+  elif leftLast == rightFirst and dpUniversal(leftStart, rightStart + 1, spanLen - 1):
+    matched = true
   else:
-    for k in 1..<half:
-      if equalPart(x, y, cx, cy, rowLength, stride, a, b, k) and equalPart(x, y, cx, cy, rowLength, stride, a + 2 * k, b + 2 * k, half - k):
-        answer = true
-        break
-      if equalPart(x, y, cx, cy, rowLength, stride, a, b + 2 * (half - k), k) and equalPart(x, y, cx, cy, rowLength, stride, a + 2 * k, b, half - k):
-        answer = true
-        break
-  simStamp[position] = stampCounter
-  simValue[position] = (if answer: 1 else: 0)
-  return answer
+    let baseLeftA = dpLeftPtr.prefixPrimary[leftStart]
+    let baseLeftB = dpLeftPtr.prefixSecondary[leftStart]
+    let baseRightA = dpRightPtr.prefixPrimary[rightStart]
+    let baseRightB = dpRightPtr.prefixSecondary[rightStart]
+    let endRightA = dpRightPtr.prefixPrimary[rightStart + spanLen]
+    let endRightB = dpRightPtr.prefixSecondary[rightStart + spanLen]
+    let headRun = min(int(dpLeftPtr.runRight[leftStart]), spanLen)
+    let tailRun = min(int(dpLeftPtr.runLeft[leftStart + spanLen - 1]), spanLen)
+    var splitLow = max(2, headRun + 1)
+    var splitHigh = min(spanLen - 2, spanLen - tailRun - 1)
+    while splitLow <= splitHigh:
+      let cutLeft = splitLow
+      let deltaA = dpLeftPtr.prefixPrimary[leftStart + cutLeft] - baseLeftA
+      let deltaB = dpLeftPtr.prefixSecondary[leftStart + cutLeft] - baseLeftB
+      if deltaA == dpRightPtr.prefixPrimary[rightStart + cutLeft] - baseRightA and
+         deltaB == dpRightPtr.prefixSecondary[rightStart + cutLeft] - baseRightB:
+        if dpUniversal(leftStart, rightStart, cutLeft) and
+           dpUniversal(leftStart + cutLeft, rightStart + cutLeft, spanLen - cutLeft):
+          matched = true
+          break
+      if deltaA == endRightA - dpRightPtr.prefixPrimary[rightStart + spanLen - cutLeft] and
+         deltaB == endRightB - dpRightPtr.prefixSecondary[rightStart + spanLen - cutLeft]:
+        if dpUniversal(leftStart, rightStart + spanLen - cutLeft, cutLeft) and
+           dpUniversal(leftStart + cutLeft, rightStart, spanLen - cutLeft):
+          matched = true
+          break
+      if splitHigh != splitLow:
+        let cutRight = splitHigh
+        let deltaA2 = dpLeftPtr.prefixPrimary[leftStart + cutRight] - baseLeftA
+        let deltaB2 = dpLeftPtr.prefixSecondary[leftStart + cutRight] - baseLeftB
+        if deltaA2 == dpRightPtr.prefixPrimary[rightStart + cutRight] - baseRightA and
+           deltaB2 == dpRightPtr.prefixSecondary[rightStart + cutRight] - baseRightB:
+          if dpUniversal(leftStart, rightStart, cutRight) and
+             dpUniversal(leftStart + cutRight, rightStart + cutRight, spanLen - cutRight):
+            matched = true
+            break
+        if deltaA2 == endRightA - dpRightPtr.prefixPrimary[rightStart + spanLen - cutRight] and
+           deltaB2 == endRightB - dpRightPtr.prefixSecondary[rightStart + spanLen - cutRight]:
+          if dpUniversal(leftStart, rightStart + spanLen - cutRight, cutRight) and
+             dpUniversal(leftStart + cutRight, rightStart, spanLen - cutRight):
+            matched = true
+            break
+      inc splitLow
+      dec splitHigh
+
+  dpStamp[statePos] = dpCurStamp
+  dpValue[statePos] = if matched: 1'i8 else: 0'i8
+  return matched
 ```
 
-The split loop uses k from 1 to half - 1, so both parts stay non-empty. The crossed test uses half - k as the offset into the other word. Each state is stored once; the stamp makes every pair start with a fresh table.
+The routine tries matching ends first, then candidate split cuts. Prefix hashes reject wrong cuts before any recursion. A stamp array memoizes each span state across calls.
 
-The group loop builds the similarity graph and calls the subset search. The search starts from a greedy set and branches on one word at a time.
-
+**Clique expansion.**
 ```nim
-  var groups = initTable[uint64, seq[int]]()
-  for wordIndex in 0..<wordCount:
-    if hasKey(groups, keys[wordIndex]):
-      groups[keys[wordIndex]].add wordIndex
+proc expandClique(depth: int) =
+  var branchCount = 0
+  colorAndRenumber(depth, candStack[depth], branchCount)
+  if branchCount == 0: return
+  var currentPool = candStack[depth]
+  for i in countdown(branchCount - 1, 0):
+    if depth + int(colorStack[depth][i]) <= bestCliqueSize:
+      return
+    let vertex = int(orderStack[depth][i])
+    var hasNext = false
+    for wordIdx in 0..<cliqueWordCount:
+      let nextWord = currentPool[wordIdx] and cliqueAdj[vertex][wordIdx]
+      candStack[depth + 1][wordIdx] = nextWord
+      if nextWord != 0'u64: hasNext = true
+    if hasNext:
+      expandClique(depth + 1)
+    elif depth + 1 > bestCliqueSize:
+      bestCliqueSize = depth + 1
+    currentPool[vertex shr 6] = currentPool[vertex shr 6] and not (1'u64 shl uint(vertex and 63))
+```
+
+Bitsets hold the candidate vertices for each depth. Greedy coloring orders candidates and prunes branches past the best clique. The routine feeds the maximum independent set search.
+
+**Case driver.**
+```nim
+let caseCount = nextInt()
+for _ in 0..<caseCount:
+  let wordCount = nextInt()
+  resetCaseTrees()
+  resetSimCache()
+  var groups = initTable[int32, seq[int32]]()
+  var seenExact = initTable[int32, bool]()
+  for _ in 0..<wordCount:
+    var startPos, stopPos: int
+    nextWordSpan(startPos, stopPos)
+    let exactId = parseWordToExactId(startPos, stopPos)
+    if not seenExact.hasKey(exactId):
+      seenExact[exactId] = true
+      let canonId = canonOfExact[exactId]
+      if groups.hasKey(canonId):
+        groups[canonId].add(exactId)
+      else:
+        groups[canonId] = @[exactId]
+
+  var diversity = 0
+  for canonId, members in groups:
+    if members.len <= 1 or canonUniversal[canonId]:
+      inc diversity
     else:
-      groups[keys[wordIndex]] = @[wordIndex]
-  var answer = 0
-  for key in groups.keys:
-    let members = groups[key]
-    answer += 1
-    if members.len > 1:
-      # build component records for the class
-      # build the similarity graph with fast checks and the DP fallback
-      answer = answer - 1 + maximumIndependentSet(adjacency, memberCount)
-  appendOutput($(answer))
-  outputBuffer.add '\n'
+      diversity += solveGroup(members)
+  appendInt(diversity)
+
+if outputBuffer.len > 0:
+  stdout.write(outputBuffer)
+  outputBuffer.setLen(0)
 ```
 
-A singleton group contributes one word. A larger group contributes the size of its largest subset with no similar pair. Each output line is appended to one buffer that flushes in 256 KiB blocks.
+The driver reads each case and resets per-case tables. A table groups words by canonical id, then each group is solved. The final buffer flushes once at the end.
 
-The subset search uses bitsets over the words of a group. A greedy pass gives a first lower bound. The branch step removes a word and its neighbors from the candidate set.
-
-```nim
-proc maximumIndependentSet(adjacency: seq[seq[uint64]], count: int): int =
-  let wordBlocks = (count + 63) div 64
-  var best = 0
-  var nodeCount = 0
-  proc search(candidates: seq[uint64], chosen: int) =
-    nodeCount += 1
-    if nodeCount > 20000000:
-      return
-    var remaining = 0
-    for segment in 0..<wordBlocks:
-      remaining += countBits(candidates[segment])
-    if chosen + remaining <= best:
-      return
-    if remaining == 0:
-      best = chosen
-      return
-    var pivot = -1
-    var pivotDegree = -1
-    for vertex in 0..<count:
-      if (candidates[vertex div 64] and (1'u64 shl uint(vertex mod 64))) == 0:
-        continue
-      var degree = 0
-      for segment in 0..<wordBlocks:
-        degree += countBits(adjacency[vertex][segment] and candidates[segment])
-      if degree > pivotDegree:
-        pivotDegree = degree
-        pivot = vertex
-    var excluded = candidates
-    excluded[pivot div 64] = excluded[pivot div 64] and not (1'u64 shl uint(pivot mod 64))
-    search(excluded, chosen)
-    var included = excluded
-    for segment in 0..<wordBlocks:
-      included[segment] = included[segment] and not adjacency[pivot][segment]
-    search(included, chosen + 1)
-  var initial = newSeq[uint64](wordBlocks)
-  for vertex in 0..<count:
-    initial[vertex div 64] = initial[vertex div 64] or (1'u64 shl uint(vertex mod 64))
-  var greedyLeft = initial
-  var greedyCount = 0
-  while true:
-    var anyLeft = false
-    for segment in 0..<wordBlocks:
-      if greedyLeft[segment] != 0:
-        anyLeft = true
-        break
-    if not anyLeft:
-      break
-    var chosenVertex = -1
-    var chosenDegree = count + 1
-    for vertex in 0..<count:
-      if (greedyLeft[vertex div 64] and (1'u64 shl uint(vertex mod 64))) == 0:
-        continue
-      var degree = 0
-      for segment in 0..<wordBlocks:
-        var word = adjacency[vertex][segment] and greedyLeft[segment]
-        while word != 0:
-          degree += int(word and 1'u64)
-          word = word shr 1
-      if degree < chosenDegree:
-        chosenDegree = degree
-        chosenVertex = vertex
-    greedyCount += 1
-    greedyLeft[chosenVertex div 64] = greedyLeft[chosenVertex div 64] and not (1'u64 shl uint(chosenVertex mod 64))
-    for segment in 0..<wordBlocks:
-      greedyLeft[segment] = greedyLeft[segment] and not adjacency[chosenVertex][segment]
-  best = greedyCount
-  search(initial, 0)
-  return best
-```
-
-The pivot is the candidate with the most neighbors. Branching on it keeps the search small on dense graphs. The node budget bounds the work on hard graphs.
 
 ## Complexity
 
-Building one tree hash takes O(L) time. Building the substring key table takes O(L^2 log L) time and O(L^2) space.
+Costs split into parsing, similarity checks, and graph search.
 
-Component records for a class take O(n L) time and space. A separable search visits at most a fixed number of interval states per pair and runs in near-constant time for common classes. The fallback DP takes O(L^4) worst-case time for one pair. The graph search uses O(m^2 / 64) bitset words for a group of m words. The full program takes O(n L^2 log L + sum of pair checks + sum of group searches) time.
+| Phase | Time | Space |
+| --- | --- | --- |
+| parse and intern | linear in total letters | one record per interned tree |
+| similarity checks | bounded by child pairs per group | one stamp per span state |
+| independent set | worst case exponential per group | bitsets over group members |
+
+Parsing stays linear, while the search depends on group size rather than word count.
+
+Big O summary uses total letters L, interned states S, and largest group size G.
+
+| Measure | Big O |
+| --- | --- |
+| time | O(L + S + search(G)) |
+| space | O(S + G) |
+
+The shape grouping keeps the hardest case inside the judge limit.

@@ -1,8 +1,14 @@
+# VFMUL — Fast Multiplication of Big Numbers (SPOJ)
+
+<https://www.spoj.com/problems/VFMUL/>
+
 ## Problem
 
-Read a count, then that many pairs of decimal integers. Each integer has at most 300000 digits. Print the product of each pair on its own line.
+A calculator must multiply decimal integers with up to 300000 digits each. Schoolbook multiplication would take far too long at that size.
 
-The judge bounds are as follows.
+Input starts with `n ≤ 100`, the number of products. Each following case holds two integers separated by a space, each at most 300000 decimal digits. Output one product per case, with no leading zeros except for the value zero itself.
+
+The judge bounds are these.
 
 | Quantity | Bound |
 | --- | --- |
@@ -13,37 +19,69 @@ The judge bounds are as follows.
 
 The digit bound rules out schoolbook multiplication.
 
+The sample input and output follow verbatim.
+
+```
+5
+4 2
+123 43
+324 342
+0 12
+9999 12345
+```
+
+```
+8
+5289
+110808
+0
+123437655
+```
+
 ## Idea
 
-Split each operand into base-1000 chunks of three decimal digits. The product chunks form the convolution of the two chunk lists. A fast Fourier transform (FFT) computes that convolution in O(N log N) steps, where N is the next power of two.
+Split each operand into three-digit chunks and convolve the chunk lists. Think of long multiplication on paper, but folding all columns together in one wave instead of one at a time.
 
-Cost per multiplication: O(N log N) for N output chunks, against O(n^2) for schoolbook.
+A base-1000 number is a sum of chunk values times powers of 1000. Multiplying two such sums adds each pair of chunks into one position. That sum is a convolution, which a fast Fourier transform computes in `O(N log N)` steps. A carry pass in base 1000 then rebuilds the decimal digits.
+
+Schoolbook multiplication takes `O(n^2)` chunk products. The transform takes about `N log N` operations for `N` chunks.
+
+A convolution turns quadratic multiplication into near-linear work.
 
 ## Why It Works
 
-A base-1000 number equals the sum of chunk[i] times 1000^i. Multiplying two such sums adds chunkA[i] times chunkB[j] into position i+j.
+Four facts justify the transform.
 
-Position k therefore holds the sum of chunkA[i] times chunkB[k-i]. That sum is the convolution the FFT computes.
+1. A base-1000 number equals the sum of `chunk[i]·1000^i`. Multiplying two sums adds `chunkA[i]·chunkB[j]` into position `i + j`.
+2. Position `k` therefore holds the sum over `i` of `chunkA[i]·chunkB[k-i]`. That sum is the convolution the FFT computes.
+3. The FFT evaluates both chunk lists at complex roots of unity. Pointwise multiplication there gives the convolution values, and the inverse transform returns the coefficients.
+4. Each coefficient stays below about 10^11. Floating error stays below 0.001, so rounding recovers the exact integer. A carry pass then normalizes base-1000 digits.
 
-The FFT evaluates both lists at complex roots of unity. Pointwise multiplication there gives the convolution values. The inverse transform returns the coefficients.
+The table names the key values.
 
-Each coefficient stays below about 10^11. Floating error stays below 0.001, so rounding recovers the exact integer. A carry pass in base 1000 then builds the decimal result.
+| Term | Meaning |
+| --- | --- |
+| `digitBase` | 1000, the chunk radix |
+| `digitGroup` | 3 decimal digits per chunk |
+| `size` | first power of two at least the convolution length |
+| `twiddleRe`, `twiddleIm` | current complex root in a butterfly |
+| `carry` | overflow passed to the next base-1000 digit |
 
-A script-generated example fixes the idea.
+A worked example fixes the idea with visible numbers.
 
 | Step | Value |
 | --- | --- |
 | Chunks of 12345 | 345, 12 |
 | Chunks of 6789 | 789, 6 |
 | Raw convolution | 272205, 11538, 72 |
-| After carry | 205, 810, 83 |
+| After carry in base 1000 | 205, 810, 83 |
 | Decimal product | 83810205 |
 
 The last row equals 12345 times 6789.
 
 ## Code
 
-The constants set the chunk width, the flush size, and the transform precision.
+**Constants and input.** The constants set the chunk width, flush size, and transform precision.
 
 ```nim
 import math
@@ -63,9 +101,9 @@ while readLine(stdin, inputLine):
 var scanPos = 0
 ```
 
-The read loop runs until stdin ends. One newline follows every input line in the buffer. Reading costs O(input bytes), and the buffer holds all of them.
+The read loop runs until stdin ends. One newline follows every input line. Reading costs one pass over the input bytes.
 
-The scanner walks the buffer by index.
+**Scanners.** The scanner walks the buffer by index.
 
 ```nim
 proc skipSpaces(data: string, pos: var int) =
@@ -88,9 +126,9 @@ proc readToken(data: string, pos: var int, start: var int, finish: var int) =
   finish = pos
 ```
 
-`readCount` parses the small test count. `readToken` keeps a long operand as a slice, so no huge integer is ever built. The loop ends at the next space and costs O(token bytes).
+`readCount` parses the small test count. `readToken` keeps a long operand as a slice, so no huge integer is ever built. The loop ends at the next space.
 
-Chunking reads each operand from its last digit.
+**Chunking.** Chunking reads each operand from its last digit.
 
 ```nim
 proc toChunks(data: string, start: int, finish: int): seq[int] =
@@ -99,69 +137,69 @@ proc toChunks(data: string, start: int, finish: int): seq[int] =
   while right >= start:
     var chunk = 0
     var place = 1
-    var k = 0
-    while right >= start and k < digitGroup:
+    var digitIdx = 0
+    while right >= start and digitIdx < digitGroup:
       chunk += (int(data[right]) - firstDigitValue) * place
       place *= 10
       right -= 1
-      k += 1
+      digitIdx += 1
     result.add chunk
   while result.len > 1 and result[result.len - 1] == 0:
     result.setLen(result.len - 1)
 ```
 
-The outer loop walks right to left over the token. Three digits become one chunk, with the least significant chunk first. Trailing zero chunks are dropped, so zero stays a single chunk.
+The outer loop walks right to left. Three digits become one chunk, least significant first. Trailing zero chunks are dropped, so zero stays a single chunk.
 
-The transform works on two real arrays and two imaginary arrays.
+**FFT core.** The transform swaps into butterfly order, then folds blocks upward.
 
 ```nim
-proc fft(re: var seq[float], im: var seq[float], invert: bool) =
-  let n = re.len
-  var j = 0
-  for i in 1 .. n - 1:
-    var bit = n div 2
-    while (j and bit) != 0:
-      j = j xor bit
+proc fft(realPart: var seq[float], imagPart: var seq[float], invert: bool) =
+  let size = realPart.len
+  var revIdx = 0
+  for idx in 1 .. size - 1:
+    var bit = size div 2
+    while (revIdx and bit) != 0:
+      revIdx = revIdx xor bit
       bit = bit div 2
-    j = j xor bit
-    if i < j:
-      swap re[i], re[j]
-      swap im[i], im[j]
-  var len = 2
-  while len <= n:
-    let angle = (if invert: 2.0 else: -2.0) * piValue / float(len)
+    revIdx = revIdx xor bit
+    if idx < revIdx:
+      swap realPart[idx], realPart[revIdx]
+      swap imagPart[idx], imagPart[revIdx]
+  var blockLen = 2
+  while blockLen <= size:
+    let angle = (if invert: 2.0 else: -2.0) * piValue / float(blockLen)
     let stepRe = cos(angle)
     let stepIm = sin(angle)
-    var i = 0
-    while i < n:
+    var blockStart = 0
+    while blockStart < size:
       var twiddleRe = 1.0
       var twiddleIm = 0.0
-      let half = len div 2
-      var k = 0
-      while k < half:
-        let leftRe = re[i + k]
-        let leftIm = im[i + k]
-        let rightRe = re[i + k + half] * twiddleRe - im[i + k + half] * twiddleIm
-        let rightIm = re[i + k + half] * twiddleIm + im[i + k + half] * twiddleRe
-        re[i + k] = leftRe + rightRe
-        im[i + k] = leftIm + rightIm
-        re[i + k + half] = leftRe - rightRe
-        im[i + k + half] = leftIm - rightIm
+      let half = blockLen div 2
+      var offset = 0
+      while offset < half:
+        let leftRe = realPart[blockStart + offset]
+        let leftIm = imagPart[blockStart + offset]
+        let rightRe = realPart[blockStart + offset + half] * twiddleRe - imagPart[blockStart + offset + half] * twiddleIm
+        let rightIm = realPart[blockStart + offset + half] * twiddleIm + imagPart[blockStart + offset + half] * twiddleRe
+        realPart[blockStart + offset] = leftRe + rightRe
+        imagPart[blockStart + offset] = leftIm + rightIm
+        realPart[blockStart + offset + half] = leftRe - rightRe
+        imagPart[blockStart + offset + half] = leftIm - rightIm
         let nextRe = twiddleRe * stepRe - twiddleIm * stepIm
         twiddleIm = twiddleRe * stepIm + twiddleIm * stepRe
         twiddleRe = nextRe
-        k += 1
-      i += len
-    len *= 2
+        offset += 1
+      blockStart += blockLen
+    blockLen *= 2
   if invert:
-    for i in 0 .. n - 1:
-      re[i] = re[i] / float(n)
-      im[i] = im[i] / float(n)
+    for idx in 0 .. size - 1:
+      realPart[idx] = realPart[idx] / float(size)
+      imagPart[idx] = imagPart[idx] / float(size)
 ```
 
-`len` doubles until it reaches n. Bit reversal puts the input in butterfly order once. The sign of `angle` selects the forward or inverse transform. The three nested loops cost O(n log n).
+`blockLen` doubles until it reaches `size`. Bit reversal arranges the input once. The sign of `angle` selects the forward or inverse transform. The nested loops cost `O(size log size)`.
 
-Multiplication combines two transforms into one result.
+**Convolution.** Multiplication combines two transforms and propagates carries.
 
 ```nim
 proc multiply(first: seq[int], second: seq[int]): seq[int] =
@@ -173,34 +211,34 @@ proc multiply(first: seq[int], second: seq[int]): seq[int] =
   var firstIm = newSeq[float](size)
   var secondRe = newSeq[float](size)
   var secondIm = newSeq[float](size)
-  for i in 0 .. first.len - 1:
-    firstRe[i] = float(first[i])
-  for i in 0 .. second.len - 1:
-    secondRe[i] = float(second[i])
+  for idx in 0 .. first.len - 1:
+    firstRe[idx] = float(first[idx])
+  for idx in 0 .. second.len - 1:
+    secondRe[idx] = float(second[idx])
   fft(firstRe, firstIm, false)
   fft(secondRe, secondIm, false)
-  for i in 0 .. size - 1:
-    let newRe = firstRe[i] * secondRe[i] - firstIm[i] * secondIm[i]
-    firstIm[i] = firstRe[i] * secondIm[i] + firstIm[i] * secondRe[i]
-    firstRe[i] = newRe
+  for idx in 0 .. size - 1:
+    let newRe = firstRe[idx] * secondRe[idx] - firstIm[idx] * secondIm[idx]
+    firstIm[idx] = firstRe[idx] * secondIm[idx] + firstIm[idx] * secondRe[idx]
+    firstRe[idx] = newRe
   fft(firstRe, firstIm, true)
   var digits = newSeq[int](size + 1)
-  for i in 0 .. size - 1:
-    digits[i] = int(round(firstRe[i]))
+  for idx in 0 .. size - 1:
+    digits[idx] = int(round(firstRe[idx]))
   var carry = 0
-  for i in 0 .. size - 1:
-    var value = digits[i] + carry
+  for idx in 0 .. size - 1:
+    var value = digits[idx] + carry
     carry = value div digitBase
-    digits[i] = value mod digitBase
+    digits[idx] = value mod digitBase
   digits[size] = carry
   while digits.len > 1 and digits[digits.len - 1] == 0:
     digits.setLen(digits.len - 1)
   return digits
 ```
 
-`size` is the first power of two at least `need`. Pointwise complex multiplication combines both forward transforms. Rounding and carry take O(size) time.
+`size` is the first power of two at least `need`. Pointwise complex multiplication combines both forward transforms. Rounding and carry take `O(size)` time.
 
-The driver writes padded chunks and flushes the output buffer in blocks.
+**Writer and driver.** The writer pads chunks and the driver parses each pair.
 
 ```nim
 var outputBuffer = ""
@@ -217,14 +255,14 @@ proc appendNumber(digits: seq[int]) =
     return
   let top = digits.len - 1
   appendOutput($digits[top])
-  var i = top - 1
-  while i >= 0:
-    if digits[i] < 10:
+  var chunkIdx = top - 1
+  while chunkIdx >= 0:
+    if digits[chunkIdx] < 10:
       appendOutput("00")
-    elif digits[i] < 100:
+    elif digits[chunkIdx] < 100:
       appendOutput("0")
-    appendOutput($digits[i])
-    i -= 1
+    appendOutput($digits[chunkIdx])
+    chunkIdx -= 1
 
 let caseCount = readCount(inputData, scanPos)
 for caseIndex in 0 .. caseCount - 1:
@@ -244,12 +282,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-`appendOutput` flushes only after `flushBlockBytes`. Chunks below 100 get leading zeros, and the top chunk gets none. The last write flushes the remaining bytes.
+`appendOutput` flushes only after `flushBlockBytes`. Chunks below 100 get leading zeros. The last write flushes the remaining bytes.
 
 ## Complexity
 
-Reading takes O(B) time and O(B) space for B input bytes. Chunking takes O(D) time and O(D) space for D digits.
+Chunking and conversion scale with digit count, while the transform scales with chunk count.
 
-Each multiplication runs three transforms of length N. That costs O(N log N) time and O(N) space. Carry propagation and formatting take O(N) time.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | O(B) for B input bytes | O(B) |
+| Chunking | O(D) for D digits | O(D) chunks |
+| Three transforms | O(N log N) | O(N) arrays |
+| Carry and print | O(N) | one flush block |
 
-The total is O(N log N) time and O(N) space per test case. Schoolbook multiplication takes O(n^2) chunk products for contrast.
+The transform dominates for large operands.
+
+The totals use the chunk count `N`.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(N log N) per product |
+| Space | O(N) per product |
+
+Schoolbook multiplication takes `O(n^2)` chunk products for contrast.

@@ -1,46 +1,97 @@
+# MAYA — Numeral System of the Maya (SPOJ)
+
+<https://www.spoj.com/problems/MAYA/>
+
 ## Problem
 
-Convert Maya numbers to decimal integers. Each number starts with its digit count n. The next n lines show one digit each, from the highest position down to the units position. A dot counts one, a dash counts five, and the letter S counts zero. Symbols on a digit line use spaces as separators, so a line such as ... - holds three dots and one dash. A blank line follows each number, and n = 0 ends the input. Print one decimal value per line.
+Maya numbers stack dots and dashes into places, and each place carries its own weight. The third place jumps by 18 instead of 20.
 
-The bounds and judge limits are:
+Read numbers until a digit count of zero. Each number starts with its digit count `n`. The next `n` lines show one digit each, from the highest place down to the units place.
+
+A dot counts one, a dash counts five, and `S` counts zero. Print one decimal value per number.
+
+The bounds and judge limits:
 
 | Item | Bound |
 | --- | --- |
-| Digits per number | n ≤ 7 |
+| Digits per number | at most 7 |
 | Value per digit | 0 to 19 |
-| Number count | until n = 0 |
+| Number count | until `n = 0` |
 | Time limit | 3000 ms |
 | Memory limit | 1536 MB |
 
-Seven digits keep every answer below 1.2 billion.
+Seven places keep every answer below 1.2 billion.
+
+The sample case:
+
+```
+1
+..
+
+5
+... -
+. - -
+S
+S
+S
+
+0
+```
+
+```
+2
+1231200
+```
 
 ## Idea
 
-The Maya system uses base 20, but the third position multiplies by 18 instead of 20. The weight of a position is called its place value. We store the seven place values once, then read the digits from the top of each number downward. Each step adds the digit times its place value to a running total. Splitting each digit line into tokens would allocate an object per symbol, while a hand scanner counts characters in the input buffer.
+Count the marks on each row, then multiply by that row's weight.
 
-Each digit costs one symbol count and one multiply-add, so one number costs O(n) for its n digits.
+The program reads a tally sheet: dots and dashes are tally marks, and `S` means an empty row. A hand scanner counts those symbols directly in the input buffer. Each digit becomes `dots + 5 * dashes`, or zero when `S` appears.
+
+A running total adds digit times place value.
+
+Each digit costs one symbol count and one multiply-add, so one number costs O(n) for `n` digits. Splitting each line into tokens allocates one object per symbol, which the scanner avoids.
 
 ## Why It Works
 
-A dash stands for five and a dot stands for one, so a count of each symbol gives the digit value. The letter S marks zero. The third position jumps from 20 to 360, which is 18 times 20. Every later position multiplies by 20, so the place values are 1, 20, 360, 7200, 144000, 2880000, and 57600000.
+Five facts prove the conversion exact.
 
-The input lists digits from the highest position down. For a number with `digitCount` digits, the digit at position `j` uses place value `placeValues[digitCount - 1 - j]`. The total is the sum of each symbol's value times that weight.
+1. A dash stands for five and a dot for one, so counting each symbol gives the digit value.
+2. The letter `S` marks zero. The scanner returns zero before any dot or dash count is used.
+3. The third place jumps from 20 to 360, which is 18 times 20. Every later place multiplies by 20.
+4. The input lists digits from highest to lowest, so digit `j` uses `placeValues[digitCount - 1 - j]`.
+5. Seven places cap the largest value at 57600000 in the top place, which keeps every total inside a 64-bit integer.
 
-A script-generated example uses the five-digit sample number:
+The constants and their roles:
 
-| Position | Symbol line | Digit | Weight | Product |
-| --- | --- | --- | --- | --- |
-| top | ... - | 8 | 144000 | 1152000 |
-| second | . - - | 11 | 7200 | 79200 |
-| third | S | 0 | 360 | 0 |
-| fourth | S | 0 | 20 | 0 |
-| bottom | S | 0 | 1 | 0 |
+| Term | Meaning |
+| --- | --- |
+| `placeValues` | weights 1, 20, 360, 7200, 144000, 2880000, 57600000 |
+| `dotSymbol` | character counting as one |
+| `dashSymbol` | character counting as five |
+| `zeroSymbol` | shell character marking zero |
+| `dashValue` | multiplier for each dash |
+| `decimalValue` | running sum of digit times place value |
 
-The products sum to 1231200, the second line of the sample output.
+These weights need no multiplication at run time, because the table stores them directly.
+
+A script converts the five-digit sample number place by place:
+
+```
+top    ... -   digit 8   weight 144000   product 1152000
+second . - -   digit 11  weight 7200     product 79200
+third  S        digit 0   weight 360      product 0
+fourth S        digit 0   weight 20       product 0
+bottom S        digit 0   weight 1        product 0
+sum    1231200
+```
+
+The products sum to 1231200, which is the second output line of the sample.
 
 ## Code
 
-The constants fix the scanner radix, the flush size, and the symbol codes:
+**Constants.** Symbol codes and flush size live in one block.
 
 ```nim
 const
@@ -52,7 +103,9 @@ const
   dashValue = 5
 ```
 
-The scanner reads the digit count and stops at `dataLength`, the buffer length. It skips blank separator lines, so an empty line cannot shift the digits. The scan costs O(input bytes).
+The scanner uses these codes instead of literals. The flush size caps the output buffer at 256 KiB.
+
+**Count and advance.** Two helpers read the digit count and skip to the next line.
 
 ```nim
 proc nextDigitCount(inputData: string, i: var int): int =
@@ -63,11 +116,7 @@ proc nextDigitCount(inputData: string, i: var int): int =
   while i < dataLength and inputData[i] >= '0' and inputData[i] <= '9':
     result = result * 10 + (int(inputData[i]) - firstDigitValue)
     inc i
-```
 
-This step stops at the newline that ends the digit-count line. It leaves the scanner at the first symbol line. The step costs one line length.
-
-```nim
 proc advanceToNextLine(inputData: string, i: var int) =
   let dataLength = inputData.len
   while i < dataLength and inputData[i] != '\n':
@@ -76,7 +125,9 @@ proc advanceToNextLine(inputData: string, i: var int) =
     inc i
 ```
 
-The loop reads exactly one digit line, whose length is at most about 14 symbols. Counting characters ignores the spaces between symbols. The shell test returns zero before any dot or dash is used.
+The first scanner stops at the newline ending the count line. The second leaves `i` at the first symbol line. Both cost one line length each.
+
+**Symbol counting.** One digit line becomes a value without token objects.
 
 ```nim
 proc readSymbolValue(inputData: string, i: var int): int =
@@ -100,15 +151,13 @@ proc readSymbolValue(inputData: string, i: var int): int =
   result = dotCount + dashCount * dashValue
 ```
 
-Seven entries cover the largest legal number. The final weight is 57600000, twenty times 2880000. The table costs constant space.
+The loop reads exactly one digit line and ignores the spaces between symbols. The shell test returns zero before any count is used. Counting costs one pass over that line.
+
+**Place values and driver.** Seven fixed weights convert each number.
 
 ```nim
 const placeValues = [1'i64, 20, 360, 7200, 144000, 2880000, 57600000]
-```
 
-The outer loop ends when `nextDigitCount` returns zero at the end marker. The inner loop runs exactly `digitCount` times, so it reads one line per digit. Output flushes every 262144 bytes, which caps the buffer at one block.
-
-```nim
 var inputData = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
@@ -137,18 +186,23 @@ if outputBuffer.len > 0:
   stdout.write outputBuffer
 ```
 
+The outer loop ends when `nextDigitCount` returns zero at the end marker. The inner loop runs exactly `digitCount` times. Output flushes every 262144 bytes and caps the buffer at one block.
+
 ## Complexity
 
-Input scanning takes O(input bytes). Each number reads at most seven digit lines, so the conversion is constant time per number. Output flushing takes O(output bytes).
+The work follows the input bytes, not the number of symbols per token.
 
-Total time is O(input bytes + output bytes + total digits). Total space is O(input bytes + block bytes).
-
-The cost splits into three phases.
-
-| Phase | Time | Extra space |
+| Phase | Time | Space |
 | --- | --- | --- |
 | Input scan | O(input bytes) | one input buffer |
-| Per number | O(n), n ≤ 7 | constant |
+| Per number | O(n), with `n <= 7` | constant |
 | Output flush | O(output bytes) | one output block |
 
-A reader that splits each line into tokens allocates one object per symbol. The hand scanner only counts characters and allocates no tokens.
+The place-value table costs constant space.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(input bytes + output bytes + total digits) |
+| Space | O(input bytes + one block) |
+
+A reader that splits each line into tokens allocates one object per symbol. The hand scanner only counts characters.

@@ -1,51 +1,82 @@
+# THREECOL — Three-coloring of binary trees (SPOJ)
+
+<https://www.spoj.com/problems/THREECOL/>
+
 ## Problem
 
-Each test case gives a preorder string of digits 0, 1 and 2 that describes a binary tree. Digit 0 marks a leaf, digit 1 marks one child and digit 2 marks two children. Print the largest and smallest number of green vertices over all legal colorings. A vertex differs from each child, and the two children of a vertex differ from each other.
+A painter colors a family tree with red, green, and blue paint. A node must differ from its children, and two children must differ from each other. The painter wants the largest and smallest possible number of green nodes.
 
-The statement sets these bounds:
+Input: `t` test cases, one specification word per line. A digit `0` means a leaf, `1` means one child follows, and `2` means two children follow. Output: two integers per case, the maximum and minimum green count.
 
-| Quantity | Bound |
+The statement gives these bounds:
+
+| Item | Bound |
 | --- | --- |
-| Word length | at most 10000 digits |
-| Test cases | no upper bound in the statement |
-| Time limit | 7000 ms |
-| Memory limit | 1536 MB |
+| Specification length | at most 10,000 characters |
+| Children per node | 0, 1, or 2 |
+| Judge limit | 7000 ms, 1536 MB |
 
-The word length sets the array size, and the missing case bound shapes the buffered input and output.
+A specification can describe thousands of nodes, so parsing and coloring must stay linear.
+
+The sample input and output:
+
+```
+1
+1122002010
+```
+
+```
+5 2
+```
 
 ## Idea
 
-This program numbers nodes in preorder, stores both children of each node, then walks the numbers backwards. Red and blue play the same role when counting green vertices, so one other state covers both. Four values per node record the most and fewest green vertices when the node is green or other.
+Color each subtree from its leaves upward, keeping only two numbers for each node. Think of a bookkeeper who records one total when the boss is green and another when the boss is not.
 
-Each node costs constant work in the child-building pass and constant work in the reverse pass.
+The program builds child links from the preorder specification, then applies dynamic programming (reusing each subtree's best answer) in reverse order. Each node needs a constant number of comparisons, so a case costs `O(n)`.
+
+Trying all three colors at every node visits `3^n` colorings. The two-state summary keeps one best maximum and one best minimum per node.
+
+The symmetry between red and blue lets one "other color" state stand for both.
 
 ## Why It Works
 
-Three colors leave two choices for a child and two colors for a pair of children. A node with two children hands those two colors to its children in either order. The other state treats red and blue as one case because neither color adds a green vertex. Preorder places every parent before its descendants, so a reverse walk sees all children before their parent.
+Five facts prove the two-state recurrence.
 
-Let index i name a node. The four stored values use green and other as the node state.
+1. The specification is preorder, so a node's children are the next nodes in the word. A stack tracks how many children each open node still needs.
+2. A green node forces every child to be non-green. A non-green node allows a child to be green or the other non-green color.
+3. A leaf has one green count when green and zero when not.
+4. With one child, a green parent adds one plus the child's best non-green value. A non-green parent takes the better of the child's green and non-green values.
+5. With two children, a non-green parent must give the children different colors. The program takes the better of green-left and other-right versus other-left and green-right.
 
-- `maxGreen[i] = 1` and `maxOther[i] = 0` for a leaf.
-- `maxGreen[i] = 1 + maxOther[childIndex]` with one child.
-- `maxOther[i] = max(maxGreen[childIndex], maxOther[childIndex])` with one child.
-- `maxGreen[i] = 1 + maxOther[leftIndex] + maxOther[rightIndex]` with two children.
-- `maxOther[i] = max(maxGreen[leftIndex] + maxOther[rightIndex],` plus `maxOther[leftIndex] + maxGreen[rightIndex])` with two children.
+The four values stored for each node:
 
-The minimum forms replace `max` with `min` and use the same child values.
+| Term | Meaning |
+| --- | --- |
+| `maxGreen[i]`, `minGreen[i]` | green extremes when node `i` is green |
+| `maxOther[i]`, `minOther[i]` | extremes when node `i` uses red or blue |
+| `childLeft[i]`, `childRight[i]` | child node slots of node `i` |
+| `childNeed[i]` | children still expected while parsing |
+| `nodeStack` | open nodes during the preorder walk |
 
-A brute-force enumeration of the sample string gives these counts by root color:
+The reverse loop visits children before parents, so every lookup is ready.
 
-| Root color | Most green | Fewest green |
-| --- | --- | --- |
-| red | 4 | 2 |
-| green | 5 | 3 |
-| blue | 4 | 2 |
+A script scan of the sample specification:
 
-The program reports 5 from the green root and 2 from a red or blue root.
+```
+spec 1122002010, root color grouped by green/not-green
+| root color | max greens | min greens |
+| 0 | 4 | 2 |
+| 1 | 5 | 3 |
+| 2 | 4 | 2 |
+answer max 5, min 2
+```
+
+Red and blue give the same pair, so the maximum comes from a green root.
 
 ## Code
 
-The program reads every line into one string. The scanner walks that string by index, and the output buffer flushes in large blocks.
+**Input and helpers.** One buffer holds the stream, and a digit scanner reads the case count.
 
 ```nim
 const firstDigitValue = 48
@@ -78,9 +109,11 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The read loop runs once per input line, not once per digit. The scanner skips separators, so blank lines cause no error. Buffering keeps write calls rare.
+`nextInt` skips non-digits, so it stops at the specification word.
+`appendOutput` flushes at 256 KiB.
+The output helper writes one line per case.
 
-One case owns one word. The arrays are allocated once and reused across cases.
+**Fixed tables.** Arrays cover the longest permitted specification.
 
 ```nim
 var childLeft: array[maxSpecLen, int]
@@ -91,7 +124,15 @@ var minGreen: array[maxSpecLen, int]
 var maxOther: array[maxSpecLen, int]
 var minOther: array[maxSpecLen, int]
 var nodeStack: array[maxSpecLen, int]
+```
 
+`maxSpecLen = 10010` leaves room for the word plus a margin.
+Each node gets four extreme values and two child links.
+All arrays are reused across cases.
+
+**Child links.** A stack connects each digit to its parent during the preorder walk.
+
+```nim
 let caseCount = nextInt(inputData, scanPos)
 for caseIndex in 0..<caseCount:
   while scanPos < inputData.len and inputData[scanPos] < '0':
@@ -100,13 +141,7 @@ for caseIndex in 0..<caseCount:
   while scanPos < inputData.len and inputData[scanPos] >= '0':
     scanPos += 1
   let wordLen = scanPos - wordStart
-```
 
-The loop runs exactly `caseCount` times. The two inner loops find one word and never copy it. Fixed arrays avoid per-case allocation.
-
-The stack holds nodes that still await children. Each digit becomes a node before its own subtree is read.
-
-```nim
   var stackTop = -1
   for i in 0..<wordLen:
     let digit = int(inputData[wordStart + i]) - firstDigitValue
@@ -127,9 +162,11 @@ The stack holds nodes that still await children. Each digit becomes a node befor
       nodeStack[stackTop] = i
 ```
 
-The loop runs `wordLen` times. Resetting `childLeft[i]` prevents a stale child from an earlier case. One push and one pop per node keep the stack balanced.
+`childNeed` counts children still expected at an open node.
+The first child fills `childLeft`, and the second fills `childRight`.
+Digits larger than zero push a new open node onto `nodeStack`.
 
-The reverse walk fills the four values for the node at index i.
+**Bottom-up coloring.** The reverse loop computes the four extremes for every node.
 
 ```nim
   for i in countdown(wordLen - 1, 0):
@@ -154,13 +191,7 @@ The reverse walk fills the four values for the node at index i.
                         maxOther[leftIndex] + maxGreen[rightIndex])
       minOther[i] = min(minGreen[leftIndex] + minOther[rightIndex],
                         minOther[leftIndex] + minGreen[rightIndex])
-```
 
-The loop covers indices from `wordLen - 1` down to zero. Reverse order makes every child value ready before its parent needs it. Each branch touches at most four other nodes.
-
-The answer takes the best root state, and the last write empties the buffer.
-
-```nim
   let answerMax = max(maxGreen[0], maxOther[0])
   let answerMin = min(minGreen[0], minOther[0])
   appendOutput($(answerMax) & " " & $(answerMin) & "\n")
@@ -169,10 +200,29 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Node zero is the root because the string starts at the root. The single space and trailing newline match the required output shape. The final write flushes any remaining bytes.
+`countdown(wordLen - 1, 0)` visits children before parents.
+The two-child branch takes the better of the two allowed color assignments.
+The final answer compares the green and non-green states at the root.
 
 ## Complexity
 
-Reading input costs O(total digits), and parsing each word costs O(word length). Building children costs O(word length), and the reverse pass costs O(word length). Output costs O(test cases).
+Parsing and coloring each visit every node a constant number of times.
 
-The arrays hold O(10000) integers, and the output buffer holds at most 256 KiB. Total time is O(total digits + test cases), and total space is O(10000) plus the buffer. A naive search tries one coloring per three-color assignment and grows as 3 to the node count.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Child links | O(n) digits | O(n) for links and stack |
+| Bottom-up coloring | O(n) nodes | O(n) for four value arrays |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(n) | O(n) |
+
+At `n = 10,000` the reverse loop fills 40,000 extreme values.
+
+The asymptotic bounds follow from the table:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n) per case, O(total specification length) overall |
+| Space | O(n) per case, plus buffers |
+
+Enumerating `3^n` colorings grows exponentially. Two best values per subtree settle each case in linear time.

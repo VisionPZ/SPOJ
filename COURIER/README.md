@@ -1,8 +1,18 @@
+# COURIER — The Courier (SPOJ)
+
+<https://www.spoj.com/problems/COURIER/>
+
 ## Problem
 
-The courier starts at home city b, carries one parcel at a time, and must deliver every request before returning home. Read a road graph with lengths, then print the shortest total route length.
+A courier collects and delivers parcels one at a time before returning home. The road network offers many routes, so the courier needs the shortest total tour.
 
-| Quantity | Bound |
+Input: one integer for the case count, then n, m, and home city b. Then come m roads as `u v length` and z requests as `a b k`. Each request adds k identical parcels from a to b.
+
+Output: the shortest total route length for each case.
+
+The statement and judge give these bounds:
+
+| Item | Bound |
 | --- | --- |
 | Test cases | not bounded by the statement |
 | Cities n | 1 to 100 |
@@ -15,38 +25,76 @@ The courier starts at home city b, carries one parcel at a time, and must delive
 
 The parcel count k, not the city count n, drives the search.
 
+The sample input and output:
+
+```
+1
+5 7 2
+1 2 7
+1 3 5
+1 5 2
+2 4 10
+2 5 1
+3 4 3
+3 5 4
+3
+1 4 2
+5 3 1
+5 1 1
+```
+
+```
+43
+```
+
 ## Idea
 
-Floyd-Warshall fills a distance table for every pair of cities before the search starts. The search keeps a bitmask of finished parcels and the last finished parcel. It adds one parcel per step and tries every unfinished parcel.
+Fill a timetable of shortest legs before planning the route, like checking train times before booking a tour. Each parcel then becomes one atomic step: travel to its source, carry it to its target.
 
-Cost per step: O(k) transitions over 2^k masks. Walking the raw roads inside the search repeats the same travel many times, so one table lookup replaces each leg.
+The program runs Floyd-Warshall to fill an all-pairs distance table. A bitmask dynamic program (a table of best costs per state) tracks the finished parcels and the last delivery city.
+
+The table costs O(n³) time and O(n²) space. Each search state tries k next parcels, so the search costs O(2^k k²) time. Walking raw roads inside the search would repeat the same travel many times.
+
+One table lookup replaces each leg.
 
 ## Why It Works
 
-The courier carries one parcel at a time, so pickup comes before drop and no other parcel fits between them. A shortest path already covers every detour between two cities. A parcel is one atomic unit: travel to its source, then carry it to its target.
+The courier carries one parcel at a time, so pickup always comes before drop.
 
-- `distTable[i][j]` holds the shortest road length from city i to city j.
-- `throughCost + beyondCost` is the route length through city k.
-- `bestCost[mask * parcelCount + i]` is the cheapest finished cost at parcel i's target.
-- `currentCost + approachCost + carryCostOf[j]` adds parcel j to the current route.
+1. A shortest path already covers every detour between two cities, so the search needs only pairwise legs.
+2. A bitmask records which parcels are finished, and the last finished parcel gives the current city.
+3. Adding a parcel costs the approach leg plus that parcel's carry leg.
+4. The final answer adds the trip from the last target back home and takes the smallest candidate.
 
-The sample gives these shortest legs, and the generator checks the total against 43.
+The tables use the following terms:
 
-| Step | Length |
+| Term | Meaning |
 | --- | --- |
-| home 2 to 5 | 1 |
-| 5 to 1, carry parcel C | 2 |
-| 1 to 1, start parcel A | 0 |
-| 1 to 4, carry parcel A | 8 |
-| 4 to 1, start parcel A again | 8 |
-| 1 to 4, carry parcel A | 8 |
-| 4 to 5, start parcel B | 7 |
-| 5 to 3, carry parcel B | 4 |
-| 3 to home 2 | 5 |
+| `distTable[i][j]` | shortest road length from city i to city j |
+| `carryCostOf[i]` | `distTable[source][target]` for parcel i |
+| `bestCost[mask × k + i]` | cheapest cost after mask, ending at parcel i's target |
+| `approachCost` | leg from the previous target to the next source |
+| `infinite` | `2^60`, used for unreachable states |
 
-The nine legs sum to 43, the sample answer verified by the generator.
+A script scores the sample tour, which delivers parcels C, A, A, B:
+
+| Step | Leg | Length |
+| --- | --- | --- |
+| 1 | home 2 to 5 | 1 |
+| 2 | carry C, 5 to 1 | 2 |
+| 3 | start A, 1 to 1 | 0 |
+| 4 | carry A, 1 to 4 | 8 |
+| 5 | start A, 4 to 1 | 8 |
+| 6 | carry A, 1 to 4 | 8 |
+| 7 | start B, 4 to 5 | 7 |
+| 8 | carry B, 5 to 3 | 4 |
+| 9 | return, 3 to home 2 | 5 |
+
+The nine legs sum to 43, the sample answer.
 
 ## Code
+
+**Input helpers.** One buffer holds the stream, and the output flushes in blocks.
 
 ```nim
 const firstDigitValue = 48
@@ -81,7 +129,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The read loop runs until stdin ends and holds one input buffer. The scanner skips non-digits, so newlines need no special case. The writer flushes at 256 KiB and costs O(1) per line.
+The read loop visits stdin once. The scanner skips non-digits, so newlines need no special case. The writer flushes at 256 KiB.
+
+**Distance table.** Duplicate roads keep the smaller length, and three nested loops fill all pairs.
 
 ```nim
 var distTable: array[0..maxCity, array[0..maxCity, int64]]
@@ -117,7 +167,9 @@ for caseIndex in 0..<caseCount:
           distTable[i][j] = candidate
 ```
 
-The table reset runs over all 101 city indexes. Duplicate roads keep the smaller length. The three loops run cityCount plus one times and cost O(n^3) per case.
+The reset covers all 101 indexes, so stale values never leak. The table stores roads in both directions. The three loops cost O(n³) per case.
+
+**Parcels and start states.** Each request expands into its parcel count, and the first parcel sets each start cost.
 
 ```nim
   let requestCount = nextInt(inputData, scanPos)
@@ -145,7 +197,9 @@ The table reset runs over all 101 city indexes. Duplicate roads keep the smaller
     bestCost[(1 shl i) * parcelCount + i] = entryCost + carryCostOf[i]
 ```
 
-Each request expands into parcelTotal identical parcels, so the total never exceeds 12. The zero-parcel case returns home with cost 0. Carry costs are computed once and reused in the inner loop.
+The parcel count never exceeds 12. A case with no parcels returns home with cost 0. Carry costs are computed once and reused inside the search.
+
+**Bitmask search.** Each state adds one unfinished parcel, and the last loop adds the trip home.
 
 ```nim
   for mask in 1..<stateCount:
@@ -176,10 +230,28 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Index i walks finished parcels and index j walks unfinished parcels. The bit test keeps each parcel in exactly one position of the route. The final loop adds the trip home and the last write empties the buffer.
+Index i walks finished parcels and index j walks unfinished ones. The bit test keeps each parcel in exactly one route position. The final write empties the buffer.
 
 ## Complexity
 
-Floyd-Warshall uses O(n^3) time and O(n^2) space. The bitmask search uses O(2^k k^2) time and O(2^k k) space. Input scanning and output writing use O(t) lines.
+Floyd-Warshall dominates the city work, and the bitmask search dominates the parcel work.
 
-Total per case: O(n^3 + 2^k k^2) time and O(n^2 + 2^k k) space. Trying every order of the raw road steps is factorial in k.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| All-pairs table | O(n³) per case | O(n²) |
+| Parcel setup | O(k²) per case | O(2^k k) |
+| Bitmask search | O(2^k k²) per case | O(2^k k) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(n³ + 2^k k²) | O(n² + 2^k k) |
+
+At k = 12, the search holds about 49152 cost cells.
+
+The asymptotic bounds are as follows:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n³ + 2^k k²) per case |
+| Space | O(n² + 2^k k) per case |
+
+Trying every order of the raw road steps would be factorial in k.

@@ -1,63 +1,81 @@
+# SOLIT — Solitaire (SPOJ)
+<https://www.spoj.com/problems/SOLIT/>
+
 ## Problem
 
-Four identical pieces occupy squares of an 8x8 board. A move slides one piece to an empty neighbor or jumps it over an adjacent piece into an empty square. Read two configurations and print YES when the second follows from the first in at most eight moves, else print NO.
+Four identical pieces sit on an 8 by 8 board. A move steps one piece to an empty neighbor or jumps it over another piece. Decide whether one arrangement can become another in at most eight moves.
 
-The input and output stay small; the search sets the cost.
+Input: an integer t, then t cases. Each case has two lines of eight integers, four row-column pairs per line. Output: `YES` when the target is reachable within eight moves, and `NO` otherwise.
 
-| Quantity | Bound |
+The statement sets these bounds.
+
+| Item | Bound |
 | --- | --- |
-| Board | 8 x 8 squares |
-| Pieces | 4 per configuration |
+| Test cases | t from input |
+| Board | 8 by 8 squares |
+| Pieces | 4 identical pieces |
 | Move limit | 8 moves |
-| Cases per file | fewer than 30 |
-| Time limit | 2000 ms |
-| Memory limit | 1536 MB |
+| Judge time limit | 2000 ms |
+| Judge memory limit | 1536 MB |
 
-The move limit, not the file size, drives the design.
+The pieces are identical, so only the occupied set matters.
+
+The sample input:
+
+```
+1
+4 4 4 5 5 4 6 5
+2 4 3 3 3 6 4 6
+```
+
+The sample output:
+
+```
+YES
+```
 
 ## Idea
 
-Meet in the middle (search from both ends) with two layer-by-layer searches. Build every configuration reachable within four moves from each end, then test the two sets for a shared member. Any path of at most eight moves passes through such a shared member, while a search from one end visits far more states.
+Meet in the middle, like two hikers starting at opposite ends of a trail and hoping to meet halfway. Explore four moves out from the start and four moves back from the target. If the two small searches share an arrangement, eight moves connect them.
 
-Cost per case: about 5,500 stored configurations and their neighbors.
+The program stores each board as a 64-bit bit mask with one bit per square. A combinadic rank turns every four-piece mask into a small integer, which indexes a visited stamp. Breadth-first expansion from each side costs at most a few hundred thousand states. A plain search to depth eight would branch across the full move tree and repeat many arrangements.
+
+Two half-depth searches beat one full-depth search.
 
 ## Why It Works
 
-Each configuration is a set of four squares, so the board has 635376 such sets. A slide or a jump moves one piece and leaves the other three fixed. Both moves are reversible, so the graph has no direction and a path splits at its midpoint. A path of length L <= 8 has a midpoint within four moves of each end.
+Four facts carry the program.
 
-Four set bits mark the four pieces in one 64-bit value.
+1. Pieces are identical, so an arrangement is a set of four squares. A 64-bit mask represents that set exactly.
+2. At most 8 choose 4, or 70, moves exist from any mask. Four directions serve each piece, and a jump needs an empty landing square.
+3. Any path of at most eight moves passes through a state four moves from the start and four moves from the target. Meeting at that state proves reachability.
+4. A combinadic rank maps each four-square mask to a number below 635376. A stamp array then replaces clearing a large visited set per case.
 
-`(rowNumber - 1) * 8 + (colNumber - 1)` names the bit for a square.
+Each term has one job.
 
-`1'u64 shl squareIndex` sets that bit in a mask.
-
-`clearedMask = mask and not sourceBit` removes the moving piece.
-
-The landing square is set next to form `neighborMask`.
-
-The rank formula maps a sorted quadruple of square indices to one slot in a flat mark array.
-
-`binomTable[pieceSquares[0]][1] + binomTable[pieceSquares[1]][2] + binomTable[pieceSquares[2]][3] + binomTable[pieceSquares[3]][4]`
-
-Each mark belongs to one search, so a slot held by both searches gives the answer. A counter supplies a fresh mark per search and avoids clearing the array.
-
-The generator prints the layer sizes from the sample start.
-
-| Moves from the sample start | States |
+| Term | Meaning |
 | --- | --- |
-| 0 | 1 |
-| 1 | 16 |
-| 2 | 134 |
-| 3 | 715 |
-| 4 | 2755 |
-| 5 | 8158 |
-| 6 | 19405 |
-| 7 | 38053 |
-| 8 | 62578 |
+| `startMask`, `targetMask` | 64-bit piece sets for the two arrangements |
+| `rankMask` | combinadic index of a four-square mask |
+| `seenMarks` | stamp array holding the last search that saw a rank |
+| `searchHalfDepth` | four moves per side |
 
-The sample target first appears at depth 7, which yields YES.
+The two half-depth searches together cover eight moves exactly.
+
+A script counts the state space for the board.
+
+```text
+boards with 4 pieces = C(64,4) = 635376
+moves per state at most 4 pieces times 4 directions = 16
+half-depth 4 from each side
+a shared stamp means a path of at most 8 moves
+```
+
+The sample answer `YES` follows from such a shared state.
 
 ## Code
+
+**Constants and move tables.** Precomputed tables avoid board arithmetic in the search.
 
 ```nim
 {.push checks: off, overflowChecks: off, rangeChecks: off.}
@@ -98,7 +116,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The pragmas remove runtime checks from the hot loop. The scanner skips separators, so the two lines per case need no special handling. One read fills `inputData` and one buffer holds the output.
+`configCount` is 64 choose 4, so the stamp array stays small. `dirRow` and `dirCol` hold the four move directions.
+
+**Lookup tables.** Binomial coefficients and landing squares are built once.
 
 ```nim
 var binomTable: array[64, array[5, int]]
@@ -126,7 +146,13 @@ for squareIndex in 0..63:
       landingSquare[squareIndex][direction] = landingRow * 8 + landingCol
     else:
       landingSquare[squareIndex][direction] = -1
+```
 
+`binomTable` feeds the combinadic rank. A value of minus one marks a move that leaves the board.
+
+**Rank and expansion.** One rank identifies each four-piece set.
+
+```nim
 var seenMarks = newSeq[uint32](configCount)
 var markCounter: uint32 = 0
 
@@ -139,11 +165,7 @@ proc rankMask(mask: uint64): int =
     pieceCount += 1
     remaining = remaining and (remaining - 1'u64)
   return binomTable[pieceSquares[0]][1] + binomTable[pieceSquares[1]][2] + binomTable[pieceSquares[2]][3] + binomTable[pieceSquares[3]][4]
-```
 
-The tables fill once at startup and are reused by every case. The rank indexes `seenMarks` directly, with no hash step. Cost: four trailing-bit steps per rank.
-
-```nim
 proc expandInto(mask: uint64, newMark, otherMark: uint32, next: var seq[uint64]): bool =
   var pieceSquares: array[4, int]
   var pieceCount = 0
@@ -177,7 +199,9 @@ proc expandInto(mask: uint64, newMark, otherMark: uint32, next: var seq[uint64])
   return false
 ```
 
-The piece loop runs at most four times, once per set bit. Precomputed landing squares keep moves inside the board. Cost: sixteen direction checks per state.
+`countTrailingZeroBits` extracts each occupied square in order. A step uses the adjacent square when empty; otherwise it uses the landing square. The other-mark check finds a meeting state immediately.
+
+**Half-depth search.** Breadth-first levels stop at four moves.
 
 ```nim
 proc searchNeighborhood(origin: uint64, newMark, otherMark: uint32): bool =
@@ -206,7 +230,9 @@ proc isReachable(startMask, targetMask: uint64): bool =
   return searchNeighborhood(targetMask, markCounter, startMark)
 ```
 
-`searchHalfDepth` caps each search at four layers. `noMark` keeps the first search from matching empty slots. The second search stops at the first shared slot.
+`levelEnd` marks where the next depth starts. Each side gets a fresh stamp, so no array clearing occurs. Equal masks return before any search.
+
+**Driver.** Eight integers become two masks.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -230,8 +256,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The case loop reads sixteen integers and runs once per case. One-based coordinates become bits without a per-piece object. The final write flushes the single output buffer.
+Row and column minus one map onto square indices 0 through 63. Each case runs two bounded searches. The final write emits the remaining answers.
 
 ## Complexity
 
-Reading and scanning take O(input bytes) time and O(input bytes) space. Let N be the number of states within four moves of one configuration. Each search takes O(N) time and stores O(N) states. The mark array takes O(C(64,4)) space. The total per case is O(N) time, with N below 2,800 here. A search from one end to depth eight visits about 132,000 states from a central start.
+Each half-depth search has a fixed branching bound.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Table build | O(64 times 4) once | O(64 times 4) |
+| Start search | at most 16 to the 4 states | visited stamps |
+| Target search | at most 16 to the 4 states | visited stamps |
+| Output | O(t) lines | one block |
+
+The stamp array holds 635376 ranks and is allocated once.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(branch to the 4) per side |
+| Space | O(635376) stamps |
+
+A single search to depth eight repeats far more states than the two half-depth searches.

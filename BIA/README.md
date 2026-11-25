@@ -1,109 +1,76 @@
+# BIA — Bytelandian Information Agency (SPOJ)
+<https://www.spoj.com/problems/BIA/>
+
 ## Problem
 
-Computer 1 is the server of a one-way network. Every other computer receives information from it through directed channels. A computer is critical when breaking it cuts information off from at least one other computer. Print the count of critical computers, then their numbers in increasing order.
+A network must keep every computer reachable from the server, and one broken relay can cut off a whole branch.
+The agency needs a list of the relays that matter.
 
-Each input holds ten test cases. The table gives the bounds.
+The input holds ten cases one after another with no count line. Each case gives n and m, then m directed channel pairs. Print the number of critical computers, then their numbers in increasing order.
 
-| Quantity | Limit |
+The bounds and judge limits are:
+
+| Constraint | Value |
 | --- | --- |
-| Computers | 2 to 5000 |
-| Channels | n-1 to 200000 |
-| Test cases | 10 |
-| Time limit | 7 s |
-| Memory limit | 1536 MB |
+| Cases | ten, given back to back |
+| Computers n | 2 to 5000 |
+| Channels m | n-1 to 200000 |
+| Judge time | 7 s |
+| Judge memory | 1536 MB |
 
-The server reaches every computer in each test case.
+A near-linear dominator algorithm is required at the largest channel count.
+
+The sample input and its expected output follow byte for byte.
+
+```
+4 5
+1 2
+1 4
+2 3
+3 4
+4 2
+```
+
+```
+2
+1 2
+```
+
 
 ## Idea
 
-A computer is critical when it has a child in the dominator tree. That tree places each computer under the last computer that every path to it shares. The program builds the tree with the Lengauer-Tarjan algorithm. That method numbers vertices by depth-first search and joins sets with path compression. A fixpoint method would rebuild dominator sets for every vertex on each round.
-
-Cost per item: one set lookup for each channel, plus one pass over the buckets.
+A computer is critical when it has a child in the dominator tree (tree of forced relays), like a junction guarding a whole branch.
+The program numbers vertices with a depth-first walk from the server. It computes semidominators (candidate forced relays from DFS predecessors) by scanning predecessors in reverse number order. Path compression keeps each edge close to constant work.
+Once immediate dominators are known, a child count per dominator identifies every critical computer. Removing each vertex and rerunning reachability would cost O(nm) per case.
+Dominator tree counts turn reachability tests into one linear pass.
 
 ## Why It Works
 
-Breaking a computer cuts information only when that computer lies on every path to another computer. The "every path" test is the dominator relation.
+1. A vertex is critical when removing it disconnects some other vertex from the server.
+2. That is the same as having at least one child in the dominator tree rooted at the server.
+3. DFS numbers give the preorder used by the semidominator scan in reverse order.
+4. `evaluateVertex` compresses paths, so each predecessor edge costs near constant amortized work.
+5. Counting children of every immediate dominator gives the answer directly, in original vertex order.
 
-The program numbers vertices in depth-first order. The marker semi[w] is the smallest number that reaches w along a path whose inner vertices all have larger numbers. The formula has three terms.
+Four terms carry the proof.
 
 | Term | Meaning |
 | --- | --- |
-| DFS number | The order in which the search first reaches a vertex. |
-| semi[w] | Smallest number reaching w with inner numbers above w. |
-| idom[w] | The parent of w in the dominator tree. |
+| dominator | vertex every path from the server passes through |
+| dominator tree | tree of immediate dominator links |
+| semidominator | candidate from the DFS predecessor scan |
+| critical vertex | dominator with at least one child |
 
-Each term is a DFS number, so the arrays stay flat and small.
+They explain why one tree count answers every removal question.
 
-The program visits vertices from the largest number down to two. It reads each predecessor through a set lookup and keeps the smallest marker. Then it clears the bucket of the DFS parent and stores a parent for that bucket. A final pass replaces short links with their own parents.
-
-| Step | Effect |
-| --- | --- |
-| Descending pass | Turns markers into direct tree parents. |
-| Ascending pass | Extends short parents to their own parents. |
-| Child count | Marks every vertex with at least one tree child. |
-
-The child count gives the answer, because only a tree parent cuts information.
-
-A script printed the table below for the sample graph. The idom column holds DFS numbers, so the value 3 for vertex 3 means vertex 2.
-
-| Vertex | DFS number | DFS parent | semi | idom | Children |
-| --- | --- | --- | --- | --- | --- |
-| 1 | 1 | 0 | 1 | 0 | 2 |
-| 2 | 3 | 2 | 1 | 1 | 1 |
-| 3 | 4 | 3 | 3 | 3 | 0 |
-| 4 | 2 | 1 | 1 | 1 | 0 |
-
-Vertex 1 and vertex 2 have children, so they are the critical ones.
+A script check of the sample uses edges 1 to 2, 1 to 4, 2 to 3, 3 to 4, and 4 to 2.
+The dominator tree links 1 to 2, 1 to 4, and 2 to 3.
+Vertex 1 has two children and vertex 2 has one, so the report is 2, then 1 2.
 
 ## Code
 
-The blocks below come from the program without edits.
-
+**Path compression helpers.**
 ```nim
-const flushBlockBytes = 1 shl 18
-const firstDigitValue = 48
-
-var inputData = readAll(stdin)
-var i = 0
-
-proc moreInput(): bool =
-  let dataLength = inputData.len
-  while i < dataLength and inputData[i] <= ' ':
-    i.inc
-  return i < dataLength
-
-proc scanInt(): int =
-  let dataLength = inputData.len
-  while i < dataLength and (inputData[i] < '0' or inputData[i] > '9'):
-    i.inc
-  result = 0
-  while i < dataLength and inputData[i] >= '0' and inputData[i] <= '9':
-    result = result * 10 + int(inputData[i]) - firstDigitValue
-    i.inc
-
-var outputBuffer = ""
-
-proc emitInt(value: int) =
-  outputBuffer.add $value
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
-
-proc emitChar(value: char) =
-  outputBuffer.add value
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
-```
-
-The read call loads the whole stream once. The scanner walks inputData by index and builds no token objects. Each emit flushes at flushBlockBytes, so output never writes per number.
-
-```nim
-var semiNumber: seq[int] = @[]
-var labelNumber: seq[int] = @[]
-var ancestorNumber: seq[int] = @[]
-var immediateDominator: seq[int] = @[]
-
 proc compressPath(k: int) =
   let parentNumber = ancestorNumber[k]
   if ancestorNumber[parentNumber] != 0:
@@ -120,10 +87,12 @@ proc evaluateVertex(k: int): int =
 
 proc linkVertex(parentNumber: int, childNumber: int) =
   ancestorNumber[childNumber] = parentNumber
+
 ```
 
-Zero marks an unlinked vertex, so no array entry holds a nil pointer. Compression shortens one path and carries the smallest marker upward. One lookup costs the length of that path after compression.
+`compressPath` walks ancestors and lowers labels. `evaluateVertex` returns the smallest semi number on a path. `linkVertex` attaches a vertex to its DFS parent.
 
+**Forward graph build.**
 ```nim
 proc solveCase(vertexCount: int, edgeCount: int) =
   var forwardHead: seq[int] = @[]
@@ -149,8 +118,9 @@ proc solveCase(vertexCount: int, edgeCount: int) =
     forwardHead[sourceVertex] = j
 ```
 
-The loop reads exactly edgeCount pairs. Storing at `i + 1` keeps zero free as the list end marker. Zero as an edge slot would silently drop the first channel. This block costs one scan and two array writes per channel.
+The code stores each channel in forward adjacency arrays. Original endpoints are saved for the later predecessor scan. All arrays are sized from n and m.
 
+**Depth-first numbering.**
 ```nim
   var dfsNumber: seq[int] = @[]
   var vertexAtNumber: seq[int] = @[]
@@ -190,8 +160,9 @@ The loop reads exactly edgeCount pairs. Storing at `i + 1` keeps zero free as th
       stackEdge[depth] = forwardHead[nextVertex]
 ```
 
-Each stack slot holds one vertex and its next edge, so the search never recurses. The inner loop skips edges that already have a number. A vertex receives its number once, so the whole walk costs one pass over the channels.
+An explicit stack avoids recursion at 5000 vertices. Each discovered vertex receives the next DFS number. The parent number is kept for the dominator pass.
 
+**Semidominator pass.**
 ```nim
   var predHead: seq[int] = @[]
   var predSource: seq[int] = @[]
@@ -208,11 +179,7 @@ Each stack slot holds one vertex and its next edge, so the search never recurses
     predSource[j] = fromNumber
     predNext[j] = predHead[toNumber]
     predHead[toNumber] = j
-```
 
-This pass rewrites each channel end into a DFS number. The lists then live in number space, so the dominator arrays need no vertex-id translation. Rebuilding them per case keeps memory inside one test case.
-
-```nim
   semiNumber.setLen(numberCount + 1)
   labelNumber.setLen(numberCount + 1)
   ancestorNumber.setLen(numberCount + 1)
@@ -249,15 +216,16 @@ This pass rewrites each channel end into a DFS number. The lists then live in nu
         immediateDominator[bucketVertex] = parent
       bucketVertex = bucketNext[bucketVertex]
     bucketHead[parent] = 0
-```
 
-The countdown visits numberCount minus one vertices, from the last number down to two. Each vertex enters one bucket, and each bucket empties once. Path compression keeps the set work near linear. A self-loop gives a candidate with the same marker and changes nothing.
-
-```nim
   for k in 2 .. numberCount:
     if immediateDominator[k] != semiNumber[k]:
       immediateDominator[k] = immediateDominator[immediateDominator[k]]
+```
 
+The loop visits DFS numbers from the largest down to two. Bucket lists delay dominator decisions until the parent is ready. A second loop resolves remaining immediate dominators.
+
+**Critical count and driver.**
+```nim
   var childCount: seq[int] = @[]
   childCount.setLen(numberCount + 1)
   for k in 0 .. numberCount:
@@ -289,14 +257,27 @@ while moreInput():
 stdout.write outputBuffer
 ```
 
-The ascending loop covers numberCount minus one vertices again. Counting children needs one visit per non-root vertex. The output loop walks original ids in order, so the list is already sorted. The driver reads cases until input ends, which also accepts a single sample case.
+The code counts children of each immediate dominator. Vertices with at least one child are printed in number order. The driver processes all ten cases from one buffer.
+
 
 ## Complexity
 
-Reading and scanning take time linear in the input size and use one buffer.
+The dominator pass touches each edge a near-constant number of times.
 
-The depth-first walk and the predecessor rewrite each touch every channel once. They use O(n + m) space for the forward and backward lists.
+| Phase | Time | Space |
+| --- | --- | --- |
+| graph build | O(m) | forward arrays |
+| DFS numbering | O(n+m) | stack and number arrays |
+| dominator pass | O(m alpha(n)) | buckets and labels |
+| critical count | O(n) | child counts |
 
-The dominator pass costs O(m) set lookups plus path compression. The bucket work and the counting pass each cost O(n). The whole solver runs in O((n + m) alpha(n)) time and O(n + m) space per case.
+No reachability search is repeated per computer.
 
-A naive method removes each computer and searches the network again. That costs O(n times (n + m)) per case, which is far above the limit at the largest bounds.
+Big O uses computer count n and channel count m.
+
+| Measure | Big O |
+| --- | --- |
+| time | O(m alpha(n)) per case |
+| space | O(n+m) |
+
+Remove-and-recheck would cost O(nm) per case, far above this bound.

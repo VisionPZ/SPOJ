@@ -1,10 +1,18 @@
+# CONNECT — Connections (SPOJ)
+
+<https://www.spoj.com/problems/CONNECT/>
+
 ## Problem
 
-Read a directed weighted graph and a list of queries for each test case. Each query names a start town, an end town, and a rank. Print the length of that ranked shortest route, or -1 when no route exists. Routes may revisit towns, so the route list is infinite whenever a reachable cycle exists.
+A road network has several possible routes between two towns. A travel clerk asks for the first, second, or k-th shortest route length, and routes may revisit towns.
 
-The judge bounds are listed below.
+Input: one integer for the case count, then n and m per case. Then come m roads as `u v length` and q queries as `u v rank`. Cases print a blank line between them.
 
-| Quantity | Bound |
+Output: the length of the ranked route for each query, or `-1` when no such route exists.
+
+The statement and judge give these bounds:
+
+| Item | Bound |
 | --- | --- |
 | Test cases | at most 15 |
 | Towns per case | 1 to 100 |
@@ -15,39 +23,99 @@ The judge bounds are listed below.
 | Time limit | 5000 ms |
 | Memory limit | 1536 MB |
 
-The town count and the rank set the size of the search.
+The town count and the largest rank set the search size.
+
+The sample input and output:
+
+```
+1
+
+5 5
+1 2 3
+2 3 2
+3 2 1
+1 3 10
+1 4 1
+8
+1 3 1
+1 3 2
+1 3 3
+1 4 2
+2 5 1
+2 2 1
+2 2 2
+1 1 2
+```
+
+```
+5
+8
+10
+-1
+-1
+3
+6
+-1
+```
 
 ## Idea
 
-Precompute shortest route lengths for every town pair, up to the largest rank asked. Answer each query with one array lookup. For one start town, settle partial walks in increasing length and keep the best lengths seen at each town. A walk that already ranks below the k-th length at a town cannot improve that town, so the program discards it. Enumerating walks without this cutoff never ends, because cycles create longer walks forever.
+Keep a sorted shortlist of the best few routes to every town, like a clerk keeping the cheapest fares in a notebook. Once a route is worse than the shortlist's last entry, it can never improve that town.
 
-Cost per settled walk: one bucket step and one pass over its outgoing roads.
+The program runs a ranked shortest-path search from each town. A bucket queue settles partial walks in increasing length, and each town stores only its k best lengths. Queries then read one cell from a precomputed table.
+
+Each settled walk relaxes its outgoing roads once, so one source costs O(km) work. Enumerating walks without the cutoff never stops, because a reachable cycle creates longer walks forever.
+
+The cutoff makes an infinite route set finite in practice.
 
 ## Why It Works
 
-Every road has positive length, so extending a walk never shortens it. The unsettled walk with the smallest length is safe to settle next. Each town stores its best lengths in ascending order, and the last entry is the cutoff.
+Positive road lengths make the ranked search well behaved.
 
-candidate length = settled length + road length
+1. Extending a walk never shortens it, so settling the smallest pending length first is safe.
+2. Each town keeps its best k lengths in ascending order. The last one is the cutoff.
+3. A walk that already reaches its town with k shorter lengths cannot enter that shortlist.
+4. A bucket queue indexes lengths by a power-of-two mask, so push and pop take constant work.
 
-settled length is the length of the walk taken from the queue.
-road length is the weight of one outgoing road from that walk's end town.
-cutoff is the last stored length for the target town, once it holds k entries.
+The formulas used in the search are as follows:
 
-The queue uses buckets because road lengths are small integers. Every pending length stays within the longest road length of the current length. A power-of-two bucket count covers that window, and each bucket holds one length.
+| Term | Meaning |
+| --- | --- |
+| candidate length | settled length + road length |
+| cutoff | last stored length at the target town |
+| bucket index | length modulo `bucketModulus` |
+| answer index | `(source × n + target) × k + rank - 1` |
 
-The generator writes the statement sample. The program prints these answers for town 1 to town 3.
+Every pending length stays within one longest road of the current length, so a small bucket ring covers it.
 
-    5
-    8
-    10
+A script settles walks from town 1 in the sample:
 
-The three routes have lengths 5, 8, and 10, so ranks one through three return those values.
+```
+settled length  town  action
+0               1     source
+1               4     label 1 accepted
+3               2     label 3 accepted
+5               3     label 5 accepted
+6               2     label 6 accepted
+8               3     label 8 accepted
+9               2     label 9 accepted
+10              3     label 10 accepted
+11              3     skipped by cutoff
+```
+
+The answers for town 1 to town 3 at ranks 1, 2, and 3 are 5, 8, and 10.
 
 ## Code
 
-The input is read once into one buffer, and the output is flushed in blocks.
+**Input and output helpers.** One buffer holds the stream, and the output flushes in blocks.
 
 ```nim
+{.push warning[Deprecated]: off.}
+{.define: release.}
+{.pop.}
+{.push checks: off.}
+{.passC: "-O3".}
+
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 18
 
@@ -77,12 +145,44 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The read loop runs once per input line, so stdin is read once.
-nextInt skips non-digits and builds each value digit by digit.
-appendOutput writes a block when the buffer reaches the flush size.
-Parsing costs O(input bytes).
+The read loop visits every input line once. The scanner skips non-digits, so blank lines need no special case. The writer flushes at 256 KiB.
 
-The buckets hold candidate walks grouped by length.
+**Shared arrays.** The graph, the labels, and the buckets are allocated once and resized per case.
+
+```nim
+var nodeCount = 0
+var edgeCount = 0
+var adjStart: seq[int] = @[]
+var adjFill: seq[int] = @[]
+var adjTo: seq[int] = @[]
+var adjWeight: seq[int] = @[]
+var rawSource: seq[int] = @[]
+var rawTo: seq[int] = @[]
+var rawWeight: seq[int] = @[]
+
+var labelLimit = 0
+var labelCount: seq[int] = @[]
+var labelList: seq[int] = @[]
+var answerTable: seq[int] = @[]
+
+var weightBound = 1
+var bucketModulus = 2
+var bucketMask = 1
+var bucketHead: seq[int] = @[]
+var bucketVertex: seq[int] = @[]
+var bucketNext: seq[int] = @[]
+var bucketSlotCount = 0
+var bucketEntryCount = 0
+var currentDistance = 0
+var poppedVertex = 0
+var fullCount = 0
+var minWorst = 0
+var minWorstVertex = -1
+```
+
+`adjStart` holds one range start per town. `labelList` holds the k best lengths per town. Reusing the arrays avoids a large allocation inside the case loop.
+
+**Bucket queue.** Each bucket holds one length, and an empty ring advances the current length.
 
 ```nim
 proc bucketPush(distance, vertex: int) {.inline.} =
@@ -104,12 +204,9 @@ proc bucketPop() {.inline.} =
   bucketEntryCount -= 1
 ```
 
-bucketPush appends a walk to the bucket for its length.
-bucketPop advances the current length until a bucket is nonempty.
-Each operation costs O(1) time, because the bucket index is a mask.
-Pending lengths stay inside one mask window.
+`bucketPush` appends a walk to the bucket for its length. `bucketPop` advances until a bucket is nonempty. Each operation costs constant work because the index is a mask.
 
-insertLabel keeps each town's best lengths sorted and tracks the smallest cutoff.
+**Shortlist insertion.** Labels stay sorted, and the smallest cutoff is tracked for early exit.
 
 ```nim
 proc recomputeMinWorst() {.inline.} =
@@ -148,11 +245,9 @@ proc insertLabel(vertex, distance: int) {.inline.} =
       minWorstVertex = vertex
 ```
 
-insertLabel shifts entries to keep the list ascending.
-recomputeMinWorst scans all towns after the smallest cutoff changes.
-A full town stores exactly k lengths, so the loop bound is the rank.
+`insertLabel` shifts entries to keep the list ascending. `recomputeMinWorst` scans all towns when the smallest cutoff changes. A full town holds exactly k labels, so the loop bound is the rank.
 
-solveSource grows the walks from one start town.
+**One source.** The search stops when no candidate can improve any shortlist.
 
 ```nim
 proc solveSource(source: int) =
@@ -198,14 +293,15 @@ proc solveSource(source: int) =
       answerTable[answerBase + idx] = labelList[labelBase + idx]
 ```
 
-The outer loop ends when no candidate walk remains.
-The cutoff test skips a settled walk that cannot improve any town.
-Each settled walk relaxes its outgoing roads once.
-One source costs O(km) relaxations and O(nk) stored lengths.
+The outer loop ends when no candidate walk remains. The cutoff test skips a settled walk that cannot improve a town. Each settled walk relaxes its outgoing roads once, and the table copy writes k cells per town.
 
-The main loop stores the graph, reads queries, and writes answers.
+**Main loop.** The program stores roads in contiguous ranges, then answers queries by lookup.
 
 ```nim
+var queryFrom: seq[int] = @[]
+var queryTo: seq[int] = @[]
+var queryRank: seq[int] = @[]
+
 let caseCount = nextInt(inputData, scanPos)
 for caseIdx in 0 .. caseCount - 1:
   nodeCount = nextInt(inputData, scanPos)
@@ -270,13 +366,33 @@ for caseIdx in 0 .. caseCount - 1:
                     queryRank[query] - 1
     appendOutput($answerTable[answerPos])
     outputBuffer.add '\n'
+
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-The first loop counts roads per town and finds the longest road.
-The second loop places roads into contiguous ranges.
-Each query reads one answer from the table.
-The program prints up to 150000 lines, which the output buffer writes in blocks.
+The first road loop counts outgoing roads and finds the longest length. The second loop places roads into contiguous ranges. The rank sets `labelLimit`, so no work is spent on unasked ranks. Each query reads one table cell.
 
 ## Complexity
 
-Reading and parsing cost O(input bytes). Building the road ranges costs O(n + m) per case. One source settles at most k walks per town, so it performs O(km) relaxations with O(1) bucket work. All n sources cost O(nkm) time. The labels use O(nk) space and the answer table uses O(n²k) space. Naive walk enumeration runs forever when a cycle is reachable.
+One source settles at most k walks per town and relaxes each outgoing road once.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Road ranges | O(n + m) per case | O(n + m) |
+| Ranked search | O(nkm) per case | O(nk) labels |
+| Answer table | O(n²k) per case | O(n²k) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(nkm + n²k) | O(n²k) |
+
+At the largest case, the table holds about one million integers.
+
+The asymptotic bounds are as follows:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(nkm + n²k) per case |
+| Space | O(n²k) per case |
+
+Enumerating walks without a cutoff runs forever once a cycle is reachable.

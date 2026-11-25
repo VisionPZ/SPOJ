@@ -1,68 +1,110 @@
+# PERIOD — Period (SPOJ)
+<https://www.spoj.com/problems/PERIOD/>
+
 ## Problem
 
-Read T strings, one length and one string per case. For each prefix, report its size and largest repetition count. A prefix qualifies when it equals a shorter block repeated more than once. Print a header line per case, the qualifying prefixes in increasing size, and a blank line after each case.
+A string can repeat a smaller block: `ababab` is `ab` three times. For each prefix, find the largest repetition count and its block length.
 
-| Quantity | Bound |
+You receive up to ten long strings. For every prefix longer than one, report the repetition only when the whole prefix is an exact copy of one block repeated. Print a blank line after each case.
+
+Input: the first integer is T, the number of cases. Each case gives N and then a string of N lowercase characters. Output: `Test case #x`, then one line `i K` per periodic prefix, then a blank line.
+
+These are the bounds and the judge limits:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | 1 to 10 |
-| String length | 2 to 1 000 000 |
-| Character code | 97 to 126 |
+| Test cases T | 1 to 10 |
+| String length N | 2 to 1000000 |
+| Character codes | 97 to 126 |
 | Time limit | 3000 ms |
 | Memory limit | 1536 MB |
 
-The string length drives the design, because every prefix needs an answer.
+The sample has a short string and a longer one:
+
+```
+2
+3
+aaa
+12
+aabaabaabaab
+```
+
+```
+Test case #1
+2 2
+3 3
+
+Test case #2
+2 2
+6 2
+9 3
+12 4
+```
+
+The prefix `aabaab` of the second string repeats `aab` twice.
 
 ## Idea
 
-Compute the border length of each prefix with the failure function from string matching. The smallest period of a prefix is its size minus that border length. When the size divides the smallest period, the prefix is one block repeated, and the count is the size divided by the period. Each character costs one amortized step, so the whole case is linear.
+Measure how much of each prefix echoes at its end, then read off the repeat count. Picture finding the beat of a song by noticing the longest bit that ends exactly as the beginning did.
+
+The program builds the prefix function (also called a border array) with the KMP (Knuth–Morris–Pratt string matching) method. Entry `border[i − 1]` is the longest proper prefix of the length-i prefix that is also its suffix.
+
+The smallest period of that prefix is `i − border[i − 1]`. The prefix repeats a block only when this period divides i; the repetition count is then `i / period`. Each character costs amortized O(1), so one case costs O(N).
+
+Testing every candidate period and comparing characters costs O(N²), far too slow for a million characters.
+
+Takeaway: one border array answers every prefix question in a single left-to-right pass.
 
 ## Why It Works
 
-A border is a proper prefix of a prefix that is also its suffix. The failure function stores the longest border for every position.
+Four facts prove the test.
 
-The period of a prefix of size i is:
+1. `border[i − 1]` is the length of the longest proper border of the prefix of length i. KMP falls back from length m to `border[m − 1]` when a character mismatches, so the total number of steps stays linear.
+2. The smallest period of that prefix is `periodLength = i − border[i − 1]`. Every other period is a multiple of it.
+3. A string of length i equals a block of length p repeated k times only when p divides i. Then k = i / p, and the block is the first p characters.
+4. The program reports the case k > 1, which is exactly when a shorter block exists. Prefixes that do not divide evenly are skipped.
 
-period = i - border[i - 1]
+These are the values in the scan:
 
-The prefix repeats when i mod period = 0.
+| Term | Meaning |
+| --- | --- |
+| `border[position]` | longest proper border length of the prefix ending there |
+| `matched` | current border length while reading a character |
+| `prefixLength` | length i of the prefix being tested |
+| `periodLength` | prefixLength − border[prefixLength − 1] |
+| `repetitionCount` | prefixLength / periodLength, printed when above one |
 
-The repetition count is:
+A script derives the periodic prefixes of the second sample string:
 
-count = i / period
+```
+prefix border period repetition (periodic only)
+     2      1      1      2
+     6      3      3      2
+     9      6      3      3
+    12      9      3      4
+```
 
-A count above one gives a line in the output. The smallest period gives the largest count, because any other repeating block is a multiple of it.
-
-The script in `gen.py` checks the second sample string. The table lists each prefix size, its longest border, and its smallest period.
-
-| Prefix size | Border | Period | Divides | Count |
-| --- | --- | --- | --- | --- |
-| 2 | 1 | 1 | yes | 2 |
-| 3 | 0 | 3 | no | - |
-| 4 | 1 | 3 | no | - |
-| 5 | 2 | 3 | no | - |
-| 6 | 3 | 3 | yes | 2 |
-| 7 | 4 | 3 | no | - |
-| 8 | 5 | 3 | no | - |
-| 9 | 6 | 3 | yes | 3 |
-| 10 | 7 | 3 | no | - |
-| 11 | 8 | 3 | no | - |
-| 12 | 9 | 3 | yes | 4 |
-
-Only sizes 2, 6, 9 and 12 divide their period, which matches the sample output.
+The prefix `aabaab` has border 3 and period 3, so `aab` repeats twice. No rounding appears; the division test is exact integer arithmetic.
 
 ## Code
 
+**Input.** The whole stream goes into one buffer and is scanned by index.
+
 ```nim
+{.push checks: off.}
+{.passC: "-O3".}
+
+const firstDigitValue = 48
+const flushBlockBytes = 1 shl 18
+
 var inputData = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
-```
 
-Each line is appended to one buffer, so the whole input is read before parsing. The trailing newline keeps the original line layout for the scanner. The loop runs once per input line.
+var scanPos = 0
 
-```nim
 proc nextInt(data: string, pos: var int): int =
   while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
     pos += 1
@@ -82,9 +124,13 @@ proc nextTokenStart(data: string, pos: var int, length: var int): int =
   return startPos
 ```
 
-The integer scanner skips whitespace and builds values byte by byte. The token scanner records a string inside the buffer instead of copying it. Both stop at the end of the one input buffer.
+`nextTokenStart` returns an offset and length, so the string itself is never copied. The scanner uses a shared cursor. Cost is one pass over the input bytes.
+
+**Output.** Integer answers are written digit by digit into one buffer.
 
 ```nim
+var outputBuffer = ""
+
 proc appendOutput(text: string) =
   outputBuffer.add text
   if outputBuffer.len >= flushBlockBytes:
@@ -114,9 +160,23 @@ proc appendNumber(value: int) =
   outputBuffer.setLen(pos)
 ```
 
-The number writer places digits into the output buffer and reverses them in place. It avoids a temporary string for each number. The buffer is flushed once per block, not once per line.
+`appendNumber` reserves twelve bytes, then trims to the digits it uses. Writing digits in place avoids one string allocation per number. Each number costs O(log value) work.
+
+**Driver.** One border array serves every prefix of a case.
 
 ```nim
+var border: seq[int] = @[]
+
+let caseCount = nextInt(inputData, scanPos)
+for caseIndex in 0..<caseCount:
+  let stringLength = nextInt(inputData, scanPos)
+  var tokenLength = 0
+  let tokenStart = nextTokenStart(inputData, scanPos, tokenLength)
+
+  appendOutput("Test case #")
+  appendNumber(caseIndex + 1)
+  appendOutput("\n")
+
   border.setLen(stringLength)
   border[0] = 0
   var matched = 0
@@ -127,11 +187,7 @@ The number writer places digits into the output buffer and reverses them in plac
     if currentChar == inputData[tokenStart + matched]:
       matched += 1
     border[position] = matched
-```
 
-The loop visits positions one through the end of the string. A mismatch falls back to the previous border, so the total fallback work is linear. Characters are read from the input buffer at `tokenStart + position`, with no extra copy.
-
-```nim
   for prefixLength in 1..stringLength:
     let periodLength = prefixLength - border[prefixLength - 1]
     if prefixLength mod periodLength == 0:
@@ -147,8 +203,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The loop tests every prefix in increasing size, so the output is ordered. A count of one is skipped because a single copy is not a repetition. The final write empties any partial block left in the output buffer.
+`matched` falls back through earlier borders on a mismatch, which keeps the pass linear. The second loop reads `prefixLength` from 1, so it never indexes a negative border. The final `appendOutput("\n")` prints the required blank line.
 
 ## Complexity
 
-Reading the input takes time linear in its byte count. One case computes borders in O(n) time and writes at most n lines. The total is O(n) time per case and O(n) space for the border array. A naive version tests every possible block length for every prefix, which costs quadratic time or worse.
+The border pass and the prefix test are linear.
+
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(total tokens) | O(input size) |
+| Border array | O(N) amortized | O(N) |
+| Prefix reporting | O(N) | O(1) |
+| Output | O(periodic prefixes) | O(block size) |
+
+The border array dominates, with O(N) time and O(N) space per string.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(N) |
+| Total time | O(sum of N over cases) |
+| Working space | O(N) |
+
+Trying each possible period and comparing all characters takes O(N²) time.

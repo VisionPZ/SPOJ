@@ -7,15 +7,15 @@ const unreachable = 1 shl 60
 {.passC: "-O3".}
 
 proc nextInt(data: string, pos: var int): int {.inline.} =
-  var i = pos
+  var curPos = pos
   let dataLen = data.len
-  while i < dataLen and (data[i] < '0' or data[i] > '9'):
-    i += 1
+  while curPos < dataLen and (data[curPos] < '0' or data[curPos] > '9'):
+    curPos += 1
   var value = 0
-  while i < dataLen and data[i] >= '0' and data[i] <= '9':
-    value = value * 10 + int(data[i]) - firstDigitValue
-    i += 1
-  pos = i
+  while curPos < dataLen and data[curPos] >= '0' and data[curPos] <= '9':
+    value = value * 10 + int(data[curPos]) - firstDigitValue
+    curPos += 1
+  pos = curPos
   return value
 
 var inputData = ""
@@ -67,34 +67,33 @@ var arcCount = newSeq[int](maxNodeCount + 2)
 var arcTo = newSeq[int](maxArcCount)
 var arcWeight = newSeq[int](maxArcCount)
 var arcReverse = newSeq[int](maxArcCount)
-var tempFrom = newSeq[int](maxStreetCount)
-var tempTarget = newSeq[int](maxStreetCount)
-var tempForward = newSeq[int](maxStreetCount)
-var tempBackward = newSeq[int](maxStreetCount)
-var distArr = newSeq[int](maxNodeCount + 2)
-var isBagArr = newSeq[bool](maxNodeCount + 2)
+var streetFrom = newSeq[int](maxStreetCount)
+var streetTarget = newSeq[int](maxStreetCount)
+var streetForward = newSeq[int](maxStreetCount)
+var streetBackward = newSeq[int](maxStreetCount)
+var minDist = newSeq[int](maxNodeCount + 2)
+var isBagNode = newSeq[bool](maxNodeCount + 2)
 var isParentArc = newSeq[bool](maxArcCount)
 var heapNode = newSeq[int](maxArcCount)
 var heapDist = newSeq[int](maxArcCount)
 var ordered = newSeq[int](maxNodeCount + 2)
-var sortTemp = newSeq[int](maxNodeCount + 2)
 var survivalNum = newSeq[int64](maxNodeCount + 2)
 var survivalDen = newSeq[int64](maxNodeCount + 2)
 var heapSize = 0
 var poppedDist = 0
 
 proc heapPush(nodeIndex, nodeDist: int) {.inline.} =
-  var i = heapSize
+  var idx = heapSize
   heapSize += 1
-  while i > 0:
-    let parentIndex = (i - 1) div 2
+  while idx > 0:
+    let parentIndex = (idx - 1) div 2
     if heapDist[parentIndex] <= nodeDist:
       break
-    heapNode[i] = heapNode[parentIndex]
-    heapDist[i] = heapDist[parentIndex]
-    i = parentIndex
-  heapNode[i] = nodeIndex
-  heapDist[i] = nodeDist
+    heapNode[idx] = heapNode[parentIndex]
+    heapDist[idx] = heapDist[parentIndex]
+    idx = parentIndex
+  heapNode[idx] = nodeIndex
+  heapDist[idx] = nodeDist
 
 proc heapPop(): int {.inline.} =
   result = heapNode[0]
@@ -104,9 +103,9 @@ proc heapPop(): int {.inline.} =
     return
   let lastNode = heapNode[heapSize]
   let lastDist = heapDist[heapSize]
-  var i = 0
+  var idx = 0
   while true:
-    let leftChild = 2 * i + 1
+    let leftChild = 2 * idx + 1
     if leftChild >= heapSize:
       break
     let rightChild = leftChild + 1
@@ -115,11 +114,11 @@ proc heapPop(): int {.inline.} =
       child = rightChild
     if heapDist[child] >= lastDist:
       break
-    heapNode[i] = heapNode[child]
-    heapDist[i] = heapDist[child]
-    i = child
-  heapNode[i] = lastNode
-  heapDist[i] = lastDist
+    heapNode[idx] = heapNode[child]
+    heapDist[idx] = heapDist[child]
+    idx = child
+  heapNode[idx] = lastNode
+  heapDist[idx] = lastDist
 
 proc siftDown(values: var seq[int], rootIndex, endIndex: int) {.inline.} =
   var root = rootIndex
@@ -127,9 +126,9 @@ proc siftDown(values: var seq[int], rootIndex, endIndex: int) {.inline.} =
     var child = 2 * root + 1
     if child > endIndex:
       break
-    if child < endIndex and distArr[values[child]] > distArr[values[child + 1]]:
+    if child < endIndex and minDist[values[child]] > minDist[values[child + 1]]:
       child += 1
-    if distArr[values[root]] <= distArr[values[child]]:
+    if minDist[values[root]] <= minDist[values[child]]:
       break
     swap(values[root], values[child])
     root = child
@@ -153,18 +152,18 @@ for caseIndex in 0..<caseCount:
 
   for nodeIndex in 1..nodeCount:
     arcCount[nodeIndex] = 0
-    distArr[nodeIndex] = unreachable
-    isBagArr[nodeIndex] = false
+    minDist[nodeIndex] = unreachable
+    isBagNode[nodeIndex] = false
 
   for streetIndex in 0..<streetCount:
-    let u = nextInt(inputData, scanAt)
-    let v = nextInt(inputData, scanAt)
-    tempFrom[streetIndex] = u
-    tempTarget[streetIndex] = v
-    tempForward[streetIndex] = nextInt(inputData, scanAt)
-    tempBackward[streetIndex] = nextInt(inputData, scanAt)
-    arcCount[u] += 1
-    arcCount[v] += 1
+    let fromNode = nextInt(inputData, scanAt)
+    let toNode = nextInt(inputData, scanAt)
+    streetFrom[streetIndex] = fromNode
+    streetTarget[streetIndex] = toNode
+    streetForward[streetIndex] = nextInt(inputData, scanAt)
+    streetBackward[streetIndex] = nextInt(inputData, scanAt)
+    arcCount[fromNode] += 1
+    arcCount[toNode] += 1
 
   arcStart[1] = 0
   for nodeIndex in 1..nodeCount:
@@ -172,48 +171,48 @@ for caseIndex in 0..<caseCount:
     arcCursor[nodeIndex] = arcStart[nodeIndex]
 
   for streetIndex in 0..<streetCount:
-    let u = tempFrom[streetIndex]
-    let v = tempTarget[streetIndex]
-    let forwardArc = arcCursor[u]
-    arcCursor[u] += 1
-    arcTo[forwardArc] = v
-    arcWeight[forwardArc] = tempForward[streetIndex]
-    let backwardArc = arcCursor[v]
-    arcCursor[v] += 1
-    arcTo[backwardArc] = u
-    arcWeight[backwardArc] = tempBackward[streetIndex]
+    let fromNode = streetFrom[streetIndex]
+    let toNode = streetTarget[streetIndex]
+    let forwardArc = arcCursor[fromNode]
+    arcCursor[fromNode] += 1
+    arcTo[forwardArc] = toNode
+    arcWeight[forwardArc] = streetForward[streetIndex]
+    let backwardArc = arcCursor[toNode]
+    arcCursor[toNode] += 1
+    arcTo[backwardArc] = fromNode
+    arcWeight[backwardArc] = streetBackward[streetIndex]
     arcReverse[forwardArc] = backwardArc
     arcReverse[backwardArc] = forwardArc
 
   for bagIndex in 0..<bagCount:
     let bagNode = nextInt(inputData, scanAt)
-    isBagArr[bagNode] = true
-    distArr[bagNode] = 0
+    isBagNode[bagNode] = true
+    minDist[bagNode] = 0
 
   heapSize = 0
   for nodeIndex in 1..nodeCount:
-    if isBagArr[nodeIndex]:
+    if isBagNode[nodeIndex]:
       heapPush(nodeIndex, 0)
 
   while heapSize > 0:
     let nodeIndex = heapPop()
-    if poppedDist != distArr[nodeIndex]:
+    if poppedDist != minDist[nodeIndex]:
       continue
-    let baseDist = distArr[nodeIndex]
+    let baseDist = minDist[nodeIndex]
     for arcIndex in arcStart[nodeIndex]..<arcStart[nodeIndex + 1]:
       let nextDist = baseDist + arcWeight[arcIndex]
       let target = arcTo[arcIndex]
-      if nextDist < distArr[target]:
-        distArr[target] = nextDist
+      if nextDist < minDist[target]:
+        minDist[target] = nextDist
         heapPush(target, nextDist)
 
   for arcIndex in 0..<arcTotal:
     isParentArc[arcIndex] = false
   for nodeIndex in 1..nodeCount:
-    if isBagArr[nodeIndex]:
+    if isBagNode[nodeIndex]:
       continue
     for arcIndex in arcStart[nodeIndex]..<arcStart[nodeIndex + 1]:
-      if distArr[arcTo[arcIndex]] + arcWeight[arcReverse[arcIndex]] == distArr[nodeIndex]:
+      if minDist[arcTo[arcIndex]] + arcWeight[arcReverse[arcIndex]] == minDist[nodeIndex]:
         isParentArc[arcIndex] = true
 
   for nodeIndex in 1..nodeCount:
@@ -222,7 +221,7 @@ for caseIndex in 0..<caseCount:
 
   for sliceIndex in 0..<nodeCount:
     let nodeIndex = ordered[sliceIndex]
-    if distArr[nodeIndex] == unreachable:
+    if minDist[nodeIndex] == unreachable:
       continue
     var bestNum: int64 = 0
     var bestDen: int64 = 1
@@ -231,15 +230,15 @@ for caseIndex in 0..<caseCount:
       if not isParentArc[arcIndex]:
         let target = arcTo[arcIndex]
         let forwardWeight = arcWeight[arcIndex]
-        let arrive = distArr[nodeIndex] + forwardWeight
+        let arrive = minDist[nodeIndex] + forwardWeight
         var valueNum: int64 = 0
         var valueDen: int64 = 1
-        if arrive == distArr[target]:
+        if arrive == minDist[target]:
           valueNum = survivalNum[target]
           valueDen = survivalDen[target]
-        elif distArr[target] < arrive and distArr[nodeIndex] < distArr[target] + arcWeight[arcReverse[arcIndex]]:
-          valueNum = int64(distArr[nodeIndex]) * arcWeight[arcReverse[arcIndex]] +
-                     int64(distArr[target]) * forwardWeight +
+        elif minDist[target] < arrive and minDist[nodeIndex] < minDist[target] + arcWeight[arcReverse[arcIndex]]:
+          valueNum = int64(minDist[nodeIndex]) * arcWeight[arcReverse[arcIndex]] +
+                     int64(minDist[target]) * forwardWeight +
                      int64(forwardWeight) * arcWeight[arcReverse[arcIndex]]
           valueDen = int64(forwardWeight + arcWeight[arcReverse[arcIndex]])
         else:
@@ -250,21 +249,21 @@ for caseIndex in 0..<caseCount:
           bestDen = valueDen
           haveBest = true
     if not haveBest:
-      bestNum = int64(distArr[nodeIndex])
+      bestNum = int64(minDist[nodeIndex])
       bestDen = 1
     survivalNum[nodeIndex] = bestNum
     survivalDen[nodeIndex] = bestDen
 
   var hasHidden = false
   for nodeIndex in 1..nodeCount:
-    if distArr[nodeIndex] == unreachable:
+    if minDist[nodeIndex] == unreachable:
       hasHidden = true
       break
 
   if hasHidden:
     var firstWritten = true
     for nodeIndex in 1..nodeCount:
-      if distArr[nodeIndex] == unreachable:
+      if minDist[nodeIndex] == unreachable:
         if not firstWritten:
           appendOutput(" ")
         appendOutput($(nodeIndex))

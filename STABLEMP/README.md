@@ -1,39 +1,104 @@
+# STABLEMP — Stable Marriage Problem (SPOJ)
+
+<https://www.spoj.com/problems/STABLEMP/>
+
 ## Problem
 
-Read several stable-marriage instances. Each instance gives n women and n men, and every person ranks all members of the other group. Print n pairs "m w" per instance so no man and woman prefer each other to their own partners. Any stable matching is accepted.
+A dance organizer pairs `n` men with `n` women. Everyone ranks the other side, and no couple should prefer a different partner to the one assigned. The organizer needs any pairing with that property.
 
-| Quantity | Bound |
+Input: `t` test cases. Each case starts with `n`, followed by `n` lines of women's rankings and `n` lines of men's rankings.
+
+Each line names the person and lists partners from best to worst. Output: `n` lines `m w` per case, with one line for each man.
+
+The statement gives these bounds:
+
+| Item | Bound |
 | --- | --- |
-| Test cases t | at most 100 |
-| Couples per case n | at most 500 |
-| Time limit | 1000 ms |
-| Memory limit | 1536 MB |
+| Test cases `t` | at most 100 |
+| Couples per case `n` | at most 500 |
+| Input size | large, so buffered reading matters |
+| Judge limit | 1000 ms, 1536 MB |
 
-Each case reads 2n ranked lists of n numbers, so input parsing drives the design.
+Each case holds `2n` ranked lists, so parsing runs alongside the matching.
+
+The sample input and output:
+
+```
+2
+4
+1 4 3 1 2
+2 2 1 3 4
+3 1 3 4 2
+4 4 3 1 2
+1 3 2 4 1
+2 2 3 1 4
+3 3 1 2 4
+4 3 2 4 1
+7
+1 3 4 2 1 6 7 5
+2 6 4 2 3 5 1 7
+3 6 3 5 7 2 4 1
+4 1 6 3 2 4 7 5
+5 1 6 5 3 4 7 2
+6 1 7 3 4 5 6 2
+7 5 6 2 4 3 7 1
+1 4 5 3 7 2 6 1
+2 5 6 4 7 3 2 1
+3 1 6 5 4 3 7 2
+4 3 5 6 7 2 4 1
+5 1 7 6 4 3 5 2
+6 6 3 7 5 2 4 1
+7 1 7 4 2 6 5 3
+```
+
+```
+1 3
+2 2
+3 1
+4 4
+1 4
+2 5
+3 1
+4 3
+5 7
+6 6
+7 2
+```
 
 ## Idea
 
-Use man-proposing Gale–Shapley. Each free man proposes to the next woman on his list. A woman keeps the best proposal so far and rejects the rest. A rejected man proposes again, and a displaced husband returns to the free pool. The process stops when every man has a wife.
+Let each free man ask the next woman on his list, like an applicant knocking on doors. A woman keeps the best offer so far and sends the rest away.
 
-Cost per proposal: O(1), because a rank matrix answers each woman comparison.
+The program runs the man-proposing Gale–Shapley algorithm. A rank matrix answers each woman comparison in `O(1)` time. At most `n²` proposals occur, so a case costs `O(n²)`.
 
-Searching all matchings would take factorial time. Each proposal here settles one comparison and never repeats a pair.
+Scanning all `n!` matchings would explode long before `n = 500`. Each proposal here settles one comparison and never repeats a pair.
+
+Keeping only the current best offer per woman makes stability automatic.
 
 ## Why It Works
 
-A woman only trades up, since she replaces her husband solely with a man she ranks higher. A man only moves down his list, since each proposal advances one position. A woman rejects a man only while she holds someone better, so each of the n women rejects each man at most once. The process therefore ends with all men married.
+Four facts prove stability.
 
-In the final matching no blocking pair exists. If a man prefers a woman to his wife, that woman already rejected him or holds a man she ranks higher.
+1. A woman only trades up, since she replaces her husband with a man she ranks higher.
+2. A man only moves down his list, because `nextProposal` advances after each offer.
+3. A rejected man returns to the free queue. Each ordered pair is tried once, so the loop makes at most `n²` offers.
+4. In the final matching, a man who prefers another woman was rejected by her or lost to a better husband. No blocking pair remains.
 
-The flat arrays use these offsets:
+The flat arrays and their offsets:
 
-- rowWidth equals pairCount, the length of one ranked list.
-- womanId * rowWidth + manId finds a man's rank inside a woman's row.
-- manId * rowWidth + proposalIndex finds the next woman inside a man's row.
-- nextProposal[manId] counts proposals already made, so no pair repeats.
+| Term | Meaning |
+| --- | --- |
+| `rowWidth` | length of one ranked list, equal to `n` |
+| `womanRank[womanId * rowWidth + manId]` | where a woman ranks one man |
+| `manChoice[manId * rowWidth + rankIndex]` | a man's next woman |
+| `wifeOfMan`, `husbandOfWoman` | current partners, or `-1` when free |
+| `freeMen` | queue of men waiting to propose |
 
-The generator prints the proposal trace for the first sample case.
+The rank matrix turns each acceptance test into one array lookup.
 
+A generator trace of the proposals in the first sample case:
+
+```
 | Man | Woman | Result |
 | --- | --- | --- |
 | 1 | 3 | accept |
@@ -44,9 +109,7 @@ The generator prints the proposal trace for the first sample case.
 | 4 | 2 | reject, keeps man 2 |
 | 4 | 4 | accept |
 
-Every rejection points at a woman holding a better man, so no pair is tried twice.
-
-The resulting couples are:
+Final matching
 
 | Man | Woman |
 | --- | --- |
@@ -54,12 +117,13 @@ The resulting couples are:
 | 2 | 2 |
 | 3 | 1 |
 | 4 | 4 |
+```
 
-These four couples match the first sample case.
+Each rejection points to a woman holding a better man, so no pair is tried twice.
 
 ## Code
 
-Input is read once into inputData. The digit scanner skips separators, and appendOutput flushes at 64 KiB.
+**Input and parsing.** One buffer holds the whole stream, and a scanner reads integers.
 
 ```nim
 {.push checks: off.}
@@ -93,7 +157,10 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The two loops read pairCount women and then pairCount men. The leading number on each row names the person and sets the row offset. Flat arrays keep each rank lookup to one index operation.
+The scanner skips all non-digits, so blank lines between cases cause no trouble.
+The output helper flushes at 64 KiB, which suits many short lines.
+
+**Rank matrices.** The program stores each woman's ranks and each man's choices in flat arrays.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -115,7 +182,11 @@ for caseIndex in 0..<caseCount:
       manChoice[manId * rowWidth + rankIndex] = nextInt(inputData, scanPos) - 1
 ```
 
-The outer loop ends when the free-men queue is empty. The inner loop ends when the current man has a wife. A displaced husband re-enters the queue, so freeMen holds pairCount squared plus pairCount slots.
+`rowWidth` equals `pairCount`.
+Index `womanId * rowWidth + manId` finds one rank; index `manId * rowWidth + rankIndex` finds one choice.
+Both loops read exactly `n` numbers per line.
+
+**Proposal loop.** Free men propose until every man has a wife.
 
 ```nim
   var nextProposal = newSeq[int](pairCount)
@@ -149,7 +220,11 @@ The outer loop ends when the free-men queue is empty. The inner loop ends when t
         queueTail += 1
 ```
 
-Men are printed in increasing order, which matches the sample. The remaining output buffer is flushed once after all cases.
+The queue is sized `n² + n`, which covers every possible proposal.
+The inner `while` ends when the man is married; a rejected husband re-enters the queue.
+The rank comparison is one lookup, so an offer costs `O(1)`.
+
+**Output and tail.** One line per man closes each case.
 
 ```nim
   for manId in 0..<pairCount:
@@ -161,10 +236,29 @@ outputBuffer.setLen 0
 {.pop.}
 ```
 
+Both indices are incremented before printing, since the arrays use zero-based ids.
+The final write flushes the remaining buffer.
+`{.pop.}` closes the check suppression at file end.
+
 ## Complexity
 
-Reading and parsing take O(t n^2) time for all cases. Gale–Shapley takes at most n squared proposals per case, and each proposal costs O(1). Printing takes O(t n) time.
+Parsing and matching both scale with the number of ranked entries.
 
-Total time is O(t n^2). Per-case space is O(n^2) for the rank tables and the free-men queue. The input buffer holds the whole stream, so its size is O(t n^2).
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Preference matrices | O(n²) per case | O(n²) for two arrays |
+| Proposal loop | at most n² offers | O(n²) for the queue |
+| Output | one write per 64 KiB block | 64 KiB |
+| Total per case | O(n²) | O(n²) |
 
-A naive search enumerates all perfect matchings in O(n!) time before any stability test.
+At `n = 500` the matrices hold 250,000 integers each.
+
+The asymptotic bounds follow from the table:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n²) per case, O(t × n²) overall |
+| Space | O(n²) per case, plus buffers |
+
+Checking all `n!` matchings for stability is infeasible. Gale–Shapley reaches a stable matching after at most `n²` offers.

@@ -1,57 +1,108 @@
+# MORSE — Decoding Morse Sequences (SPOJ)
+<https://www.spoj.com/problems/MORSE/>
+
 ## Problem
 
-Read a Morse sequence and a dictionary of words. Count the phrases that use whole dictionary words and reproduce the sequence exactly. Print one count per data set.
+A radio signal arrives without pauses between letters. A dictionary decides which word sequences could have produced it.
 
-| Quantity | Limit |
+The input starts with the data-set count. Each set gives a Morse string, a word count, and the dictionary words. Print the number of full phrase decodings.
+
+The judge bounds are:
+
+| Item | Bound |
 | --- | --- |
 | Data sets | 1 to 20 |
-| Morse length | 1 to 10000 symbols |
-| Dictionary size | 1 to 10000 words |
-| Word length | 1 to 20 letters |
+| Morse length | at most 10000 symbols |
+| Dictionary size | 1 to 10000 |
+| Word length | at most 20 letters |
 | Answer | at most 2 * 10^9 |
-| Time | 7000 ms |
+| Judge time | 7000 ms |
 | Memory | 1536 MB |
+| Source size | 50000 B |
 
-The limits rule out comparing every word at every position.
+Every signal must end exactly at a word boundary.
+
+Sample input and output:
+
+Input:
+
+```
+1
+.---.--.-.-.-.---...-.---.
+6
+AT
+TACK
+TICK
+ATTACK
+DAWN
+DUSK
+```
+
+Output:
+
+```
+2
+```
 
 ## Idea
 
-Store every dictionary word as a path of dots and dashes in a trie, a tree that shares common prefixes. Walk the tree from each sequence position and add the current prefix count whenever a path ends; each jump consumes one whole word. Counting every jump therefore counts every full phrase.
+Convert each word into dots and dashes, then walk a trie along the signal. Think of tracing a maze with a dictionary in hand and noting every exit.
 
-Cost per start position: at most 80 steps, one per Morse pulse of the longest word.
+The program stores words in a trie (a tree of shared prefixes). Dynamic programming counts ways to reach each signal position. A start position advances at most 80 pulses, the longest word code. Trying every word at every position would cost far more.
+
+Takeaway: shared prefixes turn dictionary lookup into one signal walk.
 
 ## Why It Works
 
-A Morse conversion maps each letter to one fixed string of dots and dashes. A phrase matches when the Morse strings of its words join into the whole sequence. `ways[j]` holds the number of decodings of the prefix ending at that position. `ways[0]` starts at 1 because the empty prefix has one decoding.
+Each dictionary word ends at one node of the trie.
 
-The update `ways[k] += waysHere * wordCount` has three terms.
+1. `morseCodes` maps every capital letter to dots and dashes.
+2. `addWordToTrie` inserts one word along its pulse path.
+3. `trieWordCount` counts words ending at a node.
+4. `ways[j]` holds decodings of the signal prefix of length `j`.
+5. Reaching the end adds `ways[j] * wordCount` to the next position.
+
+The terms are:
 
 | Term | Meaning |
 | --- | --- |
-| `waysHere` | Decodings of the prefix before the word. |
-| `wordCount` | Dictionary entries whose Morse code equals the consumed slice. |
-| `ways[k]` | Decodings of the prefix after the word. |
+| `trieDotChild` | Child node after a dot |
+| `trieDashChild` | Child node after a dash |
+| `ways` | Prefix decoding counts |
+| `morseLength` | Number of pulses in the signal |
 
-Each match adds one phrase per earlier decoding and per matching entry.
+The root starts with one way.
 
-Insertion reaches a child at index `trieWordCount.len - 1` after the three arrays grow. Index zero marks a missing child, since the root already holds index zero. A terminal node stores the number of words with that exact code, so repeated words count as different choices.
+A script decoded the sample:
 
-The table below uses the sequence `...` with the one-pulse, two-pulse, and three-pulse words.
+| Word | Morse form |
+| --- | --- |
+| `AT` | `.--` |
+| `ATTACK` | `.---.--.-.-.-` |
+| `DAWN` | `-...-.---.` |
+| `DUSK` | `-....-...-.-` |
 
-| start | word | code | end | ways[end] after update |
-| --- | --- | --- | --- | --- |
-| 0 | E | . | 1 | 1 |
-| 0 | I | .. | 2 | 1 |
-| 0 | S | ... | 3 | 1 |
-| 1 | E | . | 2 | 2 |
-| 1 | I | .. | 3 | 2 |
-| 2 | E | . | 3 | 4 |
-
-The final counts are 1, 1, 2, 4 and the answer is 4.
+Two full phrases match: `ATTACK AT DAWN` and `AT TACK AT DAWN`.
 
 ## Code
 
-The scanner walks one input buffer by index. It allocates no token strings.
+**Morse table and constants.**
+
+```nim
+const flushBlockBytes = 1 shl 16
+const firstDigitValue = 48
+const firstUpperValue = 65
+const dashCharacter = '-'
+const morseCodes = [
+  ".-", "-...", "-.-.", "-..", ".", "..-.", "--.", "....", "..", ".---",
+  "-.-", ".-..", "--", "-.", "---", ".--.", "--.-", ".-.", "...", "-",
+  "..-", "...-", ".--", "-..-", "-.--", "--.."
+]
+```
+
+The 26 codes follow alphabet order. Constants hold digit and character offsets.
+
+**Token reading.**
 
 ```nim
 proc readToken(inputData: string, i: var int, dataLength: int,
@@ -69,9 +120,9 @@ proc parseCount(inputData: string, i: int, tokenLength: int): int =
     result = result * 10 + (int(inputData[i + j]) - firstDigitValue)
 ```
 
-`parseCount` handles the two counts in the input. Both loops stop at `dataLength`. The cost is one pass over the buffer.
+`readToken` finds the next word boundary by index. `parseCount` converts a numeric token without allocation.
 
-Insertion turns each word into one path through the trie.
+**Trie insertion.**
 
 ```nim
 proc addWordToTrie(inputData: string, i: int, wordLength: int,
@@ -98,9 +149,9 @@ proc addWordToTrie(inputData: string, i: int, wordLength: int,
   trieWordCount[j] += 1
 ```
 
-The letter loop runs at most 20 times and the pulse loop at most 80 times. A new node takes index `trieWordCount.len - 1`; index zero means no child. The build costs one node per distinct Morse prefix.
+Each pulse follows or creates one child node. The final node increments the word count. One insert costs the word code length.
 
-Counting walks the trie from every reachable position.
+**Decoding count.**
 
 ```nim
 proc countDecodings(inputData: string, i: int, morseLength: int,
@@ -131,11 +182,24 @@ proc countDecodings(inputData: string, i: int, morseLength: int,
   return ways[morseLength]
 ```
 
-The outer loop starts at every position below `morseLength`. The inner walk stops at the first missing child or at the sequence end. Positions with zero ways are skipped. This pass costs at most 80 steps per start position.
+The loop starts at every reachable position and stops at a missing trie edge. Each step adds ways when a word ends.
 
-The driver builds one trie per data set and buffers the printed lines.
+**Driver and output.**
 
 ```nim
+proc main() =
+  var inputData = ""
+  var line = ""
+  while readLine(stdin, line):
+    inputData.add line
+    inputData.add '\n'
+  let dataLength = inputData.len
+  var i = 0
+  var j = 0
+  var tokenLength = 0
+  readToken(inputData, i, dataLength, j, tokenLength)
+  let dataSetCount = parseCount(inputData, j, tokenLength)
+  var ways: seq[int] = @[1]
   for k in 0 ..< dataSetCount:
     readToken(inputData, i, dataLength, j, tokenLength)
     let l = j
@@ -158,21 +222,33 @@ The driver builds one trie per data set and buffers the printed lines.
     if outputBuffer.len >= flushBlockBytes:
       stdout.write outputBuffer
       outputBuffer.setLen 0
+  if outputBuffer.len > 0:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
+main()
 ```
 
-The loop runs `dataSetCount` times, at most 20. Each trie starts as a single root node, so data sets do not share state. A block flush keeps the output buffer small.
+The program reads all lines once. It builds a fresh trie per data set and reuses the ways array. One write flushes the answers.
 
 ## Complexity
 
-Let N be the sequence length, W the word count, and L the longest code length, at most 80.
+Trie size and signal length set the cost.
 
 | Phase | Time | Space |
 | --- | --- | --- |
-| Read input | O(input bytes) | O(input bytes) |
-| Build trie | O(W * L) | O(W * L) nodes |
-| Count phrases | O(N * L) | O(N) |
-| Total per data set | O(W * L + N * L) | O(W * L + N) |
+| Input | O(Total characters) | O(Input size) |
+| Trie build | O(Total word codes) | O(Total word codes) |
+| Decode | O(Morse length * 80) | O(Morse length) |
+| Output | O(D) | O(1) |
 
-At full limits, one data set uses at most 800000 trie nodes and 800000 walk steps. All 20 data sets use about 32 million steps.
+Eighty pulses is the longest word code.
 
-A naive scan compares every word at every position and costs O(N * W * L) time. At full limits that is 8 billion comparisons per data set.
+| Measure | Bound |
+| --- | --- |
+| Time | O(Morse length * 80) per set |
+| Space | O(Morse length + trie nodes) |
+
+One pass over the signal visits each prefix once.
+
+Matching every word at every position would multiply that pass by the dictionary size.

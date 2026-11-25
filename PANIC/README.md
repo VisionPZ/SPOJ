@@ -1,49 +1,98 @@
+# PANIC — Panic in the Plazas (SPOJ)
+<https://www.spoj.com/problems/PANIC/>
+
 ## Problem
 
-Read a weighted city of plazas where bags explode at noon. Panic starts at each bag and spreads along streets; two crowds that meet head-on die. Choose the plazas where a person alive at noon survives longest, and print their numbers in increasing order.
+Bags of fake bombs burst at several plazas at noon. Panic then runs along the streets, and crowds choose their escape route to survive as long as possible.
 
-| Quantity | Bound |
+You sit at one plaza that day. Find every plaza that maximizes your survival time, and print them in increasing order. A plaza that panic never reaches also counts as a safe choice.
+
+Input: the first integer is t, the number of cases. Each case gives n plazas, m streets, and k bag plazas. Each street line holds u, v, the time u → v, and the time v → u. The last line lists the k bag plazas. Output: one line per case with the increasing plaza numbers that give the longest survival.
+
+These are the bounds and the judge limits:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | 500 |
-| Plazas per case | 50000 |
-| Streets per case | 250000 |
-| Bags per case | 50000 |
-| Street travel time | 1000 |
+| Test cases t | at most 500 |
+| Plazas n | 1 to 50000 |
+| Streets m | 0 to 250000 |
+| Bag plazas k | 0 to n |
+| Street crossing time | 1 to 1000 |
 | Time limit | 2267 ms |
 | Memory limit | 1536 MB |
 
-The street count drives the design, so each case needs near-linear work.
+The sample has a connected case and a case with one bag and no street:
+
+```
+2
+
+4 5 2
+1 2 10 10
+2 4 30 30
+3 2 10 10
+4 3 50 5
+3 1 5  50
+1 2
+
+2 0 1
+2
+```
+
+```
+2 3 4
+1
+```
+
+In the first case the longest survival is 22.5 time units.
 
 ## Idea
 
-A multi-source Dijkstra pass gives the panic arrival time at every plaza. Crowds leave a plaza along every street except a street that brought panic in. The streets that achieve the shortest arrival are closed to the person. The last event on a path along the open streets gives the survival time. After sorting plazas by arrival time, each outgoing street costs constant work.
+Spread the panic first, then work out the best escape from every plaza. Imagine a fire starting at several cafés at once, with people running down every street except the one the smoke came from.
 
-Cost per item: one Dijkstra relaxation per directed street, then one decision per open street.
+The program runs Dijkstra (a shortest-path search that always expands the closest plaza) from all bag plazas at once. The distance d[v] is the moment panic reaches plaza v. A shortest-path tree records the street panic came from; people cannot use that street to escape.
+
+For each plaza, the program checks every other street. It keeps the best survival time as a fraction, with a numerator and a denominator. Plazas are processed in decreasing distance, so any plaza further out already has its answer ready.
+
+Dijkstra costs O((n + m) log m), the distance sort costs O(n log n), and the escape scan costs O(n + m). Checking every possible escape path by brute force has no practical bound.
+
+Takeaway: one shortest-path tree turns a maze of escape choices into a single scan per plaza.
 
 ## Why It Works
 
-Panic reaches a plaza at its shortest distance from any bag. A street that achieves that distance is a parent street, and the crowd there never uses it again. A crowd from plaza v toward plaza u meets the opposing crowd exactly when the two travel intervals overlap. When no crowd comes back from u, the traveler dies on arrival at u.
+Five facts prove the computation.
 
-The collision time uses this formula, with forward travel time `w(v,u)` and backward time `w(u,v)`:
+1. Multi-source Dijkstra gives d[v], the earliest time panic reaches v. Starting with all bag plazas at distance zero seeds every source at once.
+2. The parent arc of v is the street panic used to arrive. People exiting v skip that arc and consider all others.
+3. If an escape reaches neighbor w exactly when panic reaches w, the survival time equals the survival time at w.
+4. If two crowds meet inside a street, the meeting time is the rational formula below. Cross multiplication compares two such times exactly.
+5. Processing plazas from large d to small d makes every further plaza's survival known first. Unreachable plazas never see panic and are printed directly.
 
-- `d[v] * w(u,v)` scales the departure at v by the backward time.
-- `d[u] * w(v,u)` scales the departure at u by the forward time.
-- `w(v,u) * w(u,v)` is the meeting offset.
-- `w(v,u) + w(u,v)` is the combined speed denominator.
+These are the terms used in the escape scan:
 
-A worked example from the sample uses plazas 1 and 2 as bags, so `d[3] = 10` and `d[4] = 15`. The table lists the candidate events on each street.
+| Term | Meaning |
+| --- | --- |
+| `minDist[v]` | time d[v] when panic reaches plaza v |
+| `arcWeight[arc]` | crossing time of that directed street |
+| parent arc | street through which panic first reached the plaza |
+| `arrive` | d[u] + weight(u → v), the escape arrival time |
+| meeting time | (d[u]·w(v→u) + d[v]·w(u→v) + w(u→v)·w(v→u)) / (w(u→v) + w(v→u)) |
+| `survivalNum`, `survivalDen` | numerator and denominator of a survival time |
 
-| Street | Departures | Weights | Collision |
-| --- | --- | --- | --- |
-| 1-2 | 0 / 0 | 10 / 10 | 100/20 = 5 |
-| 2-4 | 0 / 15 | 30 / 30 | 1350/60 = 22.5 |
-| 3-1 | 10 / 0 | 5 / 50 | 750/55 = 13.64 |
+A script traces the first sample case with fractions kept exact:
 
-The latest event is 22.5 on street 2-4. Plazas 2, 3, and 4 all reach it, so they are the answer.
+```
+plaza 4: dist 15, best 45/2 = 22.5
+plaza 3: dist 10, best 45/2 = 22.5
+plaza 2: dist 0,  best 45/2 = 22.5
+plaza 1: dist 0,  best 150/11 = 13.636...
+max plazas: 2 3 4
+```
+
+The key step is plaza 4 escaping along street 4-2. The meeting formula gives (15·30 + 0·30 + 30·30) / 60 = 1350 / 60 = 45/2. Rounding never enters the comparison, because the code compares products of numerators and denominators.
 
 ## Code
 
-The input is read in large blocks into one buffer, and the inline hand scanner walks it by index.
+**Setup and scanner.** The program reads the whole stream in large chunks.
 
 ```nim
 const firstDigitValue = 48
@@ -55,15 +104,15 @@ const unreachable = 1 shl 60
 {.passC: "-O3".}
 
 proc nextInt(data: string, pos: var int): int {.inline.} =
-  var i = pos
+  var curPos = pos
   let dataLen = data.len
-  while i < dataLen and (data[i] < '0' or data[i] > '9'):
-    i += 1
+  while curPos < dataLen and (data[curPos] < '0' or data[curPos] > '9'):
+    curPos += 1
   var value = 0
-  while i < dataLen and data[i] >= '0' and data[i] <= '9':
-    value = value * 10 + int(data[i]) - firstDigitValue
-    i += 1
-  pos = i
+  while curPos < dataLen and data[curPos] >= '0' and data[curPos] <= '9':
+    value = value * 10 + int(data[curPos]) - firstDigitValue
+    curPos += 1
+  pos = curPos
   return value
 
 var inputData = ""
@@ -77,7 +126,23 @@ while true:
   copyMem(inputData[startPos].addr, readChunk[0].addr, bytesRead)
 ```
 
-The scanner skips every non-digit, so blank lines between cases need no special handling. A probe pass over the buffered input finds the largest case, so each array is allocated once at the exact size it needs.
+The loop appends fixed-size chunks into one buffer. `copyMem` avoids per-byte work. The cost is one pass over the input bytes.
+
+**Output.** Answers gather in one buffer.
+
+```nim
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+```
+
+The flush happens every `flushBlockBytes` bytes. No write occurs while processing a case. The cost is one pass over the answer text.
+
+**Pre-scan.** The program measures the largest case before allocating arrays.
 
 ```nim
 var scanAt = 0
@@ -100,79 +165,101 @@ for caseIndex in 0..<caseCount:
     discard nextInt(inputData, scanProbe)
   for bagIndex in 0..<bagCount:
     discard nextInt(inputData, scanProbe)
+```
 
+A separate cursor, `scanProbe`, leaves `scanAt` untouched for the real pass. Only house and street counts are recorded. The cost is one extra scan of the input.
+
+**Buffers.** Arrays are sized once from the pre-scan maxima.
+
+```nim
 let maxNodeCount = largestNodeCount + 2
 let maxArcCount = 2 * largestStreetCount + 5
 let maxStreetCount = largestStreetCount + 2
+
+var arcStart = newSeq[int](maxNodeCount + 2)
+var arcCursor = newSeq[int](maxNodeCount + 2)
+var arcCount = newSeq[int](maxNodeCount + 2)
+var arcTo = newSeq[int](maxArcCount)
+var arcWeight = newSeq[int](maxArcCount)
+var arcReverse = newSeq[int](maxArcCount)
+var streetFrom = newSeq[int](maxStreetCount)
+var streetTarget = newSeq[int](maxStreetCount)
+var streetForward = newSeq[int](maxStreetCount)
+var streetBackward = newSeq[int](maxStreetCount)
+var minDist = newSeq[int](maxNodeCount + 2)
+var isBagNode = newSeq[bool](maxNodeCount + 2)
+var isParentArc = newSeq[bool](maxArcCount)
+var heapNode = newSeq[int](maxArcCount)
+var heapDist = newSeq[int](maxArcCount)
+var ordered = newSeq[int](maxNodeCount + 2)
+var survivalNum = newSeq[int64](maxNodeCount + 2)
+var survivalDen = newSeq[int64](maxNodeCount + 2)
+var heapSize = 0
+var poppedDist = 0
 ```
 
-One output buffer flushes in large blocks, which keeps the write path cheap.
+Each street creates two arcs, so `maxArcCount` is twice the street count plus slack. Reusing buffers avoids per-case allocation. Space is O(n + m).
+
+**Heap.** A binary heap holds the Dijkstra frontier.
 
 ```nim
-var outputBuffer = ""
+proc heapPush(nodeIndex, nodeDist: int) {.inline.} =
+  var idx = heapSize
+  heapSize += 1
+  while idx > 0:
+    let parentIndex = (idx - 1) div 2
+    if heapDist[parentIndex] <= nodeDist:
+      break
+    heapNode[idx] = heapNode[parentIndex]
+    heapDist[idx] = heapDist[parentIndex]
+    idx = parentIndex
+  heapNode[idx] = nodeIndex
+  heapDist[idx] = nodeDist
 
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
+proc heapPop(): int {.inline.} =
+  result = heapNode[0]
+  poppedDist = heapDist[0]
+  heapSize -= 1
+  if heapSize == 0:
+    return
+  let lastNode = heapNode[heapSize]
+  let lastDist = heapDist[heapSize]
+  var idx = 0
+  while true:
+    let leftChild = 2 * idx + 1
+    if leftChild >= heapSize:
+      break
+    let rightChild = leftChild + 1
+    var child = leftChild
+    if rightChild < heapSize and heapDist[rightChild] < heapDist[leftChild]:
+      child = rightChild
+    if heapDist[child] >= lastDist:
+      break
+    heapNode[idx] = heapNode[child]
+    heapDist[idx] = heapDist[child]
+    idx = child
+  heapNode[idx] = lastNode
+  heapDist[idx] = lastDist
 ```
 
-Each street becomes two directed arcs. A counting pass groups them by source plaza, so Dijkstra and the DP scan contiguous ranges. Every array is allocated once at the maximum size and reused by all cases.
+`heapPop` also stores the popped distance in `poppedDist`. The caller uses it to skip stale entries. Each push or pop costs O(log m).
+
+**Sort.** The plazas are ordered by distance before the escape scan.
 
 ```nim
-  arcStart[1] = 0
-  for nodeIndex in 1..nodeCount:
-    arcStart[nodeIndex + 1] = arcStart[nodeIndex] + arcCount[nodeIndex]
-    arcCursor[nodeIndex] = arcStart[nodeIndex]
+proc siftDown(values: var seq[int], rootIndex, endIndex: int) {.inline.} =
+  var root = rootIndex
+  while true:
+    var child = 2 * root + 1
+    if child > endIndex:
+      break
+    if child < endIndex and minDist[values[child]] > minDist[values[child + 1]]:
+      child += 1
+    if minDist[values[root]] <= minDist[values[child]]:
+      break
+    swap(values[root], values[child])
+    root = child
 
-  for streetIndex in 0..<streetCount:
-    let u = tempFrom[streetIndex]
-    let v = tempTarget[streetIndex]
-    let forwardArc = arcCursor[u]
-    arcCursor[u] += 1
-    arcTo[forwardArc] = v
-    arcWeight[forwardArc] = tempForward[streetIndex]
-    let backwardArc = arcCursor[v]
-    arcCursor[v] += 1
-    arcTo[backwardArc] = u
-    arcWeight[backwardArc] = tempBackward[streetIndex]
-    arcReverse[forwardArc] = backwardArc
-    arcReverse[backwardArc] = forwardArc
-```
-
-Dijkstra starts from all bags at once. A stale heap entry is skipped by comparing its key with the current distance.
-
-```nim
-  while heapSize > 0:
-    let nodeIndex = heapPop()
-    if poppedDist != distArr[nodeIndex]:
-      continue
-    let baseDist = distArr[nodeIndex]
-    for arcIndex in arcStart[nodeIndex]..<arcStart[nodeIndex + 1]:
-      let nextDist = baseDist + arcWeight[arcIndex]
-      let target = arcTo[arcIndex]
-      if nextDist < distArr[target]:
-        distArr[target] = nextDist
-        heapPush(target, nextDist)
-```
-
-An outgoing arc is closed when its neighbor reaches this plaza at the shortest distance. Bag plazas have no closed street. The check runs once per directed arc.
-
-```nim
-  for arcIndex in 0..<arcTotal:
-    isParentArc[arcIndex] = false
-  for nodeIndex in 1..nodeCount:
-    if isBagArr[nodeIndex]:
-      continue
-    for arcIndex in arcStart[nodeIndex]..<arcStart[nodeIndex + 1]:
-      if distArr[arcTo[arcIndex]] + arcWeight[arcReverse[arcIndex]] == distArr[nodeIndex]:
-        isParentArc[arcIndex] = true
-```
-
-An iterative heapsort visits plazas from largest arrival time to smallest. A child always has a larger time, so its answer is ready before the parent needs it. The heap uses no recursion.
-
-```nim
 proc sortByDistance(values: var seq[int], count: int) =
   var startIndex = count div 2 - 1
   while startIndex >= 0:
@@ -185,40 +272,179 @@ proc sortByDistance(values: var seq[int], count: int) =
     finish -= 1
 ```
 
+The heap uses the smaller child, so extraction produces decreasing distances. Farther plazas are therefore processed first. Sorting costs O(n log n).
+
+**Case processing.** Each case builds the graph, spreads panic, and scores escapes.
+
 ```nim
+for caseIndex in 0..<caseCount:
+  let nodeCount = nextInt(inputData, scanAt)
+  let streetCount = nextInt(inputData, scanAt)
+  let bagCount = nextInt(inputData, scanAt)
+  let arcTotal = 2 * streetCount
+
+  for nodeIndex in 1..nodeCount:
+    arcCount[nodeIndex] = 0
+    minDist[nodeIndex] = unreachable
+    isBagNode[nodeIndex] = false
+
+  for streetIndex in 0..<streetCount:
+    let fromNode = nextInt(inputData, scanAt)
+    let toNode = nextInt(inputData, scanAt)
+    streetFrom[streetIndex] = fromNode
+    streetTarget[streetIndex] = toNode
+    streetForward[streetIndex] = nextInt(inputData, scanAt)
+    streetBackward[streetIndex] = nextInt(inputData, scanAt)
+    arcCount[fromNode] += 1
+    arcCount[toNode] += 1
+
+  arcStart[1] = 0
+  for nodeIndex in 1..nodeCount:
+    arcStart[nodeIndex + 1] = arcStart[nodeIndex] + arcCount[nodeIndex]
+    arcCursor[nodeIndex] = arcStart[nodeIndex]
+
+  for streetIndex in 0..<streetCount:
+    let fromNode = streetFrom[streetIndex]
+    let toNode = streetTarget[streetIndex]
+    let forwardArc = arcCursor[fromNode]
+    arcCursor[fromNode] += 1
+    arcTo[forwardArc] = toNode
+    arcWeight[forwardArc] = streetForward[streetIndex]
+    let backwardArc = arcCursor[toNode]
+    arcCursor[toNode] += 1
+    arcTo[backwardArc] = fromNode
+    arcWeight[backwardArc] = streetBackward[streetIndex]
+    arcReverse[forwardArc] = backwardArc
+    arcReverse[backwardArc] = forwardArc
+
+  for bagIndex in 0..<bagCount:
+    let bagNode = nextInt(inputData, scanAt)
+    isBagNode[bagNode] = true
+    minDist[bagNode] = 0
+
+  heapSize = 0
+  for nodeIndex in 1..nodeCount:
+    if isBagNode[nodeIndex]:
+      heapPush(nodeIndex, 0)
+
+  while heapSize > 0:
+    let nodeIndex = heapPop()
+    if poppedDist != minDist[nodeIndex]:
+      continue
+    let baseDist = minDist[nodeIndex]
+    for arcIndex in arcStart[nodeIndex]..<arcStart[nodeIndex + 1]:
+      let nextDist = baseDist + arcWeight[arcIndex]
+      let target = arcTo[arcIndex]
+      if nextDist < minDist[target]:
+        minDist[target] = nextDist
+        heapPush(target, nextDist)
+
+  for arcIndex in 0..<arcTotal:
+    isParentArc[arcIndex] = false
+  for nodeIndex in 1..nodeCount:
+    if isBagNode[nodeIndex]:
+      continue
+    for arcIndex in arcStart[nodeIndex]..<arcStart[nodeIndex + 1]:
+      if minDist[arcTo[arcIndex]] + arcWeight[arcReverse[arcIndex]] == minDist[nodeIndex]:
+        isParentArc[arcIndex] = true
+
+  for nodeIndex in 1..nodeCount:
     ordered[nodeIndex - 1] = nodeIndex
   sortByDistance(ordered, nodeCount)
-```
 
-For each open street the code either inherits the child's answer, computes the collision as a fraction, or uses the plain arrival time. Keeping numerator and denominator separate gives exact comparisons with 64-bit products.
-
-```nim
-        if arrive == distArr[target]:
+  for sliceIndex in 0..<nodeCount:
+    let nodeIndex = ordered[sliceIndex]
+    if minDist[nodeIndex] == unreachable:
+      continue
+    var bestNum: int64 = 0
+    var bestDen: int64 = 1
+    var haveBest = false
+    for arcIndex in arcStart[nodeIndex]..<arcStart[nodeIndex + 1]:
+      if not isParentArc[arcIndex]:
+        let target = arcTo[arcIndex]
+        let forwardWeight = arcWeight[arcIndex]
+        let arrive = minDist[nodeIndex] + forwardWeight
+        var valueNum: int64 = 0
+        var valueDen: int64 = 1
+        if arrive == minDist[target]:
           valueNum = survivalNum[target]
           valueDen = survivalDen[target]
-        elif distArr[target] < arrive and distArr[nodeIndex] < distArr[target] + arcWeight[arcReverse[arcIndex]]:
-          valueNum = int64(distArr[nodeIndex]) * arcWeight[arcReverse[arcIndex]] +
-                     int64(distArr[target]) * forwardWeight +
+        elif minDist[target] < arrive and minDist[nodeIndex] < minDist[target] + arcWeight[arcReverse[arcIndex]]:
+          valueNum = int64(minDist[nodeIndex]) * arcWeight[arcReverse[arcIndex]] +
+                     int64(minDist[target]) * forwardWeight +
                      int64(forwardWeight) * arcWeight[arcReverse[arcIndex]]
           valueDen = int64(forwardWeight + arcWeight[arcReverse[arcIndex]])
         else:
           valueNum = int64(arrive)
           valueDen = 1
-```
+        if not haveBest or valueNum * bestDen > bestNum * valueDen:
+          bestNum = valueNum
+          bestDen = valueDen
+          haveBest = true
+    if not haveBest:
+      bestNum = int64(minDist[nodeIndex])
+      bestDen = 1
+    survivalNum[nodeIndex] = bestNum
+    survivalDen[nodeIndex] = bestDen
 
-Otherwise the code scans all plazas once and prints those tied at the top fraction.
+  var hasHidden = false
+  for nodeIndex in 1..nodeCount:
+    if minDist[nodeIndex] == unreachable:
+      hasHidden = true
+      break
 
-```nim
+  if hasHidden:
+    var firstWritten = true
+    for nodeIndex in 1..nodeCount:
+      if minDist[nodeIndex] == unreachable:
+        if not firstWritten:
+          appendOutput(" ")
+        appendOutput($(nodeIndex))
+        firstWritten = false
+    appendOutput("\n")
+    continue
+
   var maxNum: int64 = survivalNum[1]
   var maxDen: int64 = survivalDen[1]
   for nodeIndex in 2..nodeCount:
     if survivalNum[nodeIndex] * maxDen > maxNum * survivalDen[nodeIndex]:
       maxNum = survivalNum[nodeIndex]
       maxDen = survivalDen[nodeIndex]
+
+  var firstWritten = true
+  for nodeIndex in 1..nodeCount:
+    if survivalNum[nodeIndex] * maxDen == maxNum * survivalDen[nodeIndex]:
+      if not firstWritten:
+        appendOutput(" ")
+      appendOutput($(nodeIndex))
+      firstWritten = false
+  appendOutput("\n")
+
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
+
+`arcStart` gives each plaza a contiguous arc slice. Dijkstra skips stale heap entries with the `poppedDist` check. The escape loop compares fractions by cross products, which avoids rounding errors. Printing all unreachable plazas handles the infinite-survival case.
 
 ## Complexity
 
-Dijkstra takes O(m log n) time and O(n + m) space. Marking closed streets takes O(m) time. Sorting plazas takes O(n log n) time. The DP takes O(m) time and O(n) space for the two fraction arrays. Output takes time proportional to the printed plazas. The total is O(m log n) time and O(n + m) space per case.
+Graph setup, shortest paths, and the escape scan share the work.
 
-A full event simulation follows every crowd and can run without end when crowds circulate. The distance formula settles each street once and avoids that cost.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(total tokens) | O(input size) |
+| Pre-scan and allocation | O(total tokens) | O(n + m) |
+| Graph build per case | O(n + m) | O(n + m) |
+| Multi-source Dijkstra | O((n + m) log m) | O(n + m) |
+| Distance sort | O(n log n) | O(n) |
+| Escape scan and output | O(n + m) | O(n) |
+
+Dijkstra and the sort dominate, with O((n + m) log m) time per case.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O((n + m) log m) |
+| Total time | O(sum over cases of (n + m) log m) |
+| Working space | O(n + m) |
+
+Enumerating escape paths separately for every plaza would take far longer than one tree plus one scan.

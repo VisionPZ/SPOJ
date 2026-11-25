@@ -1,6 +1,16 @@
+# HOTLINE — Hotline (SPOJ)
+
+<https://www.spoj.com/problems/HOTLINE/>
+
 ## Problem
 
-Read several dialogues in English. Each dialogue contains statements that end with a dot and questions that end with a question mark. A special line ending with an exclamation mark closes the dialogue. Answer each question using only the statements that came before it. Print the dialogue header, then for every question its text, the answer, and an empty line. Close with the exclamation line and another empty line.
+An operator answers questions using only the statements heard earlier in a dialogue. Each reply must agree with those facts and with plain English grammar.
+
+Read `t` dialogues. A dialogue starts with a count line. Statement lines end in `.`, question lines end in `?`, and one exit line ends in `!`.
+
+Print the dialogue header, then each question, its answer, and a blank line. Close with the exit line and another blank line.
+
+The bounds from the statement:
 
 | Quantity | Bound |
 | --- | --- |
@@ -10,29 +20,116 @@ Read several dialogues in English. Each dialogue contains statements that end wi
 | Time limit | 2000 ms |
 | Memory limit | 1536 MB |
 
-Statements never repeat inside one dialogue; questions may repeat.
+Statements never repeat inside one dialogue, so the fact store stays small.
+
+The sample case:
+
+```
+1
+I like hotdogs.
+nobody likes to work.
+everybody smiles.
+what do I do?
+who smiles?
+what do you do?
+does Joe smile?
+do I like to work?
+everybody hurts sometimes.
+who walks there?
+Michal walks there.
+who walks there?
+what does Michal do?
+do you understand?
+nobody walks there.
+do you understand now?
+bye!
+```
+
+```
+Dialogue #1:
+what do I do?
+you like hotdogs, don't like to work, and smile.
+
+who smiles?
+everybody smiles.
+
+what do you do?
+I don't like to work, and smile.
+
+does Joe smile?
+yes, Joe smiles.
+
+do I like to work?
+no, you don't like to work.
+
+who walks there?
+I don't know.
+
+who walks there?
+Michal walks there.
+
+what does Michal do?
+Michal doesn't like to work, smiles, hurts sometimes, and walks there.
+
+do you understand?
+maybe.
+
+do you understand now?
+I am abroad.
+
+bye!
+
+```
 
 ## Idea
 
-Store each statement as a subject, a base verb, an object, and a polarity. A question looks up statements whose subject matches, including the generic subjects `everybody` and `nobody`. When a positive and a negative statement describe the same activity for the same subject, every later answer becomes `I am abroad.`
+Treat each sentence as an index card with a subject, a verb, an object, and a sign.
 
-Each question scans the stored statements once, so answering costs O(S) for S statements. Searching a fresh grammar for every question would cost far more.
+The program files those cards, then pulls every card matching a question. This works like a waiting room where a nurse reads only the notes already on the clipboard. Three fixed templates turn the matching cards into yes/no, who, or what answers.
+
+A positive and a negative card about the same activity cancel all trust. Every later answer then becomes `I am abroad`.
+
+Each question scans the stored cards once, at O(S) cost for S statements. Building a fresh grammar per question costs far more. One scan over a small card pile answers every template.
 
 ## Why It Works
 
-An activity is the pair of base verb and object. `Michal walks there` and `everybody walks there` share the activity `walk / there`. The inflected verb loses its final `s` when the subject is not `I` or `you`, and when the subject is `nobody`.
+Five facts carry the answer rules.
 
-The three question types follow fixed templates:
+1. An activity is the pair of base verb and object. `Michal walks there` and `everybody walks there` share the activity `walk / there`.
+2. A verb loses its final `s` when the subject is not `I` or `you`, or when `nobody` acts. `baseVerb` restores that base form before matching.
+3. A positive card applies to its named subject or to `everybody`. A negative card applies to its named subject or to `nobody`.
+4. A generic card conflicts with every opposite card on the same activity. Two named subjects conflict only when equal, so `hasContradiction` scans pairs once.
+5. The answer swaps `I` and `you`, because caller and operator speak from opposite sides. A single subject takes a singular verb; a list takes the base verb.
 
-- yes or no: look for a matching positive statement, then a matching negative one, then answer `maybe.`
-- who: collect the subjects of matching positive statements, or fall back to a `nobody` statement
-- what: list every distinct activity that applies to the subject, in statement order
+The fields and helpers and their roles:
 
-The answer subject swaps `I` and `you`, because the caller and the operator see each other from opposite sides. A single subject uses the singular verb; an enumeration uses the base verb. A contradiction means the stored facts cannot all hold, so no other answer is trustworthy.
+| Term | Meaning |
+| --- | --- |
+| `Statement` | subject, base verb, object, and negation flag |
+| `activityVerb` | verb stripped back to its dictionary form |
+| `appliesTo` | test for a named or generic subject |
+| `hasContradiction` | double scan for opposing cards |
+| `swappedSubject` | `I` becomes `you`, and the reverse |
+| `conjugatedVerb` | adds `s` for third-person singular subjects |
+
+These rules keep grammar changes in one place per answer type.
+
+A script traces the first three statements and the first question of the sample:
+
+```
+statement 1: I / like / hotdogs / positive
+statement 2: nobody / like / to work / negative
+statement 3: everybody / smile / (no object) / positive
+question: what do I do?  -> answer subject "you"
+matching facts: like hotdogs (+), like to work (-), smile (+)
+answer: you like hotdogs, don't like to work, and smile.
+```
+
+The `nobody` card reaches `I`, so the answer includes `don't like to work`. The `everybody` card also reaches `I`, so `smile` joins the list.
 
 ## Code
 
-The program reads all input at once and keeps each line as a slice.
+**Types and line readers.** One buffer holds the whole file, and slices mark each line.
 
 ```nim
 import std/strutils
@@ -82,9 +179,9 @@ proc nextLine(data: string, i: var int): string =
   return result
 ```
 
-The header is read with a separate position, so the dialogue walk starts at the first line after it. Parsing one line visits its characters once.
+The read loop runs once per input line and appends a newline each time. `nextLine` advances `i` past that newline, so lines never overlap. Both readers cost one pass over their bytes.
 
-The next helpers convert a raw line into a fact or a question.
+**Sentence parsing.** Each line becomes a fact or a question with fixed fields.
 
 ```nim
 proc baseVerb(inflectedVerb: string): string =
@@ -142,9 +239,9 @@ proc parseQuestion(line: string): Question =
     result.activityObject = objectTail(parts, 3)
 ```
 
-The object keeps its spaces and punctuation as one string. The two negative auxiliaries have different lengths, so each uses its own offset.
+`substr(0, line.len - 2)` drops the final dot or question mark. The two negative auxiliaries differ in length, so each gets its own offset. The object keeps its spaces as one string.
 
-The fact store decides applicability and contradictions.
+**Fact matching.** Applicability and contradictions use the stored cards.
 
 ```nim
 proc sameActivity(left: Statement, verb: string, objectText: string): bool =
@@ -170,9 +267,9 @@ proc hasContradiction(statements: seq[Statement]): bool =
   return false
 ```
 
-A generic statement conflicts with every opposite statement about the same activity. Two specific subjects conflict only when they are equal. The double scan costs O(S²) for at most 100 statements.
+A generic card meets every opposite card about the same activity. Named subjects meet only when equal. The double scan costs O(S^2) for at most 100 statements.
 
-Each answer builder follows one question template.
+**Grammar helpers and yes/no.** The reply swaps viewpoints and fixes the verb.
 
 ```nim
 proc swappedSubject(subject: string): string =
@@ -217,7 +314,13 @@ proc yesNoAnswer(question: Question, statements: seq[Statement]): string =
     return "no, " & withObject(answerSubject & " " & denial & " " &
                                question.activityVerb, question.activityObject) & "."
   return "maybe."
+```
 
+A positive card wins over a negative card, and silence gives `maybe.`. The scan visits each card once. `withObject` appends the object only when one exists.
+
+**Who and what answers.** Enumerations and activity lists follow two templates.
+
+```nim
 proc whoAnswer(question: Question, statements: seq[Statement]): string =
   var matchingSubjects: seq[string] = @[]
   var nobodyFound = false
@@ -298,9 +401,9 @@ proc whatAnswer(question: Question, statements: seq[Statement]): string =
   return answer & "."
 ```
 
-A who enumeration joins subjects with commas and one final `and`. A what list uses a comma before `and` instead. Duplicate activities are skipped even when two generic statements describe them.
+A `who` list joins names with commas and one final `and`. A `what` list puts a comma before `and`. Duplicate activities never appear twice.
 
-The driver processes lines in order and flushes output in blocks.
+**Driver.** The loop reads lines in order and flushes output in blocks.
 
 ```nim
 var outputBuffer = ""
@@ -358,15 +461,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Statements accumulate only inside the current dialogue. The contradiction check runs before each answer, so facts added later cannot change earlier replies.
+Statements accumulate only inside the current dialogue. The contradiction check runs before each answer, so later facts cannot rewrite earlier replies.
 
 ## Complexity
+
+Parsing and answering both stay small for at most 100 statements.
 
 | Phase | Time | Space |
 | --- | --- | --- |
 | Parse one line | O(line length) | O(object length) |
-| Store S statements | O(S) | O(S) |
-| Answer one question | O(S²) worst case | O(S) |
-| Output | O(1) per line | one block |
+| Store S statements | O(S) | O(S) cards |
+| Answer one question | O(S^2) worst case | O(S) scratch lists |
+| Output | O(1) per line | one output block |
 
-Total time per dialogue is O(Q · S²) for Q questions and S statements, with S at most 100. Total space is O(S) for statements plus the input buffer.
+The worst answer cost comes from the contradiction double scan.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(Q * S^2) per dialogue, with S at most 100 |
+| Space | O(S) per dialogue plus the input buffer |
+
+A fresh grammar or full reparsing for each question costs far more than one scan of the card pile.

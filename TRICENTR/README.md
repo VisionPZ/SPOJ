@@ -1,65 +1,89 @@
+# TRICENTR — Triangle From Centroid (SPOJ)
+
+<https://www.spoj.com/problems/TRICENTR/>
+
 ## Problem
 
-Each case gives one side length and the centroid's perpendicular distance to each of the three sides.
-The centroid is the point where the three medians meet, and the orthocenter is the point where the three heights meet.
-Print the triangle's area and the distance from the orthocenter to the centroid.
-Write both values with three digits after the decimal point.
+A surveyor knows one side of a triangular plot and the centroid's perpendicular distance to each of the three sides. She needs the plot's area and the gap between its orthocenter and centroid.
 
-The judge sets these bounds:
+Input starts with the case count `n`, about 1000. Each following line holds four floating values: side length `a`, then the centroid distances `da`, `db`, and `dc` to sides `a`, `b`, and `c`. Output `n` lines, each with the area and the centroid-to-orthocenter distance formatted to three decimals.
+
+The judge sets these bounds.
 
 | Item | Value |
 | --- | --- |
-| Cases | about 1000 |
-| Time | 1000 ms |
-| Memory | 1536 MB |
-| Source | 50000 B |
+| Test cases | about 1000 |
+| Side and distances | floating point values |
+| Time limit | 1000 ms |
+| Source limit | 50000 B |
+| Memory limit | 1536 MB |
 
-The input holds four numbers per case, and the output holds two.
+The fixed four-number layout keeps each case at constant cost.
+
+The sample input and output follow verbatim.
+
+```
+2
+3.0 0.8660254038 0.8660254038 0.8660254038
+657.8256599140 151.6154399062 213.5392629932 139.4878846649
+```
+
+```
+3.897 0.000
+149604.790 150.275
+```
 
 ## Idea
 
-The centroid sits one third of the way up every height, so each height is three times its given distance.
-That fact gives the area, the two missing sides, and the orthocenter distance in one fixed sequence.
-Each case costs a constant number of arithmetic steps.
+Triple each given distance to recover a full height, then follow one fixed formula chain. Think of the centroid as a balance point sitting one third of the way up each height.
+
+The centroid divides every median in a two-to-one ratio, so its distance to a side is one third of that side's height. The program multiplies by three, computes the area, derives the two missing sides, and applies Euler's relation. Each case costs a fixed number of arithmetic steps.
+
+A coordinate geometry solution would solve a system of equations per case. The direct chain finishes in a handful of operations.
+
+A fixed formula chain turns geometry into plain arithmetic.
 
 ## Why It Works
 
-The centroid divides every median in a 2:1 ratio.
-Its distance to a side is one third of that side's height.
-The same area comes from any side used as a base.
-Euler's relation links the circumcenter, the centroid, and the orthocenter.
+Five facts justify the chain.
 
-Each line below gives one term of the derivation.
+1. The centroid divides every median two to one. Its perpendicular distance to a side equals one third of that side's height, so `ha = 3·da`, `hb = 3·db`, and `hc = 3·dc`.
+2. Any side works as a base. The area is `S = a·ha / 2 = 1.5·a·da`.
+3. The same area from another base gives the missing sides: `b = 2·S / hb = a·da / db` and `c = a·da / dc`.
+4. The circumradius is `R = a·b·c / (4·S)`. Euler's relation then gives the orthocenter distance: `OH^2 = 9·R^2 - (a^2 + b^2 + c^2)`.
+5. The centroid lies two thirds of the way from the orthocenter toward the circumcenter, so `GH = (2/3)·OH`.
+
+The table lists every term of the derivation.
 
 | Term | Value |
 | --- | --- |
-| Height on side a | ha = 3 * da |
-| Area | S = a * ha / 2 = 1.5 * a * da |
-| Side b | b = 2 * S / hb = a * da / db |
-| Side c | c = 2 * S / hc = a * da / dc |
-| Circumradius | R = a * b * c / (4 * S) |
-| Euler relation | OH^2 = 9 * R^2 - (a^2 + b^2 + c^2) |
-| Centroid distance | GH = (2 / 3) * OH |
+| `ha`, `hb`, `hc` | 3·da, 3·db, 3·dc |
+| `triangleArea` | 1.5·a·da |
+| `otherSideB`, `otherSideC` | a·da/db, a·da/dc |
+| `circumRadius` | a·b·c/(4·triangleArea) |
+| `eulerSquared` | 9·R^2 - (a^2 + b^2 + c^2) |
+| `centroidToOrthocenter` | (2/3)·sqrt(eulerSquared) |
 
-The program clamps OH^2 at zero before it takes the square root.
+The program clamps `eulerSquared` at zero before the square root. An equilateral input can push that value slightly negative through rounding.
 
-The second sample case shows every term with numbers.
+The second sample case shows every term with visible numbers.
 
 | Step | Value |
 | --- | --- |
-| a | 657.8256599140 |
-| da, db, dc | 151.6154399062, 213.5392629932, 139.4878846649 |
-| ha, hb, hc | 454.846320, 640.617789, 418.463654 |
-| S | 149604.790214 |
-| b, c | 467.064115, 715.019280 |
-| R | 367.112838 |
-| OH^2 | 50810.467708 |
-| OH | 225.411774 |
-| GH | 150.274516 |
+| `a` | 657.8256599140 |
+| `da`, `db`, `dc` | 151.6154399062, 213.5392629932, 139.4878846649 |
+| `ha`, `hb`, `hc` | 454.846320, 640.617789, 418.463654 |
+| `triangleArea` | 149604.790214 |
+| `otherSideB`, `otherSideC` | 467.064115, 715.019280 |
+| `circumRadius` | 367.112838 |
+| `eulerSquared` | 50810.467708 |
+| `centroidToOrthocenter` | 150.274516 |
 
-Rounding to three decimals gives 149604.790 150.275.
+Rounding to three decimals gives `149604.790 150.275`, the sample output.
 
 ## Code
+
+**Input reader.** The reader accepts integers, signs, decimals, and exponent notation from one buffer.
 
 ```nim
 import strutils, math
@@ -130,9 +154,9 @@ proc nextDecimal(inputData: string, i: var int): float =
       result = result / exponentScale
 ```
 
-The reader loop ends at the stream boundary, so a blank line cannot break the scan.
-Building one significand before the single division avoids the two-rounding error of adding whole and fractional parts.
-The scanner touches each input byte once.
+The reader loop ends at the stream boundary, so blank lines cannot break the scan. Building one significand before the single division avoids two-rounding error. The scanner touches each input byte once.
+
+**Formula and output.** The main procedure applies the formula chain and formats the answers.
 
 ```nim
 proc main() =
@@ -167,16 +191,23 @@ proc main() =
 main()
 ```
 
-The main loop runs exactly caseCount times, and caseCount is the first integer in the buffer.
-Clamping eulerSquared at zero avoids a square root of a negative number.
-One buffer collects every line and flushes after 64 KiB, so stream writes stay rare.
-Each case costs a fixed number of operations.
+The loop runs exactly `caseCount` times. Clamping `eulerSquared` avoids a square root of a negative number. One buffer flushes after 64 KiB, so stream writes stay rare.
 
 ## Complexity
 
-Reading uses O(m) time for m input characters and stores them in one buffer.
-The formula pass uses O(1) time and space per case.
-Writing uses O(n) time for n output lines and flushes in blocks.
+Reading and output scale with text size, while the formula stays fixed.
 
-Total time is O(m + n), and total space is O(m).
-Reading and writing each value separately would add one stream call per number.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | O(input bytes) | one input string |
+| Formula per case | O(1) | constant |
+| Output per case | O(1) | one flush block |
+
+Total work is linear in the input and output text.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(input bytes + n) |
+| Space | O(input bytes) |
+
+Solving a coordinate system for each triangle costs far more than the constant formula chain.

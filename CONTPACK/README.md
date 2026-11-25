@@ -1,10 +1,18 @@
+# CONTPACK — How to pack containers (SPOJ)
+
+<https://www.spoj.com/problems/CONTPACK/>
+
 ## Problem
 
-A box of size `i` has height `2^i`. A container of size `s` needs boxes whose heights add to `2^s`. Choose a subset of the warehouse boxes that fills every container exactly and has the smallest total value. Print `No` when no subset works.
+A warehouse sells boxes whose heights are powers of two. Containers must be packed exactly, and the oldest goods go first, so the cheapest boxes should be used.
 
-The table lists the input bounds and the judge limits.
+Input: one integer for the case count, then a box count. Each box gives a size and value. Then come a kind count and one size-count pair per kind.
 
-| Quantity | Bound |
+Output: the smallest total value of boxes that fills every container, or `No` when no choice works.
+
+The statement and judge give these bounds:
+
+| Item | Bound |
 | --- | --- |
 | Boxes in one case | at most 10000 |
 | Box and container size | at most 1000 |
@@ -13,39 +21,74 @@ The table lists the input bounds and the judge limits.
 | Time limit | 5000 ms |
 | Memory limit | 1536 MB |
 
-The value bound keeps any answer below 10^8, which fits in one integer.
+The value bound keeps any answer below 100000000, which fits one integer.
+
+The sample input and output:
+
+```
+1
+5
+1 3
+1 2
+3 5
+2 1
+1 4
+2
+1 1
+2 1
+```
+
+```
+3
+```
 
 ## Idea
 
-Treat each size-i block as a token of height `2^i`. Sweep sizes from zero upward. At each size, add that size's boxes to a pool of tokens. Spend the cheapest tokens on that size's containers. Then merge the leftover tokens in adjacent pairs. Two size-i tokens merge into one size-(i+1) token, and the new token carries the sum of the values behind it. Spending the cheapest tokens first keeps the pool cheap for larger sizes. Trying every subset of boxes takes exponential time.
+Stack boxes into tokens of equal height, like pairing identical tubes on a shelf. At each size, spend the cheapest tokens on that size's containers, then pair the leftovers into tokens of the next size.
 
-Each box enters the pool once and leaves through one merge, so the sweep costs O(n log n) time per case.
+The program sweeps sizes from zero upward. It sorts the pool of available tokens, takes the cheapest ones for the current containers, and merges the rest two at a time.
+
+Each box enters the pool once and leaves through one merge, so the sweep costs O(n log n) per case. Trying every subset of boxes takes exponential time.
+
+Spending cheapest first keeps larger sizes supplied with cheap tokens.
 
 ## Why It Works
 
-A token of size i holds boxes whose heights sum to `2^i`.
+A token of size i represents boxes whose heights sum to `2^i`.
 
-- Spending need tokens of size i fills need containers, since every token has height `2^i`.
-- Two size-i tokens merge into one size-(i+1) token because 2 times `2^i` equals `2^(i+1)`.
-- Sorting the pool makes the cheapest tokens fill containers first.
-- Pairing sorted leftovers side by side keeps the smallest merged tokens small, so larger sizes still have cheap tokens.
+1. Spending need tokens of size i fills need containers, because every token has height `2^i`.
+2. Two size-i tokens merge into one size-(i+1) token, because `2 × 2^i = 2^(i+1)`.
+3. Sorting the pool makes the cheapest tokens fill containers first, which minimizes the total value.
+4. Pairing sorted leftovers side by side keeps the smallest merged tokens small, so larger sizes still have cheap tokens.
 
-The generator prints this walkthrough of the sample.
+The sweep uses the following terms:
+
+| Term | Meaning |
+| --- | --- |
+| `boxValues[size]` | values of boxes with height `2^size` |
+| `needCount[size]` | containers requesting that size |
+| `pool` | sorted token values available at the current size |
+| `nextPool` | pair sums carried to the next size |
+| `touchedSizes` | sizes used by the current case |
+
+Marks let the program clear only the sizes a case uses.
+
+A script traces the sample case:
 
 ```
 top size = 3
-size 0: add [] -> sorted []; need 0; take [] (total 0); pair [] -> []
-size 1: add [2, 3, 4] -> sorted [2, 3, 4]; need 1; take [2] (total 2); pair [3, 4] -> [7]
-size 2: add [1] -> sorted [1, 7]; need 1; take [1] (total 3); pair [7] -> []
-size 3: add [5] -> sorted [5]; need 0; take [] (total 3); pair [5] -> []
+size 0: add []       -> sorted []      need 0 take []       total 0 pair []    -> []
+size 1: add [3,2,4]  -> sorted [2,3,4] need 1 take [2]      total 2 pair [3,4] -> [7]
+size 2: add [1]      -> sorted [1,7]   need 1 take [1]      total 3 pair [7]   -> []
+size 3: add [5]      -> sorted [5]     need 0 take []       total 3 pair []    -> []
 answer = 3
 ```
 
-The two cheapest size-1 boxes cost 2 and 3. The sweep spends 2 on the size-1 container and merges 3 with 4 into a token worth 7. The size-2 box worth 1 fills the size-2 container, so the answer is 3.
+The cheapest size-1 box costs 2. The size-2 box costs 1, so the total is 3.
 
 ## Code
 
-The program reads all input into one buffer, then parses integers with a hand scanner. Output collects in one buffer and flushes in blocks.
+**Input and buffers.** One buffer holds the stream, and a hand scanner reads each integer.
 
 ```nim
 import algorithm
@@ -80,9 +123,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The read loop ends at the end of the input, so the stream is read once. The scanner skips spaces and blank lines between cases. The flush guard avoids writing one result at a time.
+The read loop ends at the end of the stream. The scanner skips blank lines between cases. The flush guard avoids writing one result at a time.
 
-Marks track the sizes used by a case, so the next case clears only those sizes.
+**Per-size storage.** Marks track touched sizes, so clearing a case costs only those sizes.
 
 ```nim
 var boxValues: array[maxBoxSize + 1, seq[int]]
@@ -107,9 +150,9 @@ proc byValue(leftValue, rightValue: int): int =
   result = system.cmp(leftValue, rightValue)
 ```
 
-The reset loop runs once per size touched by the previous case. Marks stop a size from appearing twice in one case. The comparator orders tokens cheapest first. This block costs O(touched sizes) per case.
+The reset loop runs once per touched size. A mark stops a size from appearing twice in one case. The comparator orders tokens cheapest first.
 
-The main sweep fills containers and builds tokens for the next size.
+**Size sweep.** Each level adds boxes, spends the cheapest tokens, and pairs the rest.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -163,10 +206,28 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The outer loop runs up to the largest size present in the case. The size check catches a case with too few tokens and prints `No`. The pairing loop halves the pool at each level, so the total work stays linear in the number of boxes.
+The outer loop runs up to the largest size in the case. The size check catches a shortage of tokens and prints `No`. The pairing loop halves the pool at each level, which keeps the total work linear in the box count.
 
 ## Complexity
 
-Reading the input costs O(total tokens) time and O(input size) space. Sorting the pools costs O(n log n) time per case with n boxes. Merging and all per-level work cost O(n + S) time, where S is the largest size present. Space per case is O(n + S).
+Sorting the pool dominates each level of the size sweep.
 
-Across all cases the total time is O(T log n + total sizes) for T boxes, and peak space is O(n). The naive subset search costs O(2^n) per case.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input read | one pass over input bytes | input bytes |
+| Case setup | O(n + S) per case | O(n + S) |
+| Pool sorts | O(n log n) per case | O(n) pool |
+| Pairing | O(n + S) per case | O(n) pool |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(n log n + S) | O(n + S) |
+
+Here n is the box count and S is the largest size present.
+
+The asymptotic bounds are as follows:
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(n log n + S) per case |
+| Space | O(n + S) per case |
+
+Choosing a subset of boxes by brute force would cost O(2^n) per case.

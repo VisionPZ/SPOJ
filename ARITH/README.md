@@ -1,80 +1,99 @@
+# ARITH — Simple Arithmetics (SPOJ)
+<https://www.spoj.com/problems/ARITH/>
+
 ## Problem
 
-Read one arithmetic expression per line: a positive integer, an operator `+ - *`, and another positive integer. Print the calculation the way it is done by hand: the two operands stacked, a rule, the result, and for multiplication every partial product with its sum. Put a blank line after every case, including the last.
+A calculator must print long-number arithmetic the way a pupil writes it on paper, with aligned columns and dashed separators.
+Each expression needs a neat layout plus its exact result.
 
-| Item | Bound |
+The first line gives T. Each next line holds a positive integer, one of +, -, or *, and a second positive integer, with no spaces. Print the formatted calculation and a blank line after each case.
+
+The bounds and judge limits are:
+
+| Constraint | Value |
 | --- | --- |
-| Cases | about 1000 |
-| Digits per number | 500 |
-| Subtraction | second number smaller |
-| Leading zeros | none |
-| Judge limits | 5 s, 1536 MB |
+| Expressions T | about 1000 |
+| Digits per number | up to 500 |
+| Subtraction | second number is smaller |
+| Judge time | 5 s |
+| Judge memory | 1536 MB |
+
+A row model keeps alignment exact at the maximum digit count.
+
+The sample input and its expected output follow byte for byte.
+
+```
+4
+12345+67890
+324-111
+325*4405
+1234*4
+```
+
+```
+ 12345
++67890
+------
+ 80235
+
+ 324
+-111
+----
+ 213
+
+    325
+  *4405
+  -----
+   1625
+     0
+ 1300
+1300
+-------
+1431625
+
+1234
+  *4
+----
+4936
+
+```
+
 
 ## Idea
 
-Store each number as digit values with the least significant digit first. Addition, subtraction and multiplication walk forward through those lists, so a carry or a borrow never moves backward. Each printed line becomes a `Row` that records its left edge, its right edge, and either text or a dash flag. Find the largest leftward overhang, shift every row by it, then append spaces, text or dashes. Multiplication visits each digit pair once, so 500 x 500 = 250 000 digit steps per case.
+Store digits least significant first, like writing a column sum from the right-hand edge.
+The program converts each operand to a reversed digit list (units digit stored first), so carry and borrow move forward through the array. Each printed line becomes a Row (text with column bounds). It records the left edge, the right edge, and either text or a dash flag.
+After all rows are built, the code finds the largest leftward overhang and shifts every row by the same amount. Addition and subtraction cost linear time, while multiplication touches each digit pair once.
+Hand-padding strings for each line is easy to get wrong and costs extra passes.
+One row model makes alignment arithmetic instead of guesswork.
 
 ## Why It Works
 
-A reversed number starts with its least significant digit, so column-by-column addition of two digit lists builds the reversed sum. Printing that list backwards gives the normal sum. Subtraction uses the same columns and adds 10 once when a digit goes negative.
+1. Reversed digit lists let a carry or borrow advance to the next index without moving backward.
+2. `multiplyReversed` adds each digit pair into column j+i exactly once, then pushes the carry upward.
+3. A `Row` stores its left and right column, so alignment is an integer subtraction rather than string padding.
+4. `dashBetween` spans from the leftmost to the rightmost edge of the two rows next to it.
+5. The largest value of minus left over all rows gives the one shift applied to every line.
 
-Every output line is one `Row`. Text rows hold a string, dash rows hold none. `dashBetween` takes the smallest left edge and the largest right edge of two rows, so one rule covers both lines it joins.
+Four terms describe the layout.
 
-For multiplication, `partialTexts[i]` holds `firstDigits` times digit `i` of `secondDigits`, with leading zeros dropped. Row `i` starts at `width - i - partialTexts[i].len`, which lines digit `i` up under that digit of the second operand. The smallest `left` value over all rows becomes `shift`, and every row moves right by that much.
+| Term | Meaning |
+| --- | --- |
+| reversed digits | units digit stored at index zero |
+| row | one printed line with column bounds |
+| dash row | horizontal separator between two rows |
+| overhang | empty columns before a row starts |
 
-The program prints `325*44` as follows.
+They explain why a single shift aligns every printed line.
 
-| Line | Text | Left edge | Right edge |
-| --- | --- | --- | --- |
-| first operand | 325 | 0 | 3 |
-| operator with second | *44 | 0 | 3 |
-| first rule | ---- | -1 | 3 |
-| partial at digit 0 | 1300 | -1 | 3 |
-| partial at digit 1 | 1300 | -2 | 2 |
-| second rule | ----- | -2 | 3 |
-| product | 14300 | -2 | 3 |
-
-The smallest left edge is -2, so `shift` is 2 and every row gains two leading spaces.
+A script check of `12345+67890` adds reversed lists [5,4,3,2,1] and [0,9,8,7,6].
+The column sums produce [5,3,2,0,8], printed as 80235.
+The width is 6, so the top row starts at column 1 and the operator row at column 0.
+The dash row spans columns 0 through 6, matching the sample.
 
 ## Code
 
-One buffer collects the output, and each helper adds text or a rule to it.
-
-```nim
-const flushBlockBytes = 1 shl 19
-
-var outputBuffer: string
-
-proc flushBlock() =
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write(outputBuffer)
-    setLen(outputBuffer, 0)
-
-proc appendSpaces(count: int) =
-  for _ in 0 ..< count:
-    outputBuffer.add(' ')
-
-proc appendText(text: string) =
-  outputBuffer.add(text)
-  outputBuffer.add('\n')
-
-proc appendDashes(count: int) =
-  for _ in 0 ..< count:
-    outputBuffer.add('-')
-  outputBuffer.add('\n')
-
-proc parseCount(token: string): int =
-  var value = 0
-  for c in token:
-    if c in {'0' .. '9'}:
-      value = value * 10 + (c.ord - '0'.ord)
-  return value
-```
-
-The flush check runs after each case, so memory stays near one block. `parseCount` reads only digits from the first line.
-
-Rows describe printed lines. A dash row carries no text.
-
+**Row model.**
 ```nim
 type Row = object
   isDash: bool
@@ -92,10 +111,9 @@ proc dashBetween(upper: Row, lower: Row): Row =
   return makeDashRow(min(upper.left, lower.left), max(upper.right, lower.right))
 ```
 
-`dashBetween` spans both rows it joins. Each row costs constant space.
+`makeTextRow` stores text with its two column bounds. `makeDashRow` marks a separator line. `dashBetween` spans the union of two neighboring rows.
 
-Digits are reversed once on input and once on output.
-
+**Digit conversion and addition.**
 ```nim
 proc digitsReversed(token: string): seq[int] =
   var digits: seq[int]
@@ -108,13 +126,7 @@ proc dropLeadingZeros(digits: seq[int]): seq[int] =
   while answer.len > 1 and answer[^1] == 0:
     setLen(answer, answer.len - 1)
   return answer
-```
 
-`dropLeadingZeros` keeps the value 0 as one digit. Each pass costs O(d).
-
-Addition loops over `max(first.len, second.len)` columns and carries at most 1. Subtraction loops over `first.len` columns.
-
-```nim
 proc addReversed(first: seq[int], second: seq[int]): seq[int] =
   var answer: seq[int]
   var carry = 0
@@ -128,7 +140,12 @@ proc addReversed(first: seq[int], second: seq[int]): seq[int] =
   if carry > 0:
     answer.add(carry)
   return answer
+```
 
+`digitsReversed` reads a token from its right end. `dropLeadingZeros` removes extra high zeros from a result. `addReversed` folds one carry across the longer list.
+
+**Subtraction and multiplication.**
+```nim
 proc subtractReversed(first: seq[int], second: seq[int]): seq[int] =
   var answer: seq[int]
   var borrow = 0
@@ -143,13 +160,7 @@ proc subtractReversed(first: seq[int], second: seq[int]): seq[int] =
       borrow = 0
     answer.add(value)
   return answer
-```
 
-A negative column adds 10 once and sets `borrow`, which is enough for digit minus digit minus 1.
-
-Multiplication visits every digit pair once and keeps the carry in place.
-
-```nim
 proc multiplyByDigit(first: seq[int], digit: int): seq[int] =
   var answer: seq[int]
   var carry = 0
@@ -182,22 +193,9 @@ proc multiplyReversed(first: seq[int], second: seq[int]): seq[int] =
   return answer
 ```
 
-The answer table has `first.len + second.len` slots. Index `j + i` is the column of digit pair `j, i`, and `k` writes the final carry.
+`subtractReversed` borrows once when a digit goes negative. `multiplyByDigit` builds one partial product. `multiplyReversed` accumulates all digit pairs into one array.
 
-Text rows are built from the digit lists.
-
-```nim
-proc digitsToString(digits: seq[int]): string =
-  var text = ""
-  for i in countdown(digits.len - 1, 0):
-    text.add((digits[i] + '0'.ord).chr)
-  return text
-```
-
-`countdown` prints the least significant digit last. This pass costs O(d).
-
-The renderer builds every row, finds the shift, and writes the block.
-
+**Layout renderer.**
 ```nim
 proc renderPair(first: string, operator: char, second: string) =
   let width = max(first.len, second.len + 1)
@@ -251,10 +249,9 @@ proc renderPair(first: string, operator: char, second: string) =
   flushBlock()
 ```
 
-The partial loop runs once per digit of the second number, and each partial costs O(d). The two final loops find the shift and print each row once.
+The renderer assembles text and dash rows in print order. It computes the largest overhang before writing any line. One shared shift aligns every row.
 
-The driver reads the case count, finds the operator in each line, and renders one case.
-
+**Expression driver.**
 ```nim
 var line = ""
 discard stdin.readLine(line)
@@ -275,17 +272,27 @@ for _ in 0 ..< pairCount:
 stdout.write(outputBuffer)
 ```
 
-The operator scan stops at the first `+`, `-` or `*`. Input is read line by line, and the final write flushes any bytes left in the buffer.
+The driver finds the operator inside each line. It splits the operands and passes them to the renderer. A block flush keeps memory bounded across 1000 cases.
+
 
 ## Complexity
 
-Let `d` be the maximum digit count, 500, and `c` the case count.
+Multiplication dominates because it visits every digit pair.
 
-| Phase | Time per case | Space |
+| Phase | Time | Space |
 | --- | --- | --- |
-| Digit conversion | O(d) | O(d) |
-| Addition or subtraction | O(d) | O(d) |
-| Multiplication | O(d^2) | O(d) |
-| Row layout and output | O(d^2) for multiplication | O(d) plus one block |
+| digit conversion | O(d) | two lists |
+| addition or subtraction | O(d) | one result list |
+| multiplication | O(d squared) | one product list |
+| rendering | O(d squared) in row count | one row per line |
 
-The total time is O(c d^2) and the total space is O(d + flushBlockBytes). A 500-digit multiplication needs 250 000 digit steps and prints roughly the same number of characters.
+The output buffer flushes after each case, so memory stays near one block.
+
+Big O uses d as the larger operand digit count.
+
+| Measure | Big O |
+| --- | --- |
+| time | O(d squared) worst case |
+| space | O(d squared) in printed rows |
+
+Naive string padding would repeat alignment work on every line.

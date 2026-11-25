@@ -1,46 +1,89 @@
+# SLEEP — Sleepwalker (SPOJ)
+<https://www.spoj.com/problems/SLEEP/>
+
 ## Problem
 
-A sleepwalker follows a fixed path over a 3^k by 3^k roof. The path visits every tile once. Read the start tile and the hole tile for each case. Print the number of steps from the start tile to the hole.
+A sleepwalker crosses a roof of tiles, following a path that repeats itself in smaller and smaller squares. One tile is missing. Given where the walk is observed and where the hole sits, count the steps until the fall.
 
-| Quantity | Bound |
+Input: an integer t, then t cases separated by blank lines. Each case gives k, then the start coordinates x and y, then the hole coordinates. The roof side is 3 to the k. Output: one integer per case, the exact step count.
+
+The statement sets these bounds.
+
+| Item | Bound |
 | --- | --- |
-| Test cases | no limit stated |
+| Test cases | t from input |
 | Roof level k | 1 to 60 |
-| Tile coordinates | 1 to 3^k |
-| Time limit | 7000 ms |
-| Memory limit | 1536 MB |
+| Coordinates x and y | 1 to 3 to the k |
+| Path length | 9 to the k steps |
+| Judge time limit | 7000 ms |
+| Judge memory limit | 1536 MB |
 
-The side length reaches 3^60, so coordinates and answers exceed 64 bits.
+The path is far too long to walk step by step.
+
+The sample input:
+
+```
+1
+2
+3 2
+7 2
+```
+
+The sample output:
+
+```
+20
+```
 
 ## Idea
 
-The path visits every tile once, so each tile has a fixed step number. One roof level gives one base-9 digit of that step number. Reading the digits costs O(k) per tile and replaces a walk of up to 9^60 steps.
+Read the roof like a map that repeats nine neighborhoods inside each neighborhood, like a fractal drawn on paper. You never walk the path. You decode the tile's address into one digit per map level, then read off the step number.
+
+The program converts each coordinate minus one to base 3. At each level, a pair of base-3 digits picks one of nine blocks. The block order gives one base-9 digit of the step count. Orientation flags track the reflections and swaps that the recursive path applies to deeper blocks. Subtracting the two step counts happens in base 9 with a borrow. Converting that difference to decimal uses chunks of 18 digits, because the answer exceeds 64 bits. A direct simulation would take 9 to the k steps.
+
+A short address replaces an astronomical walk.
 
 ## Why It Works
 
-The base path on a 3 by 3 roof is EENNWSWN. It visits the nine blocks in this order.
+Five facts carry the program.
 
-|  | west | middle | east |
-| --- | --- | --- | --- |
-| south | 0 | 1 | 2 |
-| middle | 7 | 6 | 3 |
-| north | 8 | 5 | 4 |
+1. The path on a 3 by 3 roof visits its nine tiles in a fixed order. The `blockOrder` table records that order as digits 0 through 8.
+2. The roof level k splits every coordinate into k base-3 digits. Subtracting one first maps the range 1 to 3 to the k onto digit strings 0 to 3 to the k minus 1.
+3. Deeper blocks appear rotated or reflected. The `blockTransform` codes switch a swap flag and complement flags, which the next level applies to both digits.
+4. Each level contributes one base-9 digit, so the step count is a base-9 number. The hole minus the start uses a borrow of 9 per digit.
+5. A base-9 number with 60 digits does not fit in a machine integer. Chunks of 18 digits are converted to decimal with precomputed powers of 9.
 
-Rows run from south to north, and columns run from west to east.
+Each term has one job.
 
-A larger path contains nine smaller paths in that order. Block b starts after b times 9^level steps, so each level adds one base-9 digit. The letter rules change the local coordinates: `a` swaps both coordinates, `b` swaps and complements them, `c` complements them, and the identity leaves them. A ternary digit d becomes 2 - d under complement.
+| Term | Meaning |
+| --- | --- |
+| `xDigits`, `yDigits` | base-3 address of one coordinate minus one |
+| `steps` | base-9 digits of the step count |
+| `swapped` | whether the next level exchanges x and y |
+| `xComplement`, `yComplement` | whether the next level mirrors an axis |
+| `chunkPowers` | powers of 9 used for decimal conversion |
 
-The generator `gen.py` prints this worked example for k = 2.
+No floating point appears, so the answer is exact at every level.
 
+A script traces the sample with k = 2.
+
+```text
+start (3,2): x-1=2 -> digits (0,2), y-1=1 -> digits (0,1)
+  high block (row 0, col 0) -> digit 0, swap on
+  low block after swap (row 2, col 1) -> digit 5
+  step count base9 [0,5] = 5
+hole (7,2): x-1=6 -> digits (2,0), y-1=1 -> digits (0,1)
+  high block (row 0, col 2) -> digit 2, no swap
+  low block (row 1, col 0) -> digit 7
+  step count base9 [2,7] = 25
+25 - 5 = 20 steps
 ```
-start (3,2): base-9 digits [0, 5] -> 5
-hole  (7,2): base-9 digits [2, 7] -> 25
-steps: 25 - 5 = 20
-```
 
-The hole lies 20 steps after the start, which matches the sample.
+The answer matches the sample output.
 
 ## Code
+
+**Constants and reader.** Powers of 9 are precomputed once.
 
 ```nim
 {.passC: "-O3".}
@@ -68,11 +111,7 @@ const blockTransform: array[3, array[3, int]] = [
   [2, 2, 0],
   [0, 3, 0]
 ]
-```
 
-The compiler pragmas keep the judge build fast. The power table holds 19 entries, and 9^18 fits in `int64`. The two lookup tables hold the order and the transform for each of nine blocks.
-
-```nim
 var inputData = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
@@ -91,7 +130,9 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-The read loop runs once per input line, not once per number. The scanner skips every non-digit, so blank lines between cases cause no trouble. It builds small values with one pass over their digits.
+`chunkPowers` stops at 9 to the 18, which is the largest chunk. `blockOrder` is indexed by row then column. The scanner skips blank lines between cases.
+
+**Coordinate decoding.** A decimal value becomes base-3 digits of value minus one.
 
 ```nim
 proc parseCoordinate(data: string, pos: var int, levelCount: int,
@@ -119,7 +160,9 @@ proc parseCoordinate(data: string, pos: var int, levelCount: int,
   digits[i] -= 1
 ```
 
-The parser stores the coordinate minus one as ternary digits, least significant first. The reset loop covers levelCount plus one entries, which holds 3^k before subtraction. The final loop borrows to subtract one.
+The first loop divides the decimal value by 3 digit by digit. The last loop borrows one, turning trailing zeros into twos. The result holds exactly `levelCount` digits.
+
+**Step tracing.** Each level appends one base-9 digit.
 
 ```nim
 proc traceSteps(xDigits: seq[int], yDigits: seq[int],
@@ -161,7 +204,9 @@ proc traceSteps(xDigits: seq[int], yDigits: seq[int],
       discard
 ```
 
-The loop runs once per level. Three flags record the swap and complement state, so no lower digit is rewritten. Each pass adds one base-9 digit to the step number.
+The loop walks from the most significant base-3 digit down. `topIndex` is `levelCount - i - 1`, so no digit is skipped. The transform codes update orientation for the next level. The cost is O(k).
+
+**Difference and decimal output.** Big base-9 values are handled in chunks.
 
 ```nim
 proc appendAnswer(startSteps: seq[int], holeSteps: seq[int], levelCount: int,
@@ -215,7 +260,9 @@ proc appendAnswer(startSteps: seq[int], holeSteps: seq[int], levelCount: int,
     outputBuffer.setLen 0
 ```
 
-The first loop subtracts the step numbers in base 9. Chunks of at most 18 digits run from the most significant end, so each multiply keeps its place value. New decimal places start at zero, which avoids stale digits from an earlier case. The buffer flushes in blocks and never per answer.
+The borrow is 9 because digits live in base 9. Each chunk holds at most 18 digits, so `chunkValue` fits in 64 bits. Decimal digits are stored least significant first and printed in reverse.
+
+**Driver.** Both addresses are decoded before subtraction.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -241,15 +288,25 @@ outputBuffer.setLen 0
 {.pop.}
 ```
 
-The loop runs once per case and reuses every buffer. Parsing the hole overwrites the start digits only after the start step number is saved. The final write flushes answers left in the buffer.
+Arrays are allocated once at the maximum level 60. The same arrays decode the start and then the hole. Each case costs four base-3 decodings and two traces.
 
 ## Complexity
 
+Everything scales with the roof level k, not with the path length.
+
 | Phase | Time | Space |
 | --- | --- | --- |
-| Input read | O(input bytes) | O(input bytes) |
-| Coordinate parse | O(k times decimal digits) | O(k) |
-| Step trace | O(k) per tile | O(k) |
-| Answer convert | O(k) per case | O(k) |
+| Input read | O(B) for B bytes | B bytes |
+| Coordinate decode | O(k) per coordinate | O(k) |
+| Step trace | O(k) per point | O(k) |
+| Base-9 subtraction | O(k) | O(k) |
+| Decimal conversion | O(k) in chunks of 18 | O(k) |
 
-The table gives one row per phase, and the total time is O(t times k) for t cases. Total space is O(input bytes plus k). A direct walk of the path takes up to 9^60 steps per case.
+k is at most 60, so the answer can hold 57 decimal digits.
+
+| Measure | Big O |
+| --- | --- |
+| Time | O(k) per case |
+| Space | O(k) per case |
+
+Walking the path would cost O(9 to the k) steps, which is impossible for k = 60.

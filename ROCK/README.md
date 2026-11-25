@@ -1,53 +1,84 @@
+# ROCK — Sweet and Sour Rock (SPOJ)
+
+<https://www.spoj.com/problems/ROCK/>
+
 ## Problem
 
-Read t test cases. Each case gives a stick length N and a string of N segments, with '1' for sweet and '0' for sour. Break the stick at connections so that pieces with more sweet than sour segments can be sold. Print the largest total sold length.
+A candy maker produces sticks of sweet and sour segments. Children buy a piece only when it holds more sweet segments than sour ones. Break the stick into pieces to sell as much length as possible.
 
-The judge bounds appear below.
+Input: `t` cases. Each starts with `N`, the stick length in centimetres, followed by a string of `N` characters where `1` means sweet and `0` means sour. Output: one integer per case, the maximum total length that can be sold.
 
-| Quantity | Bound |
-| --- | --- |
-| Test cases | not stated |
-| Stick length N | 1 to 200 |
-| Time limit | 7000 ms |
-| Memory limit | 1536 MB |
+The bounds from the statement:
 
-The small stick length keeps each case cheap, so the number of cases drives the design.
+| Item | Bound |
+|---|---|
+| Stick length `N` | 1 ≤ N ≤ 200 |
+| Segment symbols | `0` sour, `1` sweet |
+| Judge limit | 7000 ms, 1536 MB |
+
+Every piece must have a strictly positive sweet-minus-sour score.
+
+The sample input and output:
+
+```
+2
+15
+100110001010001
+16
+0010111101100000
+```
+
+```
+9
+13
+```
 
 ## Idea
 
-We score sweet segments +1 and sour segments -1, then use dynamic programming with a prefix-maximum index (a Fenwick tree). Each step keeps the best total for blocks ending at the current position, using one prefix-maximum query instead of trying every start. Trying every start and end would cost O(N squared) per case.
+Score sweet as +1 and sour as −1, then a piece sells when its score is positive. Imagine walking along the stick with a running tally; any stretch ending above where it started can be sold.
 
-Each segment costs O(log N) time and O(1) extra space.
+The program computes prefix scores. A piece from `j + 1` to `i` sells when `P[i] > P[j]`, and its length is `i − j`. For each score it keeps the best value of `dp[j] − j`. A Fenwick tree (an array that answers prefix maximum queries) finds the best `j` with a smaller score in log time.
+
+Each step costs O(log N), so a case costs O(N log N). Trying every pair of cut points costs O(N²). Both are small at `N = 200`, but the indexed form scales.
+
+Prefix scores turn each candidate piece into one prefix-maximum query.
 
 ## Why It Works
 
-prefixScore is the running sum after a given number of segments. The score of the block from k+1 to i equals prefixScore[i] - prefixScore[k], which is positive exactly when prefixScore[k] < prefixScore[i].
+Four facts carry the DP.
 
-bestSold[i] takes the larger of two values:
+1. Each sweet segment adds +1 and each sour segment adds −1. A piece from `j + 1` to `i` is sellable exactly when `P[i] − P[j] > 0`.
+2. The piece length is `i − j`. The DP uses `dp[j] − j` at every earlier score below `P[i]`.
+3. The Fenwick tree stores `dp[j] − j` at index `P[j] + N + 1`. A prefix maximum up to the current score minus one returns the best eligible `j`.
+4. The offset `N + 1` keeps negative scores at positive indices. A sentinel with score 0 and value 0 seeds the tree.
 
-- leave segment i unsold, giving bestSold[i-1];
-- sell a block ending at i, giving bestSold[k] + i - k.
+The values the DP keeps:
 
-Rewrite the second value as i + (bestSold[k] - k). We need the largest bestSold[k] - k among all earlier k whose prefix score is smaller than prefixScore[i]. scoreIndex shifts each prefix score by N+1, so indexes stay between 1 and 2N+1. The query reads scores up to scoreIndex - 1, which enforces a strict inequality. Each tree cell holds the largest value seen at that score, and the low-bit walk visits O(log N) cells.
+| Term | Meaning |
+|---|---|
+| `prefixScore` | running +1/−1 tally after a segment |
+| `scoreIndex` | `prefixScore + stickLength + 1`, a positive array index |
+| `fenwickPrefixMax` | best stored value at scores below the current one |
+| `bestSold` | maximum sellable length found so far |
 
-The table below comes from a script run on the stick 10011001.
+The offset makes negative tally values safe array indices.
 
-| i | char | prefixScore | scoreIndex | best[k]-k | candidate | bestSold |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | 1 | 1 | 10 | 0 | 1 | 1 |
-| 2 | 0 | 0 | 9 | none | none | 1 |
-| 3 | 0 | -1 | 8 | none | none | 1 |
-| 4 | 1 | 0 | 9 | -2 | 2 | 2 |
-| 5 | 1 | 1 | 10 | 0 | 5 | 5 |
-| 6 | 0 | 0 | 9 | -2 | 4 | 5 |
-| 7 | 0 | -1 | 8 | none | none | 5 |
-| 8 | 1 | 0 | 9 | -2 | 6 | 6 |
+A script-traced example with the first sample stick, `100110001010001`:
 
-The answer is 6: sell segment 1, then the block from 4 to 8.
+```
+i     1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
+P     1   0  -1   0   1   0  -1  -2  -1  -2  -1  -2  -3  -4  -3
+cand  1   -   -   2   5   4   -   -   6   -   8   -   -   -   9
+best  1   1   1   2   5   5   5   5   6   6   8   8   8   8   9
+
+answer = 9 (the second sample stick gives 13)
+```
+
+A dash means no earlier score was lower, so no piece ends at that position.
 
 ## Code
 
-Constants and input scanner:
+**Constants and scanner.** The input is read once, and integers are scanned by index.
 
 ```nim
 const firstDigitValue = 48
@@ -74,9 +105,9 @@ proc nextInt(data: string, position: var int): int =
   return value
 ```
 
-The read loop visits each input line once and stops at end of file. nextInt skips whitespace, so a newline is never read as a digit. The scan makes one pass over `inputData`.
+`negInfinite` initializes empty tree slots. `treeCapacity = 2N + 3` covers the full score range for `N ≤ 200`.
 
-Output buffer:
+**Output helper.** Answer lines collect in one buffer.
 
 ```nim
 var outputBuffer = ""
@@ -88,9 +119,9 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-appendOutput flushes when the buffer reaches flushBlockBytes. setLen 0 reuses the same string. Memory stays at the block size.
+The 256 KiB threshold keeps writes rare. `setLen 0` reuses the allocation after each flush.
 
-Prefix-maximum index:
+**Fenwick tree.** Updates raise stored maxima, and queries return prefix maxima.
 
 ```nim
 var fenwick: array[treeCapacity, int]
@@ -112,9 +143,9 @@ proc fenwickPrefixMax(index: int): int =
     j -= j and (-j)
 ```
 
-The low-bit step j and (-j) walks O(log N) tree cells per call. The update raises cells on the path; the query reads cells on the reverse path. negInfinite marks a score with no recorded k.
+`fenwickUpdate` climbs by the low bit and keeps the larger value. `fenwickPrefixMax` descends by the low bit and returns the largest stored value. Both cost O(log N).
 
-Main loop:
+**Case loop.** Each segment updates the score, queries the best partner, and stores the new DP value.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -146,10 +177,27 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The outer loop runs caseCount times and the inner loop runs stickLength times. Reading exactly stickLength pattern characters keeps the next case's digits out of the scan. Each case resets the tree and inserts k = 0 before reading any segment.
+The scanner skips characters until it finds the `0`/`1` string. The sentinel update at score zero seeds the tree. `scoreIndex − 1` excludes equal scores, so the piece score stays positive.
 
 ## Complexity
 
-Input costs O(B) for B input bytes. Each case costs O(N log N) time and O(N) space for the tree. Output costs O(t) amortized with block flushing.
+Each case scans the stick once with a log-time query per segment.
 
-The total is O(B + sum of N log N) time and O(max N) working space. The naive form tries every block for every position and costs O(N squared) per case. Brute force over all partitions costs O(2 to the N) per case.
+| Phase | Time | Space |
+|---|---|---|
+| Input read | one pass over input bytes | input bytes |
+| Fenwick reset | O(N) | O(N) |
+| Segment scan | O(N log N) | O(1) |
+| Output | one write per 256 KiB block | 256 KiB |
+| Total per case | O(N log N) | O(N) |
+
+With `N ≤ 200`, the tree fits in a fixed array.
+
+| Measure | Big O |
+|---|---|
+| Time | O(N log N) per case |
+| Space | O(N) for the Fenwick tree and buffers |
+
+Testing every pair of cut points costs O(N²) instead.
+
+Checking all cut pairs gives the same answer in O(N²) time. The Fenwick tree finds the best partner in O(log N) per segment.

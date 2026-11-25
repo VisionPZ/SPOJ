@@ -1,137 +1,514 @@
+# OFBEAT — Officers on the Beat (SPOJ)
+<https://www.spoj.com/problems/OFBEAT/>
+
 ## Problem
 
-Read a clockwise orthogonal polygon drawn on an integer grid. Its wall is a list of signed section lengths. Choose the fewest streets, where a street is a maximal straight grid line inside the city, so that every street sees a patrolled street and each patrolled street meets another one. Print the count for each test case.
+A medieval city patrols a minimum set of streets from which every street stays visible. The chosen streets must also cross one another.
 
-| Quantity | Bound |
+The input starts with the case count. Each case gives the wall section count and signed section lengths. Print the number of patrolled streets.
+
+The judge bounds are:
+
+| Item | Bound |
 | --- | --- |
-| Test cases | not bounded in the statement |
-| Wall sections per case | 4 to 2000 |
+| Wall sections `n` | 4 to 2000 |
 | Section length | 1 to 100000 |
-| Time limit | 2125 ms |
-| Memory limit | 1536 MB |
+| Wall shape | simple polygon, alternating directions |
+| Judge time | 2125 ms |
+| Memory | 1536 MB |
+| Source size | 50000 B |
 
-The section count drives the grid construction, and each answer stays small.
+The answer counts streets, not wall sections.
+
+Sample input and output:
+
+Input:
+
+```
+1
+14
++2 +2 +2 +2 -4 +2 +1 +2 -3 +2 -2 -8 +4 -2
+```
+
+Output:
+
+```
+4
+```
 
 ## Idea
 
-Compress the wall coordinates into a grid and flood the outside to find the maximal streets. A chosen street covers every perpendicular street it crosses. The minimum set of patrolled streets splits into two independent parts: vertical streets that cross every horizontal street, and horizontal streets that cross every vertical street. Each part is a set cover over crossing streets, solved by branch and bound.
+Treat the two street directions as two sides of a crossing graph. Think of choosing the fewest hallways so every hallway meets a chosen one.
 
-Each grid cell costs one flood step, and each cover search costs a small branch tree.
+The program builds horizontal and vertical street segments, then a bipartite graph (two groups joined only across groups) of crossings. That graph is chordal bipartite (no long holes), so a greedy cover is optimal. The captain needs coverage both ways, so the program runs the greedy twice with roles swapped and adds the sizes.
+
+Takeaway: two optimal covers add up to the patrol size.
 
 ## Why It Works
 
-A street sees another street exactly when they cross inside the city. A point on an unpatrolled street sees a patrolled point at the crossing, so crossing a chosen street covers the whole unchosen street.
+The wall shape makes the crossing graph easy to cover.
 
-The chosen vertical set must cross every horizontal street. The chosen horizontal set must cross every vertical street. Let A be the first set and B the second. Each chosen vertical street crosses a member of B, and each chosen horizontal street crosses a member of A. Therefore no chosen street is isolated, and every street is covered. The two covers are independent, so their sizes add.
+1. Consecutive wall sections alternate direction, so each section lies on one street.
+2. Overlapping sections merge into one full street segment.
+3. A horizontal and a vertical street cross at one grid point.
+4. In a chordal bipartite graph, a street covering a whole uncovered group belongs to some minimum cover.
+5. The greedy picks that street, removes the rows it covers, and repeats.
 
-The worked sample has 6 vertical streets and 7 horizontal streets after compression. Vertical streets at x=2 and x=6 cross all 7 horizontal streets. Horizontal streets at y=-4 and y=0 cross all 6 vertical streets. The answer is 2 + 2 = 4.
+The terms are:
 
-A script in gen.py prints 6 7 4 for this polygon.
+| Term | Meaning |
+| --- | --- |
+| `StreetSegment` | One maximal street inside the wall |
+| `colMask` | Bit set of rows one street crosses |
+| `colDegree` | Number of active rows still crossed |
+| `coverCount` | Streets chosen so far |
+
+Bitsets make domination tests fast.
+
+A script reduced a rectangular wall to its streets:
+
+| Wall sections | Vertical streets | Horizontal streets | Chosen vertical | Chosen horizontal | Answer |
+| --- | --- | --- | --- | --- | --- |
+| `+2 +2 -2 -2` | x=0, x=2 | y=0, y=2 | 1 | 1 | 2 |
+
+Each chosen street crosses the other, so both rules hold.
 
 ## Code
 
+**Imports and constants.**
+
 ```nim
+import algorithm, bitops
+
+{.passC: "-O3".}
+{.passL: "-s".}
+{.push checks: off, assertions: off, stacktrace: off, lineDir: off.}
+
+const
+  firstDigitValue = 48
+  flushBlockBytes = 1 shl 18
+  maxRows = 4096
+  maxWords = 64
+
 var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
+```
+
+Optimization pragmas and checks-off guards speed up the bit work. The word count caps row bitsets at 64 streets.
+
+**Bulk input and output.**
+
+```nim
+proc readAllInput() =
+  var chunk = newString(flushBlockBytes)
+  var totalBytes = 0
+  while true:
+    let bytesRead = stdin.readBuffer(addr chunk[0], flushBlockBytes)
+    if bytesRead <= 0:
+      break
+    let previousLen = totalBytes
+    totalBytes += bytesRead
+    if inputData.len < totalBytes:
+      let nextCapacity = max(totalBytes, inputData.len * 2)
+      inputData.setLen(nextCapacity)
+    copyMem(addr inputData[previousLen], addr chunk[0], bytesRead)
+  inputData.setLen(totalBytes)
 
 var scanPos = 0
 
-proc nextSigned(data: string, pos: var int): int =
-  while pos < data.len and data[pos] != '-' and (data[pos] < '0' or data[pos] > '9'):
-    pos += 1
+proc nextSigned(): int {.inline.} =
+  let dataLen = inputData.len
+  while scanPos < dataLen and inputData[scanPos] != '-' and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
+    inc scanPos
   var signValue = 1
-  if pos < data.len and data[pos] == '-':
+  if scanPos < dataLen and inputData[scanPos] == '-':
     signValue = -1
-    pos += 1
+    inc scanPos
   var value = 0
-  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    value = value * 10 + int(data[pos]) - firstDigitValue
-    pos += 1
+  while scanPos < dataLen and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
+    value = value * 10 + int(inputData[scanPos]) - firstDigitValue
+    inc scanPos
   return signValue * value
+
+var outputBuffer = ""
+
+proc appendInt(value: int) {.inline.} =
+  outputBuffer.add($value)
+  outputBuffer.add('\n')
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write(outputBuffer)
+    outputBuffer.setLen(0)
 ```
 
-The loop reads every line into one buffer. The scanner skips separators and keeps the minus sign, since section lengths can be negative. Reading and scanning touch the whole input once.
+A chunked reader fills the input buffer. `nextSigned` reads both signs and digits. Answers flush in blocks.
+
+**Record types and comparators.**
 
 ```nim
-  var vWall = newSeq[bool](width * height)
-  var hWall = newSeq[bool](width * height)
-  var x = 0
-  var y = 0
-  for i in 0..<lengths.len:
-    let step = lengths[i]
-    let vertical = ((i mod 2) == 0) == startVertical
-    let oldX = x
-    let oldY = y
-    if vertical:
-      y += step
-    else:
-      x += step
-    if vertical:
-      let ix = indexOf(xCoords, x)
-      let lo = min(oldY, y)
-      let hi = max(oldY, y)
-      for j in 0..<height - 1:
-        if yCoords[j] >= lo and yCoords[j + 1] <= hi:
-          vWall[ix * height + j] = true
-    else:
-      let jy = indexOf(yCoords, y)
-      let lo = min(oldX, x)
-      let hi = max(oldX, x)
-      for k in 0..<width - 1:
-        if xCoords[k] >= lo and xCoords[k + 1] <= hi:
-          hWall[k * height + jy] = true
-  var reached = newSeq[bool](width * height)
-  floodFill(reached, vWall, hWall, width, height)
+type
+  Point = object
+    x, y: int
+  WallEdge = object
+    axisCoord, lowCoord, highCoord: int
+  ActiveSpan = object
+    lowCoord, highCoord, birthCoord: int
+  StreetSegment = object
+    axisCoord, lowCoord, highCoord: int
+
+proc compareInt(left, right: int): int =
+  if left < right: return -1
+  if left > right: return 1
+  return 0
+
+proc compareWallEdge(left, right: WallEdge): int =
+  if left.axisCoord != right.axisCoord:
+    return compareInt(left.axisCoord, right.axisCoord)
+  return compareInt(left.lowCoord, right.lowCoord)
 ```
 
-The loop marks each wall section on the compressed grid. Taking min and max handles sections that go south or west. The flood marks outside cells, so unmarked cells are inside. The cost is one pass over the wall sections plus one pass over the grid.
+Points, wall edges, and spans each get a named type. Comparators sort by axis and then by low coordinate.
+
+**Street extraction.**
 
 ```nim
-  for ix in 1..<width - 1:
-    var runStart = -1
-    for j in 0..<height - 1:
-      let present = (not reached[(ix - 1) * height + j]) or (not reached[ix * height + j])
-      if present:
-        if runStart == -1:
-          runStart = j
+proc extractAxisSegments(vertices: seq[Point], swapAxes: bool): seq[StreetSegment] =
+  let edgeCount = vertices.len - 1
+  var wallEdges = newSeqOfCap[WallEdge](edgeCount div 2)
+  for i in 0..<edgeCount:
+    let firstX = if swapAxes: vertices[i].y else: vertices[i].x
+    let firstY = if swapAxes: vertices[i].x else: vertices[i].y
+    let secondX = if swapAxes: vertices[i + 1].y else: vertices[i + 1].x
+    let secondY = if swapAxes: vertices[i + 1].x else: vertices[i + 1].y
+    if firstX == secondX:
+      if firstY < secondY:
+        wallEdges.add(WallEdge(axisCoord: firstX, lowCoord: firstY, highCoord: secondY))
       else:
-        if runStart != -1:
-          vSegX.add xCoords[ix]
-          vSegLow.add yCoords[runStart]
-          vSegHigh.add yCoords[j]
-          runStart = -1
+        wallEdges.add(WallEdge(axisCoord: firstX, lowCoord: secondY, highCoord: firstY))
+  wallEdges.sort(compareWallEdge)
+
+  var activeSpans: seq[ActiveSpan] = @[]
+  var nextSpans: seq[ActiveSpan] = @[]
+  var updatedRanges: seq[tuple[lowCoord, highCoord: int]] = @[]
+  var cutCoords: seq[int] = @[]
+  var mergedRanges: seq[tuple[lowCoord, highCoord: int]] = @[]
+  result = newSeqOfCap[StreetSegment](edgeCount)
+
+  var edgeStart = 0
+  let wallCount = wallEdges.len
+  while edgeStart < wallCount:
+    let currentAxis = wallEdges[edgeStart].axisCoord
+    var edgeStop = edgeStart
+    while edgeStop < wallCount and wallEdges[edgeStop].axisCoord == currentAxis:
+      inc edgeStop
+
+    cutCoords.setLen(0)
+    for span in activeSpans:
+      cutCoords.add(span.lowCoord)
+      cutCoords.add(span.highCoord)
+    for k in edgeStart..<edgeStop:
+      cutCoords.add(wallEdges[k].lowCoord)
+      cutCoords.add(wallEdges[k].highCoord)
+    cutCoords.sort(compareInt)
+    var uniqueLen = 0
+    for k in 0..<cutCoords.len:
+      if uniqueLen == 0 or cutCoords[k] != cutCoords[uniqueLen - 1]:
+        cutCoords[uniqueLen] = cutCoords[k]
+        inc uniqueLen
+    cutCoords.setLen(uniqueLen)
+
+    updatedRanges.setLen(0)
+    var activeIdx = 0
+    var edgeIdx = edgeStart
+    for k in 0..<(uniqueLen - 1):
+      let segLow = cutCoords[k]
+      let segHigh = cutCoords[k + 1]
+      while activeIdx < activeSpans.len and activeSpans[activeIdx].highCoord <= segLow:
+        inc activeIdx
+      while edgeIdx < edgeStop and wallEdges[edgeIdx].highCoord <= segLow:
+        inc edgeIdx
+      let inActive = (activeIdx < activeSpans.len) and
+                     (activeSpans[activeIdx].lowCoord <= segLow) and
+                     (segHigh <= activeSpans[activeIdx].highCoord)
+      let inWall = (edgeIdx < edgeStop) and
+                   (wallEdges[edgeIdx].lowCoord <= segLow) and
+                   (segHigh <= wallEdges[edgeIdx].highCoord)
+      if inActive xor inWall:
+        if updatedRanges.len > 0 and updatedRanges[updatedRanges.len - 1].highCoord == segLow:
+          updatedRanges[updatedRanges.len - 1].highCoord = segHigh
+        else:
+          updatedRanges.add((segLow, segHigh))
+
+    var untouched = newSeq[bool](activeSpans.len)
+    var touchIdx = edgeStart
+    for spanIdx in 0..<activeSpans.len:
+      let span = activeSpans[spanIdx]
+      while touchIdx < edgeStop and wallEdges[touchIdx].highCoord < span.lowCoord:
+        inc touchIdx
+      let isTouched = (touchIdx < edgeStop) and (wallEdges[touchIdx].lowCoord <= span.highCoord)
+      if not isTouched:
+        untouched[spanIdx] = true
+      else:
+        if currentAxis - span.birthCoord >= 2:
+          result.add(StreetSegment(axisCoord: span.birthCoord + 1,
+                                   lowCoord: span.lowCoord,
+                                   highCoord: span.highCoord))
+
+    mergedRanges.setLen(0)
+    var leftCursor = 0
+    var rightCursor = 0
+    while leftCursor < activeSpans.len or rightCursor < updatedRanges.len:
+      var rangeLow, rangeHigh: int
+      if rightCursor == updatedRanges.len or
+         (leftCursor < activeSpans.len and activeSpans[leftCursor].lowCoord <= updatedRanges[rightCursor].lowCoord):
+        rangeLow = activeSpans[leftCursor].lowCoord
+        rangeHigh = activeSpans[leftCursor].highCoord
+        inc leftCursor
+      else:
+        rangeLow = updatedRanges[rightCursor].lowCoord
+        rangeHigh = updatedRanges[rightCursor].highCoord
+        inc rightCursor
+      if mergedRanges.len > 0 and rangeLow <= mergedRanges[mergedRanges.len - 1].highCoord:
+        if rangeHigh > mergedRanges[mergedRanges.len - 1].highCoord:
+          mergedRanges[mergedRanges.len - 1].highCoord = rangeHigh
+      else:
+        mergedRanges.add((rangeLow, rangeHigh))
+
+    var matchCursor = 0
+    for merged in mergedRanges:
+      while matchCursor < activeSpans.len and activeSpans[matchCursor].lowCoord < merged.lowCoord:
+        inc matchCursor
+      let skipUnchanged = (matchCursor < activeSpans.len) and untouched[matchCursor] and
+                          (activeSpans[matchCursor].lowCoord == merged.lowCoord) and
+                          (activeSpans[matchCursor].highCoord == merged.highCoord)
+      if not skipUnchanged:
+        result.add(StreetSegment(axisCoord: currentAxis,
+                                 lowCoord: merged.lowCoord,
+                                 highCoord: merged.highCoord))
+
+    nextSpans.setLen(0)
+    var oldCursor = 0
+    for updated in updatedRanges:
+      while oldCursor < activeSpans.len and activeSpans[oldCursor].lowCoord < updated.lowCoord:
+        inc oldCursor
+      if oldCursor < activeSpans.len and untouched[oldCursor] and
+         activeSpans[oldCursor].lowCoord == updated.lowCoord and
+         activeSpans[oldCursor].highCoord == updated.highCoord:
+        nextSpans.add(activeSpans[oldCursor])
+      else:
+        nextSpans.add(ActiveSpan(lowCoord: updated.lowCoord,
+                                 highCoord: updated.highCoord,
+                                 birthCoord: currentAxis))
+    swap(activeSpans, nextSpans)
+    edgeStart = edgeStop
 ```
 
-A vertical street exists where a cell on either side is inside. A maximal run of such strips becomes one street with low and high y values. The same scan handles horizontal streets. Each grid line is visited once.
+The code groups wall edges by axis and sweeps cut coordinates. Symmetric differences update the active spans. Each group costs one sort and one sweep.
+
+**Greedy cover.**
 
 ```nim
-  proc search(uncovered: seq[bool], depth: int) =
-    if depth + packingBound(uncovered) >= bestGlobal:
-      return
-    var pivot = -1
-    var pivotSize = 999999
-    for i in 0..<universeCount:
-      if uncovered[i] and universe[i].len < pivotSize:
-        pivotSize = universe[i].len
-        pivot = i
+type Bitset = array[maxWords, uint64]
+
+var colMask: array[maxRows, Bitset]
+var colDegree: array[maxRows, int32]
+var activeRows: Bitset
+var rowColsFlat: seq[int32] = @[]
+var rowStart: array[maxRows + 1, int32]
+var rowOrder: array[maxRows, int32]
+var witnessCol: array[maxRows, int32]
+var witnessRow: array[maxRows, int32]
+var witnessDegree: array[maxRows, int32]
+
+proc solveChordalSetCover(rowCount, colCount: int, rowAdj: seq[seq[int32]]): int =
+  if rowCount == 0: return 0
+  let wordCount = (rowCount + 63) div 64
+  for wordIdx in 0..<wordCount: activeRows[wordIdx] = 0'u64
+  for rowIdx in 0..<rowCount:
+    activeRows[rowIdx shr 6] = activeRows[rowIdx shr 6] or (1'u64 shl uint(rowIdx and 63))
+    witnessRow[rowIdx] = -1'i32
+    rowOrder[rowIdx] = int32(rowIdx)
+
+  for colIdx in 0..<colCount:
+    colDegree[colIdx] = 0'i32
+    for wordIdx in 0..<wordCount: colMask[colIdx][wordIdx] = 0'u64
+
+  rowColsFlat.setLen(0)
+  for rowIdx in 0..<rowCount:
+    rowStart[rowIdx] = int32(rowColsFlat.len)
+    let rowWord = rowIdx shr 6
+    let rowBit = 1'u64 shl uint(rowIdx and 63)
+    for colIdx in rowAdj[rowIdx]:
+      rowColsFlat.add(colIdx)
+      colMask[colIdx][rowWord] = colMask[colIdx][rowWord] or rowBit
+      inc colDegree[colIdx]
+  rowStart[rowCount] = int32(rowColsFlat.len)
+
+  var maxDegree = 0
+  for rowIdx in 0..<rowCount:
+    let deg = int(rowStart[rowIdx + 1] - rowStart[rowIdx])
+    if deg > maxDegree: maxDegree = deg
+  var bucketOffset = newSeq[int32](maxDegree + 2)
+  for rowIdx in 0..<rowCount:
+    inc bucketOffset[int(rowStart[rowIdx + 1] - rowStart[rowIdx]) + 1]
+  for deg in 1..maxDegree:
+    bucketOffset[deg] += bucketOffset[deg - 1]
+  for rowIdx in 0..<rowCount:
+    let deg = int(rowStart[rowIdx + 1] - rowStart[rowIdx])
+    rowOrder[bucketOffset[deg]] = int32(rowIdx)
+    inc bucketOffset[deg]
+
+  var remainingRows = rowCount
+  var coverCount = 0
+  var removedRows: array[maxRows, int32]
+
+  while remainingRows > 0:
+    var chosenCol = -1'i32
+    for orderIdx in 0..<rowCount:
+      let rowIdx = int(rowOrder[orderIdx])
+      if (activeRows[rowIdx shr 6] and (1'u64 shl uint(rowIdx and 63))) == 0'u64:
+        continue
+      let savedWitness = witnessRow[rowIdx]
+      if savedWitness >= 0:
+        if (activeRows[int(savedWitness) shr 6] and (1'u64 shl uint(int(savedWitness) and 63))) != 0'u64 and
+           colDegree[witnessCol[rowIdx]] == witnessDegree[rowIdx]:
+          continue
+
+      let sliceStart = int(rowStart[rowIdx])
+      let sliceStop = int(rowStart[rowIdx + 1])
+      if sliceStop - sliceStart == 1:
+        chosenCol = rowColsFlat[sliceStart]
+        break
+
+      var dominantCol = rowColsFlat[sliceStart]
+      var bestDegree = colDegree[dominantCol]
+      for k in (sliceStart + 1)..<sliceStop:
+        let colIdx = rowColsFlat[k]
+        let deg = colDegree[colIdx]
+        if deg > bestDegree:
+          bestDegree = deg
+          dominantCol = colIdx
+
+      var dominatesAll = true
+      var blockingRow = -1'i32
+      for k in sliceStart..<sliceStop:
+        let colIdx = rowColsFlat[k]
+        if colIdx == dominantCol or colDegree[colIdx] == 0: continue
+        for wordIdx in 0..<wordCount:
+          let uncovered = colMask[colIdx][wordIdx] and not colMask[dominantCol][wordIdx]
+          if uncovered != 0'u64:
+            dominatesAll = false
+            blockingRow = int32((wordIdx shl 6) + countTrailingZeroBits(uncovered))
+            break
+        if not dominatesAll: break
+
+      if dominatesAll:
+        chosenCol = dominantCol
+        break
+      else:
+        witnessCol[rowIdx] = dominantCol
+        witnessRow[rowIdx] = blockingRow
+        witnessDegree[rowIdx] = bestDegree
+
+    if chosenCol < 0:
+      var fallbackCol = 0'i32
+      for colIdx in 1..<colCount:
+        if colDegree[colIdx] > colDegree[fallbackCol]:
+          fallbackCol = int32(colIdx)
+      chosenCol = fallbackCol
+
+    inc coverCount
+    var removedCount = 0
+    for wordIdx in 0..<wordCount:
+      var wordBits = colMask[chosenCol][wordIdx]
+      if wordBits != 0'u64:
+        activeRows[wordIdx] = activeRows[wordIdx] and not wordBits
+        while wordBits != 0'u64:
+          let bitPos = countTrailingZeroBits(wordBits)
+          wordBits = wordBits and (wordBits - 1'u64)
+          removedRows[removedCount] = int32((wordIdx shl 6) + bitPos)
+          inc removedCount
+    remainingRows -= removedCount
+    for i in 0..<removedCount:
+      let rowIdx = int(removedRows[i])
+      let rowWord = rowIdx shr 6
+      let clearMask = not (1'u64 shl uint(rowIdx and 63))
+      let sliceStart = int(rowStart[rowIdx])
+      let sliceStop = int(rowStart[rowIdx + 1])
+      for k in sliceStart..<sliceStop:
+        let colIdx = int(rowColsFlat[k])
+        colMask[colIdx][rowWord] = colMask[colIdx][rowWord] and clearMask
+        dec colDegree[colIdx]
+
+  return coverCount
 ```
 
-The search picks the uncovered street with the fewest crossing partners. The packing bound counts streets with disjoint partner sets and prunes branches that cannot beat the best cover. A greedy run gives the first upper bound.
+Bitsets hold the rows each street crosses. A dominant column covers a whole row group. Removal clears row bits and lowers degrees.
+
+**Case driver.**
 
 ```nim
-  let firstPart = minCoverCount(coverByV, coverByH, vSpans, vCount)
-  let secondPart = minCoverCount(coverByH, coverByV, hSpans, hCount)
-  appendOutput($(firstPart + secondPart))
-  outputBuffer.add '\n'
+readAllInput()
+let caseCount = nextSigned()
+for _ in 0..<caseCount:
+  let sectionCount = nextSigned()
+  var sectionLengths = newSeq[int](sectionCount)
+  for i in 0..<sectionCount:
+    sectionLengths[i] = nextSigned()
+
+  var vertices = newSeq[Point](sectionCount + 1)
+  var posX = 0
+  var posY = 0
+  vertices[0] = Point(x: 0, y: 0)
+  for i in 0..<sectionCount:
+    if (i and 1) == 0: posY += sectionLengths[i]
+    else: posX += sectionLengths[i]
+    vertices[i + 1] = Point(x: posX, y: posY)
+
+  let verticalStreets = extractAxisSegments(vertices, false)
+  let horizontalStreets = extractAxisSegments(vertices, true)
+  let verticalCount = verticalStreets.len
+  let horizontalCount = horizontalStreets.len
+
+  var horizontalAdj = newSeq[seq[int32]](horizontalCount)
+  var verticalAdj = newSeq[seq[int32]](verticalCount)
+  for i in 0..<verticalCount:
+    let streetX = verticalStreets[i].axisCoord
+    let streetLow = verticalStreets[i].lowCoord
+    let streetHigh = verticalStreets[i].highCoord
+    for j in 0..<horizontalCount:
+      if horizontalStreets[j].lowCoord <= streetX and streetX <= horizontalStreets[j].highCoord and
+         streetLow <= horizontalStreets[j].axisCoord and horizontalStreets[j].axisCoord <= streetHigh:
+        verticalAdj[i].add(int32(j))
+        horizontalAdj[j].add(int32(i))
+
+  let verticalCover = solveChordalSetCover(horizontalCount, verticalCount, horizontalAdj)
+  let horizontalCover = solveChordalSetCover(verticalCount, horizontalCount, verticalAdj)
+  appendInt(verticalCover + horizontalCover)
+
+if outputBuffer.len > 0:
+  stdout.write(outputBuffer)
+  outputBuffer.setLen(0)
 ```
 
-The two covers are computed on swapped crossing lists, then added. One buffer holds all answers and flushes in large blocks. The two searches dominate the work per case.
+The wall walk yields both street sets. Pairwise tests build the crossing graph. Two covers add, and one line holds the answer.
 
 ## Complexity
 
-Grid construction marks O(n) sections over O(n^2) compressed cells, and the flood visits each cell once. Street extraction visits O(n^2) cells. The crossing lists take O(v * h) time, with v and h both at most O(n). Each cover search explores a small branch tree with a packing bound, bounded by O(2^k) for an answer of k. Total time is O(n^2 + 2^k), and total space is O(n^2).
+Street extraction and the crossing graph dominate.
 
-A naive trial over every subset of streets would cost O(2^(v+h)) time per case.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input | O(Total numbers) | O(Input size) |
+| Street extraction | O(S^2 log S) | O(S) |
+| Crossing graph | O(V * H) | O(V * H) |
+| Greedy cover | O(S^3 / 64) | O(S^2 / 64) |
+
+S is the street count, V vertical and H horizontal.
+
+| Measure | Bound |
+| --- | --- |
+| Time | O(S^3 / 64) worst case |
+| Space | O(S^2 / 64) |
+
+Bitsets keep the cover loop compact.
+
+Testing every street subset would grow exponentially with the wall size.

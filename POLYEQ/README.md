@@ -1,60 +1,95 @@
+# POLYEQ — Polynomial Equations (SPOJ)
+<https://www.spoj.com/problems/POLYEQ/>
+
 ## Problem
 
-Read a count t, then t lines. Each line holds one polynomial F(x) written as a sum of monomials. Print every real solution of F(x) = 0 in non-decreasing order. Print repeated solutions once per copy, with two digits after the decimal point.
+A polynomial is given as a sum of monomials, such as `x^4-6*x^3+11*x^2-6*x`. Find every real root, including repeated roots, in non-decreasing order.
 
-The bounds that shape the program are these:
+All roots lie between −100 and 100. Print each with two digits after the decimal point; an error of 0.01 is allowed.
 
-| Quantity | Bound |
+Input: the first integer is t, the number of cases. Each following line holds one polynomial. Output: one line per case with all roots separated by spaces.
+
+These are the bounds and the judge limits:
+
+| Item | Bound |
 | --- | --- |
 | Test cases t | at most 100 |
-| Line length | at most 300 characters |
-| Coefficient | -30000 to 30000 |
 | Degree | 0 to 6 |
-| Root interval | -100.0 to 100.0 |
-| Judge limits | 1694 ms, 1536 MB |
+| Coefficient | −30000 to 30000 |
+| Polynomial text length | at most 300 characters |
+| Root interval | [−100.0, 100.0] |
+| Allowed error | 0.01 |
+| Time limit | 1694 ms |
+| Memory limit | 1536 MB |
 
-Degree six and at most 100 cases keep a per-case numeric search cheap.
+The sample has a quartic with four roots and a squared linear factor:
+
+```
+2
+x^4-6*x^3+11*x^2-6*x
+-x^2+2*x-1
+```
+
+```
+0.00 1.00 2.00 3.00
+1.00 1.00
+```
+
+The second polynomial is −(x − 1)², so root 1 appears twice.
 
 ## Idea
 
-Split the interval at the roots of the derivative. Between two neighboring derivative roots the polynomial is monotonic, so at most one solution sits there. A sign change at the ends gives that solution by bisection, and synthetic division counts repeated copies.
+Find the peaks and valleys first, then search each stretch between them. Picture a hilly road: before counting sea-level crossings, mark every hilltop and valley, because between them the road only climbs or only descends.
 
-Cost per case: derivative solves down to degree one, then one bisection per monotonic piece. A fine grid costs 20 001 evaluations per case and still misses even-multiplicity solutions.
+The program parses the polynomial into seven coefficients. It then calls `findRoots` recursively on the derivative. Those critical points split [−100, 100] into monotone pieces.
+
+On each piece, a sign change at the ends means one root, found by bisection. At a critical point, synthetic division measures multiplicity, and the program records the root that many times.
+
+Degree is at most six, and each bisection runs 120 steps, so each case is tiny. A fixed grid over the interval would miss repeated roots entirely.
+
+Takeaway: derivative roots turn root finding into monotone bisection plus a multiplicity count.
 
 ## Why It Works
 
-Three facts prove the method.
+Five facts support the method.
 
-1. Rolle's theorem puts a derivative root between every pair of neighboring roots of F. With all roots real, the derivative also has all roots real.
-2. On an interval with no derivative root inside, F is monotonic. Opposite signs at the two ends then prove exactly one root.
-3. A root shared by F and its derivative has multiplicity at least two. Each synthetic division removes one copy.
+1. Between consecutive roots of the derivative, f is monotone. A monotone segment crosses zero at most once, and it crosses exactly once when the endpoint signs differ.
+2. Critical points come from calling the same routine on the derivative, whose degree is one lower. The base cases, degree 0 and degree 1, are direct.
+3. `multiplicityAt` divides out (x − r) repeatedly while the residual stays small compared with the local magnitude. Each division raises the recorded multiplicity by one.
+4. Repeated roots sit at critical points and produce no sign change, so they are recorded from multiplicity instead of bisection. Both interval ends are also checked with the same test.
+5. `formatRoot` multiplies by 100, rounds half away from zero with integers, then splits the result into whole and fractional digits. Values below 0.005 snap to zero.
 
-Synthetic division uses this update, with coefficients stored from the constant term upward:
+These are the controls in the root search:
 
-| term | meaning |
+| Term | Meaning |
 | --- | --- |
-| `quotientCoefficients[workDegree - 1]` | leading coefficient of the quotient |
-| `quotientCoefficients[powerIndex - 1]` | next coefficient, built from the current one and `rootValue` |
-| `residualFactor * referenceScale` | tolerance scaled to the polynomial near the trial root |
+| `coefficients` | array of seven values, index is the monomial degree |
+| `evaluate` | Horner evaluation, nested multiply and add |
+| `magnitude` | sum of absolute terms, used as a local scale |
+| `referenceScale` | largest magnitude near the candidate root |
+| `mergeTolerance` | 1e−4, merges nearly equal critical points |
+| `residualFactor` | 1e−9, relative threshold for a repeated root |
+| `bisectRoot` | 120 midpoint steps on a sign-changing segment |
 
-The scale is sampled at the trial root and 0.7 away, so a root near zero never collapses the tolerance.
-
-A script builds the example polynomial and traces the search:
+A script lists the critical points and resulting roots for both sample cases:
 
 ```
-F(x) = x^3 - 4*x^2 + 5*x - 2
-F'(x) = 3*x^2 - 8*x + 5, derivative roots 1 and 1.666667
-F(-100) < 0, F(1) = 0, F(1.666667) < 0, F(100) > 0
-divide by (x - 1) twice, remainders 0 and 0
-bisection on (1.666667, 100) gives 2
-output: 1.00 1.00 2.00
+f  = x^4-6*x^3+11*x^2-6*x
+f' = 4*x^3-18*x^2+22*x-6
+critical points: 0.381966, 1.500000, 2.618034
+split points: -100, 0.381966, 1.5, 2.618034, 100
+sign changes -> roots: 0.00 1.00 2.00 3.00
+
+g  = -x^2+2*x-1 = -(x-1)^2
+g' = -2*x+2
+critical point 1.000000 has multiplicity 2 -> roots 1.00 1.00
 ```
 
-Both divisions by (x - 1) leave zero remainder, and the last interval yields 2.
+Each segment of f contributes one root. The repeated root of g appears through multiplicity, which a sign test alone cannot see.
 
 ## Code
 
-Each block below is copied verbatim from solution.nim.
+**Input.** The whole stream goes into one buffer, and polynomials are read as lines.
 
 ```nim
 const firstDigitValue = 48
@@ -91,7 +126,9 @@ proc nextPolynomial(data: string, position: var int): string =
     position += 1
 ```
 
-The read loop stops at end of file, so blank lines cannot desynchronize cases. `nextInt` scans digits in the one buffer and allocates nothing. `nextPolynomial` captures exactly one line.
+`nextPolynomial` stops at the line break, so blank separators cannot desync cases. The scanner handles the small case count. Cost is one pass over the input bytes.
+
+**Parsing.** A character walk fills coefficients; two helpers evaluate and scale.
 
 ```nim
 proc parsePolynomial(text: string): array[7, float64] =
@@ -136,11 +173,7 @@ proc parsePolynomial(text: string): array[7, float64] =
     if position == termStart:
       position += 1
   return coefficients
-```
 
-The loop walks each character once, at most 300 characters. `termStart` advances the cursor on an unknown character, so no token can stall the loop. Unused degrees stay zero.
-
-```nim
 proc evaluate(coefficients: array[7, float64], degree: int, value: float64): float64 =
   result = coefficients[degree]
   var powerIndex = degree - 1
@@ -155,7 +188,13 @@ proc magnitude(coefficients: array[7, float64], degree: int, value: float64): fl
   for powerIndex in 0 .. degree:
     result += abs(coefficients[powerIndex]) * power
     power *= absoluteValue
+```
 
+A missing coefficient defaults to 1, which covers `x` and `x^3`. Horner evaluation uses degree multiply-adds. `magnitude` supplies a scale so the residual test does not depend on absolute size.
+
+**Multiplicity.** Synthetic division counts repeated roots; bisection locates simple ones.
+
+```nim
 proc multiplicityAt(coefficients: array[7, float64], degree: int, rootValue: float64): int =
   var workCoefficients: array[7, float64]
   for i in 0 .. 6:
@@ -179,11 +218,7 @@ proc multiplicityAt(coefficients: array[7, float64], degree: int, rootValue: flo
     workCoefficients[workDegree] = 0.0
     workDegree -= 1
     result += 1
-```
 
-Horner's rule runs from `degree - 1` down to zero. `multiplicityAt` divides while the remainder stays below a scaled tolerance. Two sample points keep a root near zero visible. One trial root costs O(degree squared).
-
-```nim
 proc bisectRoot(coefficients: array[7, float64], degree: int, leftEdge: float64, rightEdge: float64, leftValue: float64): float64 =
   var lowEdge = leftEdge
   var highEdge = rightEdge
@@ -206,7 +241,13 @@ proc sortAscending(values: var seq[float64]) =
       values[position + 1] = values[position]
       position -= 1
     values[position + 1] = currentValue
+```
 
+`referenceScale` uses three nearby points, so a root near a flat region still tests fairly. The `while` loop stops dividing once the residual grows. Bisection keeps the side with the original sign; 120 steps exceed the needed 0.01. Insertion sort handles at most six roots.
+
+**Roots.** The recursive search splits on the derivative's roots.
+
+```nim
 proc findRoots(coefficients: array[7, float64], degree: int): seq[float64] =
   if degree == 0:
     return @[]
@@ -256,7 +297,9 @@ proc findRoots(coefficients: array[7, float64], degree: int): seq[float64] =
   sortAscending(result)
 ```
 
-The recursion stops at degree one. The interval loop visits `splitPoints.len - 1` pieces, and each bisection takes 120 fixed steps. Critical roots merge within `mergeTolerance` before copies are counted. The worst case is degree cubed, with degree at most six.
+`mergeTolerance` drops critical points that are numerically identical. Both interval ends get the multiplicity test, so a root at ±100 is not missed. Only segments with opposite endpoint signs go to bisection.
+
+**Driver.** Each polynomial is printed with two decimals.
 
 ```nim
 proc formatRoot(value: float64): string =
@@ -309,12 +352,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The formatter rounds by adding 0.5, which gives two stable decimals. `appendOutput` flushes at `flushBlockBytes`, so no per-number write reaches the stream. The final write emits the tail.
+`formatRoot` rounds half away from zero, then pads one fractional digit when needed. The degree scan uses the highest nonzero coefficient. The final write flushes the tail.
 
 ## Complexity
 
-Parsing reads at most 300 characters per case. `findRoots` recurses through at most six degrees, and each level tests a few trial roots. Bisection spends 120 steps per interval, with at most seven intervals.
+Degree bounds every stage.
 
-Total time is O(L + 120 times d squared + d cubed) per case. Here L is at most 300 and d is at most six. Space is O(L plus B plus d), with B the output block.
+| Phase | Time | Space |
+| --- | --- | --- |
+| Input scan | O(total characters) | O(input size) |
+| Parse polynomial | O(string length) | O(1) |
+| Recursive critical points | O(deg²) | O(deg) |
+| Bisection on each segment | O(deg × 120) | O(deg) |
+| Output | O(roots) | O(block size) |
 
-The naive form steps x from -100 to 100 by 0.01. That costs 20 001 evaluations per case, and a tangency still escapes a sign-change scan.
+With degree at most six, all stages stay tiny.
+
+| Measure | Big O |
+| --- | --- |
+| Time per case | O(deg² + deg × iterations) |
+| Total time | O(t × deg²) |
+| Working space | O(deg) |
+
+Scanning the interval on a fixed grid would find simple roots but miss repeated ones, which the multiplicity test recovers.

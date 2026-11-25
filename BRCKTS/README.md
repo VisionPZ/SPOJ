@@ -1,6 +1,11 @@
+# BRCKTS — Brackets (SPOJ)
+<https://www.spoj.com/problems/BRCKTS/>
+
 ## Problem
 
-Read ten bracket words and their lists of operations. Each operation flips one bracket or checks whether the current word is a correct bracket expression. A word is correct when its brackets pair up and every prefix holds at least as many opening brackets as closing brackets. Print one `Test i:` header per word, then `YES` or `NO` for each check operation.
+A word of parentheses is correct when every opening bracket finds a matching closing bracket and no prefix dips below zero. Ten words arrive with flip and check operations. Print YES or NO for each check.
+
+Input holds ten test cases one after another. Each case starts with the word length n, then the bracket word, then the operation count m, then m integers. A zero asks for a check; a positive k flips bracket k. Output a `Test i:` header per case, then one result per check.
 
 The stated bounds and judge limits follow.
 
@@ -8,30 +13,61 @@ The stated bounds and judge limits follow.
 | --- | --- |
 | Word length | 1 to 30,000 |
 | Test cases | 10 |
-| Operations per case | No limit stated |
+| Operations per case | no stated limit |
 | Time limit | 11,000 ms |
-| Memory limit | 1,536 MB |
+| Memory limit | 1536 MB |
 
-The word stays small, while the operation stream drives the running time.
+The word stays modest, while the operation stream drives the running time.
+
+The sample input and output:
+
+```
+4
+()((
+4
+4
+0
+2
+0
+```
+
+```
+Test 1:
+YES
+NO
+```
+
+The first check succeeds after flipping bracket four.
 
 ## Idea
 
-A segment tree is an array that holds one value per interval of the word. Here it stores two values per interval: the interval total and its smallest running prefix. A flip changes one leaf and rebuilds the ancestors. A check reads the root.
-Each flip costs O(log n) time, and each check costs O(1) time.
+Keep a scoreboard for every interval of the word. A segment tree (an array storing one value per interval) holds each interval's bracket sum and its smallest running prefix. A flip changes one leaf and rebuilds its ancestors; a check reads the root. Think of each interval as a team whose score and worst moment are both recorded.
+
+Each flip costs O(log n), and each check costs O(1). Rescanning the whole word on every check would cost O(n) each time and lose on a long operation stream.
+
+Takeaway: store two numbers per interval and answer checks at the root.
 
 ## Why It Works
 
-An opening bracket adds 1 to the running prefix, and a closing bracket subtracts 1. A word is correct exactly when its total is zero and its smallest prefix is non-negative. The root of the tree holds both numbers, so one comparison answers a check.
+1. An opening bracket adds 1 to the running score; a closing bracket subtracts 1.
+2. A word is correct exactly when its total is zero and its smallest prefix is non-negative.
+3. The root of the tree holds both numbers, so one comparison answers a check.
+4. An interval's total is the sum of its two halves.
+5. Its smallest prefix is the smaller of the left prefix and the left total plus the right prefix.
+6. `treeSize + j - 1` maps a 1-based bracket position to its leaf, and `i shr 1` walks to a parent.
 
-Each formula below maps one part of the tree to a value.
+The merge rule is the heart of the update.
 
-- `segmentSum[i] = segmentSum[leftChild] + segmentSum[rightChild]` adds the totals of the two halves.
-- `segmentMinPrefix[i] = min(segmentMinPrefix[leftChild], segmentSum[leftChild] + segmentMinPrefix[rightChild])` compares prefixes inside the left half with prefixes that continue into the right half.
-- `treeSize + j - 1` maps a 1-based bracket position to its leaf.
-- `i shr 1` moves from a child to its parent, so a flip visits one node per level.
-- `segmentSum[1] == 0 and segmentMinPrefix[1] >= 0` is the final check at the root.
+| Term | Meaning |
+| --- | --- |
+| `segmentSum[i]` | bracket total of interval i |
+| `segmentMinPrefix[i]` | smallest running prefix inside interval i |
+| `leftChild = i shl 1` | left half of interval i |
+| `emptyPrefixValue` | large value for unused leaves, so they never lower a minimum |
 
-This trace of the sample word lists each bracket, its value, and the running prefix.
+Every parent is rebuilt from its two children after a flip.
+
+A script traced the sample word before any flip:
 
 | Position | Bracket | Value | Prefix |
 | --- | --- | --- | --- |
@@ -40,11 +76,12 @@ This trace of the sample word lists each bracket, its value, and the running pre
 | 3 | ( | +1 | 1 |
 | 4 | ( | +1 | 2 |
 
-The total is 2, so the first check prints NO. After flipping bracket 4, the word becomes ()() and the second check prints YES.
+Flipping bracket four gives `())(` with total zero, so the first check prints YES.
 
 ## Code
 
-```
+**Constants, state, and readers.**
+```nim
 const
   spaceCode = 32
   firstDigitCode = 48
@@ -59,11 +96,7 @@ var
   segmentSum = newSeq[int](treeArraySize)
   segmentMinPrefix = newSeq[int](treeArraySize)
   treeSize = 1
-```
 
-The arrays hold 65,536 slots, twice the smallest power of two above 30,000. Padding gets a large empty-prefix value so empty leaves never lower a parent minimum. This block costs one allocation.
-
-```
 proc loadInput() =
   var lineContents = ""
   while readLine(stdin, lineContents):
@@ -81,10 +114,10 @@ proc readInteger(): int =
     result = result * 10 + (ord(inputData[i]) - firstDigitCode)
     inc i
 ```
+`loadInput` gathers the stream into `inputData`. `skipWhitespace` advances past spaces and line breaks. `readInteger` builds an operation value from the buffer.
 
-The read loop runs once per input line, and the scanner walks the buffer by index. Whitespace skipping also absorbs carriage returns. This costs one pass over the input bytes.
-
-```
+**Tree construction and queries.**
+```nim
 proc loadBracketWord(wordLength: int) =
   skipWhitespace()
   var j = treeSize
@@ -101,11 +134,7 @@ proc loadBracketWord(wordLength: int) =
     segmentSum[j] = 0
     segmentMinPrefix[j] = emptyPrefixValue
     inc j
-```
 
-The first loop runs exactly wordLength times, and the second runs treeSize minus wordLength times. Padding cannot change a parent result. This costs O(treeSize) per test case.
-
-```
 proc rebuildParents() =
   var i = treeSize - 1
   while i >= 1:
@@ -114,11 +143,7 @@ proc rebuildParents() =
     segmentSum[i] = segmentSum[leftChild] + segmentSum[rightChild]
     segmentMinPrefix[i] = min(segmentMinPrefix[leftChild], segmentSum[leftChild] + segmentMinPrefix[rightChild])
     dec i
-```
 
-The loop visits each internal node once, from treeSize minus 1 down to 1. The merge keeps the prefix that stops at the left boundary, because that prefix is already inside the left half. This costs O(treeSize) per test case.
-
-```
 proc flipBracket(j: int) =
   var i = treeSize + j - 1
   if segmentSum[i] == 1:
@@ -134,23 +159,19 @@ proc flipBracket(j: int) =
     segmentSum[i] = segmentSum[leftChild] + segmentSum[rightChild]
     segmentMinPrefix[i] = min(segmentMinPrefix[leftChild], segmentSum[leftChild] + segmentMinPrefix[rightChild])
     i = i shr 1
-```
 
-The upward loop runs once per tree level, at most 15 steps here. The leaf flips sign, and the parent merge matches the build. This costs O(log n) per replacement.
-
-```
 proc isBalanced(): bool =
   segmentSum[1] == 0 and segmentMinPrefix[1] >= 0
+```
+`loadBracketWord` fills the leaves and pads the rest with empty values. `rebuildParents` computes every parent bottom-up. `flipBracket` swaps one leaf and walks to the root, and `isBalanced` reads the root in O(1).
 
+**Driver.**
+```nim
 proc flushOutput(forceAll: bool) =
   if forceAll or outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
-```
 
-The check reads two root values and does no scanning. The buffer flushes after 256 KiB or at the end. This keeps write calls rare.
-
-```
 loadInput()
 var testNumber = 1
 while true:
@@ -179,19 +200,26 @@ while true:
   inc testNumber
 flushOutput(true)
 ```
-
-The size loop doubles treeSize until it reaches wordLength, giving at most 32,768 leaves. End of input stops the case loop, so ten cases need no hard-coded count. This costs one pass over all operations.
+The loop sizes the tree as the next power of two, loads the word, then processes operations. Each zero writes YES or NO into `outputBuffer`, and `flushOutput` sends blocks to stdout.
 
 ## Complexity
 
-Phase costs use a word of length n, q operations, and p checks.
+Tree size is the next power of two above the word length.
 
 | Phase | Time | Space |
 | --- | --- | --- |
-| Input load | O(total input bytes) | O(total input bytes) |
-| Tree build | O(n) | O(n) |
-| Replacement | O(log n) each | O(1) extra |
-| Check | O(1) each | O(1) extra |
-| Output | O(p) bytes | O(1) beyond the block |
+| Input scan | one pass over input bytes | input bytes |
+| Tree build | O(n) | 2 times treeSize values |
+| Flip | O(log n) | O(1) extra |
+| Check | O(1) | O(1) |
+| Output | one write per block | flushBlockBytes |
 
-Total time is O(input + n + q log n + output), and total space is O(input + n). A naive check rescans all n brackets, which costs O(n × p) for p checks. The tree replaces that rescan with one root read.
+Operations drive the total, not the word size alone.
+
+| Measure | Big O |
+| --- | --- |
+| Time per flip | O(log n) |
+| Time per check | O(1) |
+| Space per case | O(treeSize) |
+
+A full rescan on each check would cost O(n) every time, while the tree answers checks from two root values.
