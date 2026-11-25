@@ -1,10 +1,10 @@
-# SPOJ — 944 problems, one method
+# SPOJ — 950 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![944 problems](https://img.shields.io/badge/problems-944-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![950 problems](https://img.shields.io/badge/problems-950-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 944 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 950 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 944 problems
+## The 950 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -240,7 +240,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 
-### Graphs & trees (62)
+### Graphs & trees (63)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -308,6 +308,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [CNTPRIME](CNTPRIME/README.md) | Turn each value into a zero-or-one prime flag, like painting fence posts either marked or plain. A whole-range assignment paints one stretch a single color, so its prime count becomes either the stretch length or zero. | `O(1000000 log log 1000000)` once, then `O((n + q) log n)` per case |
 | [KOZE](KOZE/README.md) | Think of each enclosed yard as a locked room: count the animals inside before declaring a winner. Flood fill discovers each sector in one pass over the grid. | O(N * M) |
 | [SAFECRAC](SAFECRAC/README.md) | A passcode is a walk on the keypad, like tracing a route between neighbouring keys with at most one step per digit. Keep one count per ending digit and extend it by the neighbouring digits at each step. | O(max(N) plus T) |
+| [NITTROAD](NITTROAD/README.md) | Read the story backwards, like rewinding a film to see a broken bridge rebuilt. Removal becomes union, so one pass of disjoint-set union answers all queries. Store every query first and mark all roads that get removed. | O((N + Q) alpha(N)) per test case |
 
 ### Dynamic programming (59)
 
@@ -477,7 +478,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CBANK](CBANK/README.md) | Scale all coins to quarters and count the integer solutions of one equation, like counting change with a fixed set of denominations. The algorithm derives a closed form for the number of solutions and evaluates it with modular arithmetic. | O(1) per case |
 | [APS](APS/README.md) | The sequence is a running total, like a row of monthly bills where each new bill is the smallest prime factor of the current index. Find every smallest prime factor with one sieve, then accumulate them once in order. | O(largest N log log largest N plus T) |
 
-### Greedy, search & enumeration (475)
+### Greedy, search & enumeration (480)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -958,6 +959,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [CRAN01](CRAN01/README.md) | The slowest cell is a farthest corner, like the last house reached when news travels one street per minute in each direction. Each second adds one step of row or column distance, so a cell at Manhattan distance d cannot fill sooner than d seconds. | O(T) |
 | [MAX_NUM](MAX_NUM/README.md) | A larger digit only helps when it can move ahead of a smaller one, like a taller student stepping in front of a shorter one in a queue. | O(len(n)) per test case |
 | [SHAHBG](SHAHBG/README.md) | A new person acts like a bridge between two neighbouring clumps of people, like joining two puzzle pieces with a single snap. Count the occupied neighbours: zero neighbours creates a group, one neighbour extends a group, and two neighbours merge two groups. | O(Q) |
+| [DISCRT](DISCRT/README.md) | Read the multiplicative group like a clock with labelled ticks, and turn each number into its tick number. The equation then becomes a linear congruence in the tick numbers. | O(sqrt(n) + sqrt(phi) + m log phi) |
+| [M_SEQ](M_SEQ/README.md) | Squaring a sum of two terms gives the answer in one step, like recognising a full square on a tile. The closed form is G(n) = (2n+1)/n. Multiplying the recurrence by n^2 makes it telescope, giving F(n) = 4(n+1)(n+2)/(3n). | O(total input length + T) |
+| [SBW](SBW/README.md) | Two prefixes of a list mark the ends of a consecutive block. Their XOR is that block's XOR. Think of two landmarks naming a stretch of road. | O(Q log K + 47Q) plus cleared leaves |
+| [TJANDRA2](TJANDRA2/README.md) | Think of a nearly filled grid as a tiled floor with one corner strip missing, like a carpet trimmed along one edge. The best shapes have h rows, with k rows of width w and the rest of width w-1. | O(min(sqrt(N), 2e6) + 2e6) per test |
+| [WIMB](WIMB/README.md) | Treat the score as a position in a board game. Count the expected remaining moves from each position. This is like counting steps to the end of a ladder. | O(states per case + input length) |
 
 ### Data structures, bits & simulation (44)
 
