@@ -1,10 +1,10 @@
-# SPOJ — 1218 problems, one method
+# SPOJ — 1224 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1218 problems](https://img.shields.io/badge/problems-1218-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1224 problems](https://img.shields.io/badge/problems-1224-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1218 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1224 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1218 problems
+## The 1224 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -135,7 +135,7 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [LONGCS](LONGCS/README.md) | Index every substring of the first string once, then read each other string through that index, like using one map to check several travellers. A suffix automaton stores all those substrings in a small graph. | O(1) |
 | [BLHETA](BLHETA/README.md) | Keep the surviving letters on a stack, like a text editor that undoes a typed word the moment it is completed. Store the spells backward in a trie so one backward walk of the stack finds every matching suffix. | O(1) |
 
-### Geometry & grids (100)
+### Geometry & grids (101)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
@@ -241,6 +241,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 | [RROOT](RROOT/README.md) | Slice the square like a loaf of bread, then measure the slice below the parabola `c = b²` and divide by the whole loaf. The algorithm is analytic area integration in closed form, at O(1) cost per test. | O(T) |
+| [ADAKOHL](ADAKOHL/README.md) | Every line passes through at least one kohlrabi, so pick that one as an anchor, like choosing a hub before grouping spokes. From the hub, reduce each direction to a primitive integer vector; all points with the same vector lie on the same line. | O(1) |
 
 ### Graphs & trees (77)
 
@@ -405,7 +406,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [ALTSEQ](ALTSEQ/README.md) | Pick members like a lineup where each new person must be taller and must wear the opposite jersey, like picking players by height from alternating teams. Keep the best length ending at each position, then extend it from any earlier value with the opposite sign and smaller magnitude. | O(1) |
 | [CUBNUM](CUBNUM/README.md) | Fill a recipe book once, where every total stores the shortest recipe built from earlier totals plus one cube, like writing a multiplication table before answering questions about it. | O(1) |
 
-### Number theory & big integers (107)
+### Number theory & big integers (108)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -518,8 +519,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [IAPCR2D](IAPCR2D/README.md) | The divisor count of `X!` is a product of small factors, one for each prime exponent. Think of it as a sorted phone book: build the book once, then look up each query quickly. | O(1) |
 | [POWFIB](POWFIB/README.md) | Skipping Fibonacci numbers is like counting seats in a row while reserving a few labelled seats. Only about forty-five Fibonacci values fit below the modulus, so binary search finds the Nth gap in a few steps. | O(T log N) |
 | [ADASUM](ADASUM/README.md) | A digit contributes to many blocks, like one brick supporting several overlapping arches. Count how many blocks start at or before that digit and how many end after it. | O(1) |
+| [ADADIG](ADADIG/README.md) | Factor N into digits greater than one, then fill the remaining sum with ones, like choosing toppings and then adding plain crackers to reach a fixed total weight. | O(1) |
 
-### Greedy, search & enumeration (705)
+### Greedy, search & enumeration (709)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1230,6 +1232,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [CNTDO](CNTDO/README.md) | Check each number against a guest list of numbers already seen, like a doorman comparing an invitation against one alphabetical roster. Mark every value in a bounded table, then test twice each value against that table. | O(1) |
 | [VECTAR5](VECTAR5/README.md) | Sort each element into four boxes like guests at a party: absent, A only, B only, or both, and require at least one guest in each single box. | O(1) |
 | [XORRAY](XORRAY/README.md) | Sort numbers into pigeonholes by their XOR coordinate, like dealing one card into each labelled box, then shuffle freely inside each box. A group of f cells contributes f! | O(1) |
+| [ADACROP](ADACROP/README.md) | Treat each plant kind as its own timeline, like sorting mail into one inbox per sender before reading any of them. A change adds a plus event for the new kind and a minus event for the old one. | O((N + Q) log(N + Q)) |
+| [ADAROADS](ADAROADS/README.md) | Think of the forest as a set of strings tied into knots: a new road either ties two loose pieces or replaces the most expensive string already on the path. | O(1) |
+| [BILLI](BILLI/README.md) | A trie is like a family tree of surnames: walk a stolen word down the tree, and every node you pass represents a shared prefix. Each visited node gives one candidate cost, and the lowest wins. | O(1) |
+| [THREENUMBERS](THREENUMBERS/README.md) | Count how many qualifying numbers lie at or below a guess, then move the guess like a librarian locating a shelf by its label count. Binary search finds the smallest value whose count reaches n. | O(1) |
 
 ### Data structures, bits & simulation (46)
 
