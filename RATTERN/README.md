@@ -40,15 +40,18 @@ The sample case:
 
 ## Idea
 
-Fill the first empty square first, like solving a crossword left to right. The algorithm is recursive exact cover with memoization. A 64-bit mask records covered squares. Each call tries every rotation of every tile type anchored at the first open square. A state costs at most 40 placements, since ten types have at most four rotations each. Testing every subset would cost 2^64 checks, while memoization pays once per reachable mask. A gcd check drops remaining counts that no tile size can sum to. Pack the board into one word, fill the first gap, and cache every state.
+Fill the first empty square first, like solving a crossword left to right. The algorithm is recursive exact cover with memoization. A 64-bit mask records covered squares. Each call tries every rotation of every tile type anchored at the first open square. A state costs at most 40 placements, since ten types have at most four rotations each. A fixed hash table caches each reachable mask with a case stamp, so old entries never return. Testing every subset would cost 2^64 checks, while memoization pays once per reachable mask. A gcd check drops remaining counts that no tile size can sum to.
+
+Pack the board into one word, fill the first gap, and cache every state.
 
 ## Why It Works
 
 1. A quarter turn keeps the cell count and the numbered colors of a tile. The shape library stores only distinct rotations.
 2. The first open square must belong to the next tile, since earlier squares are covered. Anchoring the tile's first cell there loses no tiling.
 3. One bitwise test rejects overlapping placements. Squares marked 2 start with their bits set.
-4. A mask always has the same cheapest completion, so memoization returns it at once.
-5. If all tile sizes share a divisor, the remaining count must also be a multiple. The gcd check rejects other counts without search.
+4. A mask always has the same cheapest completion, so the cache returns it at once.
+5. Each cache slot stores the stamp of its case, so a new case ignores old entries.
+6. If all tile sizes share a divisor, the remaining count must also be a multiple.
 
 The main terms and formulas:
 
@@ -57,7 +60,7 @@ The main terms and formulas:
 | `allMask` | bits for every square in the room |
 | `firstOpen` | index of the lowest uncovered square |
 | `sizeGcd` | greatest common divisor of available tile sizes |
-| `placementBits` | squares covered by one anchored tile |
+| `memoStamp` | number of the current case in the cache |
 
 The gcd rule prunes whole branches before any tile is placed.
 
@@ -77,14 +80,17 @@ The two chosen tiles cost 10 and 5, so the answer is 15.
 
 ## Code
 
-**Constants and token reader.** This block sets fixed bounds and parses integers from one buffer.
+**Constants and token reader.** This block sets bounds and parses integers from one buffer.
 
 ```nim
-import sequtils
-
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 17
 const impossibleCost = 1 shl 28
+const maxCellCount = 64
+const maxRoomSide = 8
+const maxTileCount = 1000
+const memoSlotCount = 1 shl 19
+const memoSlotMask = memoSlotCount - 1
 const formCellCount: array[0..4, int] = [0, 1, 2, 3, 3]
 const hashMultiplier = 11400714819323198485'u64
 
@@ -99,17 +105,23 @@ type
     count: int
 
 proc nextInt(data: string, pos: var int): int =
-  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
+  var negative = false
+  while pos < data.len and data[pos] != '-' and (data[pos] < '0' or data[pos] > '9'):
     pos += 1
-  var value = 0
+  if pos < data.len and data[pos] == '-':
+    negative = true
+    pos += 1
+  var magnitude: int64 = 0
   while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    value = value * 10 + int(data[pos]) - firstDigitValue
+    magnitude = magnitude * 10 + int64(int(data[pos]) - firstDigitValue)
+    if magnitude > 2000000000: magnitude = 2000000000
     pos += 1
-  return value```
+  if negative: return -int(magnitude)
+  return int(magnitude)```
 
-`firstDigitValue` turns a digit byte into its value. `flushBlockBytes` caps the output buffer at 128 KiB. The scanner skips separators and builds each integer digit by digit. Reading the whole stream once keeps parsing to one pass.
+`firstDigitValue` turns a digit byte into its value. `flushBlockBytes` caps the output buffer at 128 KiB. The scanner reads a sign and builds each integer digit by digit. Values are capped before conversion, so a long token cannot overflow.
 
-**Rotation library and per-case state.** This block defines shapes and the arrays reused by every case.
+**Rotation library and per-case state.** This block builds shapes at run time and defines the reused arrays.
 
 ```nim
 proc sameRotation(left, right: ShapeRotation): bool =
@@ -175,7 +187,7 @@ proc buildShapeLibrary(): array[5, seq[ShapeRotation]] =
   result[3] = makeRotations(straight)
   result[4] = makeRotations(angle)
 
-const shapeLibrary = buildShapeLibrary()
+var shapeLibrary: array[5, seq[ShapeRotation]]
 
 proc gcdValues(left, right: int): int =
   var first = left
@@ -197,87 +209,77 @@ var placementColors: seq[array[0..2, int]] = @[]
 var placementCounts: seq[int] = @[]
 var placementCosts: seq[int] = @[]```
 
-`sameRotation` compares sorted cell offsets and paint indexes. `makeRotations` generates four quarter turns and keeps distinct ones. The four flat arrays hold placements without per-cell objects.
+`shapeLibrary` is filled after input read, so no compile-time sequence constant is needed. `sameRotation` compares sorted cell offsets and paint indexes. The flat arrays hold placements without per-cell objects.
 
-**Memo table.** This block caches the best cost for each covered mask.
+**Stamped cache.** This block caches the best cost for each covered mask.
 
 ```nim
 var memoKeys: seq[uint64] = @[]
 var memoValues: seq[int] = @[]
-var memoUsed: seq[bool] = @[]
-var memoCapacity = 4096
+var memoStamps: seq[uint32] = @[]
+var memoStamp = 1'u32
 var memoSize = 0
-var memoHits: seq[int] = @[]
 
-proc memoReset() =
-  memoKeys.setLen(memoCapacity)
-  memoValues.setLen(memoCapacity)
-  memoUsed = repeat(false, memoCapacity)
-  memoHits.setLen(0)
+proc memoInit() =
+  memoKeys.setLen(memoSlotCount)
+  memoValues.setLen(memoSlotCount)
+  memoStamps.setLen(memoSlotCount)
+  memoStamp = 1'u32
+  memoSize = 0
+
+proc memoNextCase() =
+  memoStamp += 1'u32
+  if memoStamp == 0'u32:
+    for slot in 0 .. memoSlotCount - 1: memoStamps[slot] = 0'u32
+    memoStamp = 1'u32
   memoSize = 0
 
 proc memoIndex(mask: uint64): int =
   let mixed = mask * hashMultiplier
-  return int((mixed shr 40) and uint64(memoCapacity - 1))
-
-proc memoInsertKnown(mask: uint64, value: int) =
-  var slot = memoIndex(mask)
-  while memoUsed[slot]:
-    if memoKeys[slot] == mask:
-      memoValues[slot] = value
-      return
-    slot = (slot + 1) and (memoCapacity - 1)
-  memoUsed[slot] = true
-  memoKeys[slot] = mask
-  memoValues[slot] = value
-  memoHits.add slot
-  memoSize += 1
-
-proc memoGrow() =
-  let oldKeys = memoKeys
-  let oldValues = memoValues
-  let oldUsed = memoUsed
-  let oldCapacity = memoCapacity
-  memoCapacity = oldCapacity shl 1
-  memoKeys.setLen(memoCapacity)
-  memoValues.setLen(memoCapacity)
-  memoUsed = repeat(false, memoCapacity)
-  memoHits.setLen(0)
-  memoSize = 0
-  for slot in 0 .. oldCapacity - 1:
-    if oldUsed[slot]: memoInsertKnown(oldKeys[slot], oldValues[slot])
+  return int((mixed shr 40) and uint64(memoSlotMask))
 
 proc memoGet(mask: uint64, foundValue: var int): bool =
   var slot = memoIndex(mask)
-  while memoUsed[slot]:
+  var probes = 0
+  while memoStamps[slot] == memoStamp:
     if memoKeys[slot] == mask:
       foundValue = memoValues[slot]
       return true
-    slot = (slot + 1) and (memoCapacity - 1)
+    slot = (slot + 1) and memoSlotMask
+    probes += 1
+    if probes >= memoSlotCount: return false
   return false
 
 proc memoPut(mask: uint64, value: int) =
-  if memoSize * 10 >= memoCapacity * 7: memoGrow()
-  memoInsertKnown(mask, value)
+  if memoSize * 10 >= memoSlotCount * 7: return
+  var slot = memoIndex(mask)
+  var probes = 0
+  while memoStamps[slot] == memoStamp:
+    if memoKeys[slot] == mask:
+      memoValues[slot] = value
+      return
+    slot = (slot + 1) and memoSlotMask
+    probes += 1
+    if probes >= memoSlotCount: return
+  memoStamps[slot] = memoStamp
+  memoKeys[slot] = mask
+  memoValues[slot] = value
+  memoSize += 1```
 
-proc memoClear() =
-  for slot in memoHits: memoUsed[slot] = false
-  memoHits.setLen(0)
-  memoSize = 0```
-
-`memoIndex` mixes the mask and takes high bits. Linear probing resolves collisions. `memoClear` resets only slots written this case, and `memoGrow` doubles capacity at 70 percent load.
+`memoInit` allocates the table once. `memoNextCase` advances the stamp, so old entries need no clearing. Probing stops after one full sweep, so a full table cannot hang.
 
 **Recursive solver.** This block finds the cheapest completion from a covered mask.
 
 ```nim
 proc solveMask(mask: uint64, remainingCount: int): int =
   if mask == allMask: return 0
-  if remainingCount mod sizeGcd != 0: return -1
+  if sizeGcd > 0 and remainingCount mod sizeGcd != 0: return -1
   var cached = 0
   if memoGet(mask, cached): return cached
   var firstOpen = 0
-  while ((mask shr uint(firstOpen)) and 1'u64) == 1'u64:
+  while firstOpen < maxCellCount and ((mask shr uint(firstOpen)) and 1'u64) == 1'u64:
     firstOpen += 1
+  if firstOpen >= maxCellCount: return -1
   var best = impossibleCost
   var index = placementStart[firstOpen]
   while index < placementEnd[firstOpen]:
@@ -297,7 +299,7 @@ proc solveMask(mask: uint64, remainingCount: int): int =
   memoPut(mask, best)
   return best```
 
-The loop stops at the first open square. A placement must leave all its cells uncovered and match every required color. A remaining count that fails `sizeGcd` returns -1 before any recursion.
+The loop stops at the first open square. A placement must leave all its cells uncovered and match every required color. The `sizeGcd` check runs only when a tile size exists, so an empty tile list never divides by zero.
 
 **Placement builder.** This block lists legal anchored tiles for every square.
 
@@ -308,13 +310,17 @@ proc buildPlacements(roomRows, roomCols, tileCount: int, inputData: string, scan
   var tilePaints: seq[array[0..2, int]] = @[]
   sizeGcd = 0
   for tileIdx in 0 .. tileCount - 1:
-    tileForms.add nextInt(inputData, scanPos)
+    let rawForm = nextInt(inputData, scanPos)
+    let safeForm = if rawForm >= 1 and rawForm <= 4: rawForm else: 0
+    tileForms.add safeForm
     tileCosts.add nextInt(inputData, scanPos)
     var paint: array[0..2, int]
-    for cellIdx in 0 .. formCellCount[tileForms[tileIdx]] - 1:
+    for cellIdx in 0 .. formCellCount[safeForm] - 1:
       paint[cellIdx] = nextInt(inputData, scanPos)
+    if safeForm == 0:
+      for cellIdx in 0 .. 2: paint[cellIdx] = nextInt(inputData, scanPos)
     tilePaints.add paint
-    sizeGcd = gcdValues(sizeGcd, formCellCount[tileForms[tileIdx]])
+    sizeGcd = gcdValues(sizeGcd, formCellCount[safeForm])
   placementBits.setLen(0)
   placementCells.setLen(0)
   placementColors.setLen(0)
@@ -341,6 +347,9 @@ proc buildPlacements(roomRows, roomCols, tileCount: int, inputData: string, scan
             valid = false
             break
           let absIndex = absRow * roomCols + absCol
+          if absIndex >= maxCellCount:
+            valid = false
+            break
           cellIndexes[cellIdx] = absIndex
           cellColors[cellIdx] = paint[rotation.cells[cellIdx].paintIndex]
           bits = bits or (1'u64 shl absIndex)
@@ -352,7 +361,7 @@ proc buildPlacements(roomRows, roomCols, tileCount: int, inputData: string, scan
           placementCosts.add cost
     placementEnd[pos] = placementBits.len```
 
-`anchor` is the tile cell with the smallest row and column offset. That cell must land on the first open square. Bounds checks discard placements that cross a wall.
+`safeForm` keeps a form inside the four known shapes, so table lookups stay in range. `anchor` is the tile cell with the smallest row and column offset. Bounds checks discard placements that cross a wall or a 64-bit index.
 
 **Driver.** This block reads input, runs each case, and writes answers in blocks.
 
@@ -364,48 +373,56 @@ while readLine(stdin, inputLine):
   inputData.add '\n'
 
 var scanPos = 0
-let caseCount = nextInt(inputData, scanPos)
+var caseCount = nextInt(inputData, scanPos)
+if caseCount < 0: caseCount = 0
+if caseCount > 2000000: caseCount = 2000000
 var outputBuffer = ""
-memoReset()
+memoInit()
+shapeLibrary = buildShapeLibrary()
 
 for caseIdx in 0 .. caseCount - 1:
-  let roomRows = nextInt(inputData, scanPos)
-  let roomCols = nextInt(inputData, scanPos)
-  let tileCount = nextInt(inputData, scanPos)
+  var roomRows = nextInt(inputData, scanPos)
+  var roomCols = nextInt(inputData, scanPos)
+  var tileCount = nextInt(inputData, scanPos)
+  if roomRows < 0: roomRows = 0
+  if roomCols < 0: roomCols = 0
+  if roomRows > maxRoomSide: roomRows = maxRoomSide
+  if roomCols > maxRoomSide: roomCols = maxRoomSide
+  if tileCount < 0: tileCount = 0
+  if tileCount > maxTileCount: tileCount = maxTileCount
   let cellTotal = roomRows * roomCols
-  if cellTotal == 64: allMask = not 0'u64
+  if cellTotal <= 0: allMask = 0'u64
+  elif cellTotal >= maxCellCount: allMask = not 0'u64
   else: allMask = (1'u64 shl cellTotal) - 1'u64
   var covered = 0'u64
   var needCount = 0
   for cellIdx in 0 .. cellTotal - 1:
     let value = nextInt(inputData, scanPos)
-    neededColor[cellIdx] = value
-    if value == 2: covered = covered or (1'u64 shl cellIdx)
-    else: needCount += 1
+    if cellIdx < maxCellCount:
+      neededColor[cellIdx] = value
+      if value == 2: covered = covered or (1'u64 shl cellIdx)
+      else: needCount += 1
   buildPlacements(roomRows, roomCols, tileCount, inputData, scanPos)
-  memoClear()
+  memoNextCase()
   let answer = solveMask(covered, needCount)
   outputBuffer.add $answer
   outputBuffer.add '\n'
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
-    outputBuffer.setLen 0
+    outputBuffer.setLen 0```
 
-stdout.write outputBuffer
-outputBuffer.setLen 0```
-
-The mask of a full 64-square room uses `not 0'u64`, since shifting by 64 wraps. Each answer goes into one output buffer, flushed every 128 KiB.
+Room sides, tile counts, and the case count are capped before indexing. `allMask` uses `not 0'u64` for a full room, since shifting by 64 wraps. Each answer goes into one output buffer, flushed every 128 KiB.
 
 ## Complexity
 
-The work splits into shape setup, placement building, and memoized search.
+The work splits into shape setup, placement building, and cached search.
 
 | Phase | Time | Space |
 |---|---|---|
 | Input read | one pass over lines, then one digit pass | input bytes |
 | Shape setup | four turns per form, once | 14 rotations |
 | Placement build | at most 40 placements per square | at most 2560 placements |
-| Memoized search | one pass per reachable mask | one entry per mask |
+| Cached search | one pass per reachable mask | one fixed table |
 | Output | one write per 128 KiB block | 128 KiB |
 
 The search dominates, and both placement building and output stay small.
@@ -415,4 +432,4 @@ The search dominates, and both placement building and output stay small.
 | Time | O(S x P), where S is reachable masks and P is placements per state |
 | Space | O(S + N x M) |
 
-Trying every subset of 64 squares costs O(2^64) time, while memoization pays once per reachable mask.
+Trying every subset of 64 squares costs O(2^64) time, while caching pays once per reachable mask.

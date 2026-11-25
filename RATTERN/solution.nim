@@ -1,8 +1,11 @@
-import sequtils
-
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 17
 const impossibleCost = 1 shl 28
+const maxCellCount = 64
+const maxRoomSide = 8
+const maxTileCount = 1000
+const memoSlotCount = 1 shl 19
+const memoSlotMask = memoSlotCount - 1
 const formCellCount: array[0..4, int] = [0, 1, 2, 3, 3]
 const hashMultiplier = 11400714819323198485'u64
 
@@ -17,13 +20,19 @@ type
     count: int
 
 proc nextInt(data: string, pos: var int): int =
-  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
+  var negative = false
+  while pos < data.len and data[pos] != '-' and (data[pos] < '0' or data[pos] > '9'):
     pos += 1
-  var value = 0
+  if pos < data.len and data[pos] == '-':
+    negative = true
+    pos += 1
+  var magnitude: int64 = 0
   while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    value = value * 10 + int(data[pos]) - firstDigitValue
+    magnitude = magnitude * 10 + int64(int(data[pos]) - firstDigitValue)
+    if magnitude > 2000000000: magnitude = 2000000000
     pos += 1
-  return value
+  if negative: return -int(magnitude)
+  return int(magnitude)
 
 proc sameRotation(left, right: ShapeRotation): bool =
   if left.count != right.count: return false
@@ -88,7 +97,7 @@ proc buildShapeLibrary(): array[5, seq[ShapeRotation]] =
   result[3] = makeRotations(straight)
   result[4] = makeRotations(angle)
 
-const shapeLibrary = buildShapeLibrary()
+var shapeLibrary: array[5, seq[ShapeRotation]]
 
 proc gcdValues(left, right: int): int =
   var first = left
@@ -112,75 +121,65 @@ var placementCosts: seq[int] = @[]
 
 var memoKeys: seq[uint64] = @[]
 var memoValues: seq[int] = @[]
-var memoUsed: seq[bool] = @[]
-var memoCapacity = 4096
+var memoStamps: seq[uint32] = @[]
+var memoStamp = 1'u32
 var memoSize = 0
-var memoHits: seq[int] = @[]
 
-proc memoReset() =
-  memoKeys.setLen(memoCapacity)
-  memoValues.setLen(memoCapacity)
-  memoUsed = repeat(false, memoCapacity)
-  memoHits.setLen(0)
+proc memoInit() =
+  memoKeys.setLen(memoSlotCount)
+  memoValues.setLen(memoSlotCount)
+  memoStamps.setLen(memoSlotCount)
+  memoStamp = 1'u32
+  memoSize = 0
+
+proc memoNextCase() =
+  memoStamp += 1'u32
+  if memoStamp == 0'u32:
+    for slot in 0 .. memoSlotCount - 1: memoStamps[slot] = 0'u32
+    memoStamp = 1'u32
   memoSize = 0
 
 proc memoIndex(mask: uint64): int =
   let mixed = mask * hashMultiplier
-  return int((mixed shr 40) and uint64(memoCapacity - 1))
-
-proc memoInsertKnown(mask: uint64, value: int) =
-  var slot = memoIndex(mask)
-  while memoUsed[slot]:
-    if memoKeys[slot] == mask:
-      memoValues[slot] = value
-      return
-    slot = (slot + 1) and (memoCapacity - 1)
-  memoUsed[slot] = true
-  memoKeys[slot] = mask
-  memoValues[slot] = value
-  memoHits.add slot
-  memoSize += 1
-
-proc memoGrow() =
-  let oldKeys = memoKeys
-  let oldValues = memoValues
-  let oldUsed = memoUsed
-  let oldCapacity = memoCapacity
-  memoCapacity = oldCapacity shl 1
-  memoKeys.setLen(memoCapacity)
-  memoValues.setLen(memoCapacity)
-  memoUsed = repeat(false, memoCapacity)
-  memoHits.setLen(0)
-  memoSize = 0
-  for slot in 0 .. oldCapacity - 1:
-    if oldUsed[slot]: memoInsertKnown(oldKeys[slot], oldValues[slot])
+  return int((mixed shr 40) and uint64(memoSlotMask))
 
 proc memoGet(mask: uint64, foundValue: var int): bool =
   var slot = memoIndex(mask)
-  while memoUsed[slot]:
+  var probes = 0
+  while memoStamps[slot] == memoStamp:
     if memoKeys[slot] == mask:
       foundValue = memoValues[slot]
       return true
-    slot = (slot + 1) and (memoCapacity - 1)
+    slot = (slot + 1) and memoSlotMask
+    probes += 1
+    if probes >= memoSlotCount: return false
   return false
 
 proc memoPut(mask: uint64, value: int) =
-  if memoSize * 10 >= memoCapacity * 7: memoGrow()
-  memoInsertKnown(mask, value)
-
-proc memoClear() =
-  for slot in memoHits: memoUsed[slot] = false
-  memoHits.setLen(0)
-  memoSize = 0
+  if memoSize * 10 >= memoSlotCount * 7: return
+  var slot = memoIndex(mask)
+  var probes = 0
+  while memoStamps[slot] == memoStamp:
+    if memoKeys[slot] == mask:
+      memoValues[slot] = value
+      return
+    slot = (slot + 1) and memoSlotMask
+    probes += 1
+    if probes >= memoSlotCount: return
+  memoStamps[slot] = memoStamp
+  memoKeys[slot] = mask
+  memoValues[slot] = value
+  memoSize += 1
 
 proc solveMask(mask: uint64, remainingCount: int): int =
   if mask == allMask: return 0
-  if remainingCount mod sizeGcd != 0: return -1
+  if sizeGcd > 0 and remainingCount mod sizeGcd != 0: return -1
   var cached = 0
   if memoGet(mask, cached): return cached
   var firstOpen = 0
-  while ((mask shr uint(firstOpen)) and 1'u64) == 1'u64:
+  while firstOpen < maxCellCount and ((mask shr uint(firstOpen)) and 1'u64) == 1'u64:
     firstOpen += 1
+  if firstOpen >= maxCellCount: return -1
   var best = impossibleCost
   var index = placementStart[firstOpen]
   while index < placementEnd[firstOpen]:
@@ -206,13 +205,17 @@ proc buildPlacements(roomRows, roomCols, tileCount: int, inputData: string, scan
   var tilePaints: seq[array[0..2, int]] = @[]
   sizeGcd = 0
   for tileIdx in 0 .. tileCount - 1:
-    tileForms.add nextInt(inputData, scanPos)
+    let rawForm = nextInt(inputData, scanPos)
+    let safeForm = if rawForm >= 1 and rawForm <= 4: rawForm else: 0
+    tileForms.add safeForm
     tileCosts.add nextInt(inputData, scanPos)
     var paint: array[0..2, int]
-    for cellIdx in 0 .. formCellCount[tileForms[tileIdx]] - 1:
+    for cellIdx in 0 .. formCellCount[safeForm] - 1:
       paint[cellIdx] = nextInt(inputData, scanPos)
+    if safeForm == 0:
+      for cellIdx in 0 .. 2: paint[cellIdx] = nextInt(inputData, scanPos)
     tilePaints.add paint
-    sizeGcd = gcdValues(sizeGcd, formCellCount[tileForms[tileIdx]])
+    sizeGcd = gcdValues(sizeGcd, formCellCount[safeForm])
   placementBits.setLen(0)
   placementCells.setLen(0)
   placementColors.setLen(0)
@@ -239,6 +242,9 @@ proc buildPlacements(roomRows, roomCols, tileCount: int, inputData: string, scan
             valid = false
             break
           let absIndex = absRow * roomCols + absCol
+          if absIndex >= maxCellCount:
+            valid = false
+            break
           cellIndexes[cellIdx] = absIndex
           cellColors[cellIdx] = paint[rotation.cells[cellIdx].paintIndex]
           bits = bits or (1'u64 shl absIndex)
@@ -257,26 +263,37 @@ while readLine(stdin, inputLine):
   inputData.add '\n'
 
 var scanPos = 0
-let caseCount = nextInt(inputData, scanPos)
+var caseCount = nextInt(inputData, scanPos)
+if caseCount < 0: caseCount = 0
+if caseCount > 2000000: caseCount = 2000000
 var outputBuffer = ""
-memoReset()
+memoInit()
+shapeLibrary = buildShapeLibrary()
 
 for caseIdx in 0 .. caseCount - 1:
-  let roomRows = nextInt(inputData, scanPos)
-  let roomCols = nextInt(inputData, scanPos)
-  let tileCount = nextInt(inputData, scanPos)
+  var roomRows = nextInt(inputData, scanPos)
+  var roomCols = nextInt(inputData, scanPos)
+  var tileCount = nextInt(inputData, scanPos)
+  if roomRows < 0: roomRows = 0
+  if roomCols < 0: roomCols = 0
+  if roomRows > maxRoomSide: roomRows = maxRoomSide
+  if roomCols > maxRoomSide: roomCols = maxRoomSide
+  if tileCount < 0: tileCount = 0
+  if tileCount > maxTileCount: tileCount = maxTileCount
   let cellTotal = roomRows * roomCols
-  if cellTotal == 64: allMask = not 0'u64
+  if cellTotal <= 0: allMask = 0'u64
+  elif cellTotal >= maxCellCount: allMask = not 0'u64
   else: allMask = (1'u64 shl cellTotal) - 1'u64
   var covered = 0'u64
   var needCount = 0
   for cellIdx in 0 .. cellTotal - 1:
     let value = nextInt(inputData, scanPos)
-    neededColor[cellIdx] = value
-    if value == 2: covered = covered or (1'u64 shl cellIdx)
-    else: needCount += 1
+    if cellIdx < maxCellCount:
+      neededColor[cellIdx] = value
+      if value == 2: covered = covered or (1'u64 shl cellIdx)
+      else: needCount += 1
   buildPlacements(roomRows, roomCols, tileCount, inputData, scanPos)
-  memoClear()
+  memoNextCase()
   let answer = solveMask(covered, needCount)
   outputBuffer.add $answer
   outputBuffer.add '\n'
