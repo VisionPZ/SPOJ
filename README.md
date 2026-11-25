@@ -1,10 +1,10 @@
-# SPOJ — 1153 problems, one method
+# SPOJ — 1159 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1153 problems](https://img.shields.io/badge/problems-1153-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1159 problems](https://img.shields.io/badge/problems-1159-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1153 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1159 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1153 problems
+## The 1159 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -505,7 +505,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SUFFIX](SUFFIX/README.md) | A suffix fixes the last digits, and those digits are the remainder modulo a power of the base, like reading only the last digits of a receipt. Convert each suffix to its remainder and modulus, then merge the congruences with the Chinese remainder theorem. | O(total suffix length times log of the modulus) |
 | [BITPLAY](BITPLAY/README.md) | Editing the answer is like changing a price tag: keep the high digits, lower one digit, then spend the remaining ones on the largest low digits. Since N is even, the first changed bit must be a one in N. | O(1) |
 
-### Greedy, search & enumeration (654)
+### Greedy, search & enumeration (660)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1165,6 +1165,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [BOKAM143SOU](BOKAM143SOU/README.md) | Packing boxes from a shelf is a good picture: take box sizes in shelf order, so each packing is counted once. The program walks through cube values and records how many sums each cube count can reach. | O(R * N) with a factor of five |
 | [CS345A1](CS345A1/README.md) | Sweeping left to right is like reading a barcode: each red line asks how many blue lines lie under its pen at that moment. Represent each blue segment as an add event at its left end and a remove event at its right end. | O(n log n) |
 | [KNMD](KNMD/README.md) | Paying a bill is a good picture: keep as much as possible and set aside the smallest handful of coins that fixes the change. Since every number is positive, the best subsequence drops the cheapest group with the right remainder. | O(n log k + k^3) |
+| [DCEPC14F](DCEPC14F/README.md) | Track only remainders and raise the remainder-counting polynomial to the Kth power by repeated squaring, like folding a long chain of additions into logarithmically many doublings. The algorithm builds one coefficient per residue in Z[y]/(y^M − 1), where coefficient r counts kinds of height r mod M. | O(1) |
+| [DCEPC14G](DCEPC14G/README.md) | A pile behaves like a clock that wraps every K+1 coins, so its Grundy value equals its size modulo K+1, like counting hours on a dial. The algorithm combines the pile values with bitwise xor. | O(1) |
+| [DCEPC14H](DCEPC14H/README.md) | Turn each legal shot into one weighted vertex, then delete the cheapest set of conflicting shots, like removing the fewest blockers so the remaining roads never intersect. A maximal run of open cells between blockers is a segment, and a tower at either end makes that segment shootable. | O(N² + flow) |
+| [OVERLAP](OVERLAP/README.md) | Split the count into four independent sweeps, like sorting mail into same-street and cross-street piles before delivering it. Same-direction words overlap only on the same row or column, where a sorted-end binary search counts them. | O(N log N + N log M) |
+| [UJ01](UJ01/README.md) | Count how many merged values sit at or below a guess. Then find the smallest guess whose count reaches N. This is like finding a page by cutting the book in half. | O(1) |
+| [VAPI01](VAPI01/README.md) | Spend a key when its door arrives, like using the next ticket in a wallet; if no ticket waits, buy one. The algorithm is a single left-to-right scan with 26 counters, one per key letter. | O(1) |
 
 ### Data structures, bits & simulation (46)
 
