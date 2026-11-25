@@ -1,10 +1,10 @@
-# SPOJ — 920 problems, one method
+# SPOJ — 926 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![920 problems](https://img.shields.io/badge/problems-920-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![926 problems](https://img.shields.io/badge/problems-926-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 920 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 926 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 920 problems
+## The 926 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -472,7 +472,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CRAN02](CRAN02/README.md) | Count matching prefix totals the way you pair socks of the same color. A zero-sum block runs between two prefixes with the same total. A frequency table over prefix totals turns the count into one scan. | O(n) per case |
 | [CBANK](CBANK/README.md) | Scale all coins to quarters and count the integer solutions of one equation, like counting change with a fixed set of denominations. The algorithm derives a closed form for the number of solutions and evaluates it with modular arithmetic. | O(1) per case |
 
-### Greedy, search & enumeration (456)
+### Greedy, search & enumeration (462)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -934,6 +934,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [PCPC12D](PCPC12D/README.md) | Compare names by their letter counts, like comparing scores one category at a time from a to z. The algorithm builds a count vector for each name, then sorts with an explicit comparator. | O(total name length + n log n) per case |
 | [PCPC12E](PCPC12E/README.md) | Resolve each landing square first, then walk outward one throw at a time, like counting how many hops reach the far end of a path. The algorithm collapses every snake and ladder chain to one stable destination, then runs a breadth-first search over die rolls. | O(N M) per case |
 | [PCPC12F](PCPC12F/README.md) | Treat every square as an equation whose value is one throw plus the average of the next values, like balancing a set of scales. The algorithm resolves snake and ladder chains, builds one linear equation per non-final square, and solves the system with Gaussian elimination. | O((N M)^3) per case |
+| [AMR12B](AMR12B/README.md) | Look for one attack that beats all others, like a champion that no rival can topple. If such a champion exists, picking it wins before a second move is needed. | O(1) |
+| [AMR12D](AMR12D/README.md) | A whole string is its own longest piece, so its reverse must fit inside a string of equal length. That forces the reverse to be the string itself, like a mirror image that lands exactly on the original. | O(1) |
+| [AMR12E](AMR12E/README.md) | A long palindrome always contains a shorter one, like a nested set of boxes with the same contents on both sides. Removing matching outer characters reduces its length by two, so forbidding lengths `K` and `K + 1` forbids every longer palindrome too. | O(1) |
+| [AMR12F](AMR12F/README.md) | Think of each deque pop as choosing the left or right end of a row of cards, like dealing from either end of a deck. A clue pins one pop choice and how many back pops came before it. | O(1) |
+| [AMR12G](AMR12G/README.md) | Treat each row as a coin whose parity decides its final face, like flipping a light switch an odd or even number of times. A row pressed an odd number of times shows `M - litCount` lamps, and an even row shows `litCount`. | O(1) |
+| [AMR12I](AMR12I/README.md) | Look at the last stroke that covers the newest soldier, like choosing the final brush pass when repainting a fence. That stroke starts within the last `K` positions and must cover a run of one color ending at this soldier. | O(1) |
 
 ### Data structures, bits & simulation (44)
 
