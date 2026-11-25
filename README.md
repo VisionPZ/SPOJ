@@ -1,10 +1,10 @@
-# SPOJ — 429 problems, one method
+# SPOJ — 441 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![429 problems](https://img.shields.io/badge/problems-429-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![441 problems](https://img.shields.io/badge/problems-441-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 429 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 441 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,11 +13,11 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 429 problems
+## The 441 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
-### Strings & text (94)
+### Strings & text (95)
 
 KMP, borders, tries and rolling hashes keep matching linear. Expression parsing and text rewriting add one stack pass. DP over all substrings is the only quadratic corner.
 
@@ -117,8 +117,9 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [SIMPACR](SIMPACR/README.md) | Treat each word as a ticket at a gate, like guests whose names are on a skip list. Trim the ticket, lower it before checking the list, then take its first character. | O(total input characters) |
 | [STARJUST](STARJUST/README.md) | Think of hanging a picture on a wall, then filling the empty space with equal stacks of stars on each side. The leftover star goes on the left when the gap is odd. | O(total output characters) |
 | [TIMORSE](TIMORSE/README.md) | Add durations like filling a timeline with blocks, like stacking tiles of length one and three. Each letter contributes its symbols plus the small gaps between them. A new letter after letters adds three; a new letter after spaces adds seven. | O(total input characters) |
+| [MOZSACL](MOZSACL/README.md) | Stamping powers of a divisor is like labelling lockers 2, 4, and 8 with one tag, then asking how many tags of a color sit in a hallway. | O(1) |
 
-### Geometry & grids (88)
+### Geometry & grids (91)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
@@ -212,6 +213,9 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [ALIENCLK](ALIENCLK/README.md) | Reading both hands on a shared ruler is like measuring them in thirty-seconds of a degree. The minute hand advances 144 units per minute and the hour hand advances 9 units per minute. | O(test count) |
 | [AARTDARK](AARTDARK/README.md) | Count dark cells and divide, like tallying shaded squares on a grid sheet. The side length gives the total cell count directly. Scan each picture's characters once and count asterisks. | O(total pixels) |
 | [PAVEMENT](PAVEMENT/README.md) | Choosing steps is like picking non-adjacent coupons from a strip: each row pair offers two coupons, and one pick blocks the neighbouring row pair. Dynamic programming keeps the best total for the row pair after the current one. | O(N) |
+| [LANDPLAN](LANDPLAN/README.md) | The frame has only two row types, like a picture made from two reusable stamps. Build the top row and the middle row once, then print them the right number of times. | O(1) |
+| [MOZGEOL](MOZGEOL/README.md) | The short side is the shadow of the hypotenuse, like a ladder's height against its length. Divide the short side by the sine of the small angle to recover the long side. | O(1) |
+| [PATIOSLB](PATIOSLB/README.md) | Turn each slab length into a weight that already includes its grout gap, like packing boxes with their own padding. Sort the slabs from largest to smallest and greedily keep a slab whenever a completion still exists. | O(m * T/64 + m^2) |
 
 ### Graphs & trees (38)
 
@@ -303,7 +307,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (60)
+### Number theory & big integers (62)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -369,8 +373,10 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [DCP](DCP/README.md) | A traffic light repeats red, green, green; Fibonacci parity repeats even, odd, odd. The algorithm counts one residue class of indexes inside the range. Each test costs constant time. | O(T) |
 | [DIVPALI](DIVPALI/README.md) | A mirror shows the same label from either side; a palindrome digit string behaves the same way. Walk divisor candidates up to the square root and record each divisor with its partner. | O(sqrt(N) + d^2), with d matching divisors |
 | [QUADEQ](QUADEQ/README.md) | Think of the discriminant as a gate: below zero there is no crossing, at zero there is one, and above zero there are two. Compute that gate with exact integer arithmetic, then evaluate the quadratic formula only when roots exist. | O(1) |
+| [NUM08](NUM08/README.md) | List the primes first, like a singer warming up a scale before a song. Then divide the number by each prime and count the repeats. The divisor sum follows from the prime powers with a short geometric-series formula. | O(L log log L + t pi(sqrt(n))) with L = 10^7 |
+| [NUMTHEO01](NUMTHEO01/README.md) | Keep the running product small by reducing it after each factor, like paying down a balance after every purchase. Split the next factor into two small pieces so both partial products stay inside 64 bits. | O(t*n) worst case |
 
-### Greedy, search & enumeration (79)
+### Greedy, search & enumeration (83)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -455,8 +461,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [MAXROO](MAXROO/README.md) | Each day keeps the odd positions, like halving a queue and rounding up the survivors. If K kangaroos are hungry, the survivors are positions 1, 3, 5 and so on. | O(log N) |
 | [MLLOVE](MLLOVE/README.md) | The repeated step only reaches residues spaced by the greatest common divisor, like clock ticks that land on every third mark. Let g be the greatest common divisor of n and k. | O(log n) |
 | [MOMOS](MOMOS/README.md) | Use a marking sheet when the row is short, and count marks with inclusion-exclusion when the row is huge. When K exceeds twenty, N is at most a million, so a boolean array can mark each eaten momo directly. | O(1) |
+| [MOZSAO](MOZSAO/README.md) | Writing the words one by one is like laying tiles along a shelf; build the whole strip in one pass. Append each word and space to a string, then append the marks. | O(1) |
+| [NUMTH02](NUMTH02/README.md) | Find the remainder of a huge power by repeated squaring, like folding a long rope in half again and again. Reduce the mango total at each addition so the running sum stays small. | O(log n + p) |
+| [OPNDYSTF](OPNDYSTF/README.md) | Build the answer one factor at a time, like climbing a staircase while paying each step immediately. Multiply by the next numerator term, then divide by the step number so the value is always a whole binomial coefficient. | O(min(R,N-R) * D) with D the limb count |
+| [PANANDDA](PANANDDA/README.md) | Treat the target as a tiny machine with four positions, like a board game with four squares. Inserting a letter moves a token forward one square for one cost. | O(N) after a constant setup |
 
-### Data structures, bits & simulation (32)
+### Data structures, bits & simulation (34)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -494,6 +504,8 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [EDUPT49](EDUPT49/README.md) | Push cars until the wanted one reaches the top, then pop it, like pulling plates off a stack exactly when a waiter asks for them. The real algorithm is a greedy stack simulation with one arrival cursor. | O(N) |
 | [POUPT15](POUPT15/README.md) | Treat each node like a shelf that must hold two side stacks of nearly equal height. Build the tree by plain insertion, then measure both subtrees at every node. | O(k) per case, for k keys |
 | [MAX10](MAX10/README.md) | Keep a running champion, like a scoreboard that only changes for a new high score. Start the champion at zero. Read each value and replace the champion only when the value is larger. | O(1) |
+| [KVAR](KVAR/README.md) | A distant inversion always hides a neighboring inversion on the walk between the two spots, like a long detour that still crosses a nearby turn. Store the smallest value to the right of each spot and compare it with the current value. | O(1) |
+| [MOZSAPAR](MOZSAPAR/README.md) | Filling gaps is like balancing a stack of plates: add enough plates early so every later removal has one to take. Count the openings required by the final totals, then spend that budget on the earliest question marks. | O(1) |
 
 ## License
 
