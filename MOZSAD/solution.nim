@@ -1,0 +1,37 @@
+const flushBlockBytes = 1 shl 17
+
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+proc nextToken(data: string, position: var int): string =
+  while position < data.len and data[position] <= ' ':
+    position += 1
+  var token = ""
+  while position < data.len and data[position] > ' ':
+    token.add data[position]
+    position += 1
+  return token
+
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
+let numberText = nextToken(inputData, scanPos)
+var zeroCount = 0
+for index in 0..<numberText.len:
+  if numberText[index] == '0':
+    zeroCount += 1
+
+appendOutput($(zeroCount) & "\n")
+
+stdout.write outputBuffer
+outputBuffer.setLen 0

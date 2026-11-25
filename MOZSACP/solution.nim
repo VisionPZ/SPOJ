@@ -1,0 +1,37 @@
+const firstDigitValue = 48
+const flushBlockBytes = 1 shl 17
+
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+proc nextInt(data: string, position: var int): int =
+  while position < data.len and (data[position] < '0' or data[position] > '9'):
+    position += 1
+  var value = 0
+  while position < data.len and data[position] >= '0' and data[position] <= '9':
+    let digit = ord(data[position]) - firstDigitValue
+    if value > (high(int) - digit) div 10:
+      value = high(int)
+    else:
+      value = value * 10 + digit
+    position += 1
+  return value
+
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
+discard nextInt(inputData, scanPos)
+appendOutput("C Programming\n")
+
+stdout.write outputBuffer
+outputBuffer.setLen 0
