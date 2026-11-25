@@ -1,10 +1,10 @@
-# SPOJ — 1010 problems, one method
+# SPOJ — 1016 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1010 problems](https://img.shields.io/badge/problems-1010-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1016 problems](https://img.shields.io/badge/problems-1016-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1010 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1016 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1010 problems
+## The 1016 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -483,7 +483,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [ATOMS](ATOMS/README.md) | Think of doubling grains in a jar with a fixed lid: keep pouring while the next doubling fits. Division answers the fit question without ever forming an overflowing product. | O(P log M) |
 | [RLTHREE](RLTHREE/README.md) | Think of three runners on a ladder where each rung belongs to two of them and one outsider. Equal distances mean each outsider gets the same number of losing rungs. | O(N) |
 
-### Greedy, search & enumeration (535)
+### Greedy, search & enumeration (541)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1024,6 +1024,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [NCOPRIME](NCOPRIME/README.md) | Think of each legal pair as a reward for pointing an arrow from its smaller value to its larger value. Choosing labels is like funding projects, where each reward requires both endpoint labels. | O(N^2 log V) with V at most 2N + N^2 |
 | [SHAKTI](SHAKTI/README.md) | Think of a row of blocks: removing one block from an even row leaves an odd row, and an odd row offers only odd-sized removals. The game reduces to parity, which is decided by one `mod` per number. | O(t) |
 | [SUBXOR](SUBXOR/README.md) | Think of a library shelf where each book is filed by its prefix XOR barcode. For the current barcode, a binary trie counts earlier barcodes whose XOR falls below K. | O(N bits) per test |
+| [BOXD](BOXD/README.md) | The shortest flight may land on intermediate boxes, like a trip that splits one long water crossing into two shorter hops. Model boxes as graph nodes with edge weight equal to the gap between their rectangles. | O(n^3 + q) |
+| [BOXLINGS](BOXLINGS/README.md) | Sweep a vertical line across the plane, like sliding a curtain over a wall and watching which horizontal strips are in shadow. At each x, the active rectangles are those whose x span contains that x. | O((N + M) log(N + M)) |
+| [CRAZYSK](CRAZYSK/README.md) | Each trade keeps one card and spends the rest, like paying a toll with a bundle of tickets and getting one ticket back. The net card loss per trade is N - 1. | O(T * D) |
+| [GCJ1C09A](GCJ1C09A/README.md) | Treat each new symbol as a fresh digit, like handing out the smallest unused number tag to each new guest in a queue. The base is the smallest that fits all distinct symbols, and never one. | O(L) per message |
+| [GCJ1C09B](GCJ1C09B/README.md) | The average of moving points moves in a straight line, like the average position of a group of walkers on parallel paths. Sum the positions and velocities once, then minimise the squared norm of one linear function of time. | O(N) per case |
+| [GCJ1C09C](GCJ1C09C/README.md) | Releasing a prisoner splits its current block of occupied cells into two smaller blocks, like cutting a rope at a chosen point. Treat released cells and both row ends as fixed boundaries, then solve each interval between boundaries by trying every prisoner inside as the next cut. | O(Q^3) per case |
 
 ### Data structures, bits & simulation (44)
 
