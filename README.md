@@ -1,10 +1,10 @@
-# SPOJ — 458 problems, one method
+# SPOJ — 460 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![458 problems](https://img.shields.io/badge/problems-458-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![460 problems](https://img.shields.io/badge/problems-460-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 458 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 460 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 458 problems
+## The 460 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -310,7 +310,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (63)
+### Number theory & big integers (64)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -379,8 +379,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NUM08](NUM08/README.md) | List the primes first, like a singer warming up a scale before a song. Then divide the number by each prime and count the repeats. The divisor sum follows from the prime powers with a short geometric-series formula. | O(L log log L + t pi(sqrt(n))) with L = 10^7 |
 | [NUMTHEO01](NUMTHEO01/README.md) | Keep the running product small by reducing it after each factor, like paying down a balance after every purchase. Split the next factor into two small pieces so both partial products stay inside 64 bits. | O(t*n) worst case |
 | [SIS110G401](SIS110G401/README.md) | Treat each pair like two hands of counters and combine them into one pile. Read every integer in order, pair the values, and add them. The algorithm is a linear scan with a hand-written integer reader and a block output buffer. | O(total input bytes) |
+| [ZDIFFSQ2](ZDIFFSQ2/README.md) | Let the zero row pull three new terms back up the table, like filling a staircase from its top step down. The method is a finite-difference table extended one column at a time. | O(M^2) |
 
-### Greedy, search & enumeration (94)
+### Greedy, search & enumeration (95)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -480,6 +481,7 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [SDF4A](SDF4A/README.md) | Treat plants as dots and pipes as roads, like linking towns with the shortest road network. Prim's algorithm grows one connected tree, adding the nearest outside plant each round. | O(1) |
 | [SDF4B](SDF4B/README.md) | Think of each booking as a table that stays reserved while staff clear it, like a restaurant turning tables. Sort bookings by finish time, then place each in the room that frees latest but still before its start. | O(M log M + M min(N, M)) worst case |
 | [SDF4C](SDF4C/README.md) | Picture the number track as a staircase spiral, like a path that grows one step longer every two turns. A binary search on n times n plus n finds the run containing P. | O(1) |
+| [VZLA2019J](VZLA2019J/README.md) | Two cacti one unit apart sit next to each other in sorted order, like two adjacent seats in a row. Compare each cactus with the one before it. | O(total cacti) |
 
 ### Data structures, bits & simulation (36)
 
