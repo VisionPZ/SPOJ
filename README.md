@@ -1,10 +1,10 @@
-# SPOJ — 1094 problems, one method
+# SPOJ — 1100 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1094 problems](https://img.shields.io/badge/problems-1094-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1100 problems](https://img.shields.io/badge/problems-1100-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1094 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1100 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1094 problems
+## The 1100 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -499,7 +499,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [HG](HG/README.md) | Compare two towers by their bricks, then rebuild only the bricks they share. Prime factorization turns each product into a list of prime exponents. The gcd keeps the smaller exponent for every prime. | O(primeLimit log log primeLimit + (N+M) times divisions) |
 | [FONTSIZE](FONTSIZE/README.md) | Try a size, pack words greedily, then search for the largest size that still fits. This works like choosing the biggest text that fits a shelf: measure one candidate, then shift the guess up or down. | O(message length times log size bound) |
 
-### Greedy, search & enumeration (602)
+### Greedy, search & enumeration (608)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1107,6 +1107,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [FBTOURS](FBTOURS/README.md) | Cutting bridges turns the map into a tree of rooms, like hallways joining clusters of rooms. Every building in a cluster lies on the same set of tour routes. | O(1) |
 | [FBWHEELS](FBWHEELS/README.md) | Repeated pieces of a word share one score, like several copies of the same key opening the same lock. A suffix automaton groups substrings that occur the same number of times, and a sweep keeps the best few groups for each length. | O(1) |
 | [UOFTCG](UOFTCG/README.md) | A seating group is a path inside a tree, like linking train cars where each link must join two friends. One tree may need several paths when a student has too many friends. | O(1) |
+| [BIT2](BIT2/README.md) | Build K one binary digit at a time, like dialing a combination lock from the leftmost wheel. Each wheel position either fits inside the remaining target or it does not. | O(T * 51) |
+| [CRNVALEN](CRNVALEN/README.md) | Treat the reports as two labelled piles, like sorting coins into heads and tails. The larger pile value is the answer, and the smaller pile value sits exactly one below it. | O(T * n) |
+| [IE5](IE5/README.md) | Remove bad cycles by inclusion-exclusion, like subtracting every ticket that mentions a banned seat. Each subset of forbidden edges is either impossible, a set of disjoint paths, or the whole cycle. | O(2^k * k) per case |
+| [POLYMUL](POLYMUL/README.md) | Convolution is like stacking two strips of stamps: each pair of positions lands on one output position. A number theoretic transform turns the stacking into pointwise multiplication, then turns it back. | O(T * L log L) |
+| [SICT1000](SICT1000/README.md) | Adding two numbers is like combining two piles of coins into one pile. The hand scanner reads both values, and one addition produces the answer. The scanner `nextInt` skips separators and builds each value from its digits. | O(L) for input length L |
+| [VAL_GAM4](VAL_GAM4/README.md) | Every lost war rewalks a stretch of road, like a board game card that sends you back to the last flag. Track how much a restart still costs, and each object becomes one cheap update. | O(q log MOD) per case |
 
 ### Data structures, bits & simulation (45)
 
