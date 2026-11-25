@@ -1,10 +1,10 @@
-# SPOJ — 914 problems, one method
+# SPOJ — 920 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![914 problems](https://img.shields.io/badge/problems-914-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![920 problems](https://img.shields.io/badge/problems-920-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 914 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 920 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 914 problems
+## The 920 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -308,7 +308,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [CNTPRIME](CNTPRIME/README.md) | Turn each value into a zero-or-one prime flag, like painting fence posts either marked or plain. A whole-range assignment paints one stretch a single color, so its prime count becomes either the stretch length or zero. | `O(1000000 log log 1000000)` once, then `O((n + q) log n)` per case |
 | [KOZE](KOZE/README.md) | Think of each enclosed yard as a locked room: count the animals inside before declaring a winner. Flood fill discovers each sector in one pass over the grid. | O(N * M) |
 
-### Dynamic programming (55)
+### Dynamic programming (56)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -369,8 +369,9 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [M00PAIR](M00PAIR/README.md) | Think of each digit as a domino that flips into a two-character tile, so zero pairs can only appear where two tiles touch. The recurrence a(n) = a(n-2) + 2^(n-3) counts those touching edges with ordinary integer arithmetic. | O(999 d + q) with d answer digits and q queries |
 | [BYTESM2](BYTESM2/README.md) | Keep only the best total that can reach each tile, like marking the highest score on each step of a staircase. Each tile looks at the three tiles above it and adds its own stones. | O(T · h · w) |
 | [XMEN](XMEN/README.md) | Replace the second permutation with its positions in the first, like rewriting a route as mile markers. A common subsequence must increase in both permutations. After mapping, that condition becomes a strictly increasing list. | O(N log N) per case |
+| [BAT1](BAT1/README.md) | Treat opening a batch as paying a toll before its weapons become available, then run unlimited knapsack as you pass each batch. The algorithm keeps one value per amount spent and updates it batch by batch. | O(n m k) per case |
 
-### Number theory & big integers (93)
+### Number theory & big integers (94)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -469,8 +470,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [DCEPCA03](DCEPCA03/README.md) | Squaring a sum is like pairing every card in a pile with every card in the same pile. One pass builds all totients with a sieve, and a prefix array gives each sum at once. | O(N log log N + T) |
 | [NDIV](NDIV/README.md) | Stamp divisor counts across the interval, like marking every tenth house on a street. Each small prime visits its multiples once, so no number needs a fresh factor search. | O(sqrt(b) log log b + (b - a) log log b) |
 | [CRAN02](CRAN02/README.md) | Count matching prefix totals the way you pair socks of the same color. A zero-sum block runs between two prefixes with the same total. A frequency table over prefix totals turns the count into one scan. | O(n) per case |
+| [CBANK](CBANK/README.md) | Scale all coins to quarters and count the integer solutions of one equation, like counting change with a fixed set of denominations. The algorithm derives a closed form for the number of solutions and evaluates it with modular arithmetic. | O(1) per case |
 
-### Greedy, search & enumeration (452)
+### Greedy, search & enumeration (456)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -928,6 +930,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [DEXTER](DEXTER/README.md) | Add the chance each rival beats Dexter the way you add separate tolls on a trip. A rival beats Dexter on solved count, or on equal count with less penalty. | O(T * N * 2^M) |
 | [LOVINGPW](LOVINGPW/README.md) | Split the number range at its highest power of two, like cutting a rope into a known long piece and a short remainder. A pair inside a complete half contributes a fixed count. | O(log N) per case |
 | [NAIVELOK](NAIVELOK/README.md) | Count the palindromic leftovers first, then subtract them from all choices, like counting losing tickets before finding the number of winners. A removal choice keeps a subsequence of the original string. | O(T * n^2) |
+| [MADN](MADN/README.md) | Spend the lowest-value letters first, like paying with the smallest coins until the purse runs empty. The algorithm is a capped greedy fill followed by an alphabetic sort. | O(n) per case |
+| [PCPC12D](PCPC12D/README.md) | Compare names by their letter counts, like comparing scores one category at a time from a to z. The algorithm builds a count vector for each name, then sorts with an explicit comparator. | O(total name length + n log n) per case |
+| [PCPC12E](PCPC12E/README.md) | Resolve each landing square first, then walk outward one throw at a time, like counting how many hops reach the far end of a path. The algorithm collapses every snake and ladder chain to one stable destination, then runs a breadth-first search over die rolls. | O(N M) per case |
+| [PCPC12F](PCPC12F/README.md) | Treat every square as an equation whose value is one throw plus the average of the next values, like balancing a set of scales. The algorithm resolves snake and ladder chains, builds one linear equation per non-final square, and solves the system with Gaussian elimination. | O((N M)^3) per case |
 
 ### Data structures, bits & simulation (44)
 
