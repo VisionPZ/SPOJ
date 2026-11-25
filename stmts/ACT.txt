@@ -1,0 +1,773 @@
+ACT - Alpha Centauri Tennis
+
+
+
+	
+				no tags 
+				
+
+
+
+
+	 As you may know, planets of Alpha Centauri (if they indeed do exist)
+would provide excellent conditions for intelligent life forms.
+It is indeed true that there is a small Earthlike planet near Alpha
+Centauri, inhabited by a population of no particular significance.
+These humanlike creatures have much in common with us. Living in
+similar communities and having similar body structure and behavioral
+patterns, they unsurprisingly appreciate (approximately) the same
+time-killing activities as we do. One of these, the second most
+popular after Alpha Centauri Croquet, is the Alpha Centauri Tennis.
+Although its rules differ from Earth Tennis, the two player
+version of Alpha Centauri Tennis resembles it in many ways.
+Same as Earth Tennis, it is played on a rectangular court
+divided into two parts by a net. Two players, standing on
+opposite sides of it, use a stringed racket to hit a ball
+back and forth to each other. There are certain rules how
+to hit the ball. The player who forces his opponent to
+violate one of these rules wins the current ball. The aim
+ of both players is to win enough balls to win a game, enough
+ games to win a set and enough sets to win the whole match.
+In the N player version of the Alpha Centauri Tennis a ball
+can be won by any one of the N players. Although technical
+details of this can be difficult to imagine, Alpha Centaurians
+are extremely inventive.
+In the general N-player version, players serve in turns, 
+following order determined before the match. Moreover, 
+they shift when starting individual games and sets. For
+example, the players are A, B and C. They are ordered
+alphabetically. Player A serves the first ball of the
+first game. When the ball is won by one of the players, 
+its B's turn to serve. After the game is won by one of
+the players, player B starts the second game. Finally, 
+when the first set is won by someone, player B starts
+the second set. This repeats, always shifted by one player, 
+until the match ends.
+For three players the serving order looks as follows:
+Set 1:
+
+Game 1: A, B, C, A, B, C ...
+Game 2: B, C, A ...
+Game 3: C, A, B ...
+Game 4: A, B, C ...
+...
+
+Set 2:
+
+Game 1: B, C, A, B ...
+Game 2: C, A, B ...
+Game 3: A, B, C, A ...
+...
+
+
+There are exact rules for counting the number of
+balls/games/sets won by a player.
+
+RULES FOR WINNING A GAME
+The state of a game can be described by assigning a non-negative
+number of points to each of the players. At the beginning of
+a game, the score of each player is zero.
+Note: In Earth terminology, 0 points is called "love", 1 point
+is a "fifteen", 2 points is a "thirty", 3 points is a "forty"
+and 4 points is an "advantage". Be glad that you don't have to
+learn the Centaurian terminology :)
+When a player P just won a ball, the new score is determined
+by using the first rule from the list that applies to the
+situation.
+
+If P currently has 3 points and no other player has more than
+2 points, P wins the current game.
+If P currently has 4 points, he wins the game.
+If any other player currently has 4 points, that player
+loses one point. P gains a point.
+
+
+RULES FOR WINNING A SET
+The set is won by the first player that at the same time:
+
+won at least 6 games in this set,
+won at least 2 games more than any other player.
+
+
+RULES FOR WINNING A MATCH
+The winner is the first player to win at least three sets.
+A set in which no other player won a game counts as two won sets.
+
+Problem specification
+An observer from the Intergalactic Tennis Federation was
+watching a tournament in Alpha Centauri Tennis. Being unable
+ to understand Alpha Centaurian language, he only managed
+to write down the winner of each ball. Now, for each match, 
+knowing the sequence in which the players were winning the
+balls, he would like to somehow determine its winner.
+
+Input
+t - the number of test cases [t ≤ 150]
+than t test cases follows, each corresponding to
+one match. Each line contains the number of players N [N ≤ 10]
+and a string S consisting of uppercase letters [2 ≤ S ≤ 50000].
+The players are represented by the first N letters of the English
+alphabet. If the i-th letter of S is X, it means the player X
+won the i-th ball from the begining of the match. You may assume
+that the match transcripts are correct and complete.
+The order in which the players serve is the same as the order of
+their letters in the English alphabet.
+
+Output
+For each line, output a single character, being the letter of
+the player who won the corresponding match.
+
+Example
+Input:
+1
+3 BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+
+Output:
+B
+
+(B has won two sets, each of them by winning 6 games, while A and C
+won none. Thus each of these sets counts as two and B has won the match.)
+
+
+
+
+	 Submit solution!
+
+
+			
+			
+			
+			
+			
+
+hide comments
+
+
+
+		
+		
+		
+			<
+		Previous
+						1 
+							2 
+						Next
+		>
+	
+		
+	
+	
+		
+				
+	
+	
+	
+	<!--
+	$(document).ready(function(){
+        $('.pager_link').bind('click', function(me){
+                var href=$(me.currentTarget).attr('href');
+		$('#ccontent').animate({opacity: 0.5},1);
+                $.ajax({
+                        type: "GET",
+                        url: href+",ajax=1",
+                        contentType: "application/x-www-form-urlencoded;charset=ISO-8859-2",
+                        success: function(data){
+                                $('#ccontent').html(data);
+				$('#ccontent').animate({opacity: 1.0},1);
+                        },
+                        error: function(err){
+                                alert('error');
+                        }
+                });
+                return false;
+        });
+	});
+	-->
+	
+	
+
+
+
+			
+	
+		
+			
+		
+		
+			emirau1: 
+								2021-04-30 00:37:54
+		
+				Erricto said this problem/solution in an interview with Joma Tech
+						
+	
+				
+	
+		
+			
+		
+		
+			divyachowdary: 
+								2019-08-20 04:10:31
+		
+				can anyone explain me it's logic
+
+						
+	
+				
+	
+		
+			
+		
+		
+			Stephen Oberholtzer: 
+								2018-03-26 16:52:50
+		
+				Am I misreading something?
+
+Rule 2 is "If P currently has 4 points, he wins the game."
+Rule 3 is "If any other player currently has 4 points, that player loses one point." and "P gains a point."
+
+Based on my reading of the rules, the first part of rule 3 could never activate, because as soon a a player reaches 4 points, the game ends and the next begins (with all players starting at zero).
+
+
+
+						
+	
+				
+	
+		
+			
+		
+		
+			Bryan Poulsen: 
+								2017-02-13 19:36:25
+		
+				Most of the description is misleading. If you read the input rules it is much clearer what you need to do. If you print the last character of the S for each test case you will get AC.
+						
+	
+				
+	
+		
+			
+		
+		
+			akshay31057: 
+								2016-08-29 09:28:02
+		
+				"knowing the sequence in which the players were winning the balls, he would like to somehow determine its winner" sufficient for the code.....
+ 
+						
+	
+				
+	
+		
+			
+		
+		
+			rahul_verma: 
+								2015-10-27 16:31:38
+		
+				just one line code !!!!
+						
+	
+				
+	
+		
+			
+		
+		
+			percy: 
+								2015-10-20 15:22:58
+		
+				I do not understand this statement "When a player P just won a ball, the new score is determined by using the first rule from the list that applies to the situation". Which "list" is this statement referring to?
+						
+	
+				
+	
+		
+			
+		
+		
+			Christian López: 
+								2015-10-20 05:22:59
+		
+				Abstraction...
+						
+	
+				
+	
+		
+			
+		
+		
+			scyth3r: 
+								2015-07-08 08:46:05
+		
+				Don't give a try....useless problem
+
+						
+	
+				
+	
+		
+			
+		
+		
+			Bhuvnesh Jain: 
+								2015-07-07 23:47:00
+		
+				Hint: The input is such that there is always a valid result possible....
+						
+	
+			
+
+
+
+
+<!--
+function getCookieVal (offset) {
+        var endstr = document.cookie.indexOf (";", offset);
+        if (endstr == -1) { 
+                endstr = document.cookie.length; 
+        }
+        return unescape(document.cookie.substring(offset, endstr));
+}
+
+function GetCookie (name) {
+  var arg = name + "=";
+  var alen = arg.length;
+  var clen = document.cookie.length;
+  var i = 0;
+  while (i < clen) {
+    var j = i + alen;
+    if (document.cookie.substring(i, j) == arg) {
+      return getCookieVal (j);
+      }
+    i = document.cookie.indexOf(" ", i) + 1;
+    if (i == 0) break; 
+    }
+  return null;
+}
+
+function toggleComments() {
+        var a = document.getElementById('comments_table');
+        var d = a.style.display;
+        if( d == "" || d == "block" ){
+                d = "none";
+                document.getElementById('comments_sh').innerHTML = 'show';
+        } else {
+                d = "block";
+                document.getElementById('comments_sh').innerHTML = 'hide';
+        }
+        a.style.display = d;
+        document.cookie="comments_table="+d+"; path=/;";
+}
+
+if( GetCookie('comments_table') == 'none' ){
+        document.getElementById('comments_sh').innerHTML = 'show';
+        document.getElementById('comments_table').style.display = 'hide';
+}
+
+-->
+
+
+
+			
+			
+			
+                
+                
+        
+        
+         Leave a Comment 
+        
+                
+                
+        
+        
+                
+                        
+                        
+                
+        
+
+
+
+Notes:
+1. Don't post any source code here.
+2. Please be careful, leave short comments only. Don't spam here.
+3. For more discussion (hints, ideas, solutions) please visit our forum.
+4. Authors of the problems are allowed to delete the post and use html code here (e.g. to provide some useful links).
+
+
+        
+        
+
+		
+	
+	
+	
+	
+				
+			 Submit solution!
+		
+		
+		
+
+		
+		
+			
+				
+				
+			
+			
+			Added by:Roman Sol
+			Date:2005-05-13
+			Time limit:1s
+			
+			Source limit:10000B
+						Memory limit:1536MB
+										
+					Cluster:
+					
+													Cube (Intel G860)
+								
+					
+				
+						Languages:All 
+			Resource:IPSC 2005													
+		
+	
+		
+												
+					
+						Vote requirements
+					
+					
+						
+							  user for 3 from 5 needed days							
+							  solve at least 15 problems							
+							  solve this problem
+						
+					
+				
+					
+				
+		
+	
+				
+				
+				
+					Own tags
+				
+				
+			
+					
+						
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+			#
+						
+					
+					
+				      
+				      
+				        Add
+				      
+				    
+				    
+				    
+				    
+				    $(document).ready(function(){
+				    	$(document).on('click', '#problem-mytags-btn-add', function(){
+				    		$.ajax({
+				    			url: '/?a=tags&act=cpriv',
+				    			method: 'post',
+				    			dataType: 'json',
+				    			data: {'name': $("#problem-mytags-new").val(), 'pid': '359'},
+				    			success: function(data){
+				    				if(data['result'] == 'success'){
+				    					$('#problem-mytags').html(data['html']);
+				    				}
+				    				$("#problem-mytags-new").val('');
+				    				$("#problem-mytags-new").focus();
+				    			},
+				    			error: function(data){
+				    				//alert('error');
+				    			}
+				    		});
+				    	});
+				    	$(document).on('click', '.mytag', function(){
+				    		
+				    		var tid = $(this).attr('data-id');
+				    		var pid = '359';
+				    		
+				    		$.ajax({
+				    			url: '/?a=tags&act=spriv',
+				    			method: 'post',
+				    			dataType: 'json',
+				    			data: {'pid': pid, 'tid': tid},
+				    			success: function(data){
+				    				if(data['result'] == 'success'){
+				    					$('#problem-mytags').html(data['html']);
+				    				}
+				    			},
+				    			error: function(data){
+				    				//alert('error');
+				    			}
+				    		});
+				    		
+				    		
+				    		return false;
+				    	});
+				    });
+				    
+				    
+		
+				
+		
+				
+		
+		
+			function callback_after_vote(type, data)
+			{
+				var response = $.parseJSON(data);
+				manage_vote_interface(type);
+				//.html('<div class="vote-thank-you">Thank you!</div>');
+				
+
+				if (type == "problem" || type == "implementation") {
+					var progressBarValue = Math.round(2 + 98 * response.avg / 3);
+					var progressBarType;
+					if (progressBarValue < 25) progressBarType = "progress-bar-primary";
+					else if (progressBarValue < 50) progressBarType = "progress-bar-success";
+					else if (progressBarValue < 75) progressBarType = "progress-bar-warning";
+					else progressBarType = "progress-bar-danger";
+					
+					$("#rate-" + type + "-box .progress-bar").css("width", progressBarValue.toString() +"%");
+					$("#rate-" + type + "-box .progress-bar").attr("aria-valuenow", progressBarValue.toString());
+					$("#rate-" + type + "-box .progress-bar").attr("class", "progress-bar " + progressBarType);
+					$("#rate-" + type + "-box .progress-value").html(progressBarValue.toString() +"%");
+				}
+				else if (type == "quality") {
+					var quality_plus = response.sum_plus;
+					var quality_minus = response.sum_minus;
+
+					var box_content = '';
+
+					if (quality_plus > 0 || quality_minus > 0) {
+						if (quality_plus > 0) {
+							box_content += '<font size="+2"><span class="label label-success">' +
+								quality_plus.toString() + 
+								' <span class="fa fa-thumbs-o-up"></span></span></font>';
+						}
+						if (quality_minus > 0) {
+							box_content += '<font size="+2"><span class="label label-danger">' +
+								quality_minus.toString() + 
+								' <span class="fa fa-thumbs-o-down"></span></span></font>';
+						}
+					}
+
+					$( "#rate-" + type + "-box" ).empty().html(box_content);
+				}
+
+				// update count
+				if (response.update_count == 1) {
+					var count = parseInt($("#votes_count").html(), 10);
+					count++;
+					var votes_word = " vote";
+					if (count > 1) votes_word += "s";
+					$("#votes_count").empty().html(count.toString() + votes_word);
+				}
+			}
+			$( ".rate-btn" ).click(function() {
+				var rate_type = $(this).attr('data-rate-type').toString();
+				var rate_type_full = "";
+				var rate = $(this).attr('data-rate').toString();
+				if (rate_type == "p") rate_type_full = "problem";
+				else if (rate_type == "i") rate_type_full = "implementation";
+				else if (rate_type == "q") rate_type_full = "quality";
+				$.get( '/?a=vote&pid=359&t=' + rate_type + '&r=' + rate, function( data ) {
+				  callback_after_vote(rate_type_full, data);
+				});
+			});
+			function manage_vote_interface(type) {
+				number_of_voteboxes--;
+				/*
+				if (number_of_voteboxes == 0) {
+					$( "#vote-box" ).fadeOut(1500, function() {
+						$(this).remove();
+					});
+				} else {
+					$( "#vote-" + type + "-box" ).fadeOut(1500, function() {
+						$(this).remove();
+					});
+				}
+				*/
+				var n = $('.vote-thank-you').length;
+				var offset = (n * 60).toString() + "px";
+				$(document.body).append(
+					'<div class="vote-thank-you" style="margin: 40%;">' +
+					'<div class="alert alert-success" style="position: fixed; top: '+offset+';">' +
+					'<strong>Thank you for voting!</strong>' +				
+					'</div></div>');
+				setTimeout(function(){$( ".vote-thank-you" ).fadeOut(1500, function() {
+					$(this).remove();
+				});},2000);
+			}
+		
+		
+		
+	
+
+
+
+
+
+
+
+
+ul.list-unstyled li{
+	margin-bottom: 5px;
+}
+ul.list-unstyled li a.btn{
+	width: 100%;
+}
+ul.ui-autocomplete{
+	z-index: 10000;
+	width: 200px !important;
+}
+
+
+	
+
+		
+		
+		
+			
+				
+					About | Tutorial | Tools | Clusters | Credits | API | Widgets
+					Legal: 
+					   Terms of Service | Privacy Policy | GDPR Info
+					
+				
+				
+					 RSS 
+				
+			
+		
+		
+		
+			
+	© Spoj.com. All Rights Reserved. Spoj uses Sphere Engine™ © by Sphere Research Labs.
+
+		 
+	
+
+	
+	
+		
+	
+	
+	$(function(){
+		setTimeout(function(){
+			$('.no_a_info').css('visibility', 'visible');
+		}, 5000);
+		
+		if(!$('.aProblemTop').length && !$('.aProblemsTop').length && !$('.aSubmitTop').length && !$('.aStatusTop').length && !$('.aMainRight').length){
+			ga('send', 'event', 'ads', 'no-ads', 'main-contest');
+		}
+		if ($('.aProblemTop').height() == 0){
+			$('.aProblemTop').css({'border': '1px solid #ddd', 'background': '#f0f4e3', 'height': 90});
+			$('.aProblemTop').html($('<p class="text-center">using adblock?</p><h4 class="text-center">Online ads help us to maintain site.</h4><p class="text-center"><strong>please whitelist *.spoj.com</strong></p>'));
+			ga('send', 'event', 'ads', 'adblock2', 'aProblemTop');
+		}
+		if ($('.aProblemsTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aProblemsTop');
+		}
+		if ($('.aSubmitTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aSubmitTop');
+		}
+		if ($('.aStatusTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aStatusTop');
+		}
+		if ($('.aMainRight').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aMainRight');
+		}
+	});
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	(function(d, s, id) {
+	  var js, fjs = d.getElementsByTagName(s)[0];
+	  if (d.getElementById(id)) return;
+	  js = d.createElement(s); js.id = id;
+	  js.src = "//connect.facebook.net/pl_PL/sdk.js#xfbml=1&appId=321676846207&version=v2.0";
+	  fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+	
+	
+
+
+
+
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-YF5KJ19JWE');
+
+
+
+
+    (function(h,o,t,j,a,r){
+        h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+        h._hjSettings={hjid:334656,hjsv:5};
+        a=o.getElementsByTagName('head')[0];
+        r=o.createElement('script');r.async=1;
+        r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+        a.appendChild(r);
+    })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
+
+
+
+(function(){
+  if(typeof _bsa !== 'undefined' && _bsa) {
+    // format, zoneKey, segment:value, options
+    _bsa.init('flexbar', 'CK7D4KJL', 'placement:demo');
+  }
+})();
+
+
+	$(function(){
+		$(document).on('click', '.track', function(){
+			var event = $(this).attr('data-event');
+			var action = $(this).attr('data-action');
+			var value = $(this).attr('data-value');
+			ga('send', 'event', event, action, value);
+		});
+	});
+	//window.open('http://incoming.hotjar.com/s/7366', '_blank');
+	
+
+
+
+
