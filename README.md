@@ -1,10 +1,10 @@
-# SPOJ — 1254 problems, one method
+# SPOJ — 1260 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1254 problems](https://img.shields.io/badge/problems-1254-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1260 problems](https://img.shields.io/badge/problems-1260-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1254 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1260 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1254 problems
+## The 1260 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -335,7 +335,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [CATER](CATER/README.md) | Count connected groups at their highest station, like counting family reunions by the eldest relative present. Root the tree, then combine child polynomials at each station with a knapsack convolution. | O(N times K squared) |
 | [ADABRANC](ADABRANC/README.md) | Add branches from strongest to weakest, like unlocking roads as a storm fades and watching neighborhoods merge. Use a disjoint-set union for the merged neighborhoods. Answer each traveller the moment the weight drops to that traveller's value. | O(1) |
 
-### Dynamic programming (74)
+### Dynamic programming (75)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -415,6 +415,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [CUBNUM](CUBNUM/README.md) | Fill a recipe book once, where every total stores the shortest recipe built from earlier totals plus one cube, like writing a multiplication table before answering questions about it. | O(1) |
 | [ADAQUBIC](ADAQUBIC/README.md) | Maximise the current player's outcome by exploring moves, like a chess engine looking ahead, but stop as soon as a win or forced loss is visible. Minimax with alpha-beta pruning and a transposition table searches only relevant continuations. | O(visited states times 49), exponential worst case |
 | [ADAMOLD](ADAMOLD/README.md) | Split the row at the best places, like choosing where to cut a ribbon so the crooked parts stay together. For one segment, count ones and zeros at each bit; the bit contributes ones times zeros times the bit value. | O(K times N squared times 31) |
+| [LARMY](LARMY/README.md) | Choosing cuts is like placing dividers in a line of books to reduce disorder inside each segment. Build a table of inversion counts for every segment first, then run a partition dynamic program. | O(N^2 + K N log N) |
 
 ### Number theory & big integers (111)
 
@@ -534,7 +535,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NKDIV](NKDIV/README.md) | Treat each prime exponent as a pile of stones. One move takes stones from at most `k` piles. This is like a shopper grabbing items from a few shelves at once. | O(R times sqrt(n) over log n) |
 | [ADADIGIT](ADADIGIT/README.md) | Try every ordering of the digits, like rearranging a handful of numbered tiles and scoring each row. Use the next-permutation routine to walk the orderings in sorted order. | O(1) |
 
-### Greedy, search & enumeration (725)
+### Greedy, search & enumeration (730)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1265,6 +1266,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [ADAFIMBR](ADAFIMBR/README.md) | Treat each pile as a separate game with a score, like rating a stack of coins by the best move it offers. Compute that score, called a Grundy value, for every seed count up to the largest pile. | O(1) |
 | [ADAPLNTS](ADAPLNTS/README.md) | Pair each conflict like matching dancers, then let everyone without a pair stay on the floor. Build a bipartite graph whose edges are the killing pairs. By Konig's theorem, the smallest set of plants to remove has the same size as a largest matching. | O(1) |
 | [ADATREE](ADATREE/README.md) | Raise a height dial from zero upward and pin each tree onto a shelf the moment its height becomes allowed, like filing cards when their label turns green. | O(1) |
+| [ADABANKET](ADABANKET/README.md) | Finding the thinnest seam in a fabric is like this split: pull vertices together until the last added one reveals a cut. Stoer-Wagner computes a minimum cut phase, records its cut value, and merges the last two vertices. | O(N^3) |
+| [ADAGRAFT](ADAGRAFT/README.md) | A subtree becomes a single slice of a line when the tree is walked in preorder, like folding a family tree into one shelf. Count distinct kinds in every slice with a last-occurrence sweep and a Fenwick tree. | O(N log N) expected |
+| [ADAHLIA](ADAHLIA/README.md) | Sorting forty million numbers is like sorting a whole library to find the widest shelf gap. Divide the value range into N equal buckets instead. The widest gap across buckets is at least one bucket width, so any gap inside one bucket cannot win. | O(N) |
+| [NTG](NTG/README.md) | Replacing each inner sum by divisor contributions is like counting coins by denomination instead of weighing each pile again. For a fixed upper endpoint j, numbers i with gcd(i, j) equal to d match the totient of j divided by d. | O(R log R + t) with R the largest right bound |
+| [TAKIN](TAKIN/README.md) | Splitting the trees into two piles is like counting coins in two drawers instead of one large chest. Build every subset sum in each half, sort one list, and pair each sum from the first half with the largest sum from the second half that still fits. | O(2^(N/2) log 2^(N/2)) per test |
 
 ### Data structures, bits & simulation (47)
 
