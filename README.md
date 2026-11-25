@@ -1,10 +1,10 @@
-# SPOJ — 356 problems, one method
+# SPOJ — 331 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![290 problems](https://img.shields.io/badge/problems-356-brightgreen) ![1451 cases](https://img.shields.io/badge/cases-1781-blue) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![331 problems](https://img.shields.io/badge/problems-331-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 356 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 331 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,258 +13,389 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 356 problems
+## The 331 problems
 
-Every row links to a full write-up. The last group comes from the SPOJ basics list. Cost is the dominant step for one case; `N` means the whole input.
+Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
-### Strings & text (32)
+### Strings & text (73)
 
 KMP, borders, tries and rolling hashes keep matching linear. Expression parsing and text rewriting add one stack pass. DP over all substrings is the only quadratic corner.
 
 | Code | Idea | Cost |
 |---|---|---|
-| [ABWORDS](ABWORDS/README.md) | Treat each string as a nested fork and give every fork a canonical shape (children sorted into a fixed order). | O(n) |
-| [ADDREV](ADDREV/README.md) | Read the tokens as least-significant digit first (units column first) and add them column by column. | O(n) |
-| [ASCIRC](ASCIRC/README.md) | Build one expression tree per register and share identical subtrees. | O(n) |
-| [BEADS](BEADS/README.md) | Find the smallest rotation by racing two cursors around a doubled string. | O(n) |
-| [BRICKS](BRICKS/README.md) | Fix each brick's identity by its occurrence order. | O(n) |
-| [CMEXPR](CMEXPR/README.md) | Unpack each expression like nested boxes. | O(n²) |
-| [CMPLS](CMPLS/README.md) | Extend a table of differences, like continuing a column of numbers by copying the last change down. | O(n²) |
-| [CODE1](CODE1/README.md) | Convert the number by repeated division, like rewriting a decimal number in a new base. | O(n log n) |
-| [CRYPTO2](CRYPTO2/README.md) | Add one to undo the shift, like turning a page number forward by one. | O(n) |
-| [CRYPTO3](CRYPTO3/README.md) | Print twice the input, like doubling a price written on paper one digit at a time. | O(n) |
-| [CRYPTO4](CRYPTO4/README.md) | Turn each known letter pair into a clue on a 26-hour clock. | O(n) |
-| [DYZIO](DYZIO/README.md) | Parse the word into a cut tree. | O(n) |
-| [EDIT1](EDIT1/README.md) | Keep one current line and grow it in place. | O(n) |
-| [EDIT2](EDIT2/README.md) | Fill a substring cost table once, like completing a multiplication chart instead of recomputing each cell. | O(n²) |
-| [EXPR1](EXPR1/README.md) | Parentheses matter only after a minus sign, like flipping the sign of every later term in a sum. | O(n) |
-| [HOTLINE](HOTLINE/README.md) | Treat each sentence as an index card with a subject, a verb, an object, and a sign. | O(n) |
-| [JEWELS](JEWELS/README.md) | Treat each half as a line of stones; keeping matching stones means choosing a common subsequence. | O(n) |
-| [MAYA](MAYA/README.md) | Count the marks on each row, then multiply by that row's weight. | O(n) |
-| [MORSE](MORSE/README.md) | Convert each word into dots and dashes, then walk a trie along the signal. | O(n) |
-| [NHAY](NHAY/README.md) | Build the KMP failure table for the needle once. | O(n) |
-| [ONP](ONP/README.md) | Scan the expression once. Send letters straight to the answer | O(n) |
-| [PALIN](PALIN/README.md) | A palindrome is fixed by its first half. | O(n) |
-| [PALSEC](PALSEC/README.md) | Build the palindrome from both ends inward. | O(n) |
-| [PERIOD](PERIOD/README.md) | Measure how much of each prefix echoes at its end, then read off the repeat count. | O(n) |
-| [PHRASES](PHRASES/README.md) | Guess a length, fingerprint every substring of that length. | O(n) |
-| [ROMAN](ROMAN/README.md) | Read each word by its first letter, then print each decimal digit as a fixed Roman fragment. | O(n) |
-| [SBANK](SBANK/README.md) | Read every account line as one string. | O(n log n) |
-| [SBSTR1](SBSTR1/README.md) | Slide a short ruler over each line, the way you check a word inside a sentence. | O(1) |
-| [SCYPHER](SCYPHER/README.md) | Neighboring words reveal one letter order each. | O(n³) |
-| [SORTING](SORTING/README.md) | Count the letters like tally marks on a sheet, then rewrite the alphabet from A to Z. | O(n) |
-| [STABLEMP](STABLEMP/README.md) | Let each free man ask the next woman on his list, like an applicant knocking on doors. | O(n²) |
-| [WORDEQ](WORDEQ/README.md) | Treat each bit of each variable as a separate cell, then merge cells that must match. | O(n) |
+| [ABWORDS](ABWORDS/README.md) | Treat each string as a nested fork and give every fork a canonical shape (children sorted into a fixed order). This is like sorting a family tree before comparing two copies. | O(S + G) |
+| [ADDREV](ADDREV/README.md) | Read the tokens as least-significant digit first (units column first) and add them column by column. This is column arithmetic on a page turned upside down. | O(max token length) |
+| [AGPC01D](AGPC01D/README.md) | Count letters first, like checking ingredients before baking several cakes. For each letter of B, divide its count in A by its count in B. The smallest quotient is the number of complete copies. A missing letter forces a quotient of zero. | O(1) |
+| [ASCIRC](ASCIRC/README.md) | Build one expression tree per register and share identical subtrees, like reusing the same prebuilt brick wherever a pattern repeats. | O(n) |
+| [BEADS](BEADS/README.md) | Find the smallest rotation by racing two cursors around a doubled string, like comparing two runners who skip equal stretches together. | O(n squared log n) |
+| [BRICKS](BRICKS/README.md) | Fix each brick's identity by its occurrence order. The k-th `a` in the start word must become the k-th `a` in the target word. An adjacent swap reverses exactly one pair of bricks, and that reversal is legal only when the two letters form an allowed pair. Count all needed reversals with Fenwick trees (prefix counters over target indices). | O(26 L) |
+| [BRKDB](BRKDB/README.md) | Like filling three missing cells in a spreadsheet from a remembered list, take the recovered name once. Attach each stored surname and code pair to it. No search is needed because the database has exactly three known people. | O(1) |
+| [BSCXOR](BSCXOR/README.md) | Think of a light controlled by two switches wired so that matching positions leave it dark. Direct truth-table evaluation reads the two bits and compares them. | O(1) |
+| [CMEXPR](CMEXPR/README.md) | Unpack each expression like nested boxes. Every box becomes a node in a binary tree, and the printer wraps a child only when the tree order demands it. | O(L) |
+| [CMPLS](CMPLS/README.md) | Extend a table of differences, like continuing a column of numbers by copying the last change down. Each new row subtracts neighbouring values from the row above. | O(S³) |
+| [CODE1](CODE1/README.md) | Convert the number by repeated division, like rewriting a decimal number in a new base. Here the base is a point on a grid, so each division tests candidate digits until one makes the remainder divisible. | O(1) |
+| [COUINF](COUINF/README.md) | The answer never changes, so the program is a notice pinned to a wall. Every visitor sees the same words, whatever they bring. | O(input bytes) |
+| [CPTTRN8](CPTTRN8/README.md) | Think of outlining a rug and then coloring its middle. The outline uses the same diagonals as Act 7. | O(input bytes) |
+| [CRYPTO2](CRYPTO2/README.md) | Add one to undo the shift, like turning a page number forward by one. The program reads all input into one buffer, scans digits by hand, and writes one buffered answer. | O(L + K) |
+| [CRYPTO3](CRYPTO3/README.md) | Print twice the input, like doubling a price written on paper one digit at a time. The hidden number is exactly double the count the cryptographer revealed. | O(d) |
+| [CRYPTO4](CRYPTO4/README.md) | Turn each known letter pair into a clue on a 26-hour clock, like matching repeated stripes on two rolls of wallpaper. Positions that share a key position must show the same clock offset. | O(m × L) |
+| [DHRODDMX](DHRODDMX/README.md) | Prefix counting is like reading an odometer at two road markers and subtracting. You never walk the road between them. | O(R - L + 1) |
+| [DYZIO](DYZIO/README.md) | Parse the word into a cut tree, and give each subtree three numbers: total cuts, deepest leaf, and cuts to the first deepest leaf. Each node costs constant work, since the two child reports combine in one step. The naive way cuts pieces one at a time and cannot know which leaf is shortest until every cut is done. | O(n) |
+| [EDIT1](EDIT1/README.md) | Keep one current line and grow it in place. A `d` key copies the existing bytes into the free second half of that same string, so the line doubles without a new allocation. Finished lines go into one output buffer that flushes every 128 KiB. | O(O squared) |
+| [EDIT2](EDIT2/README.md) | Fill a substring cost table once, like completing a multiplication chart instead of recomputing each cell. | O(n³) |
+| [ENCAROC](ENCAROC/README.md) | Think of a turnstile clicked once for every matching letter in a line. | O(n squared) |
+| [EXPR1](EXPR1/README.md) | Parentheses matter only after a minus sign, like flipping the sign of every later term in a sum. | O(m * V) |
+| [FUCT_FOR_PALIN](FUCT_FOR_PALIN/README.md) | Erase trailing zeros, then compare digits from both ends. | O(d²) |
+| [G10_2](G10_2/README.md) | Two short word lists cover every score, like a recipe with two ingredient shelves. Numbers below twenty use one list directly. Higher numbers combine a decade word, a hyphen, and a unit word. | O(1) |
+| [G11](G11/README.md) | Think of each letter as a passenger finding a seat in a sorted row. | O(L^2 log L) |
+| [HOTLINE](HOTLINE/README.md) | Treat each sentence as an index card with a subject, a verb, an object, and a sign. | O(S) |
+| [HS12HDPW](HS12HDPW/README.md) | Think of a lock with six dials. Each dial contributes one bit to each of two numbers. | O(input bytes) |
+| [JEWELS](JEWELS/README.md) | Treat each half as a line of stones; keeping matching stones means choosing a common subsequence (letters kept in order, with gaps allowed). | O(n^3) |
+| [MAYA](MAYA/README.md) | Count the marks on each row, then multiply by that row's weight. | O(input bytes + one block) |
+| [MORSE](MORSE/README.md) | Convert each word into dots and dashes, then walk a trie along the signal. Think of following the signal path and noting every point where a dictionary word ends. | O(Morse length + trie nodes) |
+| [MOZESLS](MOZESLS/README.md) | Count each middle letter once, then multiply by the `s` letters around it. | O(N³Q) |
+| [MOZMCAN](MOZMCAN/README.md) | Grow a window while its pattern count stays at or below the target. | O(n²) |
+| [MOZMSLM](MOZMSLM/README.md) | Count unfinished patterns while walking the string once. | O(n³) |
+| [MOZMSLS](MOZMSLS/README.md) | Count each middle letter once, then multiply by the `s` letters around it. | O(N³Q) |
+| [MOZSACP](MOZSACP/README.md) | The answer is a fixed snippet, like a saved text line you paste without editing. The algorithm prints one constant string, so it performs no parsing. The output buffer collects the line and writes it once. A program that analyzed input would add work without changing the text. | O(I) |
+| [MOZSAD](MOZSAD/README.md) | Treat the input as text and inspect each character. Counting zeros is like a librarian tallying letter `o` marks on a shelf label; the label's sign is not a letter. Numeric division needs extra handling for zero and negatives. Each character costs constant time, so total time is O(L) for L characters. | O(L) |
+| [MOZSAEA](MOZSAEA/README.md) | Measure the forward distance from start to end around the letter circle. Think of a clock face: moving forward from 10 to 2 covers four hours, not eight hours backwards. A modular distance gives that count, and one loop emits the letters. Restarting a search for each step costs O(26²) work. Each emitted letter costs constant time, so the run is O(26). | O(26²) |
+| [MOZSAP](MOZSAP/README.md) | A constant-output task needs no parsing; the program writes one literal line. Think of a fixed sign: reading the room never changes the wording. The input reader still collects stdin, and a hand scanner walks the buffer. Output uses the same block buffer as larger tasks. One write emits the complete answer. | O(N) |
+| [MOZSASN](MOZSASN/README.md) | The string is the three-character block `-_-` repeated, then cut to length n. Think of a roll of wallpaper with a fixed motif: you cut off exactly the length you need. A modular index test gives the same characters without storing the roll. Building every prefix before printing copies O(n²) bytes. One streaming pass costs O(n) time and O(1) buffer space. | O(n²) |
+| [MOZSLM](MOZSLM/README.md) | Count unfinished patterns while walking the string once. | O(n³) |
+| [NHAY](NHAY/README.md) | Build the KMP failure table for the needle once, then walk the haystack character | O(h) |
+| [ONP](ONP/README.md) | Scan the expression once. Send letters straight to the answer. Park operators on a | O(n^2) |
+| [PALIN](PALIN/README.md) | A palindrome is fixed by its first half. So copy the left half onto the right half. That copy is the closest palindrome with the same left half. It is the answer unless it is not bigger than `K`. In that case raise the left half by one and mirror again. | O(total digits) |
+| [PALSEC](PALSEC/README.md) | Build the palindrome from both ends inward. Think of pairing letters from the two ends as if folding the joined words in half. | O(n^2 * L) |
+| [PCC15D](PCC15D/README.md) | Like adding a six percent service charge to each line of a paper receipt, compute the charged price of each item. Then add those prices up. Prices have two decimals, so store them as integer cents instead of floating point numbers. | O(input bytes) |
+| [PCROSS1](PCROSS1/README.md) | Think of drawing a plus sign on squared paper by filling one whole row and one whole column. The cell-membership test writes each character directly. | O(m times n) |
+| [PERIOD](PERIOD/README.md) | Measure how much of each prefix echoes at its end, then read off the repeat count. Picture comparing each prefix with the preceding text and noting the longest ending that matches the start. | O(N²) |
+| [PG10181](PG10181/README.md) | Think of two guest lists laid side by side; a name earns a place only when both lists contain it. | O(n log n) |
+| [PHRASES](PHRASES/README.md) | Guess a length, fingerprint every substring of that length, then keep the fingerprints that qualify everywhere. Picture sliding a window of that length along each message and keeping substrings that qualify in every message. | O(n × Lmax²) |
+| [RG11_2](RG11_2/README.md) | Treat the word as a sequence of traffic lights. | O(I) |
+| [ROMAN](ROMAN/README.md) | Read each word by its first letter, then print each decimal digit as a fixed Roman fragment. Think of a translator with two small lookup tables: one for word-to-digit, one for digit-to-symbols. | O(1) |
+| [RPNEVAL](RPNEVAL/README.md) | Think of a pile of plates: a number adds a plate, and an operator removes the top two plates and puts one result back. | O(D) |
+| [SBANK](SBANK/README.md) | Read every account line as one string, collapse its spaces so equal accounts | O(n) |
+| [SBSTR1](SBSTR1/README.md) | Slide a short ruler over each line, the way you check a word inside a sentence. The ruler covers five characters. You compare what it covers with the fragment and move one step right. That is the whole trick. | O(N) |
+| [SCYPHER](SCYPHER/README.md) | Neighboring words reveal one letter order each. At the first difference, the earlier word carries the smaller plain letter, so add one edge. Uniqueness needs a total order; closure checks it in A^3 steps, and trying all permutations costs A! steps. | O(A!) |
+| [SERI07](SERI07/README.md) | Think of cooking a large batch once, then serving it by the spoonful. The sieve and all term strings are prepared before any query is read. | O(L + total terms) |
+| [SHOCCUR](SHOCCUR/README.md) | Store one running count per letter and per string prefix. Think of 26 tally sheets: each position adds one mark to a single sheet. A range count is the difference between two sheet rows. Scanning the whole range for every query costs O(nq). Prefix differences answer each query in fixed time. | O(nq) |
+| [SIMPLFYIT](SIMPLFYIT/README.md) | Think of the expression as a labelled shelf with one slot per pair of powers. | O(input bytes + 441) |
+| [SMPSEQ3](SMPSEQ3/README.md) | Think of a ticket checker with a list of invited names. Each name in the first list is checked once against a set of invited names, then printed if absent. | O(n) |
+| [SMPSEQ4](SMPSEQ4/README.md) | Think of a club membership check. Each name on the guest list is checked once against the member list and printed when it matches. | O(n) |
+| [SMPSEQ5](SMPSEQ5/README.md) | Think of lining up two rows of cards and checking them column by column. Only matching columns get their column number printed. | O(n + m) |
+| [SMPSEQ6](SMPSEQ6/README.md) | Think of finding a name in a spreadsheet column, allowing a few rows of slack. The bounded-window search tries only the allowed positions for each index. | O(n squared) |
+| [SMPSEQ7](SMPSEQ7/README.md) | Think of cutting a rope once so the left half slopes down and the right half slopes up. The prefix-and-suffix scan finds the longest possible halves. | O(n squared) |
+| [SMPWOW](SMPWOW/README.md) | Think of a name badge: a capital letter, a row of circles, and a small closing letter. | O(x) |
+| [SORTING](SORTING/README.md) | Count the letters like tally marks on a sheet, then rewrite the alphabet from A to Z. You never move a letter more than once. That is counting sort, and it fits the 26-letter alphabet perfectly. | O(N log N) |
+| [SPTTRN3](SPTTRN3/README.md) | Imagine a walker who circles a lawn clockwise, then switches to anticlockwise on the next smaller lawn. It keeps switching direction at every inward step. | O(s²) |
+| [SPTTRN4](SPTTRN4/README.md) | Think of a painter walking a square path and turning at each corner, leaving a one-cell gap between parallel strokes. The path has exactly `s` straight arms. Arm lengths shrink in steps of two as the painter moves inward. | O(s) |
+| [STABLEMP](STABLEMP/README.md) | Let each free man ask the next woman on his list, like an applicant knocking on doors. A woman keeps the best offer so far and sends the rest away. | O(n²) |
+| [STRHH](STRHH/README.md) | Pick alternate characters from the first half, like taking every other bead from the left half of a necklace. The program halves the string length and walks even positions up to that bound. | O(input bytes) |
+| [TRCSTRPR](TRCSTRPR/README.md) | Treat primality like a pre-stamped checklist: mark every composite once before reading names. | O(K * sqrt(offsetValue) |
+| [TSMIVIOLET](TSMIVIOLET/README.md) | Think of a seven-page address book: you flip to the one page that matches the name in your hand. | O(1) |
+| [URJC2_D](URJC2_D/README.md) | Charge 50 ms for every character, then add the extra 100 ms once per newly learned letter. Think of a cover charge at a door: everyone pays the base fee, and first-time guests pay extra. Two 26-entry tables track known and already seen letters. | O(B) |
+| [WORDEQ](WORDEQ/README.md) | Treat each bit of each variable as a separate cell, then merge cells that must match. Think of connecting dots that must carry the same number, then counting the free dots left over. | O(2^M · N) |
 
-### Geometry & grids (47)
+### Geometry & grids (84)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
 | Code | Idea | Cost |
 |---|---|---|
-| [ALICEBOB](ALICEBOB/README.md) | Peel degree-two corners (ears) from the polygon, like trimming ears off paper until a triangle remains. | O(n) |
-| [ALIENS](ALIENS/README.md) | Grow a circle from random starting points. | O(n) |
+| [ADABEHIVE](ADABEHIVE/README.md) | Use a two-dimensional Fenwick tree. Think of a stack of ledger pages, where each page records running totals for a range of rows. A point change updates one cell on every page that covers its row. A rectangle total comes from four prefix sums. | O(QG) |
+| [ALICEBOB](ALICEBOB/README.md) | Peel degree-two corners (ears) from the polygon, like trimming ears off paper until a triangle remains. A reverse pass glues them back. | O(n+m) |
+| [ALIENS](ALIENS/README.md) | Grow a circle from random starting points, like stretching a rubber band around pegs until it encloses them all. | O(n to the fourth) |
 | [ALTARS](ALTARS/README.md) | Treat each wall as a blocked slope interval, like finding a clear angle between walls seen edge on. | O(n) |
-| [BAC](BAC/README.md) | Clip the plate by each halfway boundary between two samples, like slicing the plate with straight cuts. | O(n) |
-| [BALL1](BALL1/README.md) | Fold the bouncing path into a straight diagonal. | O(n) |
-| [BITMAP](BITMAP/README.md) | Spread distances across the grid from each white pixel, like a wave advancing one cell per step. | O(n) |
-| [BSHEEP](BSHEEP/README.md) | Build the convex hull with Andrew's monotone chain (a method that walks a sorted point list). | O(n log n) |
-| [BULK](BULK/README.md) | Use the divergence theorem (a rule linking a closed surface to the volume inside). | O(n) |
-| [CHOCOLA](CHOCOLA/README.md) | Cut the dearest line first, like paying the largest bills before the small ones. | O(n) |
-| [CISTFILL](CISTFILL/README.md) | Walk the water level upward, like reading a row of gauges from the bottom to the top. | O(n) |
-| [CUTOUT](CUTOUT/README.md) | Only cut edges and the square border can bound an optimal rectangle, like fence posts around a field. | O(n²) |
-| [CUTSQRS](CUTSQRS/README.md) | Every turn follows the Euclidean algorithm (repeated division by remainders). | O(n) |
-| [DIRVS](DIRVS/README.md) | Check sightlines first, then draw the route, like checking which stations are in view before choosing a path. | O(n²) |
-| [EMPTY](EMPTY/README.md) | Sweep the x edge and keep a segment tree (a tree storing best values over intervals) for the y and z edges. | O(n log n) |
-| [EQBOX](EQBOX/README.md) | Sort each shape's sides so the short side comes first, like lining up a box and a tile before testing a tilt. | O(n) |
-| [FLBRKLIN](FLBRKLIN/README.md) | Rewrite each point using two diagonal coordinates, like measuring the same spot from two different axes. | O(n) |
-| [FOOTBALL](FOOTBALL/README.md) | Count faces with Euler's formula. | O(n) |
-| [FSHEEP](FSHEEP/README.md) | The shepherd sees every corner from the origin, like rays spreading from a single point. | O(n log n) |
-| [GLUE](GLUE/README.md) | Treat the box as the bounding rectangle of all dabs in some orientation. | O(n log n) |
-| [JASIEK](JASIEK/README.md) | Convert the walk into area, then let a lattice rule count the squares. | O(n) |
-| [LITEPIPE](LITEPIPE/README.md) | Find the furthest x where one straight ray still fits. | O(n) |
-| [MAP](MAP/README.md) | Sort the populations first, then cut the sorted list into color groups. | O(n) |
-| [MAZE](MAZE/README.md) | Track which rows a passage can reach after each column, plus one special turn that switches sides. | O(n) |
-| [MOULDS](MOULDS/README.md) | Store the deepest cut at each 1 mm cell in a flat array. | O(n) |
-| [PICAD](PICAD/README.md) | The count changes only when someone arrives or leaves. | O(n log n) |
-| [PIR](PIR/README.md) | Recover the corner angles from the edge lengths, then apply a determinant formula. | O(n) |
-| [PLONK](PLONK/README.md) | Split the walk into horizontal and vertical parts, then pick the middle house on each axis. | O(n) |
-| [POLY1](POLY1/README.md) | Count the triangles a chosen triangle misses, then subtract from the total. | O(n) |
-| [POLYEQ](POLYEQ/README.md) | Find the peaks and valleys first, then search each stretch between them. | O(n) |
-| [POLYGAME](POLYGAME/README.md) | Check how exposed the black triangle is, then use parity. | O(n) |
-| [POSTERS](POSTERS/README.md) | Read the posters backwards, like peeling notices off a wall from the top sheet down. | O(n) |
-| [PROPKEY](PROPKEY/README.md) | Model the fall as a sequence of sideways slides, like a Tetris piece that slides but never rotates. | O(n²) |
-| [RAIN1](RAIN1/README.md) | Picture the rain as vertical threads from the sky. | O(n log n) |
-| [RECTNG1](RECTNG1/README.md) | Group rectangles like overlapping rubber stamps, then count the distinct ink islands. | O(n log n) |
-| [RHOMBS](RHOMBS/README.md) | Walk around the polygon and count diamonds as they appear in the wake of each side. | O(n) |
-| [ROCKETS](ROCKETS/README.md) | Pair the leftmost point first, like untangling crossing strings by deciding the one strand that must reach… | O(log n) |
-| [RUNAWAY](RUNAWAY/README.md) | Grow a circle from a spot until it touches a hole. | O(log n) |
-| [SEGVIS](SEGVIS/README.md) | Sweep the segments from left to right, like sliding a curtain across a row of posts. | O(n²) |
-| [SHAMAN](SHAMAN/README.md) | Wrap a rubber band around all the peaks before choosing corners. | O(n) |
-| [STONE](STONE/README.md) | A polygon balances at the area-weighted average of its pieces. | O(n) |
-| [STORE](STORE/README.md) | Forget the keeper's exact square and remember only which side of the parcel they stand on. | O(n²) |
-| [TRICENTR](TRICENTR/README.md) | Triple each given distance to recover a full height, then follow one fixed formula chain. | O(n) |
-| [TRIPART](TRIPART/README.md) | Store squared side lengths and reduce each triple by its gcd, like simplifying a fraction. | O(n) |
-| [WATER](WATER/README.md) | Flood the grid from the outside, always expanding the field with the lowest wall first. | O(n) |
-| [WINDOW1](WINDOW1/README.md) | Sweep thin horizontal bands from the window bottom to its top. | O(n) |
-| [WMELON](WMELON/README.md) | Compress the used coordinates, then slide one window over columns and another over rows. | O(n) |
-| [ZEBRA](ZEBRA/README.md) | Only people with your crossing time can collide. | O(n) |
+| [BAC](BAC/README.md) | Clip the plate by each halfway boundary between two samples, like slicing the plate with straight cuts. This is half-plane clipping (trimming a polygon to one side of a line). | O(k) |
+| [BALL1](BALL1/README.md) | Fold the bouncing path into a straight diagonal, like tracing a line through a corridor of mirrored copies of the board. | O(1) |
+| [BITMAP](BITMAP/README.md) | Spread distances across the grid from each white pixel, like a wave advancing one cell per step. Set white cells to zero and every other cell to a large number. Sweep from the top-left, then from the bottom-right, and keep the smaller value at each cell. This is a two-pass distance transform (a table that replaces a search). | O((n m) |
+| [BSHEEP](BSHEEP/README.md) | Build the convex hull with Andrew's monotone chain (a method that walks a sorted point list). Sort the points, walk forward for the lower half and backward for the upper half, and keep only points that turn left. Think of pulling a rubber band around the sheep: only the outermost ones touch it. | O(n) |
+| [BULK](BULK/README.md) | Use the divergence theorem (a rule linking a closed surface to the volume inside). The volume is one sixth of the signed sum of face areas times their plane coordinates. The vertex order does not mark the outward side, so the program links neighbouring faces and propagates orientation signs. Think of coloring one face outward, then walking the surface so each shared edge keeps opposite sides consistent. | O(P + E + F) |
+| [CHI_BINARY](CHI_BINARY/README.md) | Picture an abacus whose beads are grouped in blocks of thirty. Each block holds one 30-bit limb, and ordinary column arithmetic works on those blocks. | O(B) |
+| [CHOCOLA](CHOCOLA/README.md) | Cut the dearest line first, like paying the largest bills before the small ones. A cut spans the whole bar, so its price is paid once per perpendicular piece. | O(c log c) |
+| [CHTCHTCHEAT](CHTCHTCHEAT/README.md) | Picture the teacher holding one photocopy of the cow essay beside the answer sheet. | O(input bytes + longest line) |
+| [CISTFILL](CISTFILL/README.md) | Walk the water level upward, like reading a row of gauges from the bottom to the top. Each cistern opens at its base and closes at its top. | O(n × maxLevel) |
+| [CPTTRN1](CPTTRN1/README.md) | Colour the chessboard by parity. A cell is `*` when its row and column indices add to an even number, and `.` otherwise. | O(input bytes) |
+| [CPTTRN2](CPTTRN2/README.md) | Draw the border first, then leave the middle empty. Think of taping the edge of a picture frame: every cell on an edge is a star, and only the cells well inside the frame stay dots. | O(input bytes) |
+| [CPTTRN3](CPTTRN3/README.md) | A cell takes three columns and two rows. Stars land on every third column and every second row. The rest of the grid is dots. | O(input bytes) |
+| [CPTTRN4](CPTTRN4/README.md) | A star fence appears every `h + 1` rows and every `w + 1` columns. Each gap between fences is one cell of dots. | O(input bytes) |
+| [CPTTRN5](CPTTRN5/README.md) | Picture a tiled floor where every tile holds a diagonal stripe and the stripe turns the other way in the next tile. | O(input bytes) |
+| [CPTTRN6](CPTTRN6/README.md) | Picture graph paper: upright rules are pipes, flat rules are dashes, and their intersections are plus signs. | O(input bytes) |
+| [CPTTRN7](CPTTRN7/README.md) | A tiled floor makes this easy to picture. One diamond tile is stamped across the whole grid. | O(input bytes) |
+| [CUTOUT](CUTOUT/README.md) | Only cut edges and the square border can bound an optimal rectangle, like fence posts around a field. | O(X·Y) |
+| [CUTSQRS](CUTSQRS/README.md) | Every turn follows the Euclidean algorithm (repeated division by remainders), like trading a rectangle for a smaller one. | O(input bytes + block bytes) |
+| [DHRODD](DHRODD/README.md) | Counting odds in a range is like counting striped tiles between two floor marks. You read the stripe total at each mark and subtract. | O(R - L + 1) |
+| [DIRVS](DIRVS/README.md) | Check sightlines first, then draw the route, like checking which stations are in view before choosing a path. | O(P*Q) |
+| [DRNTEAGL](DRNTEAGL/README.md) | Imagine measuring the distance of each star from your home with a ruler. You only need to know which ruler reading is longest, so comparing squared readings works just as well. | O(T * N) |
+| [EMPTY](EMPTY/README.md) | Sweep the x edge and keep a segment tree (a tree storing best values over intervals) for the y and z edges. | O(n^4) |
+| [EQBOX](EQBOX/README.md) | Sort each shape's sides so the short side comes first, like lining up a box and a tile before testing a tilt. | O(N) |
+| [FLBRKLIN](FLBRKLIN/README.md) | Rewrite each point using two diagonal coordinates, like measuring the same spot from two different axes. Set u = y - x and v = y + x. One flat line covers points whose u does not rise while v does not fall. By Dilworth's theorem (a rule linking chain covers to antichains), the fewest lines equal the largest group with both u and v rising. Patience sorting (a card-game method for longest rising runs) counts that group in one pass. Each point costs one sort comparison and one binary search. A matching built from point pairs would cost cubic time. Takeaway: sort by one coordinate, then count rising values of the other. | O(input bytes + sum of n log n) |
+| [FOOTBALL](FOOTBALL/README.md) | Count faces with Euler's formula (a rule linking vertices, edges, and faces on a surface), like counting pieces instead of rebuilding the ball. The sum of vertex values gives the green pentagons after one substitution. A three-state walk along the loop supplies the corner count that fixes the green hexagons. Each vertex costs one state transition, so the work is linear. Rebuilding the ball would need geometry the input does not provide. Takeaway: sum corners, walk states, then apply two formulas. | O(input bytes + output bytes) |
+| [FSHEEP](FSHEEP/README.md) | The shepherd sees every corner from the origin, like rays spreading from a single point. Each ray from the origin crosses the fence once, so the vertices already lie in angular order. Sort them by angle (the direction of a vector around the circle), then binary search the gap that contains each sheep. A triangle test using cross products (signed area of a parallelogram) settles containment in constant time. Each sheep costs O(log n) comparisons. Casting a ray against every edge would cost O(n) per sheep. Takeaway: find the angular wedge first, then test one triangle. | O(n m) |
+| [FUCT_FOR_FNPN](FUCT_FOR_FNPN/README.md) | Picture writing a numbered guest list from one upward. | O(I + B) |
+| [FUCT_IF_CIRCLE](FUCT_IF_CIRCLE/README.md) | Turn one radius into two related measurements with fixed formulas. | O(n) |
+| [FUCT_IF_CYLINDER](FUCT_IF_CYLINDER/README.md) | Measure capacity and metal from the same two numbers. | O(n) |
+| [FUCT_IF_RECT](FUCT_IF_RECT/README.md) | Walk the border for perimeter and count floor tiles for area. | O(I + B) |
+| [FUCT_IF_SQUARE](FUCT_IF_SQUARE/README.md) | The edge sets both the fence around the square and the tiles inside it. | O(I + B) |
+| [G10_11](G10_11/README.md) | Picture the two monkeys as runners on one staircase of diagonals. | O(C(N+M,N) |
+| [G11_2](G11_2/README.md) | Treat the board as a subway map with 64 stations. | O(512) |
+| [GDGALKN](GDGALKN/README.md) | Think of museum guards standing in the corners of a crooked gallery. A guard at one corner watches the whole triangular wedge in front of that corner. Chvátal's art gallery theorem gives the exact answer: `N` corners need at most `floor(N / 3)` guards. Some polygon shapes really need that many. | O(input bytes) |
+| [GIRTH](GIRTH/README.md) | Try each point as the smallest point of a cycle. Run a breadth-first search that only visits larger points, and use an edge joining two different search branches to close a cycle. Keep the shortest length seen so far. A cycle of length L never needs a search deeper than L/2, so once the best length is g, every later search can stop at depth (g - 1) / 2. When a triangle is found, stop entirely: no shorter cycle exists. Then build the smallest tour greedily, always taking the lowest next point that still allows a shortest return. | O(N + M) |
+| [GLUE](GLUE/README.md) | Treat the box as the bounding rectangle of all dabs in some orientation, like rotating a rectangle around the point set. Each side touches a supporting line of the convex hull (the smallest enclosing polygon). Such a line keeps all points on one side. A side holds two dabs when that line carries a hull edge or two dabs share the touched hull corner. One side lies on a hull edge on judge inputs, which pins the orientation to a quarter turn of one edge normal. Test those directions and divide the count by four. Each direction costs four binary searches over sorted normals. Trying every rectangle from dab pairs would cost cubic time. Takeaway: reduce rectangles to a few hull directions, then check each face. | O(n^3) |
+| [HASANCIRCLE](HASANCIRCLE/README.md) | Think of slicing a pizza from the center to the rim; the slice size follows the angle at the center. | O(input bytes) |
+| [HS12MBR](HS12MBR/README.md) | Picture a rubber band stretched around a handful of stickers. Each sticker may be a dot, a disc, or a short stroke. | O(n) |
+| [JASIEK](JASIEK/README.md) | Convert the walk into area, then let a lattice rule count the squares. Think of tracing the outline of colored cells and counting the tiles it encloses. | O(L) |
+| [LITEPIPE](LITEPIPE/README.md) | Find the furthest x where one straight ray still fits. Think of aiming a laser down a bent corridor and sliding the target outward. | O(n) |
+| [MAP](MAP/README.md) | Sort the populations first, then cut the sorted list into color groups. Think of slicing the sorted population line into contiguous blocks, one block per color. | O(n) |
+| [MAZE](MAZE/README.md) | Track which rows a passage can reach after each column, plus one special turn that switches sides. | O(1) |
+| [MENUTOUR](MENUTOUR/README.md) | Imagine a shadow cast from each of the four corners of the city grid. | O(C B R squared) |
+| [MOULDS](MOULDS/README.md) | Store the deepest cut at each 1 mm cell in a flat array. A plunge cuts the current cell, and a shift cuts every cell along its path. The sum of stored depths is the hollow volume. | O(62500) |
+| [PCROSS2](PCROSS2/README.md) | Think of drawing two diagonal strokes through one point on squared paper. The distance-equality test writes each character directly. | O(m times n) |
+| [PICAD](PICAD/README.md) | The count changes only when someone arrives or leaves. Collect those moments, add the two window ends, sort them, and sweep them once. At each moment, add arrivals, read the count at that exact moment, remove departures, and read the count in the gap that follows. Keep the smallest and largest value seen inside the window. Sorting costs O(n log n) per case, and the sweep visits each moment once. Checking every integer moment would scan up to 100 000 000 values per case. | O((k − p) |
+| [PIR](PIR/README.md) | Recover the corner angles from the edge lengths, then apply a determinant formula. Picture a three-legged tripod: knowing the three legs and the distances between their feet fixes the shape, so the enclosed volume is determined. | O(1) |
+| [PLONK](PLONK/README.md) | Split the walk into horizontal and vertical parts, then pick the middle house on each axis. Picture friends living along one long road: the house that minimizes everyone's walking is the median one. | O(100000²) |
+| [POLY1](POLY1/README.md) | Count the triangles a chosen triangle misses, then subtract from the total. Picture drawing a triangle on a pie chart and counting the slices wholly tucked inside its three arcs. | O(n⁴) |
+| [POLYEQ](POLYEQ/README.md) | Find the peaks and valleys first, then search each stretch between them. Picture a hilly road: before counting sea-level crossings, mark every hilltop and valley, because between them the road only climbs or only descends. | O(deg) |
+| [POLYGAME](POLYGAME/README.md) | Check how exposed the black triangle is, then use parity. Picture the triangulation as a tree of joined triangles. An outer triangle can be cut, and parity decides the last move. | O(1) |
+| [POSTERS](POSTERS/README.md) | Read the posters backwards, like peeling notices off a wall from the top sheet down. The last poster still shows everywhere it hangs. An earlier poster shows only where no later poster already claimed a section. | O(n) |
+| [PROPKEY](PROPKEY/README.md) | Model the fall as a sequence of sideways slides, like a Tetris piece that slides but never rotates. If a slot is free, the key can slide there and keep going down. | O(W × D / 64 + W × R / 64) |
+| [RAIN1](RAIN1/README.md) | Picture the rain as vertical threads from the sky. The highest sloping segment under each thread catches it, then funnels the water down to its lower end. | O(n log n) |
+| [RECTNG1](RECTNG1/README.md) | Group rectangles like overlapping rubber stamps, then count the distinct ink islands. Sort by left edge so neighbours sit next to each other in the scan. | O(n²) |
+| [RETO3](RETO3/README.md) | Think of balancing a set of scales with one missing weight. A finished row tells you the exact weight needed. | O(n^2) |
+| [RETO4](RETO4/README.md) | Think of leaving out one stop on a bus route. The route still runs between the same outer stops unless you drop an end. | O(n) |
+| [RF102](RF102/README.md) | Finding the tile side is like cutting several ribbons into equal pieces with none left over. | O(I + B) |
+| [RHOMBS](RHOMBS/README.md) | Walk around the polygon and count diamonds as they appear in the wake of each side. Imagine tracing a tiled floor and counting the tiles your path exposes. | O(1) |
+| [ROCKETS](ROCKETS/README.md) | Pair the leftmost point first, like untangling crossing strings by deciding the one strand that must reach across. Its partner splits the remaining points into two independent halves. | O(n) |
+| [RUNAWAY](RUNAWAY/README.md) | Grow a circle from a spot until it touches a hole. The largest such circle marks the safest spot. Think of balancing between several hazards so no single one is close. | O(M) |
+| [SEGVIS](SEGVIS/README.md) | Sweep the segments from left to right, like sliding a curtain across a row of posts. Keep the nearest post seen at every height. A new segment sees exactly the posts still showing through its span. That gives one visibility edge per pair. | O(n cubed) |
+| [SHAMAN](SHAMAN/README.md) | Wrap a rubber band around all the peaks before choosing corners, like finding the outline of a cluster of dots. A point inside that outline never helps maximize area. So the best four corners lie on the outline itself. | O(n to the fourth) |
+| [SLSL](SLSL/README.md) | Picture adding two long columns of digits on paper from right to left. | O(D) |
+| [SMPCPH1](SMPCPH1/README.md) | Picture a round table of labeled chairs. Each key letter points to the next chair, and the final letter points back to the first one. | O(key length) |
+| [SMPSUM](SMPSUM/README.md) | Think of adding up square tiles whose side lengths run from `a` to `b`. | O(b - a + 1) |
+| [SPTTRN1](SPTTRN1/README.md) | Think of a gardener walking a square hedge, then stepping two paces inward to repeat the job. The program walks the same clockwise spiral, leaving one dot of space between parallel arms. | O(s²) |
+| [SPTTRN2](SPTTRN2/README.md) | Picture the Act 1 spiral drawn on a transparent sheet, then viewed after turning the sheet a quarter turn. The stars land in new places but the walk is the same. | O(s²) |
+| [STONE](STONE/README.md) | A polygon balances at the area-weighted average of its pieces. Cut the polygon into signed triangles, one per edge with the origin as the third corner. Each triangle contributes an area and its own center of mass. The program sums both while reading vertices, then divides once at the end. Cost per vertex: three multiplications and three additions, with only the first and previous vertex kept in memory. | O(N) |
+| [STORE](STORE/README.md) | Forget the keeper's exact square and remember only which side of the parcel they stand on. Think of a moving crew that counts shoves, not footsteps. | O((nm) |
+| [STROOQ](STROOQ/README.md) | Cube endings repeat every 1000, like a clock face repeating each hour. Only four residues in one period work: 192, 442, 692, and 942. Rank k selects block (k minus one) divided by four and one residue from that block. | O(k) |
+| [TRICENTR](TRICENTR/README.md) | Triple each given distance to recover a full height, then follow one fixed formula chain. Think of the centroid as a balance point sitting one third of the way up each height. | O(input bytes) |
+| [TRIPART](TRIPART/README.md) | Store squared side lengths and reduce each triple by its gcd, like simplifying a fraction. A sorted, reduced triple names one style, so scaled copies collapse to one entry. | O(T^2) |
+| [URJC2_C](URJC2_C/README.md) | Each item gets one comparison. Think of a turnstile that opens only when the visitor is shorter than the guard; exact height still fails. A strict `>` check captures that rule. Buffered output keeps thousands of verdict lines cheap. | O(I) |
+| [VLN](VLN/README.md) | Reach in tree positions is H divided by 3, like counting posts inside a fixed rope length. Sum every centered window of trees and keep the largest total. Rescanning fruit for each stand point repeats work, but n never exceeds 100. | O(n) |
+| [WATER](WATER/README.md) | Flood the grid from the outside, always expanding the field with the lowest wall first. Think of water seeping in through the lowest crack in a dam wall, then spreading inward. | O(nm) |
+| [WBAHD](WBAHD/README.md) | Think of a narrow turnstile with two lines. The last person through has waited while everyone else passed. Give the slowest possible person the final spot, and that longest wait becomes as short as the rules allow. | O(input size) |
+| [WINDOW1](WINDOW1/README.md) | Sweep thin horizontal bands from the window bottom to its top. Think of slicing a cake into layers and counting how many separate pieces appear in each layer. | O(n) |
+| [WMELON](WMELON/README.md) | Compress the used coordinates, then slide one window over columns and another over rows. Think of sliding a picture frame across a photo until it contains enough faces. | O(Dx^2·Dy^2) |
+| [ZEBRA](ZEBRA/README.md) | Only people with your crossing time can collide. Think of picking a lane on a crosswalk and counting paths that cross your own. | O(n) |
 
-### Graphs & trees (31)
+### Graphs & trees (36)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
 | Code | Idea | Cost |
 |---|---|---|
-| [BIA](BIA/README.md) | A computer is critical when it has a child in the dominator tree (tree of forced relays). | O(n) |
-| [BICYCLE](BICYCLE/README.md) | Treat the two circles as a tiny graph: start. | O(1) |
-| [BLINNET](BLINNET/README.md) | Sort every link by cost, then join cities with Kruskal's algorithm (a minimum spanning tree method). | O(n) |
-| [BTOUR](BTOUR/README.md) | Anchor every loop at its lowest numbered intersection. | O(n) |
-| [CAVE](CAVE/README.md) | Split every corridor at crossings and endpoints, then walk from node to node. | O(n) |
-| [CHASE1](CHASE1/README.md) | Peel away leaves to find the board's core. | O(n) |
-| [CONNECT](CONNECT/README.md) | Keep a sorted shortlist of the best few routes to every town. | O(n) |
-| [CORNET](CORNET/README.md) | Trace each link chain like an org chart, then write the final boss's name on every file you visited. | O(n) |
-| [COURIER](COURIER/README.md) | Fill a timetable of shortest legs before planning the route, like checking train times before booking a tour. | O(n³) |
-| [DICE1](DICE1/README.md) | Use Dijkstra's algorithm (shortest paths with non-negative costs) on a repeating pattern. | O(n) |
-| [FISHER](FISHER/README.md) | Treat each state and each elapsed minute as one stop, like adding a time column to the table of states. | O(n²) |
-| [HIGH](HIGH/README.md) | Turn the link list into a degree-and-minus-one matrix, like writing the allowed city links into a table. | O(n) |
-| [HMRO](HMRO/README.md) | Every office code is given a slot in a table of all office codes of the test case. | O(log n) |
-| [ICERINK](ICERINK/README.md) | Picture sliding across the rink until an obstacle wall stops you, then pushing off in another direction. | O(n) |
-| [INCARDS](INCARDS/README.md) | Run two delivery rounds, one outbound and one back, like sending a letter and its prepaid return envelope. | O(n) |
-| [LABYR1](LABYR1/README.md) | The graph is a tree, so its longest path is the tree diameter. | O(n) |
-| [LIFTS](LIFTS/README.md) | Measure heights in half-metres and time in half-seconds, so every position and meeting stays a whole number. | O(n) |
-| [MLAND](MLAND/README.md) | Trace the lower edge of a pile of straight lines; that edge bends down at most once. | O(n) |
-| [NETADMIN](NETADMIN/README.md) | Turn colors into street capacity, then search for the smallest capacity that works. | O(n) |
-| [OFBEAT](OFBEAT/README.md) | Treat the two street directions as two sides of a crossing graph. | O(n) |
-| [PANIC](PANIC/README.md) | Spread the panic first, then work out the best escape from every plaza. | O(n) |
-| [POTHOLE](POTHOLE/README.md) | Treat the cave as a downhill plumbing network and push as many routes through it as possible. | O(n) |
-| [PRIMIT](PRIMIT/README.md) | Treat each feature as a one-way arrow between two numbers. | O(n) |
-| [ROADNET](ROADNET/README.md) | Use the distance table as the map: a town sits between two others when the direct distance equals the sum… | O(n²) |
-| [SCRAPER](SCRAPER/README.md) | Picture every elevator as a station and every shared floor as a connecting corridor. | O(n) |
-| [SERVERS](SERVERS/README.md) | Count nearby servers by racing waves outward from each rank, like ripples in a pond. | O(n) |
-| [SHPATH](SHPATH/README.md) | Group questions by their starting city, like a travel desk handling one departure point at a time. | O(n) |
-| [TOUR](TOUR/README.md) | Group contestants who can reach one another, then find the group that beats every other group. | O(n) |
-| [TWORK](TWORK/README.md) | Treat each group as a path of length two, with a center who knows both ends. | O(n) |
-| [WATERWAY](WATERWAY/README.md) | Choose each channel's arc to spread the load, then count the busiest fragment. | O(n) |
-| [WORDS1](WORDS1/README.md) | Model each word as a directed edge from its first letter to its last letter. | O(n) |
+| [AGPC01F](AGPC01F/README.md) | Keep a running minimum, like noting the lowest price seen while walking down a street. Store that minimum after every array position. A query then reads one slot and answers at once. | O(q) |
+| [BIA](BIA/README.md) | A computer is critical when it has a child in the dominator tree (tree of forced relays), like a junction guarding a whole branch. | O(nm) |
+| [BICYCLE](BICYCLE/README.md) | Treat the two circles as a tiny graph: start, target, and circle crossings are the nodes, and circle arcs are the edges. The shortest ride is then a shortest path on at most four nodes. The program builds this graph and runs Floyd-Warshall (an all-pairs shortest path method). Crossings are the only places to switch lanes, so no other point can improve the route. | O(input bytes) |
+| [BLINNET](BLINNET/README.md) | Sort every link by cost, then join cities with Kruskal's algorithm (a minimum spanning tree method). A union-find table (a structure that tracks which cities share a group) decides whether a link joins two different groups. Accept that link and stop after cityCount minus one accepts. | O(E + n) |
+| [BTOUR](BTOUR/README.md) | Anchor every loop at its lowest numbered intersection. Self-loops are counted directly. For each anchor, take pairs of streets leading to higher numbered intersections. Run Dijkstra (a shortest path method) on the subgraph of those higher intersections. The distance gives the loop length, and the path count gives the number of loops. | O(n + m) |
+| [CAVE](CAVE/README.md) | Split every corridor at crossings and endpoints, then walk from node to node. The turn rule follows one face boundary of the corridor graph, so each directed piece leads to exactly one successor. Think of tracing a maze with your left hand on the wall: you return to the start after walking one connected boundary. | O(N) |
+| [CHASE1](CHASE1/README.md) | Peel away leaves to find the board's core. A runner standing in the core can run forever, so the answer is `No` there. For other starts, run a bucket sweep over ordered pairs of squares and settle them by increasing turn count. Think of draining a graph from its edges inward: what remains is the safe center. | O(n squared) |
+| [CONGRAPH](CONGRAPH/README.md) | Think of provinces linked by bridges, where a new bridge merges two provinces. | O(M times N) |
+| [CONNECT](CONNECT/README.md) | Keep a sorted shortlist of the best few routes to every town, like posting only the fastest few times for each destination. Once a route is worse than the shortlist's last entry, it can never improve that town. | O(n²k) |
+| [CORNET](CORNET/README.md) | Trace each link chain like an org chart, then write the final boss's name on every file you visited. That rewriting is path compression, and it keeps later traces short. | O(N) |
+| [COURIER](COURIER/README.md) | Fill a timetable of shortest legs before planning the route, like checking train times before booking a tour. Each parcel then becomes one atomic step: travel to its source, carry it to its target. | O(n² + 2^k k) |
+| [DICE1](DICE1/README.md) | Use Dijkstra's algorithm (shortest paths with non-negative costs) on a repeating pattern, like a strip of squares whose layout repeats every few columns. | O(columns expanded * 48) |
+| [FINAL7](FINAL7/README.md) | Think of piles that only split, where each pile contributes a small coin that cancels in pairs. Sprague-Grundy theory gives each cycle a nim value. Size one has value zero. A larger size takes the mex of values from every split. | O(sum of sizes) |
+| [FISHER](FISHER/README.md) | Treat each state and each elapsed minute as one stop, like adding a time column to the table of states. This expanded graph (one node per state-time pair) lets a shortest-path search minimize tolls while respecting the deadline. Each edge relaxation costs one arithmetic step, and each expanded node has n outgoing edges. Listing every route would grow exponentially, because routes may revisit states. Takeaway: add time to the node, then relax edges. | O(1) |
+| [FUSC](FUSC/README.md) | Treat the binary digits of `n` as a path through a family tree, and keep the best branch you skip. Think of walking a staircase while noting the highest step on every landing you pass. | O(log n) |
+| [HIGH](HIGH/README.md) | Turn the link list into a degree-and-minus-one matrix, like writing the allowed city links into a table. The matrix-tree theorem (a rule linking determinants to spanning trees) says one determinant of that matrix counts the networks. Compute the determinant modulo two large primes. Combine the remainders with the Chinese remainder theorem (rebuilding a number from two remainders). Each determinant costs O(n³) operations. Enumerating all link subsets would cost O(2^m). Takeaway: build the matrix, take two determinants, and rebuild the exact answer. | O(2^m) |
+| [HMRO](HMRO/README.md) | Every office code is given a slot in a table of all office codes of the test case, | O(p + z) |
+| [ICERINK](ICERINK/README.md) | Picture sliding across the rink until an obstacle wall stops you, then pushing off in another direction. Each wall you hit becomes a new decision point. | O(V) |
+| [INCARDS](INCARDS/README.md) | Run two delivery rounds, one outbound and one back, like sending a letter and its prepaid return envelope. Dijkstra's algorithm (shortest paths from one source with non-negative weights) gives the outbound fare to each stop. Running it on the reversed network gives each return fare, because reversing every line turns a return trip into an outbound trip. A heap (a priority queue returning the smallest tentative distance) keeps each run fast. Each run touches each line once, costing O(Q log Q). A fresh search for every volunteer would cost O(P times Q). Takeaway: search twice, once per direction, then add the two sums. | O(P times Q log Q) |
+| [LABYR1](LABYR1/README.md) | The graph is a tree, so its longest path is the tree diameter. Two breadth-first | O((C R) |
+| [LIFTS](LIFTS/README.md) | Measure heights in half-metres and time in half-seconds, so every position and meeting stays a whole number. | O(T n L) |
+| [MLAND](MLAND/README.md) | Trace the lower edge of a pile of straight lines; that edge bends down at most once. | O(m + n) |
+| [MOZSAHTF](MOZSAHTF/README.md) | An odd difference forces one even and one odd number, so Samira wins. An even difference forces matching parity, so Rabeya wins. Think of two light switches: flipping one changes the lamp, while flipping neither or both leaves it unchanged. One remainder test settles the case. Enumerating candidate pairs costs O(n) work for no gain. Each input costs constant time, so total time is O(1) apart from reading bytes. | O(n) |
+| [NETADMIN](NETADMIN/README.md) | Turn colors into street capacity, then search for the smallest capacity that works. Picture one cable per house, with a street able to carry at most one cable of each color. | O(n + m) |
+| [OFBEAT](OFBEAT/README.md) | Treat the two street directions as two sides of a crossing graph. Think of choosing the fewest streets so every street meets a chosen one. | O(S^2 / 64) |
+| [PANIC](PANIC/README.md) | Spread the panic first, then work out the best escape from every plaza. Imagine panic starting at several plazas at once, with crowds running down every street except the one panic came from. | O(n + m) |
+| [POTHOLE](POTHOLE/README.md) | Treat the cave as a downhill plumbing network and push as many routes through it as possible. Each route is one explorer. Imagine water entering through the top pipes and leaving through the bottom pipes. | O(V + E) |
+| [PRIMIT](PRIMIT/README.md) | Treat each feature as a one-way arrow between two numbers, then find the fewest arrows you must add to make one continuous walk. Think of joining arrows end to end until one walk covers every arrow. | O(V) |
+| [ROADNET](ROADNET/README.md) | Use the distance table as the map: a town sits between two others when the direct distance equals the sum through it. Think of checking whether a stop lies on the way, not merely near the route. | O(n²) |
+| [SCRAPER](SCRAPER/README.md) | Picture every elevator as a station and every shared floor as a connecting corridor. You start at the stations serving floor A and walk the corridors. If you reach a station serving floor B, the furniture can move. | O(F times E) |
+| [SERVERS](SERVERS/README.md) | Count nearby servers by racing waves outward from each rank, like ripples in a pond. The strongest servers interest everyone. A weaker server V becomes interesting only where no stronger or equally strong server has arrived first. | O(n times m log n) |
+| [SHPATH](SHPATH/README.md) | Group questions by their starting city, like a travel desk handling one departure point at a time. One fare map from that city answers all its queries. The program explores outward in cheap-to-expensive order and stops once every target is settled. | O(n + edges + 200002) |
+| [TOUR](TOUR/README.md) | Group contestants who can reach one another, then find the group that beats every other group. | O(n + e) |
+| [TWORK](TWORK/README.md) | Treat each group as a path of length two, with a center who knows both ends. Picture the center as a hub with two spokes to the members it knows. | O(n^3) |
+| [WATERWAY](WATERWAY/README.md) | Choose each channel's arc to spread the load, then count the busiest fragment. Spread channels over arcs so no arc carries two channels on the same circle. | O(n) |
+| [WORDS1](WORDS1/README.md) | Model each word as a directed edge from its first letter to its last letter. Think of the words as one-way links between letters, and ask for a route using each link once. The question becomes whether that letter graph has an Eulerian path. | O(total input bytes) |
 
-### Dynamic programming (34)
+### Dynamic programming (37)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
 | Code | Idea | Cost |
 |---|---|---|
 | [ALIBB](ALIBB/README.md) | Treat each sweep as choosing which end to visit next, extending a collected block one item at a time. | O(n) |
-| [BABTWR](BABTWR/README.md) | Turn each block into three orientations (choices of height axis) and sort them by base. | O(n) |
-| [BLOCKS](BLOCKS/README.md) | Treat one minute as one orientation: permute rows or permute columns. | O(n²) |
-| [BOOKS1](BOOKS1/README.md) | Binary search the largest block sum, called the load. | O(log n) |
-| [BUNDLE](BUNDLE/README.md) | Run a dynamic program over instruction prefixes. | O(1) |
-| [BUS](BUS/README.md) | Treat a meeting as a channel that passes news both ways. | O(n²) |
-| [CRSCNTRY](CRSCNTRY/README.md) | A meeting is a checkpoint both cards visit in order. | O(n²) |
-| [CTGAME](CTGAME/README.md) | Stack the free cells above each row like books on a shelf. | O(n) |
-| [EXCHNG](EXCHNG/README.md) | Track a token (a possible origin of the minimum) in each register, like tagging each candidate where it sits. | O(n) |
-| [HANGLET](HANGLET/README.md) | Represent every register by a formula over the unknown starting bits. | O(n) |
-| [IKEYB](IKEYB/README.md) | Cut the letter string into `K` consecutive blocks, like slicing a long ribbon. | O(n) |
-| [INUMBER](INUMBER/README.md) | Build the answer digit by digit, like trying shorter lock codes before longer ones. | O(n) |
-| [LITELANG](LITELANG/README.md) | Keep the `n` cheapest words in a growing prefix tree. | O(n) |
-| [MINIMAX](MINIMAX/README.md) | Track the cheapest way to deliver the maximum of inputs `1..x` to position `x`. | O(n) |
-| [MUSKET](MUSKET/README.md) | Survivors keep their circle order after every duel, so the final duel joins two neighboring arcs. | O(n) |
-| [NAPTIME](NAPTIME/README.md) | Try both ways around the circle and keep the better answer. | O(n) |
-| [ORDERS](ORDERS/README.md) | Fill the ranks from right to left, taking the next free rank that fits. | O(n) |
-| [PAINTTMP](PAINTTMP/README.md) | Decide the hole pattern one bit at a time. | O(n) |
-| [PARTIT](PARTIT/README.md) | Count whole blocks of answers, then skip blocks until the target rank fits. | O(n) |
-| [PARTY](PARTY/README.md) | Fill a budget table one party at a time, and keep the smallest cost that reaches the top fun. | O(n) |
-| [PIGBANK](PIGBANK/README.md) | Unbounded knapsack: `best[t]` is the cheapest price that weighs exactly `t` grams. | O(n) |
-| [SCITIES](SCITIES/README.md) | Pair sellers with buyers, then improve one pairing at a time until no swap raises the total goods. | O(n²) |
-| [SCUBADIV](SCUBADIV/README.md) | Pack a knapsack with two measurements at once. | O(n) |
-| [SHORTCUT](SHORTCUT/README.md) | Lay the route on a grid and group rest points by row, like sorting addresses by street. | O(n) |
-| [SOLIT](SOLIT/README.md) | Meet in the middle, like two hikers starting at opposite ends of a trail and hoping to meet halfway. | O(n) |
-| [STEVE](STEVE/README.md) | Solve every small game once and store the answer, like a chess player who memorizes all endgames. | O(n⁴) |
-| [SUMITR](SUMITR/README.md) | Merge the triangle from the bottom row upward, like pruning a family tree from the leaves. | O(n²) |
-| [SUPPER](SUPPER/README.md) | Check which numbers lie on a longest increasing run, like marking the cards that fit a longest rising row. | O(n log n) |
-| [THREECOL](THREECOL/README.md) | Color each subtree from its leaves upward, keeping only two numbers for each node. | O(n) |
-| [TRANS](TRANS/README.md) | Fill a chart of target intervals from shortest to longest, reusing each shorter result. | O(n²) |
-| [TREE1](TREE1/README.md) | Treat the two subtrees as ordered lists that may interleave, each keeping its own internal order. | O(n) |
-| [TREE2](TREE2/README.md) | Treat each tree as a bitstring and flip the rightmost zero that still allows a valid ending. | O(n) |
-| [TRIP](TRIP/README.md) | Keep one cache of all best routes for every pair of list positions. | O(n²) |
-| [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. | O(1) |
+| [BABTWR](BABTWR/README.md) | Turn each block into three orientations (choices of height axis) and sort them by base, like ordering blocks from the widest base upward. | O(n) |
+| [BIPCSMR16](BIPCSMR16/README.md) | Like seating guests at tables of three, avoid placing three people from one year at the same table. Spend the most crowded year two at a time and use the other years to fill the seats. For `k` teams, a year with count `c` supplies at most `2k` students, and all three years together supply `3k`. | O(input bytes) |
+| [BLOCKS](BLOCKS/README.md) | Treat one minute as one orientation: permute rows or permute columns. Three rounds of row, column, row always suffice, so the program only tests whether 0, 1, or 2 rounds work. A middle matrix captures the two-round case, and a 2-SAT solver (a satisfiability test for paired choices) decides whether that matrix exists. | O(n^2) |
+| [BOOKS1](BOOKS1/README.md) | Binary search the largest block sum, called the load. For a trial load, pack books greedily from left to right and count the scribes used. If that count fits the budget, try a smaller load; otherwise raise it. Think of testing one page limit for all books, then lowering it while a split still fits. | O(m) |
+| [BUNDLE](BUNDLE/README.md) | Run a dynamic program over instruction prefixes. With only three slots, a bundle offers at most four stop positions. Keep the best state for each group size, ranked by fewest bundles, then fewest stops, then latest last stop. Think of packing boxes on a shelf: for each shelf length, remember only the arrangement that leaves the most room for later boxes. | O(t + n + states) |
+| [BUS](BUS/README.md) | Treat a meeting as a channel that passes news both ways. For each bus pair, list the meeting minutes inside one least common multiple of the route lengths. That period is the first time both buses return to their start stations. Then propagate the earliest news arrival across the pairs. Think of passing a rumor along a chain of friends: the first time each friend hears it is all that matters. | O(n squared) |
+| [CRSCNTRY](CRSCNTRY/README.md) | A meeting is a checkpoint both cards visit in order, so the score is the longest common subsequence (LCS) length of the two cards. Tom picks his best card, so the answer is the largest LCS over his cards. One bit mask per value packs the matches, so each checkpoint costs `m / 64` word operations, not `m` cell updates. | O(`n * m`) |
+| [CTGAME](CTGAME/README.md) | Stack the free cells above each row like books on a shelf. | O(M·N) |
+| [EXCHNG](EXCHNG/README.md) | Track a token (a possible origin of the minimum) in each register, like tagging each candidate where it sits. | O(m + n) |
+| [HANGLET](HANGLET/README.md) | Represent every register by a formula over the unknown starting bits, like writing one algebraic expression instead of trying every input value. A reduced ordered binary decision diagram (a graph that merges equal boolean formulas, or BDD) stores each formula once. A path condition records the branch tests taken so far. Breadth-first search explores symbolic states (a program counter plus formulas) by cycle count. The first STOP gives the shortest time, and an exhausted queue gives HANGS. Each state costs O(n) diagram operations, with n at most 16. A concrete search over 2^32 register settings cannot finish. Takeaway: explore formulas, not bit patterns. | O(32 S) |
+| [IKEYB](IKEYB/README.md) | Cut the letter string into `K` consecutive blocks, like slicing a long ribbon. Prefix sums price any slice at once. | O(K L) |
+| [INUMBER](INUMBER/README.md) | Build the answer digit by digit, like trying shorter lock codes before longer ones. A breadth-first search (a queue that visits shorter numbers first) keeps a state of remainder and digit sum. Appending one digit updates both in constant time, so ten transitions replace a scan of every candidate integer. At most n(n+1) states exist, and the first target state gives the smallest number. Each case costs O(n²) time. Testing integers in order can take time exponential in the answer length. Takeaway: search states, not numbers. | O(t n²) |
+| [LITELANG](LITELANG/README.md) | Keep the `n` cheapest words in a growing prefix tree, like trimming the costliest twig and letting it sprout children. | O(n + E k) |
+| [MINIMAX](MINIMAX/README.md) | Track the cheapest way to deliver the maximum of inputs `1..x` to position `x`. | O(m log n) |
+| [MUSKET](MUSKET/README.md) | Survivors keep their circle order after every duel, so the final duel joins two neighboring arcs. | O(n^2) |
+| [NAPTIME](NAPTIME/README.md) | Try both ways around the circle and keep the better answer. Picture the periods laid out in a row, then the last one joined back to the first. | O(N × B) |
+| [NJEG1](NJEG1/README.md) | Think of a marked page that a bookmark always finds. However many cards move, the trick lands on the same plate1 position. | O(input bytes) |
+| [ORDERS](ORDERS/README.md) | Fill the ranks from right to left, taking the next free rank that fits. Think of dealing numbered cards backward, skipping the cards already spoken for. | O(n^2) |
+| [PAINTTMP](PAINTTMP/README.md) | Decide the hole pattern one bit at a time. Think of laying two hole-punched matrices over each other and counting holes that land on holes. | O(n + limbs) |
+| [PARTIT](PARTIT/README.md) | Count whole blocks of answers, then skip blocks until the target rank fits. Think of looking up a word in a dictionary: you skip all words starting with A before reading the B section. | O(m × n) |
+| [PARTY](PARTY/README.md) | Fill a budget table one party at a time, and keep the smallest cost that reaches the top fun. Picture packing a knapsack with tickets: each ticket exists once, and you maximize enjoyment under a weight limit. | O(2ⁿ) |
+| [PIGBANK](PIGBANK/README.md) | Unbounded knapsack: `best[t]` is the cheapest price that weighs exactly `t` grams. | O(F - E) |
+| [SCITIES](SCITIES/README.md) | Pair sellers with buyers, then improve one pairing at a time until no swap raises the total goods. The program solves a maximum-weight bipartite matching through minimum-cost assignment. It stores minus the goods for each real offer and zero for a missing offer. The smaller city class supplies the rows, so skewed cases scan fewer cells. | O(B + C squared) |
+| [SCUBADIV](SCUBADIV/README.md) | Pack a knapsack with two measurements at once, like fitting items into a box with both a width and a height limit. Each cell stores the lightest way to reach one oxygen amount and one nitrogen amount. Both amounts cap at the demand. | O(2 to the n) |
+| [SHORTCUT](SHORTCUT/README.md) | Lay the route on a grid and group rest points by row, like sorting addresses by street. Two points on the same row can be joined horizontally. Adjacent rest points in sorted order give the shortest horizontal gap, so only neighbors matter. Do the same by column for vertical shortcuts. | O(n squared) |
+| [SMPCIRC](SMPCIRC/README.md) | Think of two coins on a table: the small coin fits strictly inside the large one, or touches its rim from inside. | O(N) |
+| [SOLIT](SOLIT/README.md) | Meet in the middle, like two hikers starting at opposite ends of a trail and hoping to meet halfway. Explore four moves out from the start and four moves back from the target. If the two small searches share an arrangement, eight moves connect them. | O(635376) |
+| [STEVE](STEVE/README.md) | Solve every small game once and store the answer, like a chess player who memorizes all endgames. A state remembers the round size, the donuts still boxed, and the current player's pile. | O(M × N²) |
+| [SUMITR](SUMITR/README.md) | Merge the triangle from the bottom row upward, like pruning a family tree from the leaves. Each parent takes its own value plus the better of its two children. | O(2^r) |
+| [SUPPER](SUPPER/README.md) | Check which numbers lie on a longest increasing run, like marking the cards that fit a longest rising row. Compute the best run ending at each number and the best run starting there. | O(n) |
+| [THREECOL](THREECOL/README.md) | Color each subtree from its leaves upward, keeping only two numbers for each node. Remember the most and fewest green nodes when the root is green, and the same two counts when it is not. | O(n) |
+| [TRANS](TRANS/README.md) | Fill a chart of target intervals from shortest to longest, reusing each shorter result. Each rewrite rule acts as a way to cover one stretch of the target. | O(valueLimit × M²) |
+| [TREE1](TREE1/README.md) | Treat the two subtrees as ordered lists that may interleave, each keeping its own internal order. Count the interleavings at every node and multiply them. | O(n + D) |
+| [TREE2](TREE2/README.md) | Treat each tree as a bitstring and flip the rightmost zero that still allows a valid ending. Like counting in binary, change the last position that can still increase. | O(input bytes + flush block) |
+| [TRIP](TRIP/README.md) | Keep one cache of all best routes for every pair of list positions. Think of two travelers standing at positions in their own lists, choosing together whether to move forward or match the current city. | O(nm·k) |
+| [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 
-### Number theory & big integers (26)
+### Number theory & big integers (42)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
 | Code | Idea | Cost |
 |---|---|---|
-| [ARITH](ARITH/README.md) | Store digits least significant first, like writing a column sum from the right-hand edge. | O(n) |
-| [ATMS](ATMS/README.md) | Convert the amount to signed binary digits (plus or minus powers of two). | O(n) |
-| [BINSTIRL](BINSTIRL/README.md) | Replace the big counting table with one bitwise test. | O(n) |
-| [CRYPTO1](CRYPTO1/README.md) | Undo the square with a modular square root, like opening a padlock with the one key that fits. | O(n²) |
-| [CUBERT](CUBERT/README.md) | Scale first, like measuring a room in millimeters to keep fractions exact. | O(n) |
+| [ALCATRAZ1](ALCATRAZ1/README.md) | Think of counting pips on a row of dominoes, one tile at a time. Read each number as a whitespace-separated token, then visit its characters in order. A digit character has code 48 through 57, so subtracting 48 yields its numeric value. Add those values into one sum and print it. Each character costs one subtraction and one addition, so the work is linear in the total digit count. | O(D) |
+| [ARITH](ARITH/README.md) | Store digits least significant first, like writing a column sum from the right-hand edge. | O(d squared) |
+| [ATMS](ATMS/README.md) | Convert the amount to signed binary digits (plus or minus powers of two), like writing a number on a balanced scale. | O(D) |
+| [BINSTIRL](BINSTIRL/README.md) | Replace the big counting table with one bitwise test. Write t for n - m and a for (m - 1) div 2. The answer is 1 exactly when t and a share no set bit. Think of two bit strings as two stacks of coins: adding them without a carry keeps every coin visible, so the parity survives. | O(n m) |
+| [CHI_EXP](CHI_EXP/README.md) | Think of repeatedly halving a quantity before measuring it, then squaring back up. The solution uses fixed-point base 10^9 limbs, a halved Taylor series, and repeated squaring. One case costs a few hundred limb products. | O(d) |
+| [CRYPTO1](CRYPTO1/README.md) | Undo the square with a modular square root, like opening a padlock with the one key that fits. The modulus is prime and leaves remainder 3 when divided by 4, so one exponentiation finds a root. | O(1) |
+| [CUBERT](CUBERT/README.md) | Scale first, like measuring a room in millimeters to keep fractions exact. | O(d) |
 | [DANCE](DANCE/README.md) | Track the tangle as one fraction, like a subtraction you can undo from either end. | O(n) |
-| [FAMILY](FAMILY/README.md) | Store each relationship as a big integer (a number held in binary limbs). | O(n) |
-| [FCTRL](FCTRL/README.md) | Count the fives hidden in the factorial, like tallying the fives that each multiple contributes to a product. | O(n) |
-| [FCTRL2](FCTRL2/README.md) | Build every factorial once, like filling a multiplication table whose cells you can read later. | O(n) |
-| [HAREFOX](HAREFOX/README.md) | Find the dominant part of a recurrence, like spotting the largest term as it outgrows the rest. | O(n) |
-| [HOLIDAY1](HOLIDAY1/README.md) | Picture metronomes ticking from the same starting beat. | O(n) |
-| [HOLIDAY2](HOLIDAY2/README.md) | Think of a rhythm as a ruler whose marks fall every `r` days. | O(n) |
-| [IMP](IMP/README.md) | Reachable squares form a lattice: all integer combinations of the two move vectors. | O(log n) |
-| [JULKA](JULKA/README.md) | Solve the riddle as Julka does: hand Klaudia the extra apples first, then split what remains. | O(n) |
-| [MARBLES](MARBLES/README.md) | Place one marble of each color first, then count the remaining placements. | O(n) |
-| [MAYACAL](MAYACAL/README.md) | Picture two wheels with different teeth: one turns every 260 days, the other every 365 days. | O(n) |
-| [MUL](MUL/README.md) | Numbers are stored as lists of base 1 000 000 000 limbs. | O(n^1.585) |
-| [MULTIPLY](MULTIPLY/README.md) | Read the whole input once, parse digits by hand, then multiply each pair in one operation. | O(n) |
-| [PON](PON/README.md) | Probe a number with a few clever arithmetic questions instead of dividing by every smaller number. | O(1) |
-| [POUR1](POUR1/README.md) | Act out the pouring with one fixed routine. | O(log n) |
-| [PRIME1](PRIME1/README.md) | Sieve the window, not the number line. | O((n−m+1) log log n) |
-| [SCALES](SCALES/README.md) | Treat each weight like a signed digit and carry the leftover into the next column. | O(n) |
-| [SQRROOT](SQRROOT/README.md) | Fix one root digit at a time, the way long division fixes one quotient digit. | O(n²) |
-| [TETRA](TETRA/README.md) | Cut the tetrahedron into four pyramids whose tips meet at the sphere's center. | O(1) |
-| [TWOSQRS](TWOSQRS/README.md) | Factor the value and inspect only primes of the form `4k + 3`. | O((n−m+1) log log n) |
-| [VFMUL](VFMUL/README.md) | Split each operand into three-digit chunks and convolve the chunk lists. | O(n) |
+| [ENGCD](ENGCD/README.md) | Imagine trimming a rope: keep the shorter piece and the leftover cut. | O(min(x, y) |
+| [FAMILY](FAMILY/README.md) | Store each relationship as a big integer (a number held in binary limbs), like keeping a fraction exact instead of rounding it. | O(n² * L) |
+| [FCTRL](FCTRL/README.md) | Count the fives hidden in the factorial, like tallying the fives that each multiple contributes to a product. A trailing zero needs one factor 2 and one factor 5, and every factorial holds more twos than fives. The program adds N div 5, N div 25, and each higher power of five that still fits. This divisor-count trick costs a handful of divisions per query. Building N! would cost O(N) work and overflow immediately. Each query uses at most 13 terms, so input and output dominate the run. Takeaway: count factors of five, never the factorial itself. | O(N) |
+| [FCTRL2](FCTRL2/README.md) | Build every factorial once, like filling a multiplication table whose cells you can read later. Store each huge value as a list of base-10^9 limbs, which are ordinary integers holding nine decimal digits each. Multiply the previous list by the next small factor with schoolbook carry propagation. Each precomputation step touches one limb per digit group, and each query only prints a stored list. A fresh multiplication per query would repeat work and could overflow. Takeaway: precompute once, then print the stored result. | O(158) |
+| [FINAL6](FINAL6/README.md) | Think of a decimal point sliding one place right for each exponent unit. Join the leading digit and the fraction digits into one digit string. Multiplying by 10^b puts the point after 1 + b digits of that string. | O(L + b) |
+| [FUCT_IF_SEC2TIME](FUCT_IF_SEC2TIME/README.md) | Trade seconds for hours, then trade the remainder for minutes. | O(n) |
+| [FUCT_IF_SQRT](FUCT_IF_SQRT/README.md) | Binary search for a root is like guessing a page number and halving the range each time. | O(I + B) |
+| [HAREFOX](HAREFOX/README.md) | Find the dominant part of a recurrence, like spotting the largest term as it outgrows the rest. Both populations obey the same second-order linear recurrence (each term is a fixed combination of two earlier terms). Its characteristic roots (solutions of the associated quadratic) set the long-term behavior. From each starting value, the program computes that root's weight and picks the dominant active one. Each case costs a fixed number of float operations, whatever the year count. Simulating year by year would cost O(years), could overflow, and still never reach a limit. Takeaway: solve the quadratic once, then read off each limit. | O(N * years) |
+| [HOLIDAY1](HOLIDAY1/README.md) | Picture metronomes ticking from the same starting beat. The closest pair of periods sets the shortest gap between parties. | O(n) |
+| [HOLIDAY2](HOLIDAY2/README.md) | Think of a rhythm as a ruler whose marks fall every `r` days. A holiday fits only when its period lands exactly on a mark. | O(10^18 * n) |
+| [IMP](IMP/README.md) | Reachable squares form a lattice: all integer combinations of the two move vectors. The program fixes the horizontal coordinate, then finds the smallest vertical coordinate that reaches the same lattice. At most 400001 horizontal values need checking, and each costs one modulo operation. | O(input bytes) |
+| [JULKA](JULKA/README.md) | Solve the riddle as Julka does: hand Klaudia the extra apples first, then split what remains. Klaudia gets `(total + more) / 2`, Natalia gets `(total - more) / 2`. The numbers hold up to 101 digits. The program stores them as decimal strings and does the arithmetic by hand, the way you do it on paper. Addition walks right-to-left with a carry, subtraction walks right-to-left with a borrow, and halving walks left-to-right with a remainder. Cost per digit: a handful of integer operations. | O(D) |
+| [LFBKE](LFBKE/README.md) | The loan amount cancels from both interest amounts, like removing a common discount before comparing prices. Compare the integers (100+r2) to the power y and 100 to the power y-1 times (100+r1*y). The larger side means the smaller interest amount. | O(y) |
+| [MARBLES](MARBLES/README.md) | Place one marble of each color first, then count the remaining placements. Think of putting dividers into gaps between identical beads on a string. | O(Input size) |
+| [MAYACAL](MAYACAL/README.md) | Picture two wheels with different teeth: one turns every 260 days, the other every 365 days. They line up again after 18,980 days. | O(288000 * d) |
+| [MMFSUNDARAM](MMFSUNDARAM/README.md) | Sundaram's sieve crosses off composite odd numbers, like crossing names off a guest list before inviting the rest. The program marks every value i + j + 2ij up to half of n. Each unmarked index k yields the prime 2k + 1, and 2 is printed separately. Marking costs roughly O(n log n) steps, and printing costs one pass over the surviving indices. Testing each candidate by trial division repeats divisor work for every value. One sieve pass marks each composite once and finishes well inside 300 ms. | O(n sqrt n) |
+| [MOZSABN](MOZSABN/README.md) | Count the `1` characters inside the binary token. Think of counting lit bulbs in a row: only lit bulbs raise the total. A hand scanner lifts the token by index, and one pass tallies it. Converting the number first would need big-integer work and more memory. One scan answers the whole task. | O(N) |
+| [MOZSAEO](MOZSAEO/README.md) | Only the final digit decides parity, like checking the unit digit on a calculator to settle even or odd. The program reads each number with an index scanner and keeps its last digit. Two addends with equal parity produce an even sum, and mixed parity produces an odd sum. Each number costs one linear scan over its digits, with no big integer allocation. Building full sums would allocate enormous values and run slower. | O(input bytes) |
+| [MOZSALY](MOZSALY/README.md) | Walk the checks in order and stop at the first one that ends the program. Think of a corridor with three locked doors: you pass doors until one closes the way. Each check needs one remainder, so total time is constant. Testing every earlier year costs O(n) work and adds nothing. Apart from input bytes, the whole computation is O(1). | O(n) |
+| [MOZSATDOW](MOZSATDOW/README.md) | Take X modulo seven and index a fixed weekday list. Think of a seven-day wheel: after a full turn the same day returns. The program reads every integer token and writes one weekday each. Advancing one day at a time would cost X steps. Modular indexing answers each token in constant time. | O(X) |
+| [MUL](MUL/README.md) | Numbers are stored as lists of base 1 000 000 000 limbs, least significant limb first, | O(n^2) |
+| [MULTIPLY](MULTIPLY/README.md) | Read the whole input once, parse digits by hand, then multiply each pair in one operation. | O(firstValue) |
+| [OVISOD](OVISOD/README.md) | Replace the list with its greatest common divisor, then sum that number's divisors. Think of shrinking a group to the largest shared building block. The program factors the gcd by trial division and uses the prime-power sum formula. Testing every candidate up to the gcd costs far more. One factorization and one product give the answer. | O(g) |
+| [PON](PON/README.md) | Probe a number with a few clever arithmetic questions instead of dividing by every smaller number. Think of a few quick checks that rule out most composite numbers at once. | O(1) |
+| [POUR1](POUR1/README.md) | Act out the pouring with one fixed routine, like measuring flour with two cups by always filling the left cup first. The program checks reachability, then plays out two pouring orders and keeps the shorter one. | O(1) |
+| [PRIME1](PRIME1/README.md) | Sieve the window, not the number line. Primes up to 31 623 are the tool set, and | O((n − m + 1) |
+| [RG10](RG10/README.md) | Imagine peeling layers off an onion until only a prime core remains. | O(I) |
+| [SCALES](SCALES/README.md) | Treat each weight like a signed digit and carry the leftover into the next column, the way you carry in paper addition. The signed digits are minus 1, 0 and 1, one per weight. Balancing means the signed binary sum equals W. | O(1) |
+| [SMPDIV](SMPDIV/README.md) | Think of walking down a street and stopping only at houses whose numbers are multiples of `x`. | O(n / x) |
+| [SQRROOT](SQRROOT/README.md) | Fix one root digit at a time, the way long division fixes one quotient digit. Think of reading a long number two digits at a time and asking which digit fits. | O(D) |
+| [TAMADOM](TAMADOM/README.md) | Treat the binomial as a crate built from prime bricks. Count each brick type first, then glue the stacks modulo `M`. | O(NR) |
+| [TETRA](TETRA/README.md) | Cut the tetrahedron into four pyramids whose tips meet at the sphere's center. Each pyramid has the same height, the radius `r`, and one face as its base. Their volumes add to the whole volume, so `V = (1/3) × S × r`, where `S` is the total surface area. Rearranging gives `r = 3V / S`. Heron's formula gives each triangular face's area from its three edges, and an expanded Cayley–Menger (edge-based volume) formula gives `V` from all six edges. Cost per case: about 60 floating-point operations, with no allocation. | O(1) |
+| [TWOSQRS](TWOSQRS/README.md) | Factor the value and inspect only primes of the form `4k + 3`. Such a prime blocks the answer when it appears an odd number of times; every other factor is harmless. | O(n) |
+| [VFMUL](VFMUL/README.md) | Split each operand into three-digit chunks and convolve the chunk lists. Think of long multiplication on paper, but folding all columns together in one wave instead of one at a time. | O(n^2) |
 
-### Greedy, search & enumeration (19)
+### Greedy, search & enumeration (46)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
 | Code | Idea | Cost |
 |---|---|---|
-| [AGGRCOW](AGGRCOW/README.md) | Guess a distance and walk the sorted stalls, like checking whether a row of stalls fits a spacing rule. | O(n log n) |
-| [COMMEDIA](COMMEDIA/README.md) | Treat the empty slot as the largest tile, like swapping a blank card into a sorted deck. | O(n) |
-| [CONTPACK](CONTPACK/README.md) | Stack boxes into tokens of equal height, like pairing identical tubes on a shelf. | O(n) |
-| [CTAIN](CTAIN/README.md) | Search states in order of moves. | O(1) |
-| [EASYPIE](EASYPIE/README.md) | Close each team-problem pair at its first accept, like crossing it off a list the first time it succeeds. | O(n) |
-| [INTERVAL](INTERVAL/README.md) | Fill the rightmost open integer positions first, like taking the highest free slots in a row. | O(n) |
-| [MAWORK](MAWORK/README.md) | Track time by its remainder on one shared clock. | O(n) |
-| [MMIND](MMIND/README.md) | Build the code one pin at a time and stop when a hint can no longer match. | O(n) |
-| [MONODIG](MONODIG/README.md) | Precompute every short expression once per digit. | O(n) |
-| [PAYING](PAYING/README.md) | Add one to the sum, then count binary digits by repeated halving on paper. | O(n) |
-| [PERMUT1](PERMUT1/README.md) | Insert the largest number last and count how many smaller numbers it passes. | O(n) |
-| [PHONY](PHONY/README.md) | Mark numbers by a congruence for each small prime, then test only the marked ones. | O(n) |
-| [RENT](RENT/README.md) | Treat the offers as jobs on one calendar and decide each one by comparing take against skip. | O(n log n) |
-| [SHOP](SHOP/README.md) | Spread ripples from the entrance across the grid, like water finding the fastest path around rocks. | O(n) |
-| [SLEEP](SLEEP/README.md) | Read the roof like a map that repeats nine neighborhoods inside each neighborhood. | O(n) |
-| [STPAR](STPAR/README.md) | Push every arriving truck onto the side street. | O(n) |
-| [SUM1SEQ](SUM1SEQ/README.md) | Treat each step as a coin that adds a fixed weight to the final sum. | O(1) |
-| [TEST](TEST/README.md) | Copy every line until the line reads `42`, then stop. | O(n) |
-| [VONNY](VONNY/README.md) | Place one domino at a time, always covering the square with the fewest legal partners. | O(n) |
+| [AGGRCOW](AGGRCOW/README.md) | Guess a distance and walk the sorted stalls, like checking whether a row of stalls fits a spacing rule. | O(N) |
+| [AWESOMECHILDHOOD](AWESOMECHILDHOOD/README.md) | The trick is cancellation. Think of borrowing a book, then returning it on the same page; the page number never changes. Algebra removes the hidden N, so only half of G remains. One integer division per case gives the answer. | O(T) |
+| [BTCK](BTCK/README.md) | Think of ten halls with different entrance fees and ten numbered tickets. Spend the cheapest tickets where the fees are highest, then decide the halls from left to right. | O(1) |
+| [CHITEST1](CHITEST1/README.md) | Think of adding prices on a receipt, one pair at a time. The scanner reads each price directly from the input buffer, and a decimal addition gives the total. | O(input bytes) |
+| [CHI_ATAN](CHI_ATAN/README.md) | One ordinary case costs about 13 divisions and 30 series terms on 14 limbs. | O(d) |
+| [CHI_LOG](CHI_LOG/README.md) | Think of peeling off powers of two until the number sits near one. The solution uses fixed-point limbs, repeated halving, and the atanh series. One case costs about two hundred limb products. | O(d) |
+| [CHI_NATURAL](CHI_NATURAL/README.md) | Imagine multiplying on paper in blocks of nine digits, then discarding the low blocks. The solution uses base 10^9 limbs, schoolbook multiplication, and digit-by-digit long division. Each operation costs O(d^2) limb steps for d limbs. | O(d) |
+| [COMMEDIA](COMMEDIA/README.md) | Treat the empty slot as the largest tile, like swapping a blank card into a sorted deck. Every slide then swaps two entries, which flips the permutation (ordering) parity. | O(N²) |
+| [CONTPACK](CONTPACK/README.md) | Stack boxes into tokens of equal height, like pairing identical tubes on a shelf. At each size, spend the cheapest tokens on that size's containers, then pair the leftovers into tokens of the next size. | O(2^n) |
+| [CTAIN](CTAIN/README.md) | Search states in order of moves, like finding the fewest transfers between jars by walking a map of every possible fill. Breadth-first search visits each state once and keeps its first distance. | O(50^4) |
+| [EASYPIE](EASYPIE/README.md) | Close each team-problem pair at its first accept, like crossing it off a list the first time it succeeds. | O(input bytes) |
+| [ENLCD](ENLCD/README.md) | Think of two bells ringing at fixed intervals; find the first instant they ring together. | O(lcd(x, y) |
+| [EXPECT](EXPECT/README.md) | A relay operator repeats each number over the radio before listening again, then signs off at 42. | O(1) |
+| [FINAL1](FINAL1/README.md) | Think of two team scores with one group that can switch sides. Let d be left total minus right total. Swapping column i removes its left count from the left side and adds its right count. The right side changes the opposite way, so the new difference is d minus twice the column difference. Beauty is the absolute value of that number. | O(n) |
+| [FUCT_IF_CHECKNUM](FUCT_IF_CHECKNUM/README.md) | Think of a clerk stamping each number with one of three labels. | O(I + B) |
+| [FUCT_IF_COMPARE](FUCT_IF_COMPARE/README.md) | It works like a referee comparing two scorecards and naming the higher score. | O(I + B) |
+| [FUCT_IF_DIVIDE](FUCT_IF_DIVIDE/README.md) | Scaling by one million is like measuring a length in millionths, then shortening the label. | O(I + B) |
+| [FUCT_IF_TRI](FUCT_IF_TRI/README.md) | Treat each test as a gate with two checks before the formula. | O(n) |
+| [INTERVAL](INTERVAL/README.md) | Fill the rightmost open integer positions first, like taking the highest free slots in a row. Sort intervals by right endpoint so each new interval ends no earlier than the last one. A Fenwick tree (a prefix-sum array with logarithmic updates) counts chosen positions in a range and finds the highest free coordinate. Each chosen point costs O(log 50001), and each interval is visited once. Scanning every coordinate for every interval would cost O(n times 50000). Takeaway: sort by deadline, then fill the highest free slots. | O(n times 50000) |
+| [MAWORK](MAWORK/README.md) | Track time by its remainder on one shared clock. Think of roadblocks that reopen on fixed cycles and realign every 5040 seconds. | O(N^2 * 5040) |
+| [MMFBTEAM](MMFBTEAM/README.md) | Choose the captain and keeper, then choose any subset of the other players. | O(P + maxChunks · chunkBase) |
+| [MMFTEAM](MMFTEAM/README.md) | Choose the captain first, then the keeper, then any subset of the rest. | O(n) |
+| [MMIND](MMIND/README.md) | Build the code one pin at a time and stop when a hint can no longer match. Think of filling pin slots one at a time, discarding each color choice that contradicts an earlier hint. | O(C * M) |
+| [MONODIG](MONODIG/README.md) | Precompute every short expression once per digit. Think of a table that lists every value reachable with at most eight copies of that digit. | O(Hash capacity + answer rows) |
+| [MOZSAM](MOZSAM/README.md) | Zeros and ones never raise a maximum product. Multiply every value above one. Pair negative values by largest magnitude first; an odd leftover negative is skipped. Think of pairing socks: two left socks form a pair, and the odd one stays in the drawer. Each value is visited once, and sorting the negatives costs O(n log n). Total time is O(n log n + L). | O(2ⁿ) |
+| [MYHEAD](MYHEAD/README.md) | Treat the four relatives as trustworthy witnesses at one meeting. | O(I) |
+| [PAYING](PAYING/README.md) | Add one to the sum, then count binary digits by repeated halving on paper. Picture halving a pile of coins: each halving is one binary digit, and each leftover coin is one more. | O(D) |
+| [PERMUT1](PERMUT1/README.md) | Insert the largest number last and count how many smaller numbers it passes. Picture inserting the next largest number into a row of smaller ones; each step past an entry creates one inversion. | O(n!) |
+| [PHONY](PHONY/README.md) | Mark numbers by a congruence for each small prime, then test only the marked ones. Picture stamping each candidate number once for every prime whose divisibility test it passes. | O(width × √Nmax) |
+| [RENT](RENT/README.md) | Treat the offers as jobs on one calendar and decide each one by comparing take against skip. Think of one airplane's calendar, where a new order fits only after the last accepted one. | O(n log n) |
+| [RETO2](RETO2/README.md) | Think of two opening windows on a calendar and one hour blocked out for grooming. The shared time is the calendar overlap, minus that blocked hour if it falls inside. | O(1) |
+| [RETO5](RETO5/README.md) | Think of a bin that tips over when its load passes a mark. The orange causing the tip falls out with the waste. | O(input bytes) |
+| [RETO6](RETO6/README.md) | Think of peeling nested gift wrap, with two labels alternating from the outside inward. Each wrap says "I hate that" or "I love that". | O(n) |
+| [RETO7](RETO7/README.md) | Think of counting seats in theater rows, where each row has one more seat than the row before. The requested day falls inside one row. | O(input bytes) |
+| [RF103](RF103/README.md) | Checking a wall message is like verifying a shopping list against a pantry shelf. | O(I + B) |
+| [RG11](RG11/README.md) | Think of sorting a pile of playing cards by rank, then counting each rank. | O(n^2) |
+| [SHOP](SHOP/README.md) | Spread ripples from the entrance across the grid, like water finding the fastest path around rocks. Each ripple costs an extra second per square crossed. The first ripple reaching the counter gives the minimum time. | O(w h log(w h) |
+| [SIMPLPRBLM](SIMPLPRBLM/README.md) | Sort the array, then walk inward from both ends like two people closing a zipper. | O(T * n^2) |
+| [SLEEP](SLEEP/README.md) | Read the roof like a map that repeats nine neighborhoods inside each neighborhood, like a fractal drawn on paper. You never walk the path. You decode the tile's address into one digit per map level, then read off the step number. | O(9 to the k) |
+| [SMPSEQ8](SMPSEQ8/README.md) | Think of comparing two shopping bills and keeping the receipt with the larger total. Running totals decide which row to print. | O(n squared plus m squared) |
+| [SMPSEQ9](SMPSEQ9/README.md) | Think of two lunch trays, each with a total weight and a number of plates. Compare average plate weights without dividing, by cross multiplying the totals. | O(n + m) |
+| [STPAR](STPAR/README.md) | Push every arriving truck onto the side street, then pop whenever the top is the next truck the organizers want. Think of stacking plates and taking the top plate only when it is the next clean one. | O(n) |
+| [SUM1SEQ](SUM1SEQ/README.md) | Treat each step as a coin that adds a fixed weight to the final sum. Spend the largest coins first, like paying a bill with big bills before small ones. | O(2^n) |
+| [TEST](TEST/README.md) | Copy every line until the line reads `42`, then stop. Cost per line: one compare | O(1) |
+| [TESTINT](TESTINT/README.md) | Add the two numbers once. The whole program is one read, one addition, and one write. | O(N) |
+| [VONNY](VONNY/README.md) | Place one domino at a time, always covering the square with the fewest legal partners. Think of solving a jigsaw by grabbing the piece that fits in the fewest spots first. | O(56 + 28) |
 
-### Data structures, bits & simulation (11)
+### Data structures, bits & simulation (13)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
 | Code | Idea | Cost |
 |---|---|---|
-| [BRCKTS](BRCKTS/README.md) | Keep a scoreboard for every interval of the word. | O(n) |
-| [DFLOOR](DFLOOR/README.md) | Light chasing (sweeping rows so each step fixes the row above) turns a search into a fixed sweep. | O(n²) |
-| [HASHIT](HASHIT/README.md) | Treat the table as 101 numbered slots. | O(n) |
-| [HELPR2D2](HELPR2D2/README.md) | Keep the ships in a row and always fill the leftmost one with room, like choosing the nearest open starship. | O(n) |
-| [LONER](LONER/README.md) | A jump only rewrites a small pattern of neighbor cells. | O(n) |
-| [RELATS1](RELATS1/README.md) | Rewrite each label as a lower bound. | O(n) |
-| [ROCK](ROCK/README.md) | Score sweet as +1 and sour as −1, then a piece sells when its score is positive. | O(n) |
-| [SOPARADE](SOPARADE/README.md) | Turn the parade into yes-or-no questions, like deciding which side of a fence each soldier sits on. | O(n) |
-| [SQDANCE](SQDANCE/README.md) | A square appears when a new pair joins two primes already linked by earlier pairs. | O(n) |
-| [SQRBR](SQRBR/README.md) | Walk the row left to right and keep one tally per current balance. | O(n) |
-| [TAUT](TAUT/README.md) | Check every assignment at once by flipping whole rows of a truth table. | O(2ⁿ/64) |
+| [BRCKTS](BRCKTS/README.md) | Keep a scoreboard for every interval of the word. A segment tree (an array storing one value per interval) holds each interval's bracket sum and its smallest running prefix. A flip changes one leaf and rebuilds its ancestors; a check reads the root. The root's two values answer every check. | O(n) |
+| [DFLOOR](DFLOOR/README.md) | Light chasing (sweeping rows so each step fixes the row above) turns a search into a fixed sweep. | O(x*y) |
+| [HASHIT](HASHIT/README.md) | Treat the table as 101 numbered slots. Place each key by computing its hash, then probing forward until a slot is free. A hash table (a fixed array indexed by a computed key) stores the string plus an occupancy flag. Quadratic probing (trying slots at square-growing offsets) walks at most twenty candidates. Each operation costs O(20 + key length). A language dictionary would hide the required probe order and the slot-by-slot dump. Takeaway: model the table exactly, then print it in slot order. | O(101) |
+| [HELPR2D2](HELPR2D2/README.md) | Keep the ships in a row and always fill the leftmost one with room, like choosing the nearest open starship. A segment tree (a binary tree storing the maximum free space of each range) finds that ship in about 17 steps. Inside a block the volume stays fixed. A ship that no longer fits stays unusable, so the loader walks ships in index order. Each visit costs one tree update of 17 steps. Scanning every ship for every container would cost O(n times s). Takeaway: use a tree for the search, then sweep ships once per block. | O(n times s) |
+| [LONER](LONER/README.md) | A jump only rewrites a small pattern of neighbor cells. Think of crossing names off a checklist: the remaining groups decide the result, not the order. | O(Input size) |
+| [MOZSAHF](MOZSAHF/README.md) | Adding Sharmeen to her friends is like adding yourself to a queue before splitting it into two equal lines. The split exists when n + 1 is even, which happens exactly when n is odd. The program reads one integer and tests parity with `mod`. The test costs one operation after parsing. Building the two teams would cost O(n) work per case. Parity settles the answer without enumerating anyone. | O(n) |
+| [RELATS1](RELATS1/README.md) | Rewrite each label as a lower bound. A `<` edge from u to v means value[v] is at | O(n) |
+| [ROCK](ROCK/README.md) | Score sweet as +1 and sour as −1, then a piece sells when its score is positive. Imagine walking along the stick with a running tally; any stretch ending above where it started can be sold. | O(log N) |
+| [SHADDAYS](SHADDAYS/README.md) | Convert a date into one day number, add the offset, then convert back. Think of a ruler marked by days: a date is a tick, and adding days slides along it. The program uses civil calendar conversion formulas, with constant work per query. Stepping one day at a time costs up to 9999 steps per query. Two arithmetic conversions replace repeated calendar stepping. | O(sum of x) |
+| [SOPARADE](SOPARADE/README.md) | Turn the parade into yes-or-no questions, like deciding which side of a fence each soldier sits on. Rank choices collapse to one bit per soldier after the neighbor rule. Each extra rule becomes a small clause about two bits. | O(4 to the n) |
+| [SQDANCE](SQDANCE/README.md) | A square appears when a new pair joins two primes already linked by earlier pairs. Think of relations as strings between numbered posts. A string inside one connected bunch closes a loop. | O(P) |
+| [SQRBR](SQRBR/README.md) | Walk the row left to right and keep one tally per current balance. Think of a tightrope walker who steps up or down but never goes below the ground. | O(n) |
+| [TAUT](TAUT/README.md) | Check every assignment at once by flipping whole rows of a truth table, like stamping an entire page instead of writing each word. One bit per assignment packs 64 rows into a single machine word. | O(L × 2^v) |
 
 ## License
 
