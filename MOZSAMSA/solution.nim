@@ -1,0 +1,51 @@
+const flushBlockBytes = 1 shl 17
+
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+proc nextInt(data: string, pos: var int): int =
+  while pos < data.len and (data[pos] < '0' or data[pos] > '9') and data[pos] != '-':
+    pos += 1
+  var signValue = 1
+  if pos < data.len and data[pos] == '-':
+    signValue = -1
+    pos += 1
+  var value = 0
+  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
+    value = value * 10 + int(data[pos]) - 48
+    pos += 1
+  return signValue * value
+
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
+let caseCount = nextInt(inputData, scanPos)
+for caseIndex in 0 .. caseCount - 1:
+  let numberCount = nextInt(inputData, scanPos)
+  var longestRun = 0
+  var currentRun = 0
+  var previousValue: int64 = 0
+  for numberIndex in 0 .. numberCount - 1:
+    let currentValue = int64(nextInt(inputData, scanPos))
+    if numberIndex > 0 and currentValue == previousValue:
+      currentRun += 1
+    else:
+      currentRun = 1
+    if currentRun > longestRun:
+      longestRun = currentRun
+    previousValue = currentValue
+  appendOutput($longestRun)
+  outputBuffer.add '\n'
+
+stdout.write outputBuffer
+outputBuffer.setLen 0
