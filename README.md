@@ -1,10 +1,10 @@
-# SPOJ — 803 problems, one method
+# SPOJ — 809 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![803 problems](https://img.shields.io/badge/problems-803-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![809 problems](https://img.shields.io/badge/problems-809-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 803 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 809 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 803 problems
+## The 809 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -459,7 +459,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (352)
+### Greedy, search & enumeration (358)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -817,6 +817,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [IOPC1205](IOPC1205/README.md) | A non-magician waits for an off bulb, then turns it on once. A magician turns an on bulb off and increments the shared counter. Think of collecting K tokens from one queue and M names from another. | O(1) |
 | [PAREN](PAREN/README.md) | Every legal grouping splits at one final operator, like choosing the last joint in a chain. For each interval of operands, store how many groupings give true and how many give false. | O(1) |
 | [SPRING](SPRING/README.md) | A spring is like a rubber band with zero rest length: force equals constant times stretch. Think of spreading a fixed distance along a chain of bands. The best arrangement shares the distance so no band is stretched too far. | O(1) |
+| [BRDGS](BRDGS/README.md) | Bridge sites are edges of the dual map, like stitches joining pieces of a quilt. The algorithm finds every arc intersection, sorts points along each river, and runs Kruskal in falling width on the river segments. | O(N squared + E log E) per case |
+| [CADYDIST](CADYDIST/README.md) | Give the cheapest candy to the largest class, like fitting the biggest box into the smallest slot. The algorithm sorts class sizes upward and candy prices downward, then sums aligned products. | O(N log N) per case |
+| [FRNDS](FRNDS/README.md) | Count the opposite event first, like arranging colored books so that no two books of one color touch. The algorithm builds friendship groups with a union-find, then counts words with no equal adjacent group using a generating-function DP. | O(N cubed) per case |
+| [IOPC1202](IOPC1202/README.md) | One lattice corner slides inside a fixed parallelogram, like a loose pin in a hinged frame. The algorithm combines Varignon's theorem with Pick's theorem. Varignon makes every valid quadrilateral have area twice the square's area. | O(testCount) |
+| [IOPC1203](IOPC1203/README.md) | A run of keypresses is a row of beads, and each gap cuts the row into shorter words. The algorithm counts bounded compositions of each run. Only cycle lengths 3 and 4 occur, so two precomputed tables cover every case. | O(maximumPresses + N) |
+| [WALKROBO](WALKROBO/README.md) | Knowledge becomes a second map coordinate, like unlocking doors while walking through a maze. The algorithm runs breadth-first search over pairs of a cell and a knowledge mask. | O(M N 2 to the K K) per case |
 
 ### Data structures, bits & simulation (44)
 
