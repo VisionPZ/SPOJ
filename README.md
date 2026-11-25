@@ -1,10 +1,10 @@
-# SPOJ — 1082 problems, one method
+# SPOJ — 1088 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1082 problems](https://img.shields.io/badge/problems-1082-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1088 problems](https://img.shields.io/badge/problems-1088-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1082 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1088 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1082 problems
+## The 1088 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -498,7 +498,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [HG](HG/README.md) | Compare two towers by their bricks, then rebuild only the bricks they share. Prime factorization turns each product into a list of prime exponents. The gcd keeps the smaller exponent for every prime. | O(primeLimit log log primeLimit + (N+M) times divisions) |
 | [FONTSIZE](FONTSIZE/README.md) | Try a size, pack words greedily, then search for the largest size that still fits. This works like choosing the biggest text that fits a shelf: measure one candidate, then shift the guess up or down. | O(message length times log size bound) |
 
-### Greedy, search & enumeration (591)
+### Greedy, search & enumeration (597)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1095,6 +1095,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [IITWPC4G](IITWPC4G/README.md) | Treat the whole super operation as one matrix, like a machine that transforms a row of beads in a fixed way. Repeating the operation m times then means multiplying by that matrix m times, which binary exponentiation does in logarithmic steps. | O(n^3 log m) per case |
 | [IITWPC4H](IITWPC4H/README.md) | Treat each letter separately, like snapping two identical train cars together at the same station. A run of one letter from s can join a run of the same letter from t, so their lengths add. | O(n + m) per case |
 | [SNGINT](SNGINT/README.md) | Factor N with digit-sized pieces, like packing a box with the largest boxes that fit first. Try digits from 9 down to 2 and divide whenever a digit fits the remaining product. | O(T), with at most eight divisions per case |
+| [BORING](BORING/README.md) | Replace a huge factorial with its missing tail, like balancing a scale by weighing only the few weights that were left off. Wilson's theorem says (P-1)! is minus one modulo P. | O(1) |
+| [BORING2](BORING2/README.md) | Replace a huge factorial with its missing tail, like balancing a scale by weighing only the few weights that were left off. Wilson's theorem gives (P-1)! ≡ -1 modulo P. | O(1) |
+| [EMTY2](EMTY2/README.md) | Treat each 1 as an order for two zeros, like a queue of tickets that must be punched twice. A stack records how many punches each waiting 1 has received. | O(total string length) |
+| [FACTMULO](FACTMULO/README.md) | Group the divisible terms in batches, like counting every tenth customer in a long queue instead of asking each one. Legendre's count for k! gives the exponent of p as floor(k/p) + floor(k/p^2) + …, and summing those floors over k gives a closed form for each power p^j. | O(1) |
+| [FACTMULP](FACTMULP/README.md) | Collapse the many factorial contributions into one geometric sum, like adding a row of repeated payments with a single formula. For n = p^e, every relevant power p^j divides n exactly, so each term is a polynomial in p. | O(1) |
+| [UVA1](UVA1/README.md) | Sort the queries by first radius and turn on houses as they enter, like opening a gate and counting everyone already inside a second gate. Squared distances keep the comparison exact without square roots. | O(1) |
 
 ### Data structures, bits & simulation (45)
 
