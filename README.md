@@ -1,10 +1,10 @@
-# SPOJ — 1100 problems, one method
+# SPOJ — 1106 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1100 problems](https://img.shields.io/badge/problems-1100-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1106 problems](https://img.shields.io/badge/problems-1106-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1100 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1106 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1100 problems
+## The 1106 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -392,7 +392,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [IITWPC4J](IITWPC4J/README.md) | Think of seating fish one at a time, with a checklist marking every aquarium already taken. Use subset DP over occupied aquariums. A mask records the taken aquariums, and its set-bit count tells which fish moves next. | O(T times n times 2 to the n) |
 | [UOFTCF](UOFTCF/README.md) | Track both walkers at once with one state per pair of columns, like two fingers following separate lanes down a staircase. Each state holds the best hand-holding time when Alice and Bob end that row in those columns. | O(1) |
 
-### Number theory & big integers (100)
+### Number theory & big integers (101)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -498,8 +498,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [RLTHREE](RLTHREE/README.md) | Think of three runners on a ladder where each rung belongs to two of them and one outsider. Equal distances mean each outsider gets the same number of losing rungs. | O(N) |
 | [HG](HG/README.md) | Compare two towers by their bricks, then rebuild only the bricks they share. Prime factorization turns each product into a list of prime exponents. The gcd keeps the smaller exponent for every prime. | O(primeLimit log log primeLimit + (N+M) times divisions) |
 | [FONTSIZE](FONTSIZE/README.md) | Try a size, pack words greedily, then search for the largest size that still fits. This works like choosing the biggest text that fits a shelf: measure one candidate, then shift the guess up or down. | O(message length times log size bound) |
+| [NR1](NR1/README.md) | Applying a difference k times and then reading the constant is like taking a snapshot of how the polynomial changes at zero; no full basis conversion is needed. | O(25 squared + t times 25 times k) |
 
-### Greedy, search & enumeration (608)
+### Greedy, search & enumeration (613)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1113,6 +1114,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [POLYMUL](POLYMUL/README.md) | Convolution is like stacking two strips of stamps: each pair of positions lands on one output position. A number theoretic transform turns the stacking into pointwise multiplication, then turns it back. | O(T * L log L) |
 | [SICT1000](SICT1000/README.md) | Adding two numbers is like combining two piles of coins into one pile. The hand scanner reads both values, and one addition produces the answer. The scanner `nextInt` skips separators and builds each value from its digits. | O(L) for input length L |
 | [VAL_GAM4](VAL_GAM4/README.md) | Every lost war rewalks a stretch of road, like a board game card that sends you back to the last flag. Track how much a restart still costs, and each object becomes one cheap update. | O(q log MOD) per case |
+| [ANIL_PRO](ANIL_PRO/README.md) | Each range update lays down a fresh Fibonacci staircase, like stamping a ramp onto a shelf. The real algorithm writes that ramp as a fixed pair of Fibonacci basis sequences and stores four Fenwick trees of coefficients. | O(n + q log n) |
+| [DUKKAR](DUKKAR/README.md) | Lucas' theorem turns a giant row into a small product of base-P digits, like reading a number's digits instead of weighing the whole number. The real algorithm counts entries that survive modulo P, then subtracts that count from the row length. | O(t log N), at most 60 divisions per test |
+| [GOPI_SW](GOPI_SW/README.md) | Splitting a unit fraction is like breaking one link into two longer links; always breaking the longest link gives the tiniest final piece. The real algorithm uses the Sylvester term sequence and stores every answer in a table. | O(max n + t) |
+| [HLP_RAMS](HLP_RAMS/README.md) | A binomial coefficient is odd exactly when every set bit of n also appears in the chosen position, like a lock whose every open notch must match. The real algorithm counts set bits and applies the Lucas parity rule. | O(t log n), at most 40 shifts per test |
+| [SPEC_SET](SPEC_SET/README.md) | Numbers sit on strings that link x to k times x, and picking numbers is like choosing non-touching seats in a row. The real algorithm finds a maximum independent set on disjoint paths, then collapses it to an alternating sum of floor divisions. | O(t log n), at most about 27 divisions per test |
 
 ### Data structures, bits & simulation (45)
 
