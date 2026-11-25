@@ -1,10 +1,10 @@
-# SPOJ — 1176 problems, one method
+# SPOJ — 1182 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1176 problems](https://img.shields.io/badge/problems-1176-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1182 problems](https://img.shields.io/badge/problems-1182-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1176 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1182 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1176 problems
+## The 1182 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -509,7 +509,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [EASYFACT](EASYFACT/README.md) | Removing every factor of two from n! is like unwrapping a parcel to count the distinct boxes inside; only odd factors set the number of consecutive sums. The count equals the number of odd divisors of n! | O(1) |
 | [IAPCR2D](IAPCR2D/README.md) | The divisor count of `X!` is a product of small factors, one for each prime exponent. Think of it as a sorted phone book: build the book once, then look up each query quickly. | O(1) |
 
-### Greedy, search & enumeration (673)
+### Greedy, search & enumeration (679)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1188,6 +1188,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [IAPCR2C](IAPCR2C/README.md) | Each working computer lights three seats, like a lamp that reaches its own seat and both neighbours. Mark every lit seat, then count the marks. The program uses a boolean array of seats. | O(1) |
 | [IAPCR2E](IAPCR2E/README.md) | Think of the biggest color as a pile that can supply at most three balloons to each student. Two limits decide the answer: four balloons per student, and enough other colors to mix into every group. | O(1) |
 | [SQRMINSUM](SQRMINSUM/README.md) | Each move saves the difference between a number and its floored square root. Think of each array entry as a stack of coins, where each move takes the biggest visible coin from the tallest stack. | O(1) |
+| [FN16MARS](FN16MARS/README.md) | Picture a runner waiting for a baton and lending their speed to the runner who holds it. A blocked task raises the current priority of the task that blocks it. | O(total computes · tasks · resources) |
+| [FN16OIL](FN16OIL/README.md) | Rotate a well like a flashlight beam around a hinge: an optimal well can always touch some deposit endpoint. Through that endpoint, every deposit allows a range of slopes, which is one interval on a number line. | O(n^2 log n) per case |
+| [FN16QUOT](FN16QUOT/README.md) | Peel a quotation like unwrapping nested gift boxes: take k quotes, then k-1, down to one, from each end. The judge sketch gives a greedy test that always works. | O(total quotes · square root of total quotes) |
+| [FN16ROAD](FN16ROAD/README.md) | Think of each road time as a slider between two marks, with past trips acting as rubber bands that pull linked sliders together. Each slider is an LP variable, and each past trip is an equation. | O(n^3 + q · simplex iterations · edge count) |
+| [FN16SWAP](FN16SWAP/README.md) | Create room before you consume it, like emptying small boxes before discarding large ones. Split drives into those that gain space and those that lose it. Do gaining drives in increasing old capacity, then losing drives in decreasing new capacity. | O(N log N) per case |
+| [IAPCR2F](IAPCR2F/README.md) | Treat acquaintances as mergeable piles of money, like combining stacks of coins into boxes. A disjoint-set union merges two piles in almost constant time. Each merge adds one budget into another, and no edge is revisited. | O(N + M + G^2) per case |
 
 ### Data structures, bits & simulation (46)
 
