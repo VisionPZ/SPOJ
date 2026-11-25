@@ -1,10 +1,10 @@
-# SPOJ — 1118 problems, one method
+# SPOJ — 1123 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1118 problems](https://img.shields.io/badge/problems-1118-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1123 problems](https://img.shields.io/badge/problems-1123-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1118 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1123 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1118 problems
+## The 1123 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -501,7 +501,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NR1](NR1/README.md) | Applying a difference k times and then reading the constant is like taking a snapshot of how the polynomial changes at zero; no full basis conversion is needed. | O(25 squared + t times 25 times k) |
 | [SUFFIX](SUFFIX/README.md) | A suffix fixes the last digits, and those digits are the remainder modulo a power of the base, like reading only the last digits of a receipt. Convert each suffix to its remainder and modulus, then merge the congruences with the Chinese remainder theorem. | O(total suffix length times log of the modulus) |
 
-### Greedy, search & enumeration (624)
+### Greedy, search & enumeration (629)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1131,6 +1131,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [FRONT](FRONT/README.md) | Sweep from the right like checking a wall from its far end, and remember the tallest y seen so far. A soldier matters only when its group beats that remembered height, like spotting the last peak on a skyline. | O(N) on sorted input, O(N log N) otherwise |
 | [ODWS](ODWS/README.md) | Treat each word as a number written in base 26, like reading a car odometer. The words strictly between two ranks are the gap between the two numbers, minus one. | O(T times L) |
 | [SPLITS](SPLITS/README.md) | Keep the array as sorted intervals on a search tree, like a shelf of consecutive book stacks. A split finds one stack, shortens it to the single position X, and places two new stacks on either side. | O(Q log Q) |
+| [BYU15W_2](BYU15W_2/README.md) | Splitting the rows in half turns one huge search into two small lists, like finding two puzzle pieces whose values cancel. Generate every signed column choice for each half and group the sums by the set of columns used. | O(P(n/2) · 2^(n/2) · log) per case |
+| [QTDIVIDE](QTDIVIDE/README.md) | Think of each pair as a larger-value coin for the first player and a smaller-value coin for the second. Like seating guests so every earlier guest has a later partner, each chosen second-player coin needs a first-player coin with higher value. | O(n log n) |
+| [RETRO](RETRO/README.md) | Counting a segment repeats work across queries, like recounting the same shelf for every visitor. Build a suffix-match table once: each cell stores matches from its two positions to the ends. | O(N² + Q) |
+| [SEGFAULT](SEGFAULT/README.md) | Treat every free cell as a race between two runners, like two people reaching the same doorway. Nikolaj reaches a cell one step after his program enters its distance from the start, while Petar reaches it in his shortest path length. | O(rows · columns + programCount) |
+| [STAVATAR](STAVATAR/README.md) | Swapping a range twice changes nothing, like flipping a light switch twice. Record only how many swaps cover each position, modulo two. The algorithm is a difference array of parity bits: mark each range endpoint, then sweep once with a running `xor`. | O(N + M) |
 
 ### Data structures, bits & simulation (45)
 
