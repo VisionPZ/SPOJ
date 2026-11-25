@@ -1,10 +1,10 @@
-# SPOJ — 932 problems, one method
+# SPOJ — 938 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![932 problems](https://img.shields.io/badge/problems-932-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![938 problems](https://img.shields.io/badge/problems-938-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 932 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 938 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 932 problems
+## The 938 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -308,7 +308,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [CNTPRIME](CNTPRIME/README.md) | Turn each value into a zero-or-one prime flag, like painting fence posts either marked or plain. A whole-range assignment paints one stretch a single color, so its prime count becomes either the stretch length or zero. | `O(1000000 log log 1000000)` once, then `O((n + q) log n)` per case |
 | [KOZE](KOZE/README.md) | Think of each enclosed yard as a locked room: count the animals inside before declaring a winner. Flood fill discovers each sector in one pass over the grid. | O(N * M) |
 
-### Dynamic programming (56)
+### Dynamic programming (59)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -370,6 +370,9 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [BYTESM2](BYTESM2/README.md) | Keep only the best total that can reach each tile, like marking the highest score on each step of a staircase. Each tile looks at the three tiles above it and adds its own stones. | O(T · h · w) |
 | [XMEN](XMEN/README.md) | Replace the second permutation with its positions in the first, like rewriting a route as mile markers. A common subsequence must increase in both permutations. After mapping, that condition becomes a strictly increasing list. | O(N log N) per case |
 | [BAT1](BAT1/README.md) | Treat opening a batch as paying a toll before its weapons become available, then run unlimited knapsack as you pass each batch. The algorithm keeps one value per amount spent and updates it batch by batch. | O(n m k) per case |
+| [BAT2](BAT2/README.md) | Picture two shelves: books rise on the left shelf and fall on the right shelf, and each book goes to at most one shelf. The algorithm is a two-track subsequence DP. | O(1) |
+| [BAT3](BAT3/README.md) | Think of a slide with one elevator: you descend freely, and the elevator lifts you once at a marked stop. The algorithm runs two longest decreasing subsequence passes. | O(1) |
+| [BAT4](BAT4/README.md) | Picture a hiker choosing the gentlest steepest step, like picking the easiest rung on a ladder. A minimax DP finds the smallest possible worst climb to every cell. | O(1) |
 
 ### Number theory & big integers (94)
 
@@ -472,7 +475,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CRAN02](CRAN02/README.md) | Count matching prefix totals the way you pair socks of the same color. A zero-sum block runs between two prefixes with the same total. A frequency table over prefix totals turns the count into one scan. | O(n) per case |
 | [CBANK](CBANK/README.md) | Scale all coins to quarters and count the integer solutions of one equation, like counting change with a fixed set of denominations. The algorithm derives a closed form for the number of solutions and evaluates it with modular arithmetic. | O(1) per case |
 
-### Greedy, search & enumeration (468)
+### Greedy, search & enumeration (471)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -946,6 +949,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [AMR12K](AMR12K/README.md) | A random order makes each soldier equally likely to be first among its dead ancestors and itself, like drawing one name from a hat. So the chance of being checked is one over that set's size. | O(N) per test |
 | [CSLIKAR](CSLIKAR/README.md) | Compute when water reaches each cell first, like marking the high-water mark on every square. Then run a second breadth-first search that only enters a cell strictly before its water time. | O(R * C) |
 | [IZHONYT](IZHONYT/README.md) | Keep one number per track: the last wagon assigned there. Use the smallest track whose last wagon is smaller than the arriving wagon, like placing a card on the first pile that accepts it. | O(N log M) |
+| [KNGCHECK](KNGCHECK/README.md) | Think of drawing every white attack square with a marker, then looking for the black king's square among the marks. The program first locates the black king, then compares each white piece with that square. | O(1) |
+| [TJANDRAS](TJANDRAS/README.md) | Picture stacking books in rows: sharing side edges buys more rectangles, like sharing walls between rooms. The best shape is a left-aligned stack of rows with lengths that never increase downward. | O(1) |
+| [TRANCLS](TRANCLS/README.md) | Think of towns linked by one-way roads: every pair of towns connected by a route must also have a direct road. The program builds the adjacency matrix, then runs Floyd-Warshall style transitive closure. | O(1) |
 
 ### Data structures, bits & simulation (44)
 
