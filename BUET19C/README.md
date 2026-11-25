@@ -4,17 +4,17 @@
 
 ## Problem
 
-A copy checker gave every submission an ID, and submissions with the same ID are the same work. Given the N IDs, count how many different IDs appear, which is the number of students who really solved the offline.
+Every submission carries an ID, and equal IDs mean the same work. Count how many different IDs appear in the list.
 
-Input starts with N, then one line holds the N IDs. Output holds one number.
+Input starts with N, the submission count, then N IDs. Output is one line holding the number of distinct IDs.
 
-| Item | Bound |
+| item | bound |
 |---|---|
-| Offline count | 1 ≤ N ≤ 100000 |
-| Each ID | 1 ≤ ID ≤ 100000 |
-| Judge limit | 1000 ms, 1536 MB |
+| submission count N | 1 to 100000 |
+| each ID | 1 to 100000 |
+| judge limit | 1000 ms, 1536 MB |
 
-One pass over the IDs is enough.
+The ID bound allows a fixed table, and the count sets the pass length.
 
 The sample case:
 
@@ -29,27 +29,26 @@ The sample case:
 
 ## Idea
 
-Mark each ID in a table of 100001 boxes, and count a student only the first time its box is touched. Think of a teacher ticking a name on the class roster: a tick already there means nothing new. Each ID costs one array lookup, so the pass costs about N steps. Sorting the IDs first and counting runs costs N log N steps instead.
+Tick each ID once on a roster, like a teacher marking names as students arrive; a second tick for the same name adds nothing. The algorithm uses a direct lookup table indexed by ID. Each ID costs one array test, so the pass stays linear. Sorting the IDs first would cost N log N comparisons for the same count. One table and one counter settle the whole list.
 
 ## Why It Works
 
-1. An ID can only be counted once, because the box flips to true on the first hit and later hits are skipped.
-2. Every counted box stands for one ID that appears in the input, so the count never overcounts.
-3. Every ID in the input either was already marked or gets marked, so the count never misses one.
-4. IDs are at most 100000, so a plain array of 100001 boxes covers them all without hashing.
-5. The array starts all false, which is what a fresh roster looks like.
+1. The table starts with every box false, so no ID has been counted yet.
+2. The first time an ID appears, its box flips to true and the counter rises by one.
+3. Later copies find the box already true, so they cannot count twice.
+4. Every ID either gets a first tick or was ticked before, so none is missed.
+5. IDs stay within the table size, so a plain array replaces a hash map.
 
 | Term | Meaning |
 |---|---|
-| `seenId` | one box per possible ID, true once that ID has been seen |
-| `distinctCount` | number of IDs seen for the first time |
+| `seenId` | one box per ID, true once that ID has appeared |
+| `distinctCount` | how many IDs got a first tick |
 | `offlineCount` | N, the number of submissions |
-| `submittedId` | the next ID from the input |
-| `maximumIdValue` | 100000, the largest legal ID |
+| `maximumIdValue` | the largest legal ID, which sets the table size |
 
-The count after the loop is the answer.
+The counter holds the number of unique IDs after one pass.
 
-A script-traced example from `gen.py`:
+A script-traced example for the sample list:
 
 ```
 ids 2 1 3 2 100
@@ -62,70 +61,82 @@ The trace matches the sample answer.
 
 ## Code
 
-**Input, scanner, and the mark table.** This block holds the input string and the roster boxes.
+**Input, hand scanner, and table size.** This block loads the input and reads integers by index.
 
-```cpp
-static string inputData;
-static size_t scanPos = 0;
-static bool seenId[maximumIdValue + 1];
+```nim
+const flushBlockBytes = 1 shl 17
+const maximumIdValue = 100000
 
-static int nextInt() {
-    while (scanPos < inputData.size() && (inputData[scanPos] < '0' || inputData[scanPos] > '9'))
-        scanPos++;
-    int value = 0;
-    while (scanPos < inputData.size() && inputData[scanPos] >= '0' && inputData[scanPos] <= '9') {
-        value = value * 10 + (inputData[scanPos] - '0');
-        scanPos++;
-    }
-    return value;
-}
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+proc nextInt(data: string, pos: var int): int =
+  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
+    pos += 1
+  var value = 0
+  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
+    value = value * 10 + int(data[pos]) - 48
+    pos += 1
+  return value
 ```
 
-The scanner skips newlines and spaces without special handling.
-Scanning costs one pass over the consumed characters.
-The table is 100001 bytes, so it fits in the static data segment.
+The scanner skips all non-digits, so spaces and newlines need no special case.
+Each call advances the index past exactly one ID.
+The constant fixes the number of boxes in the mark table.
 
-**Main: bulk read, mark, count.** This block holds the whole program driver.
+**Buffered marking and output.** This block marks each ID once and writes the count.
 
-```cpp
-int main() {
-    char readChunk[1 << 20];
-    size_t bytesRead;
-    while ((bytesRead = fread(readChunk, 1, sizeof readChunk, stdin)) > 0)
-        inputData.append(readChunk, bytesRead);
+```nim
+var outputBuffer = ""
 
-    int offlineCount = nextInt();
-    int distinctCount = 0;
-    for (int readIndex = 0; readIndex < offlineCount; readIndex++) {
-        int submittedId = nextInt();
-        if (!seenId[submittedId]) {
-            seenId[submittedId] = true;
-            distinctCount++;
-        }
-    }
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
 
-    printf("%d\n", distinctCount);
-    return 0;
-}
+let offlineCount = nextInt(inputData, scanPos)
+var seenId = newSeq[bool](maximumIdValue + 1)
+var distinctCount = 0
+var readIndex = 0
+while readIndex < offlineCount:
+  let submittedId = nextInt(inputData, scanPos)
+  if not seenId[submittedId]:
+    seenId[submittedId] = true
+    distinctCount += 1
+  readIndex += 1
+appendOutput($distinctCount)
+outputBuffer.add '\n'
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-One fread loop collects all input bytes into one string.
-The loop runs exactly N times, one array test per ID.
-One printf emits the single answer line.
+The loop runs exactly N times, one table test per ID.
+An ID is counted only when its box was false.
+One write emits the final count line.
 
 ## Complexity
 
-The cost splits into input, one lookup per ID, and one write.
+The cost splits into reading, one table test per ID, and one write.
 
 | Phase | Time | Space |
 |---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Marking | O(1) per ID | 100001 bools |
-| Output | one write | constant |
+| Input read | one pass over input bytes | one input string |
+| Marking | one lookup per ID | one boolean table |
+| Output | one write | block buffer |
+
+The boolean table adds a fixed 100001 boxes on top of the input buffer.
 
 | Measure | Big O |
 |---|---|
 | Time | O(N) |
-| Space | O(N) for the input buffer, plus a fixed 100001 box table |
+| Space | O(N) input plus a fixed table |
 
-Sorting the IDs and counting runs costs O(N log N), about 1.7×10^6 comparisons; the mark table stays near 10^5 steps.
+Every ID is handled once, so the bound tracks the input length.
+
+Sorting first and counting runs costs O(N log N) comparisons. The table keeps the pass linear without any ordering step.

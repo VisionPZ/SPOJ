@@ -4,16 +4,20 @@
 
 ## Problem
 
-The first line gives a count n; the next n lines hold a text passage, spaces included. Count how many times each letter A-Z appears, ignoring case. Print one line per letter that appears: the uppercase letter, a space, its count. Order lines by count from most to least frequent; when counts tie, put the later alphabet letter first.
+Count how often each letter appears in a passage and rank the letters by frequency. Case is ignored, and letters that never appear are omitted.
+
+The first line gives the number of text lines that follow. Print one line per present letter: the uppercase letter, a space, and its count. Sort by count from highest to lowest, breaking ties by later letter first.
 
 | Item | Bound |
 |---|---|
-| Line count | n lines after the header |
-| Line length | up to about 200 characters |
-| Output | at most 26 lines |
+| Text lines | given by the header number |
+| Characters per line | about 200 |
+| Output lines | at most 26 |
 | Judge limit | 1000 ms, 1536 MB |
 
-The sample case:
+The line count fixes how much text enters the tally.
+
+Sample input:
 
 ```
 3
@@ -21,6 +25,8 @@ Esta es una prueba,
 Cuentame 1 2 3 4 5,
 ¡ ¡oohh!! ¿Esta es pregunta facil?
 ```
+
+Sample output:
 
 ```
 E 8
@@ -44,101 +50,153 @@ B 1
 
 ## Idea
 
-Tally the letters into a 26-slot array, then sort the present letters by count descending and letter descending. Think of sorting a hand of Scrabble tiles by how many of each you hold. Each input byte costs one range check and maybe one array bump, so counting is a single pass. Rebuilding a hash map per line or rescanning the text per letter would multiply the work.
+Tally letters into 26 slots, then rank them like a hand of Scrabble tiles sorted by how many of each you hold. One pass over the bytes fills the slots. Each byte costs two range checks and one increment. Rebuilding a count map per line would repeat work across the passage. A single array and one short ranking settle the answer.
 
 ## Why It Works
 
-1. ASCII letters sit in two 26-byte blocks, so `byteValue - 65` or `byteValue - 97` indexes the right slot.
-2. Bytes outside those blocks, including accented characters and digits, are skipped, matching "only letters are analyzed".
-3. The sort key `(-count, -index)` puts bigger counts first and, within equal counts, bigger letters first.
-4. Letters with count 0 never enter the list, so absent letters print nothing.
+1. Uppercase codes run from 65 to 90 and lowercase codes from 97 to 122, so both map onto 26 slots.
+2. The header is parsed from its own slice before the first newline, so text digits cannot change the count.
+3. Tallying stops after the requested number of newlines, so trailing lines are ignored.
+4. The comparator favors a larger count first and then a larger letter index.
+5. Slots with a zero tally never enter the ranking, so absent letters print nothing.
+
+The terms used by the tally and ranking:
 
 | Term | Meaning |
 |---|---|
-| `lineCount` | n, the number of text lines |
-| `textLines` | the n lines taken as raw bytes |
-| `letterCounts` | 26 tallies, index 0 is A |
-| `presentLetters` | indices with a nonzero tally |
-| `byteValue` | one byte of one text line |
+| `lineCount` | the number of text lines named in the header |
+| `headerEnd` | the byte position of the first newline |
+| `newlineCode` | 10, the code that ends one text line |
+| `letterCounts` | the 26 tallies, index zero holding A |
+| `presentLetters` | indexes whose tally is greater than zero |
+| `compareLetters` | the count-then-letter ranking rule |
 
-The header is parsed from its own slice, so a stray digit inside the text cannot change n.
+Each term covers one step from header parse to final line.
 
-A script-traced example from `gen.py`:
+A script-traced example:
 
 ```
-text "abcabc"
-tallies a=2 b=2 c=2
-order by count then letter: C 2, B 2, A 2
+input: 1 then abcabc
+tallies: a=2, b=2, c=2
+ranking by count then letter: C 2, B 2, A 2
 ```
 
-Ties fall to the later letter first, exactly as the statement demands.
+Ties fall to the later letter, exactly as the statement asks.
 
 ## Code
 
-**Header and line slice.** This block reads n and keeps the n text lines.
+**Input and buffered output.** These declarations load stdin and provide the hand scanner.
 
-```python
-inputData = sys.stdin.buffer.read()
-headerEnd = inputData.find(b"\n")
-if headerEnd < 0:
-    headerBytes = inputData
-    textBytes = b""
-else:
-    headerBytes = inputData[:headerEnd]
-    textBytes = inputData[headerEnd + 1:]
+```nim
+import algorithm
 
-scanPos = 0
-lineCount, scanPos, _ = nextNumber(headerBytes, scanPos)
-textLines = textBytes.split(b"\n")[:lineCount]
+const flushBlockBytes = 1 shl 17
+const firstUpperValue = 65
+const firstLowerValue = 97
+const alphabetSize = 26
+const firstDigitValue = 48
+const newlineCode = 10
+
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+proc nextInt(data: string, pos: var int): int =
+  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
+    pos += 1
+  var value = 0
+  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
+    value = value * 10 + int(data[pos]) - firstDigitValue
+    pos += 1
+  return value
+
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
 ```
 
-The header slice isolates n from the body.
-The `[:lineCount]` slice stops at exactly n lines.
-Splitting raw bytes avoids any text decoding.
+The scanner skips non-digits before reading the header. Output text leaves in 131072-byte blocks.
 
-**Tally pass.** This block counts letters in one sweep.
+**Header slice and tally pass.** This block isolates the header and counts letters in the text.
 
-```python
-letterCounts = [0] * alphabetSize
-for textLine in textLines:
-    for byteValue in textLine:
-        if firstUpperValue <= byteValue <= firstUpperValue + alphabetSize - 1:
-            letterCounts[byteValue - firstUpperValue] += 1
-        elif firstLowerValue <= byteValue <= firstLowerValue + alphabetSize - 1:
-            letterCounts[byteValue - firstLowerValue] += 1
+```nim
+var headerEnd = 0
+while headerEnd < inputData.len and inputData[headerEnd] != '\n':
+  headerEnd += 1
+var headerPos = 0
+let lineCount = nextInt(inputData[0 .. headerEnd - 1], headerPos)
+
+var letterCounts = newSeq[int](alphabetSize)
+var linesConsumed = 0
+var bytePos = headerEnd + 1
+while bytePos < inputData.len and linesConsumed < lineCount:
+  let byteCode = ord(inputData[bytePos])
+  if byteCode == newlineCode:
+    linesConsumed += 1
+  elif byteCode >= firstUpperValue and byteCode <= firstUpperValue + alphabetSize - 1:
+    letterCounts[byteCode - firstUpperValue] += 1
+  elif byteCode >= firstLowerValue and byteCode <= firstLowerValue + alphabetSize - 1:
+    letterCounts[byteCode - firstLowerValue] += 1
+  bytePos += 1
 ```
 
-Both branches fold lowercase onto the uppercase slot.
-Non-letters cost two comparisons and nothing else.
-The pass touches each byte once.
+The loop stops at the requested line count. Non-letters cost two comparisons and no increment.
 
-**Ordering and output.** This block sorts and prints the ranking.
+**Ranking and output.** This block sorts the present letters and writes their lines.
 
-```python
-presentLetters = [letterIndex for letterIndex in range(alphabetSize) if letterCounts[letterIndex] > 0]
-presentLetters.sort(key=lambda letterIndex: (-letterCounts[letterIndex], -letterIndex))
+```nim
+var presentLetters: seq[int] = @[]
+for letterIndex in 0 .. alphabetSize - 1:
+  if letterCounts[letterIndex] > 0:
+    presentLetters.add letterIndex
 
-answerLines = []
+proc compareLetters(leftIndex: int, rightIndex: int): int =
+  if letterCounts[leftIndex] > letterCounts[rightIndex]:
+    return -1
+  if letterCounts[leftIndex] < letterCounts[rightIndex]:
+    return 1
+  if leftIndex > rightIndex:
+    return -1
+  if leftIndex < rightIndex:
+    return 1
+  return 0
+
+sort(presentLetters, compareLetters)
+
 for letterIndex in presentLetters:
-    answerLines.append("%s %d" % (chr(firstUpperValue + letterIndex), letterCounts[letterIndex]))
+  appendOutput($chr(firstUpperValue + letterIndex))
+  appendOutput(" ")
+  appendOutput($letterCounts[letterIndex])
+  appendOutput("\n")
+
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-The key sorts by count down, then letter down.
-At most 26 items sort, so the sort is constant work.
-Absent letters stay out of the list.
+At most 26 indexes enter the sort. The final flush releases any buffered text.
 
 ## Complexity
 
+Counting and ranking determine the cost.
+
 | Phase | Time | Space |
 |---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Tally | O(bytes) | 26 counters |
-| Sort | O(26 log 26) | 26 items |
-| Output | one write | short buffer |
+| Input read | one pass over input bytes | input string |
+| Tally | one check per text byte | 26 counters |
+| Ranking | one sort of at most 26 indexes | index list |
+| Output | one line per present letter | block buffer |
+
+The tally grows with the text; the ranking stays bounded by the alphabet.
 
 | Measure | Big O |
 |---|---|
 | Time | O(N) in input bytes |
-| Space | O(N) for the input buffer |
+| Space | O(N) for the input string |
 
-Rescanning the text once per letter would cost 26 passes; this needs one.
+Rescanning the text once per letter would cost 26 passes, so one tally wins.

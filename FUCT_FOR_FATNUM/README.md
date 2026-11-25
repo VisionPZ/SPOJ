@@ -163,7 +163,7 @@ outputBuffer.setLen 0
 ```
 
 The swap handles a reversed range like `2000 1`.
-An empty range prints just a newline.
+An empty range prints a newline.
 Each printed number costs one buffer append.
 
 ## Complexity

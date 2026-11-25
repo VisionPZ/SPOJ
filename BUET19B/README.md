@@ -4,17 +4,17 @@
 
 ## Problem
 
-A list of N integers is given. The task is to print the greatest common divisor (G.C.D.) shared by every number in the list.
+A list of integers is given. Print the largest number that divides every value in the list.
 
-Input starts with N, then one line holds the N integers. Output holds one number.
+Input starts with N, the list length, then N integers on the next line. Output is one line holding that common divisor.
 
-| Item | Bound |
+| item | bound |
 |---|---|
-| List length | 1 ≤ N ≤ 100000 |
-| Each value | below 100000 |
-| Judge limit | 1000 ms, 1536 MB |
+| list length N | 1 to 100000 |
+| each value | below 100000 |
+| judge limit | 1000 ms, 1536 MB |
 
-One pass over the list is enough.
+The list length drives the work; each value stays small enough for one division step.
 
 The sample case:
 
@@ -29,26 +29,26 @@ The sample case:
 
 ## Idea
 
-Carry one running value: the gcd of everything read so far. Start it at 0, then fold each new number in with Euclid's algorithm. Think of the running value as the biggest square tile that fits exactly into every rod measured so far; each new rod can only make the tile smaller. Each fold takes a few divisions, so the whole pass costs about N × log(100000) steps. Checking every divisor of every number costs far more. When the running value reaches 1, the loop stops, because 1 is the smallest possible gcd.
+Keep one running divisor and shrink it per number, like a sieve that drops holes as stones pass. The algorithm folds Euclid's gcd over the list. Each step costs a handful of divisions, so the whole pass stays near the input size. Testing every divisor of every number would cost far more work. A running value of 1 ends the pass early, since a divisor can never grow back.
 
 ## Why It Works
 
-1. `gcd(0, x) = x`, so the first fold copies the first number into the running value.
-2. Gcd folds in any order: `gcd(gcd(a, b), c) = gcd(a, b, c)`. So a running value after k numbers is the gcd of those k numbers.
-3. Euclid's step keeps the answer: `gcd(a, b) = gcd(b, a mod b)`, and the remainder is smaller each round, so it ends.
-4. Divisors can only shrink when a new number joins. So a running value of 1 can never grow back, and stopping early is safe.
-5. The loop runs exactly N times unless it stops at 1, so every input number is folded in.
+1. The gcd of zero and any number is that number, so the first value sets the running divisor.
+2. Folding in any order gives the gcd of all numbers read so far.
+3. Euclid's step swaps the pair and keeps the remainder, so the value shrinks and the answer holds.
+4. A common divisor must divide every number, so adding a number can only shrink it.
+5. Once the running value reaches 1, no later number can raise it, so stopping is safe.
 
 | Term | Meaning |
 |---|---|
-| `runningGcd` | gcd of the numbers read so far |
-| `gcdPair` | Euclid's algorithm on two numbers |
+| `runningGcd` | the gcd of all numbers read so far |
+| `gcdPair` | Euclid's algorithm applied to two numbers |
 | `numberCount` | N, the length of the list |
-| `nextValue` | the next number from the input |
+| `readIndex` | how many numbers have been folded in |
 
-The running value is the whole answer at the end.
+The running value holds the whole answer when the loop ends.
 
-A script-traced example from `gen.py`:
+A script-traced example for the sample list:
 
 ```
 numbers 2 4 6 8 2
@@ -60,80 +60,94 @@ The trace matches the sample answer.
 
 ## Code
 
-**Input and hand scanner.** This block reads integers out of one big string by index.
+**Input and hand scanner.** This block loads the input and reads integers by index.
 
-```cpp
-static string inputData;
-static size_t scanPos = 0;
+```nim
+const flushBlockBytes = 1 shl 17
 
-static int nextInt() {
-    while (scanPos < inputData.size() && (inputData[scanPos] < '0' || inputData[scanPos] > '9'))
-        scanPos++;
-    int value = 0;
-    while (scanPos < inputData.size() && inputData[scanPos] >= '0' && inputData[scanPos] <= '9') {
-        value = value * 10 + (inputData[scanPos] - '0');
-        scanPos++;
-    }
-    return value;
-}
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+proc nextInt(data: string, pos: var int): int =
+  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
+    pos += 1
+  var value = 0
+  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
+    value = value * 10 + int(data[pos]) - 48
+    pos += 1
+  return value
 ```
 
-The scanner skips newlines and spaces without special handling.
-Scanning costs one pass over the consumed characters.
+The scanner skips all non-digits, so spaces and newlines need no special case.
+Each call advances the index past exactly one number.
+Reading the input once keeps the scan linear in the byte count.
 
 **Euclid step.** This block returns the gcd of two numbers.
 
-```cpp
-static int gcdPair(int leftValue, int rightValue) {
-    while (rightValue != 0) {
-        int remainder = leftValue % rightValue;
-        leftValue = rightValue;
-        rightValue = remainder;
-    }
-    return leftValue;
-}
+```nim
+proc gcdPair(leftValue: int, rightValue: int): int =
+  var largerValue = leftValue
+  var smallerValue = rightValue
+  while smallerValue != 0:
+    let remainder = largerValue mod smallerValue
+    largerValue = smallerValue
+    smallerValue = remainder
+  return largerValue
 ```
 
+Locals hold the pair because the arguments stay unchanged.
 Each round replaces the pair with a smaller one.
-The loop ends when the second value hits 0, and the first holds the gcd.
-Values below 100000 need at most about 25 rounds.
+The loop ends when the second value hits zero.
 
-**Main: bulk read, fold, print.** This block holds the whole program driver.
+**Buffered fold and output.** This block folds every number and writes the answer once.
 
-```cpp
-int main() {
-    char readChunk[1 << 20];
-    size_t bytesRead;
-    while ((bytesRead = fread(readChunk, 1, sizeof readChunk, stdin)) > 0)
-        inputData.append(readChunk, bytesRead);
+```nim
+var outputBuffer = ""
 
-    int numberCount = nextInt();
-    int runningGcd = 0;
-    for (int readIndex = 0; readIndex < numberCount && runningGcd != 1; readIndex++)
-        runningGcd = gcdPair(runningGcd, nextInt());
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
 
-    printf("%d\n", runningGcd);
-    return 0;
-}
+let numberCount = nextInt(inputData, scanPos)
+var runningGcd = 0
+var readIndex = 0
+while readIndex < numberCount and runningGcd != 1:
+  runningGcd = gcdPair(runningGcd, nextInt(inputData, scanPos))
+  readIndex += 1
+appendOutput($runningGcd)
+outputBuffer.add '\n'
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-One fread loop collects all input bytes into one string.
-The loop runs at most N times, and the `runningGcd != 1` test stops it early.
-One printf emits the single answer line.
+The loop stops early once the running value reaches 1.
+One fold is applied per number that is read.
+A single write emits the final answer line.
 
 ## Complexity
 
-The cost splits into input, one fold per number, and one write.
+The cost splits into reading, one gcd fold per number, and one write.
 
 | Phase | Time | Space |
 |---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Folds | O(log V) per number, V < 100000 | constant |
-| Output | one write | constant |
+| Input read | one pass over input bytes | one input string |
+| Folds | a few divisions per number | constant |
+| Output | one write | block buffer |
+
+The input buffer dominates memory; the fold needs only two integers.
 
 | Measure | Big O |
 |---|---|
-| Time | O(N log V) |
-| Space | O(N) for the input buffer |
+| Time | O(N log V), with V below 100000 |
+| Space | O(N) for the stored input |
 
-Testing every divisor of every number costs O(N × √V), about 3×10^7 steps; folding stays near 2.5×10^6.
+Each fold drops a factor, so the logarithmic term stays small.
+
+Listing every divisor of every number would cost about N times the square root of V. Folding with Euclid keeps the work near the input size.

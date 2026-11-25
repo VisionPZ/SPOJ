@@ -4,18 +4,20 @@
 
 ## Problem
 
-Five integers arrive one per line. Add them up. If the sum is even, print the sum divided by 2. If the sum is odd, print the sum divided by 5. The answer must appear as a decimal number.
+Read five integers and split their sum: an even sum is divided by 2, an odd sum by 5. The same five-number grouping repeats for the whole input, so the program handles every group it finds.
 
-The judge can place several blocks of five in one file, so the program walks the whole token stream in groups.
+Input is a stream of integers, one per line, with each group of five forming one case. Output one decimal number per group, printed with a single digit after the point.
 
-| Item | Bound |
+| item | bound |
 |---|---|
-| Integers per case | exactly 5, one per line |
-| Value range | none stated in the statement |
-| Judge limit | 1000 ms, 1536 MB |
-| Language | Python 3 only |
+| integers per group | 5 |
+| input value range | 0 to 1000000000 in generated cases |
+| output form | one fractional digit |
+| judge limit | 1000 ms, 1536 MB |
 
-The sample case:
+The fixed group size keeps the arithmetic constant time.
+
+Sample input:
 
 ```
 2
@@ -24,6 +26,8 @@ The sample case:
 2
 2
 ```
+
+Sample output:
 
 ```
 5.0
@@ -31,82 +35,136 @@ The sample case:
 
 ## Idea
 
-Read every number, add up each block of five, then divide by 2 when the total is even and by 5 when it is odd. Python prints a float division with the decimal point already in place, so `str(total / 2)` gives the required decimal form for free.
+Add the five numbers, then pick the divisor from parity, like splitting a bill between two friends when the total is even and five friends when it is odd. The grouping-and-division algorithm reads five tokens, sums them, and writes the quotient with one decimal digit. A floating-point division could print extra digits or a different rounding; exact integer scaling keeps the one-digit form. The takeaway is to decide the divisor first, then format the integer quotient by hand.
 
 ## Why It Works
 
-1. Python integers hold the sum exactly, so the parity test is exact.
-2. An even total divided by 2 is a whole number; printing it as a float gives the ".0" tail the statement wants.
-3. An odd total divided by 5 is a decimal; the float print shows it directly.
-4. Sums stay far below 2^53, so the float division is exact and prints without rounding noise.
-5. The loop stops cleanly when the file ends, so trailing whitespace never breaks a case.
+1. Five consecutive tokens form one group and give one output line.
+2. An even total divided by 2 always has a remainder of 0 or 1, so its fractional digit is 0 or 5.
+3. An odd total divided by 5 has a remainder from 0 to 4, so its fractional digit is 0, 2, 4, 6 or 8.
+4. Multiplying the remainder by 10 divided by the divisor produces exactly that digit.
+5. A negative total uses absolute values for the split and keeps the minus sign in front.
 
-| Term | Meaning |
+| term | meaning |
 |---|---|
-| `tokens` | every input number as text |
-| `scanPos` | index of the next unread token |
-| `total` | sum of the current block of five |
-| `answers` | finished decimal strings |
+| `groupTotal` | sum of the current group of five integers |
+| `divisor` | 2 for an even sum, 5 for an odd sum |
+| `wholePart` | integer part of the quotient |
+| `fractionalDigit` | single digit after the decimal point |
 
-A script-traced example from `gen.py`:
+The decimal text follows from integer division alone, so no rounding step is needed.
+
+A script-generated example:
 
 ```
-2 2 2 2 2 -> total 10 -> even -> 10 / 2 -> 5.0
+numbers [1, 2, 4, 6, 8]
+sum 21 odd? True
+divisor 5 result 4.2
 ```
 
-The trace matches the sample answer.
+The sum 21 is odd, so division by 5 gives 4 whole units and the remainder 1 becomes digit 2.
 
 ## Code
 
-**Reading and grouping.** This block loads all tokens and walks them in blocks of five.
+**Input and scanning.** The hand reader loads one integer at a time and accepts a minus sign.
 
-```python
-import sys
+```nim
+const flushBlockBytes = 1 shl 17
+const numbersPerGroup = 5
+const evenDivisor = 2
+const oddDivisor = 5
+const decimalBase = 10
 
-tokens = sys.stdin.buffer.read().split()
-answers = []
-scanPos = 0
-tokenCount = len(tokens)
-while scanPos < tokenCount:
-    groupEnd = scanPos + 5
-    if groupEnd > tokenCount:
-        groupEnd = tokenCount
-    total = 0
-    for idx in range(scanPos, groupEnd):
-        total += int(tokens[idx])
-    scanPos = groupEnd
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+proc nextInt(data: string, pos: var int, value: var int64): bool =
+  while pos < data.len and data[pos] != '-' and (data[pos] < '0' or data[pos] > '9'):
+    pos += 1
+  if pos >= data.len:
+    return false
+  var negative = false
+  if data[pos] == '-':
+    negative = true
+    pos += 1
+  var magnitude: int64 = 0
+  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
+    magnitude = magnitude * 10 + int64(int(data[pos]) - 48)
+    pos += 1
+  if negative:
+    value = -magnitude
+  else:
+    value = magnitude
+  return true
 ```
 
-One read call collects the whole file.
-The group end is clamped so a short tail never raises an error.
+The scanner skips line breaks, so the five input lines arrive as five tokens.
+A missing token ends the scan before an incomplete group is written.
+Magnitude accumulation uses `int64` to keep large values exact.
 
-**Answer formatting.** This block divides and stores the decimal text.
+**Grouping and output.** Each group chooses a divisor and writes one decimal line.
 
-```python
-    if total % 2 == 0:
-        answers.append(str(total / 2))
-    else:
-        answers.append(str(total / 5))
-if answers:
-    sys.stdout.write("\n".join(answers) + "\n")
+```nim
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
+while true:
+  var groupTotal: int64 = 0
+  var numbersRead = 0
+  for numberIndex in 0 .. numbersPerGroup - 1:
+    var currentValue: int64 = 0
+    if not nextInt(inputData, scanPos, currentValue):
+      break
+    groupTotal = groupTotal + currentValue
+    numbersRead += 1
+  if numbersRead == 0:
+    break
+  var divisor = oddDivisor
+  if groupTotal mod evenDivisor == 0:
+    divisor = evenDivisor
+  var magnitude = groupTotal
+  var sign = ""
+  if magnitude < 0:
+    sign = "-"
+    magnitude = -magnitude
+  let wholePart = magnitude div int64(divisor)
+  let remainder = magnitude mod int64(divisor)
+  let fractionalDigit = remainder * int64(decimalBase div divisor)
+  appendOutput(sign & $wholePart & "." & $fractionalDigit & "\n")
+
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-Float division already prints the decimal point.
-One write emits every line at the end.
+The loop reads at most `numbersPerGroup` tokens before choosing the divisor.
+The remainder scaled by `decimalBase div divisor` gives the printed digit.
+One buffered write per group keeps output ordering intact.
 
 ## Complexity
 
-The cost splits into input, group sums, and output.
+Each group costs a fixed number of reads, sums and writes.
 
-| Phase | Time | Space |
+| phase | time | space |
 |---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Group sums | O(1) per group | constant |
-| Output | one write per finished line | answer strings |
+| input read | one pass over all tokens | input string |
+| group arithmetic | five additions and one division per group | a few scalars |
+| output | one line per group | block buffer |
 
-| Measure | Big O |
+The work grows directly with the number of input integers.
+
+| measure | Big O |
 |---|---|
-| Time | O(N) for N integers |
-| Space | O(N) for the token list |
+| time | O(n) over all input integers |
+| space | O(1) beyond the input string |
 
-A line-by-line `input()` loop costs the same asymptotically but pays five interpreter calls per case.
+A float-based version would need formatting fixes; integer scaling keeps this linear pass exact.

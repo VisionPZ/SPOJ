@@ -29,7 +29,7 @@ The sample case:
 
 ## Idea
 
-Each row is just its row number counted down to 1, like reading the marks on a ruler backwards. Two nested loops print the rows directly: the outer loop walks the rows, the inner loop walks the values. Printing costs one digit write per printed number, about 15,000 characters at n = 100. Building the triangle from a stored grid first would keep numbers that are never needed again.
+Each row is its row number counted down to 1, like reading the marks on a ruler backwards. Two nested loops print the rows directly: the outer loop walks the rows, the inner loop walks the values. Printing costs one digit write per printed number, about 15,000 characters at n = 100. Building the triangle from a stored grid first would keep numbers that are never needed again.
 
 ## Why It Works
 

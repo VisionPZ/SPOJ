@@ -4,13 +4,17 @@
 
 ## Problem
 
-Despite its title, this problem asks for a factorial: read one integer X and print X! = X × (X-1) × ... × 1.
+Despite the title, the task prints a factorial. Read one integer X and print X! exactly, with no modulo.
 
-| Item | Bound |
+Input holds a single integer X. Output holds its exact factorial on one line.
+
+| item | bound |
 |---|---|
-| Input | one integer X |
-| Output | the exact factorial, no modulo |
-| Judge limit | 1000 ms, 1536 MB |
+| input | one integer X |
+| output | exact factorial, no modulo |
+| judge limit | 1000 ms, 1536 MB |
+
+The result grows far past 64 bits, so the product needs storage of its own.
 
 The sample case:
 
@@ -24,25 +28,28 @@ The sample case:
 
 ## Idea
 
-Multiply the integers 2 through X into one running big number. Think of it as column arithmetic on paper, except Python integers grow as long as needed. The loop runs X-1 multiplications, and each multiplication touches only the digits of the current product. Parsing the input with `split` and building a list of tokens first would allocate objects for no benefit.
+Build the product in columns, like doing long multiplication on paper with a fresh carry for each column. The algorithm is grade-school multiplication in base one billion, using int64 arithmetic per step. Each multiplication touches every limb once, so the cost grows with the product's digit count. A native integer would overflow almost at once. The limb array keeps every digit exact from start to finish.
 
 ## Why It Works
 
-1. The product 1 × 2 × ... × X is exactly X! by definition.
-2. Python integers hold arbitrarily many digits, so no overflow occurs.
-3. Starting at 2 with a seed of 1 leaves 0! and 1! correct, both equal to 1.
-4. `set_int_max_str_digits` lifts the digit cap that newer Python builds put on `str()` of huge integers.
+1. The product starts at 1, so both 0! and 1! print 1.
+2. Each loop step multiplies the running value by the next integer, which matches the factorial definition.
+3. A limb stays below one billion and the factor stays small, so the product fits in int64.
+4. The remainder becomes the new limb, and the quotient becomes the carry for the next column.
+5. When a carry remains after the last limb, new limbs append the leftover digits.
+6. Printing the top limb plainly and padding the rest to nine digits rebuilds the exact decimal value.
 
 | Term | Meaning |
 |---|---|
-| `nextNumber` | reads the single integer from the byte buffer |
-| `maxValue` | the input X |
-| `factorialValue` | running product, ends as X! |
-| `multiplier` | the next factor to fold in |
+| `limbs` | the running product stored in base 1000000000 |
+| `carry` | the overflow passed to the next limb |
+| `multiplier` | the next factor folded into the product |
+| `limbBase` | one billion, the radix of every limb |
+| `topLimbIndex` | the position of the most significant limb |
 
-The multiplier loop stops as soon as it passes X, so the count is exactly X-1 multiplications for X ≥ 2.
+The limb array holds the whole answer before any digit is written.
 
-A script-traced example from `gen.py`:
+A script-traced example for the sample value:
 
 ```
 X = 4
@@ -50,51 +57,117 @@ running 1 -> 2 -> 6 -> 24
 result 24
 ```
 
-The trace matches the sample answer.
+The trace matches the sample output.
 
 ## Code
 
-**Scanner and digit cap.** This block reads X and lifts the string-conversion limit.
+**Input, hand scanner, and radix.** This block loads the value and sets the limb constants.
 
-```python
-try:
-    sys.set_int_max_str_digits(10000000)
-except AttributeError:
-    pass
+```nim
+const flushBlockBytes = 1 shl 17
+const limbBase = 1000000000
+const limbWidth = 9
+
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+proc nextInt(data: string, pos: var int): int =
+  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
+    pos += 1
+  var value = 0
+  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
+    value = value * 10 + int(data[pos]) - 48
+    pos += 1
+  return value
 ```
 
-Python 3.11 and newer refuse long `str()` calls by default.
-The guard keeps the code working on older interpreters too.
+The scanner skips all non-digits, so spaces and newlines need no special case.
+The radix is nine decimal digits per limb.
+Reading once keeps the scan linear in the byte count.
 
-**Factorial loop.** This block folds in each factor.
+**Buffered output and padded limbs.** This block writes digit groups with leading zeros.
 
-```python
-inputData = sys.stdin.buffer.read()
-scanPos = 0
-maxValue, scanPos, found = nextNumber(inputData, scanPos)
-factorialValue = 1
-multiplier = 2
+```nim
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
+proc appendPaddedLimb(value: int, width: int) =
+  var digits = ""
+  var divisor = 100000000
+  var digitIndex = 0
+  while digitIndex < width:
+    digits.add char(48 + ((value div divisor) mod 10))
+    divisor = divisor div 10
+    digitIndex += 1
+  appendOutput(digits)
+```
+
+The divisor walks from the highest digit down to the lowest.
+Lower limbs arrive at exactly nine digits each.
+The buffer flushes once it reaches the block limit.
+
+**Factorial loop and printing.** This block folds in every factor and emits the digits.
+
+```nim
+let maxValue = nextInt(inputData, scanPos)
+var limbs = newSeq[int](1)
+limbs[0] = 1
+var multiplier = 2
 while multiplier <= maxValue:
-    factorialValue *= multiplier
-    multiplier += 1
-sys.stdout.write(str(factorialValue) + "\n")
+  var carry: int64 = 0
+  var limbIndex = 0
+  while limbIndex < limbs.len:
+    let product = int64(limbs[limbIndex]) * int64(multiplier) + carry
+    limbs[limbIndex] = int(product mod int64(limbBase))
+    carry = product div int64(limbBase)
+    limbIndex += 1
+  while carry > 0:
+    limbs.add(int(carry mod int64(limbBase)))
+    carry = carry div int64(limbBase)
+  multiplier += 1
+
+var topLimbIndex = limbs.len - 1
+appendOutput($limbs[topLimbIndex])
+topLimbIndex -= 1
+while topLimbIndex >= 0:
+  appendPaddedLimb(limbs[topLimbIndex], limbWidth)
+  topLimbIndex -= 1
+outputBuffer.add '\n'
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-The loop runs exactly max(0, X-1) times.
-Each step multiplies one small int into the growing big int.
-One write emits the whole answer.
+The outer loop runs maxValue minus one times for values of at least two.
+The inner loop visits every limb once per factor.
+The top limb is written plainly, then each lower limb is padded.
 
 ## Complexity
 
+The cost splits into reading one value, repeated limb products, and buffered output.
+
 | Phase | Time | Space |
 |---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Multiplications | O(X) big-int products | result digits |
-| Output | one write | result digits |
+| Input read | one pass over input bytes | one input string |
+| Multiplication | one pass over limbs per factor | one limb array |
+| Output | buffered digit blocks | block buffer |
+
+The limb array grows with the result, while the buffer flushes in fixed blocks.
 
 | Measure | Big O |
 |---|---|
-| Time | O(X · D) with D the digits of X! |
+| Time | O(X · D), with D the digit count of X! |
 | Space | O(D) |
 
-A recursive version does the same work but adds X stack frames.
+Each factor touches every limb once, so the work follows the result's size.
+
+A native 64-bit product would overflow for small X, and a recursive version adds X stack frames. The limb loop keeps every digit exact with flat memory.

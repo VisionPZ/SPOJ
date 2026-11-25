@@ -93,9 +93,6 @@ proc run() =
         continue
       pendingEmoji = wordIsEmoji
 
-      # The statement's note requires a space before an emo.  When a line
-      # starts with a separator and its first word is an emo, that one space
-      # is part of the answer; leading spaces before ordinary words are not.
       if not haveKept and wordIsEmoji and leadingSeparator != 0:
         if leadingSeparator == 1:
           target[outputLength] = ' '
@@ -106,8 +103,6 @@ proc run() =
           inc outputLength, 2
 
       if haveKept:
-        # Between words the statement asks for one ordinary space, even when
-        # the input used a non-breaking space there.
         target[outputLength] = ' '
         inc outputLength
 

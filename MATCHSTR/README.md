@@ -4,22 +4,27 @@
 
 ## Problem
 
-Two digit strings S and T are given, one per line. Count how many times T occurs inside S. Overlapping occurrences each count once.
+Count how many times a short digit string appears inside a long digit string. Overlapping appearances each count, so a pattern can start again before the previous match ends.
 
-| Item | Bound |
+Input has two lines: the text `S` and the pattern `T`, both made of digits. Output one integer: the number of appearances of `T` in `S`.
+
+| item | bound |
 |---|---|
-| Length of T | 1 ≤ lenT ≤ lenS |
-| Length of S | lenS ≤ 10^6 |
-| Alphabet | digits 0-9 only |
-| Judge limit | 1000 ms, 1536 MB |
-| Language | C++14 (no Nim offered) |
+| pattern length | 1 to 1000000 |
+| text length | pattern length to 1000000 |
+| alphabet | digits 0 through 9 |
+| judge limit | 1000 ms, 1536 MB |
 
-The sample case:
+Both length bounds reach a million, so the scan must be linear.
+
+Sample input:
 
 ```
 123123
 12
 ```
+
+Sample output:
 
 ```
 2
@@ -27,122 +32,127 @@ The sample case:
 
 ## Idea
 
-Build the KMP prefix function for T, then walk S once while carrying a match length. The prefix table says where to fall back after a mismatch, so every character of S is read a constant number of times. A naive scan compares up to lenS × lenT characters, which is 10^12 at the limit.
+Slide a window over the text and reuse what already matched, like a zipper that backs up only as far as needed. The Knuth–Morris–Pratt algorithm builds a prefix table for the pattern, then walks the text once. Each text digit moves the matched length forward by at most one step after backing up, so the scan is linear. A naive check would restart at every position and cost O(|S|·|T|) in the worst case. The takeaway is to precompute fallback positions once and never reread the pattern blindly.
 
 ## Why It Works
 
-1. `prefixValue[i]` stores the length of the longest proper prefix of T that is also a suffix of T[0..i].
-2. During the scan, `matchedLength` is the length of the current suffix of the read part of S that matches a prefix of T.
-3. On a mismatch the fallback chain jumps to shorter matching prefixes without rereading text.
-4. When `matchedLength` reaches lenT, an occurrence ends here; the fallback keeps overlapping matches alive.
-5. Each text character advances the scan exactly once, so the walk is linear.
+1. The prefix table stores the longest proper prefix of the pattern that is also a suffix ending at each position.
+2. On a mismatch, the matched length falls to the prefix value of the already matched part.
+3. Backing up never rechecks text digits, so the text pointer only moves forward.
+4. Reaching the full pattern length records one appearance and falls back for overlaps.
+5. A pattern longer than the text cannot appear and yields zero without building the table.
 
-| Term | Meaning |
+| term | meaning |
 |---|---|
-| `prefixValue` | KMP fallback table for T |
-| `matchedLength` | characters of T matched so far |
-| `textStart` / `patternStart` | offsets of S and T inside the read buffer |
-| `occurrenceCount` | number of matches found |
+| `textLength` | number of digits in the text |
+| `patternLength` | number of digits in the pattern |
+| `prefixValue` | fallback length for each pattern position |
+| `matchedLength` | digits matched at the current text position |
+| `occurrenceCount` | number of appearances found so far |
 
-A script-traced example from `gen.py`:
+The prefix table makes every fallback a constant-time jump.
+
+A script-generated example:
 
 ```
-S = 123123, T = 12
-match ends at position 1, fallback to 0
-match ends at position 4, fallback to 0
-count = 2
+text 123123 pattern 12
+match starts [0, 3] count 2
 ```
 
-The trace matches the sample answer.
+The two starts at 0 and 3 give the sample answer 2.
 
 ## Code
 
-**Bulk input read.** This block slurps stdin into one byte vector.
+**Input location.** The first two digit runs in the input become the text and the pattern.
 
-```cpp
-    const int readBlockSize = 1 << 20;
-    static char readBlock[readBlockSize];
-    vector<char> inputData;
-    inputData.reserve(1 << 21);
-    size_t bytesRead = 0;
-    while ((bytesRead = fread(readBlock, 1, readBlockSize, stdin)) > 0)
-        inputData.insert(inputData.end(), readBlock, readBlock + bytesRead);
+```nim
+const flushBlockBytes = 1 shl 17
+
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
+while scanPos < inputData.len and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
+  scanPos += 1
+let textStart = scanPos
+while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
+  scanPos += 1
+let textLength = scanPos - textStart
+while scanPos < inputData.len and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
+  scanPos += 1
+let patternStart = scanPos
+while scanPos < inputData.len and inputData[scanPos] >= '0' and inputData[scanPos] <= '9':
+  scanPos += 1
+let patternLength = scanPos - patternStart
 ```
 
-One megabyte arrives per `fread` call.
-The vector holds both strings contiguously.
+Line breaks are skipped as plain separators between the two digit runs.
+Both lengths are measured before any table is allocated.
+A missing pattern leaves `patternLength` at zero and leads to an early answer.
 
-**Token extraction.** This block finds the two digit runs that form S and T.
+**Prefix and scan.** The prefix table drives one linear walk over the text.
 
-```cpp
-    size_t inputSize = inputData.size();
-    size_t scanPos = 0;
-    while (scanPos < inputSize && (inputData[scanPos] < '0' || inputData[scanPos] > '9')) scanPos++;
-    size_t textStart = scanPos;
-    while (scanPos < inputSize && inputData[scanPos] >= '0' && inputData[scanPos] <= '9') scanPos++;
-    size_t textLength = scanPos - textStart;
-    while (scanPos < inputSize && (inputData[scanPos] < '0' || inputData[scanPos] > '9')) scanPos++;
-    size_t patternStart = scanPos;
-    while (scanPos < inputSize && inputData[scanPos] >= '0' && inputData[scanPos] <= '9') scanPos++;
-    size_t patternLength = scanPos - patternStart;
+```nim
+if patternLength == 0 or patternLength > textLength:
+  appendOutput("0\n")
+else:
+  var prefixValue = newSeq[int](patternLength)
+  var matchedLength = 0
+  for prefixIndex in 1 .. patternLength - 1:
+    while matchedLength > 0 and inputData[patternStart + prefixIndex] != inputData[patternStart + matchedLength]:
+      matchedLength = prefixValue[matchedLength - 1]
+    if inputData[patternStart + prefixIndex] == inputData[patternStart + matchedLength]:
+      matchedLength += 1
+    prefixValue[prefixIndex] = matchedLength
+  var occurrenceCount: int64 = 0
+  matchedLength = 0
+  for textIndex in 0 .. textLength - 1:
+    while matchedLength > 0 and inputData[textStart + textIndex] != inputData[patternStart + matchedLength]:
+      matchedLength = prefixValue[matchedLength - 1]
+    if inputData[textStart + textIndex] == inputData[patternStart + matchedLength]:
+      matchedLength += 1
+    if matchedLength == patternLength:
+      occurrenceCount += 1
+      matchedLength = prefixValue[matchedLength - 1]
+  appendOutput($occurrenceCount)
+  outputBuffer.add '\n'
 
-    if (patternLength == 0 || patternLength > textLength) {
-        printf("0\n");
-        return 0;
-    }
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-Newlines between the strings are skipped, not stored separately.
-An empty or too-long pattern answers zero at once.
-
-**Prefix table.** This block builds the KMP fallback values for T.
-
-```cpp
-    vector<int> prefixValue(patternLength, 0);
-    int matchedLength = 0;
-    for (size_t i = 1; i < patternLength; i++) {
-        while (matchedLength > 0 && inputData[patternStart + i] != inputData[patternStart + matchedLength])
-            matchedLength = prefixValue[matchedLength - 1];
-        if (inputData[patternStart + i] == inputData[patternStart + matchedLength]) matchedLength++;
-        prefixValue[i] = matchedLength;
-    }
-```
-
-Each fallback step strictly shortens the match, so the inner loop is linear overall.
-
-**Scanning for matches.** This block walks S and counts every completed match.
-
-```cpp
-    long long occurrenceCount = 0;
-    matchedLength = 0;
-    for (size_t i = 0; i < textLength; i++) {
-        while (matchedLength > 0 && inputData[textStart + i] != inputData[patternStart + matchedLength])
-            matchedLength = prefixValue[matchedLength - 1];
-        if (inputData[textStart + i] == inputData[patternStart + matchedLength]) matchedLength++;
-        if (matchedLength == (int)patternLength) {
-            occurrenceCount++;
-            matchedLength = prefixValue[matchedLength - 1];
-        }
-    }
-
-    printf("%lld\n", occurrenceCount);
-    return 0;
-```
-
-The fallback after a hit allows overlapping occurrences.
-One number is printed at the end.
+The prefix loop visits positions 1 through `patternLength - 1` exactly once.
+After a full match, the fallback keeps overlapping appearances visible.
+The occurrence counter uses `int64` for million-digit texts.
 
 ## Complexity
 
-| Phase | Time | Space |
+The prefix table and the text scan are both single passes.
+
+| phase | time | space |
 |---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Prefix table | O(lenT) | O(lenT) |
-| Scan | O(lenS) | constant |
+| input read | one pass over both digit strings | input string |
+| prefix table | one visit per pattern digit | table of pattern digits |
+| text scan | one visit per text digit | matched length scalar |
+| output | one line | block buffer |
 
-| Measure | Big O |
+The two passes add up to a cost set by the combined string lengths.
+
+| measure | Big O |
 |---|---|
-| Time | O(lenS + lenT) |
-| Space | O(lenS + lenT) |
+| time | O(|S| + |T|) |
+| space | O(|T|) |
 
-A naive substring scan costs O(lenS · lenT), up to 10^12 comparisons; KMP stays linear.
+Restarting the pattern at every text position would cost O(|S|·|T|); the prefix table removes that blow-up.

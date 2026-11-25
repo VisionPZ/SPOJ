@@ -41,7 +41,7 @@ The sample:
 
 ## Idea
 
-Colour the chessboard by parity. A cell is `*` when its row and column indices add to an even number, and `.` otherwise.
+Color the chessboard by parity. A cell is `*` when its row and column indices add to an even number, and `.` otherwise.
 
 The program loops over every cell and uses one `mod 2` test. Building a row string first would add a copy step without changing the result.
 

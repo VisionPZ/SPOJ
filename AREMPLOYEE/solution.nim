@@ -1,0 +1,50 @@
+const flushBlockBytes = 1 shl 17
+
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+proc nextInt(data: string, pos: var int): int =
+  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
+    pos += 1
+  var value = 0
+  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
+    value = value * 10 + int(data[pos]) - 48
+    pos += 1
+  return value
+
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
+proc nextDataLine(data: string, pos: var int): string =
+  while pos < data.len:
+    var lineEnd = pos
+    while lineEnd < data.len and data[lineEnd] != '\n':
+      lineEnd += 1
+    var lineText = ""
+    if lineEnd > pos:
+      lineText = data.substr(pos, lineEnd - 1)
+    pos = lineEnd + 1
+    if lineText.len > 0 and lineText[lineText.len - 1] == '\r':
+      lineText.setLen(lineText.len - 1)
+    if lineText.len > 0:
+      return lineText
+  return ""
+
+let employeeId = nextDataLine(inputData, scanPos)
+let employeeName = nextDataLine(inputData, scanPos)
+let employeeGender = nextDataLine(inputData, scanPos)
+let employeeSalary = nextInt(inputData, scanPos)
+appendOutput(employeeId & " : " & employeeName & " : " & employeeGender & " : " & $employeeSalary)
+outputBuffer.add '\n'
+stdout.write outputBuffer
+outputBuffer.setLen 0

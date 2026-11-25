@@ -37,7 +37,7 @@ Case 2: 3
 
 ## Idea
 
-Imagine measuring the distance of each star from your home with a ruler. You only need to know which ruler reading is longest, so comparing squared readings works just as well.
+Imagine measuring the distance of each star from your home with a ruler. You only need to know which ruler reading is longest, so comparing squared readings works as well.
 
 The real algorithm is a single linear scan that keeps the largest squared distance. Each planet costs two multiplications, one addition, and one comparison.
 

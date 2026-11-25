@@ -53,7 +53,7 @@ Think of folding a paper strip into a smaller quadrant before measuring. The sol
 | `turnSign` | flag for a remainder above pi |
 | `useCosine` | flag selecting cosine instead of sine after reflection |
 
-Reflection makes the Taylor series converge quickly. Zero returns the digit zero. Tiny arguments give leading nines because their sine sits just below a power of ten.
+Reflection makes the Taylor series converge quickly. Zero returns the digit zero. Tiny arguments give leading nines because their sine sits below a power of ten.
 
 Script trace for a sample case:
 

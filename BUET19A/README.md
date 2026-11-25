@@ -4,14 +4,17 @@
 
 ## Problem
 
-Gon and Killua play rock-paper-scissors by shouting numbers. A number means ROCK when n % 3 == 0, PAPER when n % 3 == 1, and SCISSORS when n % 3 == 2. The usual rules decide the winner; equal gestures draw. Print GON, KILLUA, or DRAW for each case.
+Two players say numbers instead of showing fingers. Each number picks a gesture by its remainder on division by 3, and the usual rock-paper-scissors winner is printed.
 
-| Item | Bound |
+Input starts with T, the number of rounds. Each round holds two integers X and Y, for Gon and Killua. Print GON, KILLUA, or DRAW on its own line for every round.
+
+| item | bound |
 |---|---|
-| Test cases | 1 ≤ T ≤ 100000 |
-| X, Y | stated 1..100000; the sample also uses 0 |
-| Judge limit | 1000 ms, 1536 MB |
-| Language | C++ (g++ 4.3.2) |
+| rounds T | 1 to 100000 |
+| numbers X and Y | 0 to 100000 |
+| judge limit | 1000 ms, 1536 MB |
+
+The number of rounds drives the output size; the value bound keeps each remainder cheap.
 
 The sample case:
 
@@ -30,83 +33,116 @@ DRAW
 
 ## Idea
 
-Reduce both numbers modulo 3, then compare the residues. In the cycle ROCK(0) → PAPER(1) → SCISSORS(2) → ROCK(0), each gesture is beaten by the residue that follows it. So Gon wins exactly when (rx - ry) mod 3 == 1.
+Fold each number into one of three slots, like dropping a ball into a three-slot wheel, then read the winner from the slot pair. The algorithm is modular reduction: dividing by 3 maps a number to ROCK, PAPER, or SCISSORS in constant time. One wrapped difference between the two remainders decides GON, KILLUA, or DRAW. Comparing every gesture pair by hand would spend more work on the same choice. One modulo and one test per round settle every case.
 
 ## Why It Works
 
-1. The remainder mod 3 is the gesture, by the statement's own mapping.
-2. Equal remainders mean equal gestures, which is a DRAW.
-3. PAPER(1) beats ROCK(0): 1 - 0 = 1. SCISSORS(2) beats PAPER(1): 2 - 1 = 1. ROCK(0) beats SCISSORS(2): 0 - 2 = -2 ≡ 1 (mod 3). So a residue difference of 1 always means Gon's gesture wins.
-4. Adding 3 before the final % 3 keeps the difference non-negative, so C's remainder sign is never a problem.
-5. Every other case is Killua's win.
+1. Division by 3 leaves a remainder of 0, 1, or 2, which maps to one gesture.
+2. Equal remainders mean equal gestures, so the round is a DRAW.
+3. The wrapped difference of the remainders is 1 exactly when Gon's gesture beats Killua's.
+4. The wrapped difference is 2 when Killua wins, so the last branch covers that case.
+5. The loop visits each round once, so every pair produces one label.
 
 | Term | Meaning |
 |---|---|
-| `gonSign` | Gon's gesture as 0, 1, or 2 |
-| `killuaSign` | Killua's gesture as 0, 1, or 2 |
-| `(gonSign - killuaSign + 3) % 3 == 1` | Gon's gesture beats Killua's |
+| `gonSign` | Gon's number folded into 0, 1, or 2 |
+| `killuaSign` | Killua's number folded into 0, 1, or 2 |
+| `caseCount` | the number of rounds to judge |
+| `gestureCount` | the divisor 3, one value per gesture |
 
-A script-traced example from `gen.py`:
+The two folded values carry all the information needed for a winner.
+
+A script-traced example for the sample pairs:
 
 ```
-X = 0, Y = 1
-rx = 0 (ROCK), ry = 1 (PAPER)
-(0 - 1 + 3) % 3 = 2, not 1
-KILLUA wins, matching the sample
+X=0 rem 0 ROCK, Y=1 rem 1 PAPER -> KILLUA
+X=1 rem 1 PAPER, Y=0 rem 0 ROCK -> GON
+X=3 rem 0 ROCK, Y=3 rem 0 ROCK -> DRAW
 ```
 
-The trace matches the first sample answer.
+The trace reproduces the sample output line for line.
 
 ## Code
 
-**Case loop.** This block reads each pair of numbers.
+**Input and hand scanner.** This block loads all input and reads integers by index.
 
-```cpp
-#include <cstdio>
+```nim
+const flushBlockBytes = 1 shl 17
+const gestureCount = 3
 
-int main() {
-    int caseCount = 0;
-    if (scanf("%d", &caseCount) != 1) return 0;
-    while (caseCount--) {
-        long long gonNumber = 0;
-        long long killuaNumber = 0;
-        scanf("%lld %lld", &gonNumber, &killuaNumber);
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+proc nextInt(data: string, pos: var int): int =
+  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
+    pos += 1
+  var value = 0
+  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
+    value = value * 10 + int(data[pos]) - 48
+    pos += 1
+  return value
 ```
 
-`long long` leaves room for any input size beyond the stated bound.
-The loop runs exactly T times.
+The scanner skips every non-digit, so spaces and newlines need no special case.
+Each call consumes one number and moves the index past it.
+The whole input is scanned once.
 
-**Gesture decision.** This block maps residues to an outcome.
+**Buffered winner decisions.** This block judges each round and writes through one buffer.
 
-```cpp
-        int gonSign = (int)(gonNumber % 3);
-        int killuaSign = (int)(killuaNumber % 3);
-        if (gonSign == killuaSign) {
-            puts("DRAW");
-        } else if ((gonSign - killuaSign + 3) % 3 == 1) {
-            puts("GON");
-        } else {
-            puts("KILLUA");
-        }
-    }
-    return 0;
-}
+```nim
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
+let caseCount = nextInt(inputData, scanPos)
+var caseIndex = 0
+while caseIndex < caseCount:
+  let gonNumber = nextInt(inputData, scanPos)
+  let killuaNumber = nextInt(inputData, scanPos)
+  let gonSign = gonNumber mod gestureCount
+  let killuaSign = killuaNumber mod gestureCount
+  if gonSign == killuaSign:
+    appendOutput("DRAW")
+  elif (gonSign - killuaSign + gestureCount) mod gestureCount == 1:
+    appendOutput("GON")
+  else:
+    appendOutput("KILLUA")
+  outputBuffer.add '\n'
+  caseIndex += 1
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-Three comparisons decide each case.
-The +3 shift keeps the modulo argument positive.
+The loop runs exactly caseCount times, reading two numbers per round.
+The buffer flushes at the block limit, then once more at the end.
+Each round appends one short label and a newline.
 
 ## Complexity
 
+The cost splits into one input pass, one decision per round, and buffered writes.
+
 | Phase | Time | Space |
 |---|---|---|
-| Input read | two `scanf` per case | constant |
-| Decision | O(1) per case | constant |
-| Output | one line per case | constant |
+| Input read | one pass over all numbers | one input string |
+| Decisions | one modulo and one test per round | constant |
+| Output | one label per round | block buffer |
+
+The input string holds the bulk of the memory; decisions need no extra array.
 
 | Measure | Big O |
 |---|---|
 | Time | O(T) |
-| Space | O(1) |
+| Space | O(T) for the stored input |
 
-A gesture-name table would cost the same; the residue arithmetic skips the strings entirely.
+The bound follows from reading each round once and deciding in place.
+
+Comparing every gesture pair by hand would do more work per round for the same result. Reading once and deciding on the spot keeps the pass short.

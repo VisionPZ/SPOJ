@@ -4,17 +4,20 @@
 
 ## Problem
 
-Each test gives a base x and an exponent n, and the task is to print xⁿ. A non-negative exponent prints the exact integer, like `2 4` → `16`. A negative exponent prints a decimal with six digits after the point, like `5 -2` → `0.040000`.
+For each pair of numbers, compute the base raised to the exponent and print the result. Negative exponents produce a decimal with six places.
 
-Input starts with a test count. Each test line holds x and n, either of which may be negative. Output holds one line per test.
+The input starts with the test count. Each following line holds a base and an exponent. Print one result per line.
 
-| Item | Bound |
+| item | bound |
 |---|---|
-| Test count | 1 ≤ t ≤ 1000 |
-| x, n | integers, negatives possible |
-| Judge limit | 1000 ms, 1536 MB |
+| tests t | 1 to 1000 |
+| base x | integer, may be negative |
+| exponent n | integer, may be negative |
+| judge limit | 1000 ms, 1536 MB |
 
-The sample case:
+Positive exponents can produce values far larger than 64 bits.
+
+Sample input:
 
 ```
 5
@@ -24,6 +27,8 @@ The sample case:
 -3 3
 5 -2
 ```
+
+Sample output:
 
 ```
 1
@@ -35,42 +40,45 @@ The sample case:
 
 ## Idea
 
-A big exponent such as 2¹⁰⁰⁰ has over 300 digits, so the program keeps powers as big numbers made of 30-bit chunks, like place-value columns in base 2³⁰. It raises by binary exponentiation — squaring the running base and multiplying it in only when the exponent's bit is set — then converts to decimal by repeated division by 10⁹, one decimal block per division. Repeated answers for the same (|x|, n) are cached in a table. Negative exponents are small reciprocals, so plain 64-bit floating point plus a hand-made six-decimal print is enough.
+Use two paths, like choosing between exact counting and decimal measuring. A non-negative exponent uses repeated squaring on limb arrays, so huge powers stay exact. A negative exponent uses floating-point power and prints six decimals. Results with the same base and exponent are cached.
 
 ## Why It Works
 
-1. Binary exponentiation uses at most 2·log₂(n) multiplications, because every squaring halves the exponent.
-2. With 30-bit chunks, one chunk product plus carry stays under 2⁶³, so 64-bit `int` never overflows.
-3. Repeated division by 10⁹ peels off decimal digits in groups of nine, low group first, exactly like long division.
-4. `appendFixedSix` scales by 10⁶, rounds by adding 0.5, then prints integer part, dot, and a zero-padded six-digit fraction — the same result as C's `%.6f`.
-5. A negative base with an odd exponent gets a leading `-`; the magnitude comes from |x|ⁿ.
-6. `0 0` prints 1, the usual convention; `0` with a negative exponent prints `inf`.
+1. Repeated squaring multiplies only O(log exponent) limb arrays.
+2. Each limb holds 30 bits, so carries stay in ordinary integers.
+3. A negative exponent gives a fractional result, which floats handle.
+4. A negative base with an odd exponent makes the exact result negative.
 
-| Term | Meaning |
+| term | meaning |
 |---|---|
-| `bigMul` | multiplies two chunk lists, schoolbook style |
-| `bigPowGroups` | binary exponentiation returning chunks |
-| `decimalTextOf` | converts chunks to decimal text |
-| `appendFixedSix` | prints a float with exactly six decimals |
-| `answerCache` | memo table keyed by (|x|, n) |
+| `bigPowGroups` | limb-array result of repeated squaring |
+| `decimalTextOf` | converts limb groups to a decimal string |
+| `answerCache` | stores repeated exact results |
+| `appendFixedSix` | formats a negative-exponent result |
 
-Each distinct (|x|, n) is computed once, then replayed from the cache.
+The two paths match the two output forms in the statement.
 
-A script-traced example from `gen.py`:
+Script-generated trace for the sample powers:
 
 ```
-base 5 exponent -2
-value: 0.04
-line: 0.040000
+base | exponent | result
+1 | 7 | 1
+2 | 4 | 16
+0 | 9 | 0
+-3 | 3 | -27
+5 | -2 | 0.040000
 ```
 
-The trace matches the last sample answer.
+All five rows match the sample output.
 
 ## Code
 
-**Input and hand scanner.** This block loads stdin and reads signed integers by index.
+**Bulk input and scanner.** The whole stream is read once and parsed with signed integers.
 
 ```nim
+import math
+import tables
+
 const firstDigitValue = 48
 const flushBlockBytes = 1 shl 17
 const bigBaseBits = 30
@@ -101,13 +109,21 @@ proc nextSignedInt(data: string, position: var int): int =
   if isNegative:
     return -value
   return value
+
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
 ```
 
-One readLine loop collects all input bytes.
-The '-' branch lets negative bases and exponents parse.
-Scanning costs one pass over the consumed characters.
+Constants name every fixed number.
+The scanner keeps minus signs.
+The buffer flushes only at the block boundary.
 
-**Chunked multiply and power.** This block does the exact big-integer work.
+**Exact powers and decimal output.** Two paths serve the two exponent signs.
 
 ```nim
 proc bigMul(leftNumber: seq[int], rightNumber: seq[int]): seq[int] =
@@ -146,15 +162,7 @@ proc bigPowGroups(baseValue: int, exponentValue: int): seq[int] =
     if remainingPower > 0:
       baseGroups = bigMul(baseGroups, baseGroups)
   return powerResult
-```
 
-`and bigMask` and `shr bigBaseBits` split a cell into chunk and carry in two cheap ops.
-Squaring is skipped once the exponent reaches zero.
-One multiply costs the product of the two chunk counts.
-
-**Decimal conversion.** This block turns chunks into printable digits.
-
-```nim
 proc decimalTextOf(number: seq[int]): string =
   var work = number
   var decimalGroups: seq[int] = @[]
@@ -185,15 +193,7 @@ proc decimalTextOf(number: seq[int]): string =
     text.add part
     groupIndex -= 1
   return text
-```
 
-Each division pass peels the lowest nine decimal digits as the carry.
-The top group prints unpadded, lower groups get leading zeros.
-A 1000-digit power needs about 333 division passes.
-
-**Fixed six-decimal print.** This block formats negative-exponent answers.
-
-```nim
 proc appendFixedSix(value: float) =
   var signText = ""
   var magnitude = value
@@ -211,14 +211,7 @@ proc appendFixedSix(value: float) =
   while fractionText.len < 6:
     fractionText = "0" & fractionText
   appendOutput(fractionText)
-```
 
-Scaling by 10⁶ and rounding by +0.5 reproduces `%.6f` rounding.
-The huge-magnitude guard prints `inf` before the int cast would overflow.
-
-**Query loop with cache.** This block answers each test.
-
-```nim
 var answerCache = initTable[(int, int), string]()
 
 let caseCount = nextSignedInt(inputData, scanPos)
@@ -245,25 +238,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The cache key uses |x| because the sign is printed separately.
-A repeated query costs one table lookup instead of a full power.
+Limb multiplication keeps exact integers.
+The cache reuses repeated exact results.
+Each case writes one buffered line.
 
 ## Complexity
 
-Exact powers dominate the cost; the cache removes repeats.
+Exact powers cost logarithmic multiplications.
 
-| Phase | Time | Space |
+| phase | time | space |
 |---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Power | O(log n) chunk multiplies | chunks of xⁿ |
-| Decimal print | O(D² / 9) division steps, D = digits | decimal groups |
-| Negative n | constant float work | constant |
+| input read | one pass over 2t integers | one input string |
+| exact power | O(log exponent) limb products | limb array |
+| fractional power | one float operation | constant |
+| output | one line per case | block buffer and cache |
 
-At n = 1000, x = 10 the answer has 1000 digits and prints in well under a millisecond.
+Small exponents keep the limb arrays short.
 
-| Measure | Big O |
+| measure | Big O |
 |---|---|
-| Time | O(N + t · (log n · M(n)² + D² / 9) + output), M = chunk count |
-| Space | O(N + distinct answers) |
+| time | O(log n) limb work per exact case |
+| space | O(digits of answer) plus cache |
 
-A naive loop multiplying x by itself n times costs O(t · n · M(n)²); binary exponentiation cuts the multiplications to O(log n).
+Multiplying the base exponent times would cost O(n) and overflow quickly.
