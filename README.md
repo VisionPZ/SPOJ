@@ -1,10 +1,10 @@
-# SPOJ — 986 problems, one method
+# SPOJ — 998 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![986 problems](https://img.shields.io/badge/problems-986-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![998 problems](https://img.shields.io/badge/problems-998-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 986 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 998 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 986 problems
+## The 998 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -311,7 +311,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [NITTROAD](NITTROAD/README.md) | Read the story backwards, like rewinding a film to see a broken bridge rebuilt. Removal becomes union, so one pass of disjoint-set union answers all queries. Store every query first and mark all roads that get removed. | O((N + Q) alpha(N)) per test case |
 | [RANGESUM](RANGESUM/README.md) | Push work to one end of a fixed array, like adding pages to the front of a notebook while keeping the page numbers. Store suffix totals anchored at the far right, so a front push only writes one new cell. | O(N + Q) |
 
-### Dynamic programming (59)
+### Dynamic programming (60)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -376,6 +376,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [BAT2](BAT2/README.md) | Picture two shelves: books rise on the left shelf and fall on the right shelf, and each book goes to at most one shelf. The algorithm is a two-track subsequence DP. | O(1) |
 | [BAT3](BAT3/README.md) | Think of a slide with one elevator: you descend freely, and the elevator lifts you once at a marked stop. The algorithm runs two longest decreasing subsequence passes. | O(1) |
 | [BAT4](BAT4/README.md) | Picture a hiker choosing the gentlest steepest step, like picking the easiest rung on a ladder. A minimax DP finds the smallest possible worst climb to every cell. | O(1) |
+| [AUTOMATA](AUTOMATA/README.md) | Treat each star as a bookmark you can move forward when a later letter fails. This is the classic greedy wildcard scan: consume letters directly, remember the last star, and retry from it on mismatch. | O(length of pattern + length of subject) per ordinary case |
 
 ### Number theory & big integers (96)
 
@@ -480,7 +481,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [APS](APS/README.md) | The sequence is a running total, like a row of monthly bills where each new bill is the smallest prime factor of the current index. Find every smallest prime factor with one sieve, then accumulate them once in order. | O(largest N log log largest N plus T) |
 | [LOOPEXP](LOOPEXP/README.md) | The current maximum changes exactly when the largest value seen so far arrives, like noting each new high-water mark. Position i holds the largest of its first i entries with probability 1/i. | O(T + max N) |
 
-### Greedy, search & enumeration (514)
+### Greedy, search & enumeration (525)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1000,6 +1001,17 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [DELTACA2](DELTACA2/README.md) | Turn the leg gap into a Pell equation, like replacing a moving target with a fixed one. Put X equal to twice the small leg plus d, and Y equal to the hypotenuse. | O(F terms built plus log n) per case |
 | [DELTACAT](DELTACAT/README.md) | Write the smaller leg as a, so the larger is a + d and the hypotenuse is c. Substituting into the Pythagorean equation gives a Pell equation, like turning a moving target into a fixed equation. | O(sqrt d plus F squared plus log n) per case |
 | [HAP01](HAP01/README.md) | Alternating positions act like counting coins in even and odd slots, like sorting coins into two jars. Counting from the left flips the two jars when the bit length changes parity, but the absolute difference stays the same. | O(table size plus N minus M summed over cases) |
+| [AMSCO2](AMSCO2/README.md) | Undo the writing order before reading the grid, like sorting shuffled pages by their printed number. Split the ciphertext into column pieces by ascending key digit, then walk the grid row by row and take the next chunk from each column. | O(total ciphertext length) |
+| [BLOCK_D](BLOCK_D/README.md) | Treat every settled board as a room in a maze and use breadth-first search, like finding the shortest route out of a building. Each move destroys one connected group, so the first time the empty board appears gives the minimum move count. | O(S * cells), S reachable boards |
+| [CIRCLE_E](CIRCLE_E/README.md) | Curvature turns a tangent-circle sum into a familiar budget: three contributions plus a shared square-root term. Descartes' theorem gives the inner curvature in one formula, so each test case costs a constant number of operations. | O(T) |
+| [CIRCLE_H](CIRCLE_H/README.md) | Scale the square root far beyond the printed precision, like measuring a room in millimetres before reporting metres. The answer equals P divided by S plus twice the square root of P times Q. | O(1) |
+| [FLING1](FLING1/README.md) | Treat a board as a state in a maze and walk every reachable board, like exploring rooms with a map. Each legal fling removes exactly one ball, so the walk always ends after a fixed number of steps. | O(1) |
+| [FUNNUMS](FUNNUMS/README.md) | Treat every permutation as a page number on an odometer, like turning a car's trip meter forward. The factorial number system gives each word its page number directly. | O(1) |
+| [JOKER1](JOKER1/README.md) | Order the caps like lining up people by height, then give each person the number of shorter people as a discount. The smallest cap offers every value below it; each later cap loses one value for every knife already served. | O(1) |
+| [PARTYTIM](PARTYTIM/README.md) | Think of each elevator as a moving conveyor that may stop for good, like a bus that leaves the route. At every floor all available people can transfer freely between the elevators that are still running. | O(1) |
+| [PYTRIP2](PYTRIP2/README.md) | Generate primitive triples once, then count legal multiples for each query with two divisions. This is like listing every bread recipe once and scaling portions to fit an order. | O(1) |
+| [SCIENCE](SCIENCE/README.md) | A flow test checks how many complete rounds the graph can support before any assignment is printed, like checking how many full deals a deck can supply before reshuffling. | O(1) |
+| [WITTYBOY](WITTYBOY/README.md) | Treat each remote state as a room and walk the cheapest route with a priority queue, like planning a trip with a map. A state remembers the current channel, the channel shown immediately before it, and how many required channels are already watched. | O(S * D) for S states and D digit candidates |
 
 ### Data structures, bits & simulation (44)
 
