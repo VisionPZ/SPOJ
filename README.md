@@ -1,10 +1,10 @@
-# SPOJ — 974 problems, one method
+# SPOJ — 980 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![974 problems](https://img.shields.io/badge/problems-974-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![980 problems](https://img.shields.io/badge/problems-980-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 974 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 980 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 974 problems
+## The 980 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -478,7 +478,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CBANK](CBANK/README.md) | Scale all coins to quarters and count the integer solutions of one equation, like counting change with a fixed set of denominations. The algorithm derives a closed form for the number of solutions and evaluates it with modular arithmetic. | O(1) per case |
 | [APS](APS/README.md) | The sequence is a running total, like a row of monthly bills where each new bill is the smallest prime factor of the current index. Find every smallest prime factor with one sieve, then accumulate them once in order. | O(largest N log log largest N plus T) |
 
-### Greedy, search & enumeration (504)
+### Greedy, search & enumeration (510)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -988,6 +988,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [LIFERACE](LIFERACE/README.md) | Repeated values form blocks, like stacked crates whose heights equal their labels. S is Golomb's sequence, and the block ends follow S(k) = sum of S[i] for i up to k. | O(1) |
 | [LOCKER](LOCKER/README.md) | Pieces of length three earn the most, like cutting a ribbon into the longest useful segments that still fit. The optimal split uses only twos and threes, since a piece of five or more can be split into better pieces. | O(1) |
 | [POWERPHI](POWERPHI/README.md) | A conjugate root cancels the irrational part, like pairing a wobbly scale reading with its mirror to hit a whole number. Let ψ be (1 − √5)/2, the other root of x² = x + 1. | O(1) |
+| [AFS](AFS/README.md) | Add each divisor to all of its multiples, like stamping every second seat with the number 2. One sieve pass builds every divisor sum, and prefix sums turn each query into a table lookup. | O(N log N + T) |
+| [IRECSQRT](IRECSQRT/README.md) | Unfold the inverse formula to expose a plain power of two, like straightening a folded strip to read the marks in order. The square-root recurrence gives the closed form a_n = (2^n + 1)(2^{n-1} + 1) / 3. | O(T log n) |
+| [THEATRE](THEATRE/README.md) | Find each blocker by looking for the first taller person ahead, like picking the first suitable card from a stack of candidates. The algorithm is a monotonic decreasing stack scanned from front to back. | O(N) |
+| [VOLNTEER](VOLNTEER/README.md) | Pick magnitudes from two piles, largest first when the naughty count is even and smallest first when it is odd, like choosing balls to keep a tally positive or negative. | O(N log N + k) |
+| [VPL1_AE](VPL1_AE/README.md) | Pass probability like a baton through a graph, where each stop splits the baton among its outgoing paths. Build a stochastic transition matrix, then use binary exponentiation to apply T steps at once. | O(N^3 log T + Q qi N^2 log T) |
+| [WWAKER](WWAKER/README.md) | Reach the target by joining at most two arrows, like walking one street then a diagonal shortcut. An aligned displacement needs one direction plus the stop. Any other displacement needs two directions plus the stop. | O(1) per test case |
 
 ### Data structures, bits & simulation (44)
 
