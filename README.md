@@ -1,10 +1,10 @@
-# SPOJ — 355 problems, one method
+# SPOJ — 359 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![355 problems](https://img.shields.io/badge/problems-355-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![359 problems](https://img.shields.io/badge/problems-359-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 355 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 359 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 355 problems
+## The 359 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -192,7 +192,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [WMELON](WMELON/README.md) | Compress the used coordinates, then slide one window over columns and another over rows. Think of sliding a picture frame across a photo until it contains enough faces. | O(Dx^2·Dy^2) |
 | [ZEBRA](ZEBRA/README.md) | Only people with your crossing time can collide. Think of picking a lane on a crosswalk and counting paths that cross your own. | O(n) |
 
-### Graphs & trees (36)
+### Graphs & trees (38)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -234,8 +234,10 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [TWORK](TWORK/README.md) | Treat each group as a path of length two, with a center who knows both ends. Picture the center as a hub with two spokes to the members it knows. | O(n^3) |
 | [WATERWAY](WATERWAY/README.md) | Choose each channel's arc to spread the load, then count the busiest fragment. Spread channels over arcs so no arc carries two channels on the same circle. | O(n) |
 | [WORDS1](WORDS1/README.md) | Model each word as a directed edge from its first letter to its last letter. Think of the words as one-way links between letters, and ask for a route using each link once. The question becomes whether that letter graph has an Eulerian path. | O(total input bytes) |
+| [UNWIRED](UNWIRED/README.md) | Budget the wire like cutting ribbon with a thick blade: reserve the waste before sharing the rest. k sections need k minus one cuts, so the waste is k minus one times m. | O(t) |
+| [WIRED](WIRED/README.md) | Match labels like pairing socks by color: look at each left sock, then find the matching right sock. A fixed grid of four by four pairs does the job without building any map. | O(t) |
 
-### Dynamic programming (37)
+### Dynamic programming (38)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -278,8 +280,9 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TREE2](TREE2/README.md) | Treat each tree as a bitstring and flip the rightmost zero that still allows a valid ending. Like counting in binary, change the last position that can still increase. | O(input bytes + flush block) |
 | [TRIP](TRIP/README.md) | Keep one cache of all best routes for every pair of list positions. Think of two travelers standing at positions in their own lists, choosing together whether to move forward or match the current city. | O(nm·k) |
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
+| [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (48)
+### Number theory & big integers (49)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -333,6 +336,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [ULTREVEN](ULTREVEN/README.md) | Look at blocks of length one, like checking every single card before checking any pile. Such a block has the value itself as its sum. An ultra even array therefore needs every value even, and that condition also suffices. | O(n) |
 | [PRF0103](PRF0103/README.md) | Ask for both numbers before answering, like a cashier who confirms the price and the count before quoting a total. The program scans each pair, tests the denominator, then formats one floating-point quotient. | O(total input characters) |
 | [TESTSTRX](TESTSTRX/README.md) | Add each pair as it arrives, like totaling items on a shopping list. The hand scanner walks the whole input once and reads two integers per case. Storing every pair first would add memory without changing any sum. | O(T) in the number of cases |
+| [SIOENES](SIOENES/README.md) | Cross out composite numbers once, like removing names from a guest list before counting the invitees. Sieve every multiple of each prime, then keep a running count of the survivors. | O(T + max N log log max N) |
 
 ### Greedy, search & enumeration (54)
 
