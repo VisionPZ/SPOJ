@@ -43,3 +43,14 @@ NJEG1	36107202	accepted
 FINAL1	36107170	accepted (C++ port; Nim unavailable on judge)
 FINAL6	36107172	accepted (C++ port; Nim unavailable on judge)
 FINAL7	36107173	accepted (C++ port; Nim unavailable on judge)
+GIRTH	36107303	accepted
+G10_2	36107353	accepted (C++03 port; Nim unavailable)
+G11_2	36107355	accepted (C++03 port; Nim unavailable)
+COUINF	36107362	accepted (C++03 port; Nim unavailable)
+FUCT_IF_SQUARE	36107385	accepted
+PCC15D	36107388	accepted (C++03 port, round at print)
+MOZESLS	36107371	accepted
+MOZMSLS	36107372	accepted
+MMFTEAM	36107375	accepted
+FUCT_FOR_PALIN	36107382	accepted
+RETO5	36107390	accepted (Python port; Nim unavailable)
