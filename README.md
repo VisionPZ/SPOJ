@@ -1,10 +1,10 @@
-# SPOJ — 1260 problems, one method
+# SPOJ — 1266 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1260 problems](https://img.shields.io/badge/problems-1260-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1266 problems](https://img.shields.io/badge/problems-1266-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1260 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1266 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1260 problems
+## The 1266 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -535,7 +535,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NKDIV](NKDIV/README.md) | Treat each prime exponent as a pile of stones. One move takes stones from at most `k` piles. This is like a shopper grabbing items from a few shelves at once. | O(R times sqrt(n) over log n) |
 | [ADADIGIT](ADADIGIT/README.md) | Try every ordering of the digits, like rearranging a handful of numbered tiles and scoring each row. Use the next-permutation routine to walk the orderings in sorted order. | O(1) |
 
-### Greedy, search & enumeration (730)
+### Greedy, search & enumeration (736)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1271,6 +1271,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [ADAHLIA](ADAHLIA/README.md) | Sorting forty million numbers is like sorting a whole library to find the widest shelf gap. Divide the value range into N equal buckets instead. The widest gap across buckets is at least one bucket width, so any gap inside one bucket cannot win. | O(N) |
 | [NTG](NTG/README.md) | Replacing each inner sum by divisor contributions is like counting coins by denomination instead of weighing each pile again. For a fixed upper endpoint j, numbers i with gcd(i, j) equal to d match the totient of j divided by d. | O(R log R + t) with R the largest right bound |
 | [TAKIN](TAKIN/README.md) | Splitting the trees into two piles is like counting coins in two drawers instead of one large chest. Build every subset sum in each half, sort one list, and pair each sum from the first half with the largest sum from the second half that still fits. | O(2^(N/2) log 2^(N/2)) per test |
+| [ADACITRS](ADACITRS/README.md) | Two leaves leave the same tree exactly when a symmetry of the tree can swap them, like matching folds on a paper snowflake. Root at the center and give each rooted subtree a shape number by sorting child numbers. | O(N log N) |
+| [ADACUT](ADACUT/README.md) | Trim every hedge to one fence line, and chop down any hedge already below that line; like choosing where to set the fence. Try each height present in the data, summing trims above it and removal costs below it. | O(N log N) |
+| [ADAFUROW](ADAFUROW/README.md) | Keep each furrow as a row of bits, like checkboxes on one long form, then compare two rows with one word operation. A bit is set when the furrow holds that kind. | O(Q * K / 64) |
+| [ADALEMON](ADALEMON/README.md) | Two leaves leave the same tree exactly when a symmetry of the original tree can swap them, like matching folds on a paper snowflake. Root the tree at its center and give every rooted subtree a shape number by sorting child numbers. | O(N log N) per case |
+| [ADASALE](ADASALE/README.md) | Treat the bag count as gear positions on one dial, and record the best cash at each position after every city. At a licensed city, moving between any two positions costs the difference of two precomputed price totals. | O(cityCount * bagLimit) |
+| [ADATOMEL](ADATOMEL/README.md) | Each upward jump carries a pre-packed bag of flavors, like grabbing a packed lunch for every flight of stairs. Store those bags as 16 machine words, one bit per flavor. | O((N + Q) log N * K / 64) |
 
 ### Data structures, bits & simulation (47)
 
