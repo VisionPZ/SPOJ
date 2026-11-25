@@ -1,10 +1,10 @@
-# SPOJ — 590 problems, one method
+# SPOJ — 596 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![590 problems](https://img.shields.io/badge/problems-590-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![596 problems](https://img.shields.io/badge/problems-596-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 590 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 596 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 590 problems
+## The 596 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -437,7 +437,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (163)
+### Greedy, search & enumeration (169)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -606,6 +606,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [CERC07N](CERC07N/README.md) | Treat a negative base like a regular place-value system whose places flip sign, the way a checkered board alternates colors. Repeated division by the positive radius extracts one digit at a time. | O(1) |
 | [MINUS](MINUS/README.md) | Every merge gives the left neighbor a plus sign and the right neighbor a minus sign, so the final value is a signed sum. The first number always keeps plus and the second always keeps minus, like the two ends of a see-saw that never swap sides. | O(n · S) per test |
 | [RNG](RNG/README.md) | Replace each symmetric uniform draw by a uniform draw from zero to twice X, then shift by S. This turns the question into a cumulative distribution of a sum of plain uniform variables, like stacking uniform blocks and measuring the pile height. | O(T · 2^N · N) |
+| [ACFRAC](ACFRAC/README.md) | Think of the picture as a row of signposts, like milestones that each tell you one division step. The Euclidean algorithm gives the signposts; the reverse pass folds them back into one fraction. | O(total output characters) |
+| [BOX](BOX/README.md) | Give each source box one ball that stays put, like reserving one seat for each group. Every extra ball then joins its group by expanding the group's occupied block one box at a time. | O(n k) for k spare balls, at most O(n^2) |
+| [IMGPROJ](IMGPROJ/README.md) | A run adds one value to a whole stretch of diagonals, like writing the same number into a consecutive group of ledger lines. Record only where each contribution starts and stops. | O(E log E) for E events |
+| [MMCUT](MMCUT/README.md) | Treat each leaf edge as a light switch, like flipping switches in a hallway. A pair with the root needs its leaf switch on. A leaf-to-leaf pair needs exactly one of its two switches on when the answer is 1. | O(N + M) |
+| [SETCOV](SETCOV/README.md) | A hidden path is like a row of streetlights, and each element needs one lit edge between its two endpoints. Recover the order of the edges, then stab the intervals from left to right. | O(N^2 * M / 64 + ordering) |
+| [SKIVALL](SKIVALL/README.md) | A valley has two high ends and one low centre, like two streams running down opposite slopes into the same basin. Build the path backwards from those two high ends, always stepping to a lower neighbour. | O(C^2) for C cells |
 
 ### Data structures, bits & simulation (42)
 
