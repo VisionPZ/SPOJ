@@ -1,10 +1,10 @@
-# SPOJ — 567 problems, one method
+# SPOJ — 573 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![567 problems](https://img.shields.io/badge/problems-567-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![573 problems](https://img.shields.io/badge/problems-573-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 567 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 573 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 567 problems
+## The 573 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -238,7 +238,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 
-### Graphs & trees (44)
+### Graphs & trees (45)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -288,6 +288,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [TRSTAGE](TRSTAGE/README.md) | Add one used ticket to the route description each time the coach moves, like ticking off coupons in a booklet. The coupon set and current city form a state, and states move only forward. | O(1) |
 | [EXPLOSN](EXPLOSN/README.md) | Think of guards on one-way roads: every road needs a guard at one end, and each junction has one outgoing road. Peel away people with no incoming testimonies, then solve each remaining cycle separately. | O(1) |
 | [TREASURY](TREASURY/README.md) | Treat pairing like assigning dance partners at a party: each person may join one pair at most. Process the office tree from the lowest subordinates upward, like closing branches before the root. | O(1) |
+| [GSS3](GSS3/README.md) | Store four numbers at each segment-tree node, like keeping a receipt for each shop segment: total, best prefix, best suffix, and best inside block. Joining two neighbouring segments is one fixed formula, so both updates and range queries follow the tree path. | O(N + M log N) |
 
 ### Dynamic programming (40)
 
@@ -432,7 +433,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (145)
+### Greedy, search & enumeration (150)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -583,6 +584,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [FUSION](FUSION/README.md) | Collisions swap electron identities, like runners passing a baton, so no travel path changes. Treat each source as choosing its longest clear run, then take the shortest run among sources. | O(1) |
 | [GEN](GEN/README.md) | Treat matching as a museum turnstile: once a visitor sees an exhibit, they join the counted crowd forever. Build an Aho-Corasick automaton whose states remember the current matching prefix. | O(1) |
 | [HALLOW](HALLOW/README.md) | Think of a row of prefix totals and two matching remainders, like two identical marks on a ruler. The sweets between those marks form a block whose sum is divisible by the number of children. | O(1) |
+| [BMJ](BMJ/README.md) | Peel the spiral into rings, like counting the turns of a coiled rope. Each ring starts at a known cell, then moves through six straight sides. The method is a direct ring walk with six fixed direction vectors. | O(K sqrt M) for K numbers up to M |
+| [NCKLCE](NCKLCE/README.md) | Keep the necklace in one fixed array, like a ring of beads clipped to a board, and remember only a rotation and a mirror flag. A lazy segment tree stores the number of color parts for every interval. | O(N + Q log N) |
+| [RP](RP/README.md) | Treat the graph as a sliding window of width k, like a train of connected carriages passing a station. A frontier count over the last k vertices produces a linear recurrence for each k. | O(8 * d^2 log n) with d at most 41 |
+| [SCALE](SCALE/README.md) | Read the mass as a balanced ternary number, like writing an amount with coins that can be added or subtracted. Each weight has three choices: left scale, right scale, or unused. | O(N) |
+| [TRICOUNT](TRICOUNT/README.md) | Add upright and downward triangles as two stacks of bricks, then collapse each stack with one formula. The method is a closed-form count from a quadratic sum. Each test case costs constant time. | O(T) |
 
 ### Data structures, bits & simulation (42)
 
