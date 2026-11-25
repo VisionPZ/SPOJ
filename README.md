@@ -1,10 +1,10 @@
-# SPOJ — 359 problems, one method
+# SPOJ — 385 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![359 problems](https://img.shields.io/badge/problems-359-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![385 problems](https://img.shields.io/badge/problems-385-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 359 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 385 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,11 +13,11 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 359 problems
+## The 385 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
-### Strings & text (77)
+### Strings & text (89)
 
 KMP, borders, tries and rolling hashes keep matching linear. Expression parsing and text rewriting add one stack pass. DP over all substrings is the only quadratic corner.
 
@@ -100,8 +100,20 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [ILOVEYOU](ILOVEYOU/README.md) | Filling a blank on a form works the same way: copy the entered number into one fixed sentence. The real work is reading digits and joining them with two text pieces. | O(L), where L is input length |
 | [PRF00](PRF00/README.md) | A vending machine that always dispenses the same snack ignores the button you press. This program behaves that way: it reads stdin for completeness, then prints the same fixed line. | O(L), where L is input length |
 | [UC_OLAMUNDO](UC_OLAMUNDO/README.md) | Copy the fixed greeting around the name, like filling a blank on a printed form. Read the first line once, then write the greeting with that line inserted between its two fixed parts. | O(input bytes) |
+| [ALGOUPT09](ALGOUPT09/README.md) | A dictionary is like a label maker: each Japanese word maps to one fixed phrase. Store the pairs in a hash table, then replace each lyric word by its stored phrase. | O(L + M + W) per case |
+| [KAMOL](KAMOL/README.md) | A farewell card carries the same words every time, no matter who opens it. The program writes its fixed card and ignores stdin. The real algorithm is a constant string write. | O(I) for I input bytes |
+| [M1101](M1101/README.md) | A constant greeting is like a stamped envelope: every run gets the same words. The algorithm is one string write, so the cost per input item is zero. | O(1) |
+| [MANIP001](MANIP001/README.md) | Treat each marker as a signpost, like stops on a bus route. The algorithm jumps from signpost to signpost, reads a number when one is present, and takes the remaining text as the detail field. | O(L) |
+| [MUJDONLT](MUJDONLT/README.md) | Counting coprime rolls one by one is like checking every guest at a door, while factoring n is like reading the guest list once. Remove each distinct prime factor p of n and scale the count by (p-1)/p. | O(sqrt n) worst case |
+| [NIT241A](NIT241A/README.md) | A fixed greeting is like a sign nailed to a wall: it reads the same every time. The algorithm is one string write, so the cost per input item is zero. | O(1) |
+| [PRF04STRING01](PRF04STRING01/README.md) | Echoing a written note is like copying a line from one card onto another card, character by character. A buffered character copy is the real method. Each character costs O(1) to copy, so the run is O(L) for L characters. | O(L) |
+| [PRF04STRING02](PRF04STRING02/README.md) | Removing leading blanks is like sliding a row of tiles left until the first tile has a mark. A leading-whitespace scan is the real method. Each skipped blank costs O(1), and the copy costs O(L) for L remaining characters. | O(B + L) |
+| [PRF04STRING03](PRF04STRING03/README.md) | Trimming the right edge is like cutting the frayed end off a ribbon and keeping the clean part. A trailing-whitespace scan is the real method. Each step from the right costs O(1), and the copy costs O(L) for L kept characters. | O(L + T) |
+| [PRF04STRING04](PRF04STRING04/README.md) | Treat a run of whitespace like a closed door: it opens the way to the next word, but only one space passes through. Scan the text once and keep a flag that says a space is waiting. | O(L) for input length L |
+| [PRF04STRING05](PRF04STRING05/README.md) | Think of a ten-slot shelf: you load characters until the shelf is full, then ignore the rest. Find where the first line ends, copy at most ten characters from its start, and print them. | O(L) to read input of length L |
+| [REDIRECT](REDIRECT/README.md) | Think of the board as a one-way street with one allowed U-turn, like a bus route that can loop only at one terminal. If the player can reach the charged tile and travel from its backward landing spot back to it, the route repeats forever and every value of m wins. | O(n) |
 
-### Geometry & grids (84)
+### Geometry & grids (85)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
@@ -191,6 +203,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [WINDOW1](WINDOW1/README.md) | Sweep thin horizontal bands from the window bottom to its top. Think of slicing a cake into layers and counting how many separate pieces appear in each layer. | O(n) |
 | [WMELON](WMELON/README.md) | Compress the used coordinates, then slide one window over columns and another over rows. Think of sliding a picture frame across a photo until it contains enough faces. | O(Dx^2·Dy^2) |
 | [ZEBRA](ZEBRA/README.md) | Only people with your crossing time can collide. Think of picking a lane on a crosswalk and counting paths that cross your own. | O(n) |
+| [VCYLINDER](VCYLINDER/README.md) | Apply the textbook volume rule, like filling a can and measuring the result to the nearest hundredth. Radius is half the diameter. Multiply pi by radius squared and by height. | O(1) apart from input bytes |
 
 ### Graphs & trees (38)
 
@@ -282,7 +295,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (49)
+### Number theory & big integers (51)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -337,8 +350,10 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [PRF0103](PRF0103/README.md) | Ask for both numbers before answering, like a cashier who confirms the price and the count before quoting a total. The program scans each pair, tests the denominator, then formats one floating-point quotient. | O(total input characters) |
 | [TESTSTRX](TESTSTRX/README.md) | Add each pair as it arrives, like totaling items on a shopping list. The hand scanner walks the whole input once and reads two integers per case. Storing every pair first would add memory without changing any sum. | O(T) in the number of cases |
 | [SIOENES](SIOENES/README.md) | Cross out composite numbers once, like removing names from a guest list before counting the invitees. Sieve every multiple of each prime, then keep a running count of the survivors. | O(T + max N log log max N) |
+| [NUM06](NUM06/README.md) | Shrink the pair by division, like trimming a rope to the shorter piece and the leftover cut. Replacing the larger number by the remainder keeps every common divisor and loses nothing else. | O(number of pairs times log value) |
+| [NUMPDROM](NUMPDROM/README.md) | Build the reversed number by peeling digits off the right, like moving beads from one side of an abacus to the other. Each peeled digit is appended to a new number. | O(number of digits) |
 
-### Greedy, search & enumeration (54)
+### Greedy, search & enumeration (57)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -398,8 +413,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [PRF02LOOP02](PRF02LOOP02/README.md) | A fixed alphabet is like a row of labelled mailboxes: walk down the row once and copy each label out. The program walks character codes 97 through 122 and converts each code to its letter. | O(1) |
 | [PRF02LOOP03](PRF02LOOP03/README.md) | A repeated-row triangle is like stacking blocks: each new row adds one more copy of the same label. The program reads N, prints the shared prompt, and splits into the invalid and valid paths. | O(N^2) |
 | [PRF02LOOP04](PRF02LOOP04/README.md) | A rising triangle is like writing a staircase: row r always adds the next step number. The program reads N, prints the shared prompt, and splits into the invalid and valid paths. | O(N^2) |
+| [AIOPBINA](AIOPBINA/README.md) | Open the array in the middle, like finding a word in a dictionary by halving the page range each time. If the middle is too small, search the right half; if too large, search the left half. | O(T log N) after input |
+| [IIC12345545](IIC12345545/README.md) | Peel digits off a number like removing onion layers until one digit stays. Division by ten removes the rightmost layer each round. The real algorithm is repeated integer division. | O(d) for d input digits |
+| [THR18A](THR18A/README.md) | Score the tie like a two-round contest with a backup rule. Add each team's goals from both matches. When totals tie, count only goals scored in the other team's stadium. | O(1) apart from input bytes |
 
-### Data structures, bits & simulation (19)
+### Data structures, bits & simulation (27)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -424,6 +442,14 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [AR2MIN](AR2MIN/README.md) | Keep the smallest entry seen so far, like a runner checking each new split time against a personal best. The hand scanner reads one token at a time and compares it with the current best. | O(n m) in the number of entries |
 | [AR2SUM](AR2SUM/README.md) | Add the entries as they arrive, like dropping coins into one jar. The hand scanner walks the input bytes once and keeps a running total. Building a table first would allocate memory and add a second pass. | O(n m) in the number of entries |
 | [PRF03ARRAY0101](PRF03ARRAY0101/README.md) | Filling an array is like completing a labelled form: write each field label while you read its value, then show the filled form. The program prints the count prompt, then one value prompt per input number. | O(N) |
+| [AR1NHAPINMANG](AR1NHAPINMANG/README.md) | Treat the input as one long stream of numbers and remember the column count. A counter tells you when a row is full, so you write a newline at that point. | O(R times C) for R rows and C columns |
+| [AR2BOOK](AR2BOOK/README.md) | Treat each line as one field, like filling four boxes on a form. Copy the first three boxes as they are, parse the fourth as a number, then write the boxes in order with a separator between them. | O(L) for input length L |
+| [AR2EMPLOYEES](AR2EMPLOYEES/README.md) | Treat the input as a stack of four-line cards, one per employee. Read the first line of each card as the id, the next as the name, and so on, then write the card as one line. | O(L) for input length L |
+| [ARBOOK2](ARBOOK2/README.md) | Treat the input as a stack of four-line cards, one per book. Read each line of a card into its matching field, then write the card as one line. | O(L) for input length L |
+| [AREMPLOYEE](AREMPLOYEE/README.md) | Keep the four lines separate, like four labeled slots on a form. The algorithm reads each line once, parses the salary as a number, and joins the slots with ` : `. | O(L) |
+| [PRF03ARRAY0102](PRF03ARRAY0102/README.md) | Sorting numbered cards means sliding each card left until the cards before it sit in order, like arranging cards on a desk. Insertion sort is the real algorithm here. | O(N^2) |
+| [PRF03ARRAY0103](PRF03ARRAY0103/README.md) | Sorting numbered cards means sliding each card left until the cards before it sit in order, like arranging cards on a desk. Insertion sort is the real algorithm here. | O(N^2) |
+| [PRF03ARRAY0104](PRF03ARRAY0104/README.md) | Finding the smallest card in a hand is like picking the shortest pencil from a cup: keep the best one seen so far and replace it on a better find. | O(N) |
 
 ## License
 
