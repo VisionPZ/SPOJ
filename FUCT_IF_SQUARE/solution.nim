@@ -51,14 +51,11 @@ proc appendInteger(value: int) =
     outputBuffer.add digitStore[index]
   flushIfReady()
 let testCount = nextNumber(inputData, scanPos)
-for caseIndex in 0..<testCount:
+for _ in 0..<testCount:
   let edge = nextNumber(inputData, scanPos)
   if edge <= 0:
     appendOutput("the length of square's edge must be greater than 0")
-    if caseIndex == testCount - 2:
-      discard
-    else:
-      appendOutput("\n")
+    appendOutput("\n")
   else:
     appendInteger(4 * edge)
     appendOutput(" ")

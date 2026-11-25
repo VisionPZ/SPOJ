@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""Test-data generator and statement-derived oracle for FUCT_IF_SQUARE.
+
+The statement asks for one answer per test case, separated by a newline.
+The printed sample misses the newline before its last answer; that is a typo
+in the statement, not a formatting rule.  Every error message is one line.
+"""
 import random
 import sys
 from pathlib import Path
@@ -20,6 +26,16 @@ SAMPLE_OUTPUT = (
     "the length of square's edge must be greater than 0\n"
     "12 9\n"
     "48 144\n"
+    "the length of square's edge must be greater than 0\n"
+    "80 400\n"
+)
+
+STATEMENT_SAMPLE_OUTPUT = (
+    "the length of square's edge must be greater than 0\n"
+    "4 1\n"
+    "the length of square's edge must be greater than 0\n"
+    "12 9\n"
+    "48 144\n"
     "the length of square's edge must be greater than 080 400\n"
 )
 
@@ -29,15 +45,14 @@ ERROR_TEXT = "the length of square's edge must be greater than 0"
 def oracle(text):
     parts = text.split()
     count = int(parts[0])
-    chunks = []
+    lines = []
     for case_index in range(count):
         edge = int(parts[case_index + 1])
         if edge <= 0:
-            separator = "" if case_index == count - 2 else "\n"
-            chunks.append(ERROR_TEXT + separator)
+            lines.append(ERROR_TEXT)
         else:
-            chunks.append("%d %d\n" % (4 * edge, edge * edge))
-    return "".join(chunks)
+            lines.append("%d %d" % (4 * edge, edge * edge))
+    return "".join(line + "\n" for line in lines)
 
 
 def write(name, edges):
@@ -47,8 +62,10 @@ def write(name, edges):
 
 
 assert oracle(SAMPLE_INPUT) == SAMPLE_OUTPUT
+assert STATEMENT_SAMPLE_OUTPUT == SAMPLE_OUTPUT.replace(ERROR_TEXT + "\n80 400\n", ERROR_TEXT + "80 400\n")
 assert oracle("1\n3\n") == "12 9\n"
-assert oracle("2\n0\n4\n") == ERROR_TEXT + "16 16\n"
+assert oracle("1\n0\n") == ERROR_TEXT + "\n"
+assert oracle("2\n0\n4\n") == ERROR_TEXT + "\n16 16\n"
 assert oracle("3\n-1\n2\n-2\n") == ERROR_TEXT + "\n8 4\n" + ERROR_TEXT + "\n"
 
 

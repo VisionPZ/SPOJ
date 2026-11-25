@@ -6,8 +6,9 @@
 
 You receive an edge length and print the perimeter and area of a square.
 The first input line gives the test count T. Each next line gives one edge.
-A nonpositive edge prints the fixed error message. Otherwise print perimeter and area separated by a space.
-The sample joins the error immediately before the final test to the final answer. This program keeps that byte shape.
+A nonpositive edge prints the fixed error message instead of two numbers.
+Otherwise print perimeter and area as integers separated by one space.
+Every answer occupies its own line.
 
 | Item | Bound |
 |---|---|
@@ -31,7 +32,7 @@ Sample input:
 20
 ```
 
-Sample output:
+The statement prints the last two answers on one line. The newline between the error message and `80 400` is missing there. That is a typo in the statement text, not a formatting rule. The output below follows the stated rule: one answer per line.
 
 ```
 the length of square's edge must be greater than 0
@@ -39,17 +40,16 @@ the length of square's edge must be greater than 0
 the length of square's edge must be greater than 0
 12 9
 48 144
-the length of square's edge must be greater than 080 400
+the length of square's edge must be greater than 0
+80 400
 ```
-
-The sample fixes the exact byte shape, including its spaces and line breaks.
 
 ## Idea
 
 The edge sets both the fence around the square and the tiles inside it.
 The program multiplies the edge by four for perimeter and by itself for area.
 It writes both integers into one output buffer.
-The sample omits one newline, and the code reproduces that exact output.
+A nonpositive edge writes the fixed message and then a newline, like every other case.
 
 Constant arithmetic plus buffered digits covers every test.
 
@@ -58,13 +58,12 @@ Constant arithmetic plus buffered digits covers every test.
 1. Perimeter equals four copies of the edge.
 2. Area equals the edge multiplied by itself.
 3. A nonpositive edge takes the error branch.
-4. An invalid edge immediately before the final test emits no line break.
+4. Every branch ends its answer with one newline, so answers stay separated.
 
 | Term | Meaning |
 |---|---|
 | `edge` | the current square side length |
 | `appendInteger` | writes one nonnegative decimal value |
-| `caseIndex` | position of the current test |
 | `outputBuffer` | one growing block of answer text |
 
 The edge is read once and used in both formulas.
@@ -79,7 +78,7 @@ Script-generated trace from `gen.py`:
 20 80 400
 ```
 
-The trace lists the same edges as the sample with their two results.
+The trace lists the positive sample edges with their two results and the invalid edge with the error text.
 
 ## Code
 
@@ -156,14 +155,11 @@ proc appendInteger(value: int) =
 
 ```nim
 let testCount = nextNumber(inputData, scanPos)
-for caseIndex in 0..<testCount:
+for _ in 0..<testCount:
   let edge = nextNumber(inputData, scanPos)
   if edge <= 0:
     appendOutput("the length of square's edge must be greater than 0")
-    if caseIndex == testCount - 2:
-      discard
-    else:
-      appendOutput("\n")
+    appendOutput("\n")
   else:
     appendInteger(4 * edge)
     appendOutput(" ")
@@ -175,7 +171,7 @@ outputBuffer.setLen 0
 ```
 
 The loop runs exactly T times.
-The sample newline quirk is handled here.
+The error branch and the numeric branch each end with a newline.
 The final flush clears the partial block.
 
 ## Complexity
