@@ -1,10 +1,10 @@
-# SPOJ — 446 problems, one method
+# SPOJ — 452 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![446 problems](https://img.shields.io/badge/problems-446-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![452 problems](https://img.shields.io/badge/problems-452-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 446 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 452 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,11 +13,11 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 446 problems
+## The 452 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
-### Strings & text (95)
+### Strings & text (97)
 
 KMP, borders, tries and rolling hashes keep matching linear. Expression parsing and text rewriting add one stack pass. DP over all substrings is the only quadratic corner.
 
@@ -118,6 +118,8 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [STARJUST](STARJUST/README.md) | Think of hanging a picture on a wall, then filling the empty space with equal stacks of stars on each side. The leftover star goes on the left when the gap is odd. | O(total output characters) |
 | [TIMORSE](TIMORSE/README.md) | Add durations like filling a timeline with blocks, like stacking tiles of length one and three. Each letter contributes its symbols plus the small gaps between them. A new letter after letters adds three; a new letter after spaces adds seven. | O(total input characters) |
 | [MOZSACL](MOZSACL/README.md) | Stamping powers of a divisor is like labelling lockers 2, 4, and 8 with one tag, then asking how many tags of a color sit in a hallway. | O(1) |
+| [MOZSATC](MOZSATC/README.md) | Think of a zipper sliding along the string: you open it past one comma and close it when a fourth comma appears. That is the two-pointer sliding window, costing one look at each character. | O(n) |
+| [MOZSATSK](MOZSATSK/README.md) | Think of each position as a room whose doors depend on the digit you carry. At each minute, the doors open to four nearby positions whose digits differ by at most one around the clock. | O(n) |
 
 ### Geometry & grids (91)
 
@@ -377,7 +379,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NUMTHEO01](NUMTHEO01/README.md) | Keep the running product small by reducing it after each factor, like paying down a balance after every purchase. Split the next factor into two small pieces so both partial products stay inside 64 bits. | O(t*n) worst case |
 | [SIS110G401](SIS110G401/README.md) | Treat each pair like two hands of counters and combine them into one pile. Read every integer in order, pair the values, and add them. The algorithm is a linear scan with a hand-written integer reader and a block output buffer. | O(total input bytes) |
 
-### Greedy, search & enumeration (87)
+### Greedy, search & enumeration (89)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -470,8 +472,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [SDF4E](SDF4E/README.md) | A new road only helps as a bridge between two known halves of the trip, like adding one rung between a ladder's bottom and top halves. Precompute the cost from city 0 to every city and from every city to city N-1. | O(M log M + Q) |
 | [SDF4F](SDF4F/README.md) | Treat each island group like a pile of connected blocks, then count the piles. One new bridge merges exactly two piles, like tying two stacks of papers with one clip. | O((N + P) alpha(N)) |
 | [SHEEPNAM](SHEEPNAM/README.md) | A tree has one path between two nodes, like a single corridor between two rooms. Walk that corridor once from X and stop on reaching Y, adding the road times as you go. | O(n) |
+| [MOZSATD](MOZSATD/README.md) | Think of removing coins from a pile until the rest can be cut exactly in half. If the pile is already even, keep everything. If it is odd, dropping the smallest odd coin is the cheapest repair. | O(n) |
+| [MOZTAIP](MOZTAIP/README.md) | Think of copying a sign letter by letter instead of reading its meaning. A backslash followed by `t` is two marks on the paper, not a tab. Print the 26 characters as one constant string. | O(1) |
 
-### Data structures, bits & simulation (34)
+### Data structures, bits & simulation (36)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -511,6 +515,8 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [MAX10](MAX10/README.md) | Keep a running champion, like a scoreboard that only changes for a new high score. Start the champion at zero. Read each value and replace the champion only when the value is larger. | O(1) |
 | [KVAR](KVAR/README.md) | A distant inversion always hides a neighboring inversion on the walk between the two spots, like a long detour that still crosses a nearby turn. Store the smallest value to the right of each spot and compare it with the current value. | O(1) |
 | [MOZSAPAR](MOZSAPAR/README.md) | Filling gaps is like balancing a stack of plates: add enough plates early so every later removal has one to take. Count the openings required by the final totals, then spend that budget on the earliest question marks. | O(1) |
+| [MOZSATLA](MOZSATLA/README.md) | Think of two crowds pushing a row of posts from each end. A rising code pushes the right post higher; a falling code pushes the left post higher. | O(n) per case |
+| [MOZVAPA](MOZVAPA/README.md) | Think of pairing every opening bracket with one closing bracket. A valid sequence needs exactly one partner of each kind, so equal counts are both necessary and enough. | O(n + Q) per case |
 
 ## License
 
