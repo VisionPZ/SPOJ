@@ -1,10 +1,10 @@
-# SPOJ — 968 problems, one method
+# SPOJ — 974 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![968 problems](https://img.shields.io/badge/problems-968-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![974 problems](https://img.shields.io/badge/problems-974-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 968 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 974 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 968 problems
+## The 974 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -478,7 +478,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CBANK](CBANK/README.md) | Scale all coins to quarters and count the integer solutions of one equation, like counting change with a fixed set of denominations. The algorithm derives a closed form for the number of solutions and evaluates it with modular arithmetic. | O(1) per case |
 | [APS](APS/README.md) | The sequence is a running total, like a row of monthly bills where each new bill is the smallest prime factor of the current index. Find every smallest prime factor with one sieve, then accumulate them once in order. | O(largest N log log largest N plus T) |
 
-### Greedy, search & enumeration (498)
+### Greedy, search & enumeration (504)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -982,6 +982,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [VPL1_AC](VPL1_AC/README.md) | Think of a laser between two antennas and a hula hoop of radius R around each other antenna. The link works only when no hoop touches the laser. | O(n^3) per case |
 | [VPL1_AD](VPL1_AD/README.md) | Think of a delivery route where crossing a barricade spends a ticket. Keep the best remaining distance for each set of visited leaves, current leaf and tickets spent. | O(n^2 m + 2^n n^2 k) per case |
 | [WEBISL](WEBISL/README.md) | Think of one-way streets and ask which blocks let you drive from any house to any other house in the block. Kosaraju's algorithm finds those blocks with two depth-first passes, one on the links and one on the reversed links. | O(pages + links) |
+| [AFS2](AFS2/README.md) | Every divisor contributes once to each later multiple, like counting bricks that each appear in several walls. Rewrite a[n] as a sum over divisors x of x times (floor(n/x) − 1). | O(1) |
+| [AFSK](AFSK/README.md) | Each divisor contributes to many later multiples, like one coin counted in every stack it supports. Rewrite the answer as the sum over d of dᵏ times floor(n/d). | O(1) |
+| [DIXIE001](DIXIE001/README.md) | Sorting characters by frequency is like lining people up by height, then pairing the shortest with the tallest. Count all bytes first, order the distinct values by frequency and ASCII, and mirror the list into a substitution table. | O(B + D²) |
+| [LIFERACE](LIFERACE/README.md) | Repeated values form blocks, like stacked crates whose heights equal their labels. S is Golomb's sequence, and the block ends follow S(k) = sum of S[i] for i up to k. | O(1) |
+| [LOCKER](LOCKER/README.md) | Pieces of length three earn the most, like cutting a ribbon into the longest useful segments that still fit. The optimal split uses only twos and threes, since a piece of five or more can be split into better pieces. | O(1) |
+| [POWERPHI](POWERPHI/README.md) | A conjugate root cancels the irrational part, like pairing a wobbly scale reading with its mirror to hit a whole number. Let ψ be (1 − √5)/2, the other root of x² = x + 1. | O(1) |
 
 ### Data structures, bits & simulation (44)
 
