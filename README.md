@@ -1,10 +1,10 @@
-# SPOJ — 885 problems, one method
+# SPOJ — 891 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![885 problems](https://img.shields.io/badge/problems-885-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![891 problems](https://img.shields.io/badge/problems-891-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 885 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 891 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 885 problems
+## The 891 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -467,7 +467,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [DCEPCA03](DCEPCA03/README.md) | Squaring a sum is like pairing every card in a pile with every card in the same pile. One pass builds all totients with a sieve, and a prefix array gives each sum at once. | O(N log log N + T) |
 | [NDIV](NDIV/README.md) | Stamp divisor counts across the interval, like marking every tenth house on a street. Each small prime visits its multiples once, so no number needs a fresh factor search. | O(sqrt(b) log log b + (b - a) log log b) |
 
-### Greedy, search & enumeration (426)
+### Greedy, search & enumeration (432)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -899,6 +899,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [SGAME](SGAME/README.md) | Think of a post carrier who must walk every street once and end at the depot. Each crossing needs one arrival and one departure, so every city degree must be even, and all streets must belong to the depot's connected group. | O(total lines + 300 per case) |
 | [VPL0_C](VPL0_C/README.md) | Dividing a rope into evenly growing chunks is like this chain: each step adds one more unit than the last. A sieve writes every divisor count once, then each member is a table lookup. | O(N log N + T sqrt(N)) |
 | [VPL0_D](VPL0_D/README.md) | Think of two stacks of numbered cards: you may take a card only when the same number sits on both stacks in the same order. The weighted LCS table keeps the best sum for each pair of prefixes. | O(KN) per case |
+| [BNMT](BNMT/README.md) | Try each legal common row count, then send ones through a cheapest-path network, like routing parcels along toll roads where some roads are free. A cell that already holds one has cost zero; a cell holding zero costs one flip. | O(1) |
+| [DCEPCA01](DCEPCA01/README.md) | The score counts unequal digit pairs two places apart, like checking alternating stripes on a fence. Split positions by parity: each parity strand must alternate, like a zipper with two independent tracks. | O(1) |
+| [DCEPCA04](DCEPCA04/README.md) | Add problems one at a time and remember how many ways reach each score, like tallying running totals at a checkpoint. The tally has two axes: problems chosen and accepted solutions. | O(P K S) with P = 44, K = 10, S = 1000 |
+| [DCEPCA06](DCEPCA06/README.md) | Treat each allowed digit jump as an edge and count walks of length N minus one, like counting routes through a ten-station network. Squaring the ten by ten edge matrix repeatedly jumps many steps at once, so a billion digits need about thirty rounds. | O(1) |
+| [DCEPCA08](DCEPCA08/README.md) | The generated values cycle through every residue from one to fifty-two, like a clock with fifty-two positions. One full cycle can form every sum from zero up to its total, like having enough coins to pay any amount. | O(1) |
+| [DCEPCA10](DCEPCA10/README.md) | Treat the median as a majority vote: once one value holds a majority, it wins automatically, like electing a candidate with over half the ballots. Sort the values and find the longest equal run. | O(1) |
 
 ### Data structures, bits & simulation (44)
 
