@@ -1,10 +1,10 @@
-# SPOJ — 708 problems, one method
+# SPOJ — 714 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![708 problems](https://img.shields.io/badge/problems-708-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![714 problems](https://img.shields.io/badge/problems-714-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 708 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 714 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 708 problems
+## The 714 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -450,7 +450,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (267)
+### Greedy, search & enumeration (273)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -723,6 +723,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [SHOOTING](SHOOTING/README.md) | Treat each target as a box that multiplies every bullet placed inside it, like stacking weights whose effects compound. We need to split all bullets into `m` boxes and choose the split with the largest summed product. | O(3^n * m) |
 | [TRIOMINO](TRIOMINO/README.md) | Treat each empty run as a heap whose size is its Grundy number, like counting leftover stones in Nim. Combine Grundy values with exclusive-or, then take the mex of reachable values. | O(800² + T) |
 | [UNTITLE1](UNTITLE1/README.md) | Treat the array as shelves in a warehouse, each holding a fixed number of boxes. A full shelf gets a single sticky note recording the change, like marking the whole shelf at once. | O((N / 512 + 512) M) |
+| [ELECTRO](ELECTRO/README.md) | turn each electrode into a family of travel lines, like choosing rails that all run the same way. A switch between two rails happens where they cross, and that crossing must lie in both electrode strips. | O(1) |
+| [FILTER](FILTER/README.md) | walk possible original rows as states, like selecting tiles one row at a time. Each state holds the last two rows, because the filter output for a row depends on its neighbour rows. | O(1) |
+| [LAND](LAND/README.md) | half-area rule becomes a Pell equation, like finding the closest rational answer to a square root. Write the rule as `a^2 - 2*n*b^2 >= 0`. The smallest possible waste is zero when `2*n` is a square, and one otherwise; the latter case is the Pell equation `a^2 - 2*n*b^2 = 1`. | O(1) |
+| [LIFEGAME](LIFEGAME/README.md) | self-propagation is a fixed linear map, like repeatedly multiplying a vector by one matrix. Fast exponentiation applies that map `log L` times instead of `L` times. Each colony keeps its own viruses and sends one copy to each neighbour, so the matrix has a one on the diagonal and ones at neighbour positions. | O(1) |
+| [PAINTBLC](PAINTBLC/README.md) | merge adjacent equal blocks and count arrangements of the merged runs. Inclusion-exclusion turns each kind into a small polynomial whose coefficients track merged pairs. Multiply the polynomials once per case, then read the answer from one convolution sum. | O(1) |
+| [PAINTBLK](PAINTBLK/README.md) | merge adjacent equal blocks and count arrangements of the merged runs. Inclusion-exclusion turns each kind into a small polynomial whose coefficients track merged pairs. Multiply the polynomials once per case, then read the answer from one convolution sum. | O(1) |
 
 ### Data structures, bits & simulation (43)
 
