@@ -1,10 +1,10 @@
-# SPOJ — 797 problems, one method
+# SPOJ — 803 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![797 problems](https://img.shields.io/badge/problems-797-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![803 problems](https://img.shields.io/badge/problems-803-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 797 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 803 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 797 problems
+## The 803 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -459,7 +459,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (346)
+### Greedy, search & enumeration (352)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -811,6 +811,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [RESOURCE](RESOURCE/README.md) | String the stations into downhill chains, like threading beads so each thread only runs downward. A minimum path cover in a directed acyclic graph gives the fewest chains, and one cable ride joins each extra chain. | O(1) |
 | [SICRANO](SICRANO/README.md) | A point lies on a segment when it sits on the same line and between the two ends, like a bead located on a stretched string. The cross product tests the line in one multiplication, and a bounding-box test rules out points beyond the ends. | O(1) |
 | [STUN](STUN/README.md) | Treat every award as a dated event, like entries on a calendar, then scan the events in time order. A group produces one event per completed stun round and one poison event when two or more seconds remain. | O(1) |
+| [CAPRICA](CAPRICA/README.md) | Treat both groups as one starting point, like pouring water from every tap at once. Multi-source Dijkstra spreads outward from all first-group cities together. The first second-group city reached gives the shortest distance. | O(1) |
+| [GREENLAN](GREENLAN/README.md) | A fence edge lies between two cells, so a lake blocks it only when that lake sits beside the edge. Think of sliding a rectangular frame over a grid of tiles. | O(1) |
+| [IOPC1204](IOPC1204/README.md) | A prime keeps almost all of its numbers coprime, like a row of seats with no reserved places. For prime p the totient is p−1. Nearby composite numbers lose a fixed share of their seats to a small prime factor. | O(1) |
+| [IOPC1205](IOPC1205/README.md) | A non-magician waits for an off bulb, then turns it on once. A magician turns an on bulb off and increments the shared counter. Think of collecting K tokens from one queue and M names from another. | O(1) |
+| [PAREN](PAREN/README.md) | Every legal grouping splits at one final operator, like choosing the last joint in a chain. For each interval of operands, store how many groupings give true and how many give false. | O(1) |
+| [SPRING](SPRING/README.md) | A spring is like a rubber band with zero rest length: force equals constant times stretch. Think of spreading a fixed distance along a chain of bands. The best arrangement shares the distance so no band is stretched too far. | O(1) |
 
 ### Data structures, bits & simulation (44)
 
