@@ -1,0 +1,10 @@
+{"compile":[
+["/home/pingz/Storage/Projects/SPOJ/PHIDIAS/.nimcache019/solution.c", "gcc -c  -w -O3 -fno-strict-aliasing  -I/home/pingz/.choosenim/toolchains/nim-0.19.4/lib -o /home/pingz/Storage/Projects/SPOJ/PHIDIAS/.nimcache019/solution.c.o /home/pingz/Storage/Projects/SPOJ/PHIDIAS/.nimcache019/solution.c"],
+["/home/pingz/Storage/Projects/SPOJ/PHIDIAS/.nimcache019/stdlib_system.c", "gcc -c  -w -O3 -fno-strict-aliasing  -I/home/pingz/.choosenim/toolchains/nim-0.19.4/lib -o /home/pingz/Storage/Projects/SPOJ/PHIDIAS/.nimcache019/stdlib_system.c.o /home/pingz/Storage/Projects/SPOJ/PHIDIAS/.nimcache019/stdlib_system.c"]
+],
+"link":[
+"/home/pingz/Storage/Projects/SPOJ/PHIDIAS/.nimcache019/solution.c.o",
+"/home/pingz/Storage/Projects/SPOJ/PHIDIAS/.nimcache019/stdlib_system.c.o"
+],
+"linkcmd": "gcc   -o /home/pingz/Storage/Projects/SPOJ/PHIDIAS/build/solution019  /home/pingz/Storage/Projects/SPOJ/PHIDIAS/.nimcache019/solution.c.o /home/pingz/Storage/Projects/SPOJ/PHIDIAS/.nimcache019/stdlib_system.c.o    -ldl"
+}
