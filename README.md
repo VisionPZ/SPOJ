@@ -1,10 +1,10 @@
-# SPOJ — 607 problems, one method
+# SPOJ — 613 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![607 problems](https://img.shields.io/badge/problems-607-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![613 problems](https://img.shields.io/badge/problems-613-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 607 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 613 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 607 problems
+## The 613 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -238,7 +238,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 
-### Graphs & trees (48)
+### Graphs & trees (49)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -292,6 +292,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [FREQUENT](FREQUENT/README.md) | Group equal neighbours into runs, like stacking identical books into piles. A range starts and ends inside two runs, and the full runs between them form a static maximum question. | O(1) |
 | [CERC07B](CERC07B/README.md) | Fix the first row of taps, then let each row decide the next row, like pushing a row of dominoes downward. Once the taps in one row are known, the only way to clear that row is to tap exactly the black tiles left in the row below. | O(1) |
 | [CERC07K](CERC07K/README.md) | Carry the set of collected keys with the position, like a traveler holding a ring of keys while walking a floor plan. Breadth-first search explores states in step order, so the first exit reached has the fewest steps. | O(1) |
+| [GSS4](GSS4/README.md) | Think of each number as a candle that shrinks until it reaches one, then never changes again. A segment tree stores sums and maximums, so a range with maximum one can be skipped without visiting it. | O(1) |
 
 ### Dynamic programming (42)
 
@@ -438,7 +439,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (179)
+### Greedy, search & enumeration (184)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -623,6 +624,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [FCATTLE](FCATTLE/README.md) | Think of each herb type as a queue of days it must serve. If a rectangle holds `c` herbs of a type, it can reach the day preceding that type's `(c+1)`-th need. | O(1) |
 | [POLEVAL](POLEVAL/README.md) | Nested multiplication is like peeling an onion: each step folds one coefficient into a running total and multiplies by the point. This is Horner's method, and it needs one multiply and one add per coefficient. | O(1) |
 | [TETRIS3D](TETRIS3D/README.md) | Think of the platform as a floor of tiles whose heights you can query and raise in rectangles. A quadtree stores the maximum height of each square region, like a map that zooms into four quadrants. | O(N * log^2(D+S)) |
+| [ARMY](ARMY/README.md) | Think of the fight as peeling strength lists from the bottom, like removing the shortest cards from two stacks. The largest strength never dies, so its owner wins. | O(total monsters) |
+| [BREAK](BREAK/README.md) | Turn the arrows around, like tracing who holds each spare key instead of which doors each key opens. Compromising a server then becomes ordinary reachability in the reversed graph. | O((N + M) * N / 64) |
+| [COWCAR](COWCAR/README.md) | Think of filling lanes with cars from slowest to fastest, like stacking books so the heavier ones go underneath. A cow placed at rank `r` in a lane loses `D*r` speed, and ranks repeat every `M` cows. | O(N log N) |
+| [GLASNICI](GLASNICI/README.md) | Picture each messenger walking on a moving walkway that shifts left by `K` units per position. After that shift, the largest drop from any earlier messenger is twice the answer. | O(N) per test |
+| [QUADAREA](QUADAREA/README.md) | Treat the four walls like a hinged frame: it opens widest when its corners lie on one circle. Brahmagupta's formula gives that widest area from the four sides alone. | O(T) |
 
 ### Data structures, bits & simulation (42)
 
