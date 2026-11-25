@@ -1,10 +1,10 @@
-# SPOJ — 579 problems, one method
+# SPOJ — 590 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![579 problems](https://img.shields.io/badge/problems-579-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![590 problems](https://img.shields.io/badge/problems-590-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 579 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 590 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 579 problems
+## The 590 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -238,7 +238,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 
-### Graphs & trees (46)
+### Graphs & trees (48)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -290,8 +290,10 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [TREASURY](TREASURY/README.md) | Treat pairing like assigning dance partners at a party: each person may join one pair at most. Process the office tree from the lowest subordinates upward, like closing branches before the root. | O(1) |
 | [GSS3](GSS3/README.md) | Store four numbers at each segment-tree node, like keeping a receipt for each shop segment: total, best prefix, best suffix, and best inside block. Joining two neighbouring segments is one fixed formula, so both updates and range queries follow the tree path. | O(N + M log N) |
 | [FREQUENT](FREQUENT/README.md) | Group equal neighbours into runs, like stacking identical books into piles. A range starts and ends inside two runs, and the full runs between them form a static maximum question. | O(1) |
+| [CERC07B](CERC07B/README.md) | Fix the first row of taps, then let each row decide the next row, like pushing a row of dominoes downward. Once the taps in one row are known, the only way to clear that row is to tap exactly the black tiles left in the row below. | O(1) |
+| [CERC07K](CERC07K/README.md) | Carry the set of collected keys with the position, like a traveler holding a ring of keys while walking a floor plan. Breadth-first search explores states in step order, so the first exit reached has the fewest steps. | O(1) |
 
-### Dynamic programming (40)
+### Dynamic programming (41)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -337,6 +339,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 | [TWENDS](TWENDS/README.md) | Think of choosing cards like taking coins from a row where the opponent follows a fixed recipe. Once that recipe is known, each reply is predictable, so the first player can plan ahead. | O(1) |
 | [ACMAKER](ACMAKER/README.md) | Give each word a small set of tickets, one ticket for each possible letter it can donate, like choosing seats in a row. Count the tickets locally, then multiply choices across words with a running total. | O(1) |
+| [COUNT](COUNT/README.md) | Add one truck at a time, like stacking one more step onto a staircase, and reuse every smaller count. The algorithm is dynamic programming over computers and trucks. | O(NK + Q) |
 
 ### Number theory & big integers (89)
 
@@ -434,7 +437,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (155)
+### Greedy, search & enumeration (163)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -595,6 +598,14 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [GROCERY](GROCERY/README.md) | Fix three prices and the fourth follows from one division, like solving for the last corner of a rectangle once three corners are known. The search walks the first three prices in sorted order, then checks that the computed fourth price is an integer and keeps the prices ordered. | O(C^3) with C bounded by 2000 |
 | [HARDP](HARDP/README.md) | Treat the puzzle like reading answers off a printed chart: the judge wants text, so prepare the 50 strings once and look each one up. The strings come from Faulhaber's formula, built with exact fractions and then scaled to integers. | O(1) |
 | [LOGIC2](LOGIC2/README.md) | Try each suspect and each weekday like checking every name on a list against every page of a calendar. For that pair, decide for each speaker whether their useful sentences can all be true or all be false. | O(1) |
+| [BACKPACK](BACKPACK/README.md) | Bundle each main good with its attachments, then treat each bundle as one knapsack item. This is grouped knapsack, like choosing one complete meal combo per stall instead of separate dishes. | O(G · C · K) per test |
+| [BALIFE](BALIFE/README.md) | Track the running surplus across each gap, like measuring how many cars must cross each bridge on a one-lane road. The answer is the largest absolute surplus over all gaps. | O(N) per block |
+| [CERC07C](CERC07C/README.md) | Keep one point pinned on the circle edge and swing the center around it, like rotating a door hinge. A second point stays inside for a range of swing angles, so it becomes an angular interval. | O(1) |
+| [CERC07H](CERC07H/README.md) | Grow four small trees at once, like four crews building roads toward a shared meeting point. A subset of areas has a cheapest way to reach any parcel; merging two subsets at the same parcel avoids paying for that parcel twice. | O(1) |
+| [CERC07L](CERC07L/README.md) | Treat every connected piece of wire as one electrical node, like joining all the copper in a soldered net. A union-find groups wire cells by their accepted directions; an `x` keeps its vertical and horizontal nets apart. | O(1) |
+| [CERC07N](CERC07N/README.md) | Treat a negative base like a regular place-value system whose places flip sign, the way a checkered board alternates colors. Repeated division by the positive radius extracts one digit at a time. | O(1) |
+| [MINUS](MINUS/README.md) | Every merge gives the left neighbor a plus sign and the right neighbor a minus sign, so the final value is a signed sum. The first number always keeps plus and the second always keeps minus, like the two ends of a see-saw that never swap sides. | O(n · S) per test |
+| [RNG](RNG/README.md) | Replace each symmetric uniform draw by a uniform draw from zero to twice X, then shift by S. This turns the question into a cumulative distribution of a sum of plain uniform variables, like stacking uniform blocks and measuring the pile height. | O(T · 2^N · N) |
 
 ### Data structures, bits & simulation (42)
 
