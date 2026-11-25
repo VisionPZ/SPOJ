@@ -1,10 +1,10 @@
-# SPOJ — 385 problems, one method
+# SPOJ — 390 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![385 problems](https://img.shields.io/badge/problems-385-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![390 problems](https://img.shields.io/badge/problems-390-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 385 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 390 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 385 problems
+## The 390 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -295,7 +295,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (51)
+### Number theory & big integers (53)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -352,8 +352,10 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SIOENES](SIOENES/README.md) | Cross out composite numbers once, like removing names from a guest list before counting the invitees. Sieve every multiple of each prime, then keep a running count of the survivors. | O(T + max N log log max N) |
 | [NUM06](NUM06/README.md) | Shrink the pair by division, like trimming a rope to the shorter piece and the leftover cut. Replacing the larger number by the remainder keeps every common divisor and loses nothing else. | O(number of pairs times log value) |
 | [NUMPDROM](NUMPDROM/README.md) | Build the reversed number by peeling digits off the right, like moving beads from one side of an abacus to the other. Each peeled digit is appended to a new number. | O(number of digits) |
+| [FCTORISE](FCTORISE/README.md) | Finding the closest factor pair is like choosing the two nearest whole-number sides of a rectangle with a fixed area. The method takes the largest divisor not above the square root, then derives x and y from that pair. | O(1) |
+| [FUCT_FOR_PRIME](FUCT_FOR_PRIME/README.md) | Crossing out multiples of each small prime is like striking every second, third, and fifth name off a class list. A sieve builds one table of prime flags up to 500. | O(1) |
 
-### Greedy, search & enumeration (57)
+### Greedy, search & enumeration (60)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -416,6 +418,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [AIOPBINA](AIOPBINA/README.md) | Open the array in the middle, like finding a word in a dictionary by halving the page range each time. If the middle is too small, search the right half; if too large, search the left half. | O(T log N) after input |
 | [IIC12345545](IIC12345545/README.md) | Peel digits off a number like removing onion layers until one digit stays. Division by ten removes the rightmost layer each round. The real algorithm is repeated integer division. | O(d) for d input digits |
 | [THR18A](THR18A/README.md) | Score the tie like a two-round contest with a backup rule. Add each team's goals from both matches. When totals tie, count only goals scored in the other team's stadium. | O(1) apart from input bytes |
+| [EDUPT52](EDUPT52/README.md) | Each job finishes on its own numbered visit, like shoppers at one counter who each need a known number of turns. The method counts visits with a ceiling division and sorts by visit count, then by arrival index. | O(N log N) |
+| [FNDMSNG](FNDMSNG/README.md) | The missing value is the gap between the sum you expect and the sum you see, like counting the empty chair in a row of numbered seats. The method uses the arithmetic series sum and one pass over the given values. | O(N) |
+| [FNDMSNG1](FNDMSNG1/README.md) | The missing value is the gap between the sum you expect and the sum you see, like counting the empty chair in a row of numbered seats. The method uses the arithmetic series sum and one pass over the given values. | O(N) |
 
 ### Data structures, bits & simulation (27)
 
