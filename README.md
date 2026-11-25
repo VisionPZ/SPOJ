@@ -1,10 +1,10 @@
-# SPOJ — 691 problems, one method
+# SPOJ — 696 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![691 problems](https://img.shields.io/badge/problems-691-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![696 problems](https://img.shields.io/badge/problems-696-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 691 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 696 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 691 problems
+## The 696 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -447,7 +447,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (254)
+### Greedy, search & enumeration (258)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -707,8 +707,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [KNIGHTS](KNIGHTS/README.md) | Turn hate edges into friendship edges; a legal table is then an odd cycle in the friendship graph. Think of cycles as rooms joined by single doors: a knight sits when some room has an odd loop and contains him. | O(n^2 + m) per case |
 | [SDGAME2](SDGAME2/README.md) | Treat the dice as a row of numbered tiles and keep a running product for each stretch of tiles. A segment tree answers each stretch query and each value change in logarithmic time. | O(R log N) |
 | [WILD](WILD/README.md) | Treat each evil member as a shadow over the score cube and count the cells outside every shadow. Flip the last two axes so the shadow edge becomes a running minimum, then sweep the first axis while keeping a staircase of breakpoints. | O(n log n) per case |
+| [KEQ](KEQ/README.md) | Turn divisibility into a period question, like finding when a repeating clock hand returns to twelve. A number with N copies of digit D equals D times the repunit of length N. | O(1) |
+| [LARGE](LARGE/README.md) | Count rotations with Burnside's lemma, like counting distinct bracelets by asking how many patterns survive each turn. A rotation that survives fixes a repeated pattern of length equal to the gcd of the seat count and the turn. | O(Nmax log log Nmax + cases times divisors times N divided by K) |
+| [PRHYME](PRHYME/README.md) | Reverse every word and store the dictionary in a trie, like filing books by the letters at the end of their titles. A shared reversed prefix is exactly a shared original suffix, so walking the trie as far as the query allows finds the maximum suffix length. | O(total input characters times alphabet lookup) |
+| [RAIL](RAIL/README.md) | Think of each ordinary station as a bead on a string between two junctions, and simply add the string lengths when you remove the bead. Each surviving station starts one walk along its incident segments. | O(1) |
 
-### Data structures, bits & simulation (42)
+### Data structures, bits & simulation (43)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -756,6 +760,7 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [BACTERIA](BACTERIA/README.md) | A microphone check before a concert: the device is on, yet nobody speaks. The program opens the input stream, consumes whatever arrives, and writes nothing. The read loop appends each line to one string. | O(1) |
 | [G11185](G11185/README.md) | Imagine splitting a deck into red and blue cards, stacking reds high to low and blues low to high. The program fills cells by position parity, then splits them by value parity. | O(1) |
 | [RELINETS](RELINETS/README.md) | A reliable net is like a circular bike route: cutting one stretch still lets you ride all the way around. The algorithm tries every link subset and keeps the cheapest one with no bridge. | O(1) |
+| [INVENT](INVENT/README.md) | Treat each tree edge like a gate that opens between two crowds, and charge every new cross-crowd pair as it passes. Union-find processes tree edges from light to heavy and counts pairs that become connected. | O(1) |
 
 ## License
 
