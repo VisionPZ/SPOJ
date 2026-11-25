@@ -1,10 +1,10 @@
-# SPOJ — 573 problems, one method
+# SPOJ — 579 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![573 problems](https://img.shields.io/badge/problems-573-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![579 problems](https://img.shields.io/badge/problems-579-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 573 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 579 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 573 problems
+## The 579 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -238,7 +238,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 
-### Graphs & trees (45)
+### Graphs & trees (46)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -289,6 +289,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [EXPLOSN](EXPLOSN/README.md) | Think of guards on one-way roads: every road needs a guard at one end, and each junction has one outgoing road. Peel away people with no incoming testimonies, then solve each remaining cycle separately. | O(1) |
 | [TREASURY](TREASURY/README.md) | Treat pairing like assigning dance partners at a party: each person may join one pair at most. Process the office tree from the lowest subordinates upward, like closing branches before the root. | O(1) |
 | [GSS3](GSS3/README.md) | Store four numbers at each segment-tree node, like keeping a receipt for each shop segment: total, best prefix, best suffix, and best inside block. Joining two neighbouring segments is one fixed formula, so both updates and range queries follow the tree path. | O(N + M log N) |
+| [FREQUENT](FREQUENT/README.md) | Group equal neighbours into runs, like stacking identical books into piles. A range starts and ends inside two runs, and the full runs between them form a static maximum question. | O(1) |
 
 ### Dynamic programming (40)
 
@@ -433,7 +434,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (150)
+### Greedy, search & enumeration (155)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -589,6 +590,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [RP](RP/README.md) | Treat the graph as a sliding window of width k, like a train of connected carriages passing a station. A frontier count over the last k vertices produces a linear recurrence for each k. | O(8 * d^2 log n) with d at most 41 |
 | [SCALE](SCALE/README.md) | Read the mass as a balanced ternary number, like writing an amount with coins that can be added or subtracted. Each weight has three choices: left scale, right scale, or unused. | O(N) |
 | [TRICOUNT](TRICOUNT/README.md) | Add upright and downward triangles as two stacks of bricks, then collapse each stack with one formula. The method is a closed-form count from a quadratic sum. Each test case costs constant time. | O(T) |
+| [EASYPROB](EASYPROB/README.md) | Write each exponent as its own small sum, like nesting boxes inside boxes. The formatter walks set bits from high to low and wraps each exponent greater than two in another call to itself. | O(log N) per number |
+| [EXPRESS](EXPRESS/README.md) | Reading a queue is like dealing cards from the top of a pile, so a new operation must consume older items first. Walk the expression tree from the root and prepend each pair of children before the tokens already collected. | O(L) per expression |
+| [GROCERY](GROCERY/README.md) | Fix three prices and the fourth follows from one division, like solving for the last corner of a rectangle once three corners are known. The search walks the first three prices in sorted order, then checks that the computed fourth price is an integer and keeps the prices ordered. | O(C^3) with C bounded by 2000 |
+| [HARDP](HARDP/README.md) | Treat the puzzle like reading answers off a printed chart: the judge wants text, so prepare the 50 strings once and look each one up. The strings come from Faulhaber's formula, built with exact fractions and then scaled to integers. | O(1) |
+| [LOGIC2](LOGIC2/README.md) | Try each suspect and each weekday like checking every name on a list against every page of a calendar. For that pair, decide for each speaker whether their useful sentences can all be true or all be false. | O(1) |
 
 ### Data structures, bits & simulation (42)
 
