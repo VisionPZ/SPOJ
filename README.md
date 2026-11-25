@@ -1,10 +1,10 @@
-# SPOJ — 1076 problems, one method
+# SPOJ — 1082 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1076 problems](https://img.shields.io/badge/problems-1076-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1082 problems](https://img.shields.io/badge/problems-1082-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1076 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1082 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1076 problems
+## The 1082 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -241,7 +241,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 | [RROOT](RROOT/README.md) | Slice the square like a loaf of bread, then measure the slice below the parabola `c = b²` and divide by the whole loaf. The algorithm is analytic area integration in closed form, at O(1) cost per test. | O(T) |
 
-### Graphs & trees (71)
+### Graphs & trees (73)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -318,6 +318,8 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [UOFTCE](UOFTCE/README.md) | Think of the stores as parcels carried back to a depot: after each shop they return to the car, so every store except the first costs a round trip. | O(1) |
 | [VFRIEND2](VFRIEND2/README.md) | Treat each wish as a handshake request, and handshakes come in pairs. The Erdős–Gallai theorem checks those requests with N simple inequalities after sorting. The generator produces each wish in one step, and bucket counts sort the values without comparisons. | O(1) |
 | [VFRIENDS](VFRIENDS/README.md) | Treat the wishes like a seating chart: a table of N seats must give every guest the exact number of neighbours they request. The Erdős–Gallai theorem turns that chart into N cheap inequality checks. | O(1) |
+| [IITWPC4D](IITWPC4D/README.md) | Fill positions from right to left, like dealing cards from the bottom of a shuffled deck. At position i, choose the rank that leaves exactly A[i] taller ranks for the earlier positions. | O(n log n) per case |
+| [IITWPC4E](IITWPC4E/README.md) | Sweep a vertical line across the panels and measure the lit height at each x position, like counting water in a row of tanks as a wave passes. | O(N log N) |
 
 ### Dynamic programming (63)
 
@@ -496,7 +498,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [HG](HG/README.md) | Compare two towers by their bricks, then rebuild only the bricks they share. Prime factorization turns each product into a list of prime exponents. The gcd keeps the smaller exponent for every prime. | O(primeLimit log log primeLimit + (N+M) times divisions) |
 | [FONTSIZE](FONTSIZE/README.md) | Try a size, pack words greedily, then search for the largest size that still fits. This works like choosing the biggest text that fits a shelf: measure one candidate, then shift the guess up or down. | O(message length times log size bound) |
 
-### Greedy, search & enumeration (587)
+### Greedy, search & enumeration (591)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1089,6 +1091,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [MXSBMTRX](MXSBMTRX/README.md) | Think of the matrix as a staircase: inside the rectangle, each step right and each step down must climb. The diagonal rule follows for free, so only rows and columns need checking. | O(1) |
 | [UOFTCC](UOFTCC/README.md) | Think of the channels as stepping stones: from any stone you can hop to any stone within C steps, and each hop costs T seconds. Greedy stepping chooses the farthest reachable stone every time. | O(1) |
 | [UOFTCD](UOFTCD/README.md) | Think of fear as a thermometer: Bob holds her hand only while the reading sits between two marks. Covering one moment removes one push on the mercury, and we try every single moment in turn. | O(1) |
+| [IITWPC4F](IITWPC4F/README.md) | Count flipped columns and rows separately, like counting lit seats by adding lit rows and lit columns without visiting each seat. A lamp is on when exactly one of its coordinates has been flipped an odd number of times. | O(Q log C) with C = 100001 |
+| [IITWPC4G](IITWPC4G/README.md) | Treat the whole super operation as one matrix, like a machine that transforms a row of beads in a fixed way. Repeating the operation m times then means multiplying by that matrix m times, which binary exponentiation does in logarithmic steps. | O(n^3 log m) per case |
+| [IITWPC4H](IITWPC4H/README.md) | Treat each letter separately, like snapping two identical train cars together at the same station. A run of one letter from s can join a run of the same letter from t, so their lengths add. | O(n + m) per case |
+| [SNGINT](SNGINT/README.md) | Factor N with digit-sized pieces, like packing a box with the largest boxes that fit first. Try digits from 9 down to 2 and divide whenever a digit fits the remaining product. | O(T), with at most eight divisions per case |
 
 ### Data structures, bits & simulation (45)
 
