@@ -1,10 +1,10 @@
-# SPOJ — 649 problems, one method
+# SPOJ — 655 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![649 problems](https://img.shields.io/badge/problems-649-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![655 problems](https://img.shields.io/badge/problems-655-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 649 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 655 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 649 problems
+## The 655 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -441,7 +441,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (218)
+### Greedy, search & enumeration (224)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -665,6 +665,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [TILING](TILING/README.md) | Think of a tile as a stamp: pressing the same stamp on a regular grid reproduces the board exactly. Only stamps whose height divides `n` and width divides `m` can form that grid. | O(t * d(n) * d(m) * n * m) worst case |
 | [TRUTHORL](TRUTHORL/README.md) | Treat each person as a parity equation, like linking two ends of a chain with a known twist. A disjoint-set structure with a parity bit per parent merges the linked questions and detects contradictions. | O((n + m) alpha(m) + m^2 / word) per case |
 | [YKH](YKH/README.md) | Think of clients as beads on a string ordered by their favourite price; one certificate can serve a consecutive run of beads. Sorting by `a / b` makes every certificate cover one contiguous block. | O(C^2) per case |
+| [GNY07C](GNY07C/README.md) | Picture a snail crawling inward from the top-left corner; its path is the fill order. Precompute that path once per dataset, drop the five-bit groups onto it, then read the matrix row by row. | O(N * R * C) |
+| [GNY07D](GNY07D/README.md) | Think of the spiral as a thread laid over the matrix; pull the bits off in that order. Build the same top-left clockwise path used for encoding, group the pulled bits in fives, and map each group to a letter. | O(N * R * C) |
+| [GNY07E](GNY07E/README.md) | Picture placing one pancake at a time onto a finished pile at the bottom. Bring the largest unsorted pancake to the top, turn it burned-side up, then flip the whole active stack so it lands at the bottom burned-side down. | O(M) per dataset |
+| [GNY07F](GNY07F/README.md) | Treat each bracket pair like a two-pan balance: the heavier pan decides how many monkeys both pans need. A vine with several junctions in a row needs the largest count among them, because all monkeys jump at once. | O(L * D) worst case |
+| [MAGIC4](MAGIC4/README.md) | Group the product by its base instead of by pairs. All pairs with the same i share one base, so only their exponents must be added. Möbius inversion turns that exponent sum into a short walk over the divisors of i. | O(n log n) |
+| [PHONELIN](PHONELIN/README.md) | Imagine each tower as a box with a price tag and coins from cities placed inside. Picking a box collects its coins and pays its tag, but picking a later box first is forbidden. | O(C*T + T^3) worst case per case |
 
 ### Data structures, bits & simulation (42)
 
