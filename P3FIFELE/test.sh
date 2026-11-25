@@ -1,6 +1,6 @@
 #!/bin/sh
 set -u
-PY=${PY:-python3}
+NIM=${NIM:-nim}
 cd "$(dirname "$0")"
 LIMIT=1000
 # Hard wall-clock kill on every program run, like the judge does.
@@ -8,15 +8,14 @@ LIMIT=1000
 TL=$(( (LIMIT + 999) / 1000 + 1 ))
 command -v timeout >/dev/null || { echo 'timeout command missing, refusing to run unbounded'; exit 1; }
 guard() { timeout -k 1 "${TL}s" "$@"; }
-rm -rf build got_*.txt
-mkdir -p build
-"$PY" --version 2>&1 | head -1
-timeout 600s "$PY" -m py_compile solution.py || exit 1
+rm -rf build .nimcache got_*.txt
+"$NIM" c --version 2>&1 | head -1
+timeout 600s "$NIM" c -d:release --nimcache:.nimcache --out:build/solution solution.nim || exit 1
 [ -f gen.py ] || { echo 'gen.py missing'; exit 1; }
 timeout 300s python3 gen.py >/dev/null || { echo 'gen.py failed or ran over 300 s'; exit 1; }
 fail=0
 run() {
-  guard "$PY" solution.py < "in/$1.txt" > "got_$1.txt" 2>/dev/null
+  guard build/solution < "in/$1.txt" > "got_$1.txt" 2>/dev/null
   code=$?
   if [ "$code" -ge 124 ]; then
     echo "TIMEOUT $1 killed at ${TL}s wall (judge ${LIMIT} ms)"
@@ -32,7 +31,7 @@ best() {
   w=99999999; b=0; k=1; to=0
   while [ $k -le 3 ]; do
     t0=$(date +%s%N)
-    guard "$PY" solution.py < "$1" > "$2"; code=$?
+    guard build/solution < "$1" > "$2"; code=$?
     t1=$(date +%s%N)
     ms=$(( (t1 - t0) / 1000000 )); [ "$ms" -lt "$w" ] && w=$ms
     b=$(wc -c < "$2"); [ "$code" -ge 124 ] && to=1
@@ -53,6 +52,8 @@ done
 echo "worst case $worst ms / $LIMIT ms limit"
 [ "$fail" -eq 0 ] || exit 1
 [ "$worst" -ge "$LIMIT" ] && { echo "too slow"; exit 1; }
+# Per-problem scratch paths: a shared /tmp name lets one problem's stress file
+# or gate output leak into another problem's run when harnesses run at once.
 code=$(basename "$(pwd)")
 gate=$(ls -S in/*.txt | head -1)
 msg=$(best "$gate" "/tmp/${code}_gate.txt"); stat=$?
