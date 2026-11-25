@@ -1,10 +1,10 @@
-# SPOJ — 732 problems, one method
+# SPOJ — 738 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![732 problems](https://img.shields.io/badge/problems-732-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![738 problems](https://img.shields.io/badge/problems-738-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 732 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 738 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 732 problems
+## The 738 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -300,7 +300,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [GSS5](GSS5/README.md) | Think of each range as a bucket holding candidate start and end points, like picking a doorway and an exit in two neighbouring halls. A segment tree reports four numbers for any interval: total sum, best prefix, best suffix, and best subarray. | O((N + M) log N) per case |
 | [QTREE5](QTREE5/README.md) | Think of each centroid as a lookout tower with a bucket for every branch leading away from it. Each bucket keeps the closest white node on that branch, like a guard reporting the nearest light. | O(N log N + Q log² N) |
 
-### Dynamic programming (48)
+### Dynamic programming (49)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -354,6 +354,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [INCSEQ](INCSEQ/README.md) | Each new value extends shorter subsequences, like stacking blocks where every new block must be taller than the top one. A Fenwick tree stores counts grouped by last value, so the sum of all smaller tops is one prefix query. | O(N K log V) |
 | [HELPBOB](HELPBOB/README.md) | Think of coupons as stamps collected while walking through a set of pizzas; a later pizza gets every stamp gathered so far. Try every subset and every order inside it, but share work with a bitmask DP that stores the cheapest cost for each bought set. | O(m * 2^m) per case |
 | [MARTIAN](MARTIAN/README.md) | Choosing belt directions is like drawing one staircase through a grid fence. Each row picks where the fence steps. Those steps only move right as you walk south. | O(n * m) per block |
+| [MCIRGAME](MCIRGAME/README.md) | Counting pairings works like counting balanced bracket strings: the partner of point 1 splits the remaining points into two smaller independent circles. The counts are Catalan numbers. Build them with the recurrence C(k+1) = C(k) times (4k+2), divided by (k+2). | O(1) |
 
 ### Number theory & big integers (89)
 
@@ -451,7 +452,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (290)
+### Greedy, search & enumeration (295)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -747,6 +748,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [SEQ5](SEQ5/README.md) | Slide a frame along the row and track which colours sit inside it, like counting pictures with two or three colours. For a fixed left end, grow the right end until the frame holds too many distinct values. | O(N cubed) worst case |
 | [SOLDIER](SOLDIER/README.md) | Treat a candidate quality as a bar that every chosen item must clear, like six friends each needing a ticket above the same height. For each bar, keep the cheapest qualifying item of each type and add the six prices. | O(N times T) |
 | [SPACESET](SPACESET/README.md) | Every settlement in the colony offers the same number of next stops, like a newsletter sent to an equal-size mailing list from each address. The total number of routes then multiplies by that same number at each of the k minus 1 moves. | O(T log k) |
+| [MDIGITS](MDIGITS/README.md) | Counting digits across a range works like counting page labels in a book by place value, one digit column at a time. For one place value, split numbers from 1 to n into complete cycles and a partial cycle. | O(1) |
+| [MDIGITS1](MDIGITS1/README.md) | Picking digits works like packing a small bag: try one-digit outfits first, then two-digit outfits, and keep the smallest item that fits. A classic pigeonhole fact guarantees that every n has a multiple written with only 0 and 1. | O(1) |
+| [MMINPER](MMINPER/README.md) | Choosing each position works like spending a budget one coin at a time, always taking the smallest coin that leaves enough for later positions. A greedy scan fixes the answer. | O(1) |
+| [MPART](MPART/README.md) | Testing a fixed group size works like checking whether a set of equal-sized boxes can hold all items. Binary search the largest allowed group size. For a candidate size K, build a flow network. | O(1) |
+| [MTRIAREA](MTRIAREA/README.md) | Discarding interior points works like trimming the extra pins from a shape before measuring its widest span. Build the convex hull with Andrew's monotonic chain, then rotate two inner indices along the hull for each first vertex. | O(1) |
 
 ### Data structures, bits & simulation (43)
 
