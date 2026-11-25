@@ -1,10 +1,10 @@
-# SPOJ — 962 problems, one method
+# SPOJ — 968 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![962 problems](https://img.shields.io/badge/problems-962-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![968 problems](https://img.shields.io/badge/problems-968-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 962 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 968 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 962 problems
+## The 968 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -478,7 +478,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CBANK](CBANK/README.md) | Scale all coins to quarters and count the integer solutions of one equation, like counting change with a fixed set of denominations. The algorithm derives a closed form for the number of solutions and evaluates it with modular arithmetic. | O(1) per case |
 | [APS](APS/README.md) | The sequence is a running total, like a row of monthly bills where each new bill is the smallest prime factor of the current index. Find every smallest prime factor with one sieve, then accumulate them once in order. | O(largest N log log largest N plus T) |
 
-### Greedy, search & enumeration (492)
+### Greedy, search & enumeration (498)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -976,6 +976,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [PIBO2](PIBO2/README.md) | Treating the polynomial as a short memory is like summarizing a long song by its repeating chorus. A polynomial of degree d is annihilated by the difference operator to the power d+1, so the sequence obeys a linear recurrence of order d+3. | O(d^2 log n) |
 | [RANGZER2](RANGZER2/README.md) | Counting zeroes by place value is like tallying street numbers with a fixed digit slot held at zero. For each place, split the count into complete blocks and a partial block, then add the zeroes in each piece. | O(t log b) |
 | [STRINGQ](STRINGQ/README.md) | A string whose every substring has its reverse present must itself be a palindrome, like a row of tiles that matches its own mirror. A palindrome permutation exists when at most one letter has an odd count, and its count is a multinomial of the paired letters. | O(max length + total queried length) |
+| [SUSY](SUSY/README.md) | Treat each slide like a hockey puck that travels until it hits a rail, then count where it stops and which stones it crossed. Breadth-first search over pairs of a cell and a collected-stone mask finds the fewest slides, and visiting directions in alphabetical order gives the smallest move list. | O(cells × masks × 4) |
+| [VPL1_AA](VPL1_AA/README.md) | Think of each prime as a battery that gains a charge for its own card and loses a charge every time a composite card uses it as a factor. | O(max value log log max value + total factors) |
+| [VPL1_AB](VPL1_AB/README.md) | Think of each turn as choosing a card from a fixed deck of 216 dice tuples, with the rule that you cannot draw the same card twice in a row. | O(n × 6^d) per test |
+| [VPL1_AC](VPL1_AC/README.md) | Think of a laser between two antennas and a hula hoop of radius R around each other antenna. The link works only when no hoop touches the laser. | O(n^3) per case |
+| [VPL1_AD](VPL1_AD/README.md) | Think of a delivery route where crossing a barricade spends a ticket. Keep the best remaining distance for each set of visited leaves, current leaf and tickets spent. | O(n^2 m + 2^n n^2 k) per case |
+| [WEBISL](WEBISL/README.md) | Think of one-way streets and ask which blocks let you drive from any house to any other house in the block. Kosaraju's algorithm finds those blocks with two depth-first passes, one on the links and one on the reversed links. | O(pages + links) |
 
 ### Data structures, bits & simulation (44)
 
