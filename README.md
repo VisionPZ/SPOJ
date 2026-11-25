@@ -1,10 +1,10 @@
-# SPOJ — 791 problems, one method
+# SPOJ — 797 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![791 problems](https://img.shields.io/badge/problems-791-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![797 problems](https://img.shields.io/badge/problems-797-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 791 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 797 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 791 problems
+## The 797 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -459,7 +459,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (340)
+### Greedy, search & enumeration (346)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -805,6 +805,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [MCONVERT](MCONVERT/README.md) | Treat the digit order as a row of labeled stepping stones and each base as a stride length; walk the number once per legal stride and add the distances. | O(b L d) per number, with b bases, L digits, and d limbs |
 | [STARGATE](STARGATE/README.md) | Give each connected crowd one label, like stamping every name in a group with the same badge. Disjoint-set union keeps that badge in a parent array and follows parent links to find it. | O((N + P) alpha(N)) with P named pairs |
 | [TOPOLAND](TOPOLAND/README.md) | Picture the parts as entries in a tournament bracket, where each higher rung stores the larger of two lower rungs. That bracket is a segment tree, and it finds a range maximum in logarithmic time. | O((N + Q) log N) per testcase |
+| [AMOEBA](AMOEBA/README.md) | Powers of 7 modulo a power of ten repeat in a fixed cycle, like a clock hand returning to the same mark. Store the first day for each value in that cycle. | O(1) |
+| [CODING2](CODING2/README.md) | Give the shortest codeword to the most common symbol, like handing out the shortest nickname to the name people say most. Huffman coding does exactly that by repeatedly merging the two lightest symbols. | O(1) |
+| [CONTCITY](CONTCITY/README.md) | Treat survivors as parcels and helicopters as vans with limited seats, then test whether all parcels fit by a deadline. Shortest road times give the day each survivor can reach each helicopter. | O(1) |
+| [RESOURCE](RESOURCE/README.md) | String the stations into downhill chains, like threading beads so each thread only runs downward. A minimum path cover in a directed acyclic graph gives the fewest chains, and one cable ride joins each extra chain. | O(1) |
+| [SICRANO](SICRANO/README.md) | A point lies on a segment when it sits on the same line and between the two ends, like a bead located on a stretched string. The cross product tests the line in one multiplication, and a bounding-box test rules out points beyond the ends. | O(1) |
+| [STUN](STUN/README.md) | Treat every award as a dated event, like entries on a calendar, then scan the events in time order. A group produces one event per completed stun round and one poison event when two or more seconds remain. | O(1) |
 
 ### Data structures, bits & simulation (44)
 
