@@ -1,10 +1,10 @@
-# SPOJ — 441 problems, one method
+# SPOJ — 446 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![441 problems](https://img.shields.io/badge/problems-441-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![446 problems](https://img.shields.io/badge/problems-446-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 441 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 446 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 441 problems
+## The 446 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -307,7 +307,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (62)
+### Number theory & big integers (63)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -375,8 +375,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [QUADEQ](QUADEQ/README.md) | Think of the discriminant as a gate: below zero there is no crossing, at zero there is one, and above zero there are two. Compute that gate with exact integer arithmetic, then evaluate the quadratic formula only when roots exist. | O(1) |
 | [NUM08](NUM08/README.md) | List the primes first, like a singer warming up a scale before a song. Then divide the number by each prime and count the repeats. The divisor sum follows from the prime powers with a short geometric-series formula. | O(L log log L + t pi(sqrt(n))) with L = 10^7 |
 | [NUMTHEO01](NUMTHEO01/README.md) | Keep the running product small by reducing it after each factor, like paying down a balance after every purchase. Split the next factor into two small pieces so both partial products stay inside 64 bits. | O(t*n) worst case |
+| [SIS110G401](SIS110G401/README.md) | Treat each pair like two hands of counters and combine them into one pile. Read every integer in order, pair the values, and add them. The algorithm is a linear scan with a hand-written integer reader and a block output buffer. | O(total input bytes) |
 
-### Greedy, search & enumeration (83)
+### Greedy, search & enumeration (87)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -465,6 +466,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [NUMTH02](NUMTH02/README.md) | Find the remainder of a huge power by repeated squaring, like folding a long rope in half again and again. Reduce the mango total at each addition so the running sum stays small. | O(log n + p) |
 | [OPNDYSTF](OPNDYSTF/README.md) | Build the answer one factor at a time, like climbing a staircase while paying each step immediately. Multiply by the next numerator term, then divide by the step number so the value is always a whole binomial coefficient. | O(min(R,N-R) * D) with D the limb count |
 | [PANANDDA](PANANDDA/README.md) | Treat the target as a tiny machine with four positions, like a board game with four squares. Inserting a letter moves a token forward one square for one cost. | O(N) after a constant setup |
+| [SDF4D](SDF4D/README.md) | Treat every literal as a number first, like sorting coins by weight before choosing which label to show on each coin. Convert both forms to an integer, sort once, then format by majority. | O(N log N) plus literal length |
+| [SDF4E](SDF4E/README.md) | A new road only helps as a bridge between two known halves of the trip, like adding one rung between a ladder's bottom and top halves. Precompute the cost from city 0 to every city and from every city to city N-1. | O(M log M + Q) |
+| [SDF4F](SDF4F/README.md) | Treat each island group like a pile of connected blocks, then count the piles. One new bridge merges exactly two piles, like tying two stacks of papers with one clip. | O((N + P) alpha(N)) |
+| [SHEEPNAM](SHEEPNAM/README.md) | A tree has one path between two nodes, like a single corridor between two rooms. Walk that corridor once from X and stop on reaching Y, adding the road times as you go. | O(n) |
 
 ### Data structures, bits & simulation (34)
 
