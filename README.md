@@ -1,10 +1,10 @@
-# SPOJ — 679 problems, one method
+# SPOJ — 685 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![679 problems](https://img.shields.io/badge/problems-679-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![685 problems](https://img.shields.io/badge/problems-685-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 679 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 685 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 679 problems
+## The 685 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -446,7 +446,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (243)
+### Greedy, search & enumeration (249)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -695,6 +695,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [PRETILE](PRETILE/README.md) | A repeated prefix is a shifted copy of the same text, like sliding a transparent strip along a row of tiles. The Z array already measures how far any shifted copy agrees with the start. | O(N) per test |
 | [RRSCHED](RRSCHED/README.md) | A task that needs t seconds finishes in pass t, like a runner who needs one lap per unit of energy. Count how many seconds pass before that pass, then add the task's place among unfinished tasks in that pass. | O(N log N) |
 | [SUMSUMS](SUMSUMS/README.md) | A round is a reflection around the herd total, like swapping seats across a table while the table itself rotates. Binary exponentiation evaluates the rotation after T rounds, and one modular inverse removes the leftover division. | O(N + log T) |
+| [BROKEN](BROKEN/README.md) | Slide a frame along the text like a moving picture window: grow it on the right, then shrink it on the left until only m characters remain inside. | O(L) per case, where L is text length |
+| [DETER3](DETER3/README.md) | Crack a combination lock one wheel at a time: split the modulus into coprime prime-power wheels, solve each wheel, then align them. The algorithm factors P by trial division, eliminates each matrix modulo a prime power, and joins residues with the Chinese remainder theorem. | O(k * N^3) per case |
+| [MLE](MLE/README.md) | File points into sorted drawers, each with a label of its rectangle, and skip any drawer whose rectangle cannot beat the best distance found so far. The algorithm is a kd-tree with bounding boxes and branch-and-bound nearest-neighbor queries. | O(1) |
+| [PDECODE](PDECODE/README.md) | Undoing a shuffle is like walking backward around a carousel: after a whole cycle, every seat returns home. Compute the shuffled map after m applications, then place each encoded character at its original seat. | O(n log m) per case |
+| [SDGAME](SDGAME/README.md) | Keep only remainders, like a shop clerk who totals prices using their last digits. A range product modulo M needs only each die modulo M. A segment tree stores those products and supports point replacement plus range query in O(log N). | O((R + N) log N) |
+| [TLE](TLE/README.md) | Treat each value as a switch pattern, and each neighbor must press none of the switches you pressed. A subset total adds every compatible predecessor at once, like summing one whole spreadsheet column with a single formula. | O(T * N * M * 2^M) |
 
 ### Data structures, bits & simulation (42)
 
