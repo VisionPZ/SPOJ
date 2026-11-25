@@ -1,10 +1,10 @@
-# SPOJ — 832 problems, one method
+# SPOJ — 838 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![832 problems](https://img.shields.io/badge/problems-832-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![838 problems](https://img.shields.io/badge/problems-838-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 832 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 838 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 832 problems
+## The 838 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -462,7 +462,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 | [PTIME](PTIME/README.md) | Count each prime inside a factorial by adding floor divisions, like counting how many rows of a fixed size fit in a stack. The real algorithm is Legendre's formula, computed after one sieve primes once. | O(maxN log log maxN + cases * pi(maxN) log maxN) |
 
-### Greedy, search & enumeration (378)
+### Greedy, search & enumeration (384)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -846,6 +846,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [MAX2214](MAX2214/README.md) | Treat each row like a strip that can hold small bricks, and remember which bricks reach the next strip. A 2 by 2 square uses two columns in the current row and two in the next row. | O(1) |
 | [RPLM](RPLM/README.md) | Carry two backpack counters, one for time and one for spent hammers, like choosing a route with both a clock and a ticket book. Each state is a room plus the number of hammers already broken. | O(1) |
 | [SEQAGAIN](SEQAGAIN/README.md) | Track how many copies of each starting value appear, like counting ingredients instead of weighing the whole cake. Every term equals F(0) raised to a count times F(1) raised to another count. | O(1) |
+| [AHOCUR](AHOCUR/README.md) | Picture a pinball board where each letter drops a ball into a pocket, like following a map of trails that already knows every forbidden route. An Aho-Corasick automaton merges all patterns into one trie with failure links. | O(K * 20 * 62 + L * states * valid letters) per case |
+| [ASUMHARD](ASUMHARD/README.md) | Think of swapping the order of a double sum, like counting a wall of bricks by columns instead of rows. Each power `j^k` appears once for every `i` from `j` to `n`, so it appears `n - j + 1` times. | O(K^2 + sum of k over all cases) |
+| [CPAIR2](CPAIR2/README.md) | Picture sliding a window over an array with two movable ends, like opening and closing a folding ruler one section at a time. Mo ordering sorts queries by left-index block and then by right index. | O((N + M) sqrt M log 100000) |
+| [MAKESUM](MAKESUM/README.md) | Think of the smallest sum as a handshake between the two smallest numbers, like the first two people in a line shaking hands. Fix the smallest number and the smallest remaining sum reveals the next number by subtraction. | O(M log M) per successful trial |
+| [REDCROSS](REDCROSS/README.md) | Picture stretching a rubber band around pins: it settles around two pins or three pins, never more. The smallest enclosing circle is fixed by at most three boundary points. | O(N) expected per case |
+| [WRONG](WRONG/README.md) | Treat a typo like swapping one carriage in a train: the rest of the coupling stays the same. Precompute the displacement of every suffix from every possible facing direction. | O(N) expected |
 
 ### Data structures, bits & simulation (44)
 
