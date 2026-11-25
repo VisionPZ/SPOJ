@@ -1,10 +1,10 @@
-# SPOJ — 850 problems, one method
+# SPOJ — 856 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![850 problems](https://img.shields.io/badge/problems-850-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![856 problems](https://img.shields.io/badge/problems-856-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 850 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 856 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 850 problems
+## The 856 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -463,7 +463,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 | [PTIME](PTIME/README.md) | Count each prime inside a factorial by adding floor divisions, like counting how many rows of a fixed size fit in a stack. The real algorithm is Legendre's formula, computed after one sieve primes once. | O(maxN log log maxN + cases * pi(maxN) log maxN) |
 
-### Greedy, search & enumeration (395)
+### Greedy, search & enumeration (401)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -864,6 +864,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [FUKU11J](FUKU11J/README.md) | Reverse the return leg so both legs climb uphill, then walk them together like two hikers who take turns moving forward. The lower hiker always moves first, so only towns at one altitude can still be paid twice. | O(n² × 1024 × log states) worst case |
 | [POSAO](POSAO/README.md) | Extra computers help until the grid front is one cell wide, like extra checkout lanes once a single customer remains. The solution evaluates a closed form instead of simulating seconds. | O(1) |
 | [POWPOW2](POWPOW2/README.md) | Vandermonde's identity collapses the whole sum into one central binomial coefficient, like replacing a long hand count with a single labelled box. The solution computes that coefficient modulo the factors of `500000002`, reduces the double exponent with Fermat's theorem, and finishes with modular exponentiation. | O(148721 + T log n) |
+| [COMPANYS](COMPANYS/README.md) | Give the first company's cables an adjustable discount. Raise it until the cheap tree uses exactly the required count. This is like shifting an exchange rate until a basket has the right mix. | O(M log 2001) per case |
+| [DOJO](DOJO/README.md) | Mark the floor like a chessboard, and notice that every domino covers one tile of each shade, like pairing black and white socks. The board has one more black tile than white tile only when both dimensions are odd. | O(T) |
+| [POLTOPOL](POLTOPOL/README.md) | Write `g(x) = x h(x)` and expand the forward difference one degree at a time, like unpacking nested boxes from the largest box down to the smallest. If `h` has coefficient `a_r` on `x^r`, the term `a_r(x^{r+1} - (x-1)^{r+1})` contributes to every power up to `r`. | O(T * d^2) |
+| [PRLGAME2](PRLGAME2/README.md) | Start from a uniform guess about the red count, then update that guess with the balls already seen, like revising a coin's bias after watching a few tosses. | O(lines of input) |
+| [REBOUND](REBOUND/README.md) | Treat the bounce like a mirror with a doubled angle, then turn the angle rule into one quadratic equation, the way a surveyor turns two sight lines into one triangle. | O(T log C), where C is the largest coordinate |
+| [SPIRALGR](SPIRALGR/README.md) | Lay the spiral out once, mark walls, then walk the shortest route like a pedestrian avoiding blocked streets. The spiral is a square walk: move right, up, left, down, and grow each straight run after two turns. | O(1) |
 
 ### Data structures, bits & simulation (44)
 
