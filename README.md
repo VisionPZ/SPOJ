@@ -1,10 +1,10 @@
-# SPOJ — 1004 problems, one method
+# SPOJ — 1010 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1004 problems](https://img.shields.io/badge/problems-1004-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1010 problems](https://img.shields.io/badge/problems-1010-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1004 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1010 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1004 problems
+## The 1010 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -378,7 +378,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [BAT4](BAT4/README.md) | Picture a hiker choosing the gentlest steepest step, like picking the easiest rung on a ladder. A minimax DP finds the smallest possible worst climb to every cell. | O(1) |
 | [AUTOMATA](AUTOMATA/README.md) | Treat each star as a bookmark you can move forward when a later letter fails. This is the classic greedy wildcard scan: consume letters directly, remember the last star, and retry from it on mismatch. | O(length of pattern + length of subject) per ordinary case |
 
-### Number theory & big integers (96)
+### Number theory & big integers (98)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -480,8 +480,10 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CBANK](CBANK/README.md) | Scale all coins to quarters and count the integer solutions of one equation, like counting change with a fixed set of denominations. The algorithm derives a closed form for the number of solutions and evaluates it with modular arithmetic. | O(1) per case |
 | [APS](APS/README.md) | The sequence is a running total, like a row of monthly bills where each new bill is the smallest prime factor of the current index. Find every smallest prime factor with one sieve, then accumulate them once in order. | O(largest N log log largest N plus T) |
 | [LOOPEXP](LOOPEXP/README.md) | The current maximum changes exactly when the largest value seen so far arrives, like noting each new high-water mark. Position i holds the largest of its first i entries with probability 1/i. | O(T + max N) |
+| [ATOMS](ATOMS/README.md) | Think of doubling grains in a jar with a fixed lid: keep pouring while the next doubling fits. Division answers the fit question without ever forming an overflowing product. | O(P log M) |
+| [RLTHREE](RLTHREE/README.md) | Think of three runners on a ladder where each rung belongs to two of them and one outsider. Equal distances mean each outsider gets the same number of losing rungs. | O(N) |
 
-### Greedy, search & enumeration (531)
+### Greedy, search & enumeration (535)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1018,6 +1020,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [KAYKAY](KAYKAY/README.md) | Cutting one edge separates any valid pair, like cutting a rope to hang two baskets on opposite sides. Tree knapsack computes the best connected subtree containing each vertex inside its rooted part. | O(n times k squared) |
 | [SUDOGOB](SUDOGOB/README.md) | Choose the empty cell with the fewest legal digits, like picking the tightest knot first when tying a bundle. Bit masks hold the used digits for each row, column, and box, so candidates come from one bitwise complement. | O(9 to the number of empty cells) worst case |
 | [TMB](TMB/README.md) | The answer is the sum of uniform set partitions, like tallying every way to pack a crate into equal boxes then adding the box sizes. For a fixed team size d, the recurrence multiplies by a binomial when one more group is added. | O(n squared log n) worst case for one total |
+| [ABSP1](ABSP1/README.md) | Think of each array value as a weight on a seesaw whose tilt grows away from the midpoint. Every value contributes its larger-neighbor count minus its smaller-neighbor count. | O(N) per test |
+| [NCOPRIME](NCOPRIME/README.md) | Think of each legal pair as a reward for pointing an arrow from its smaller value to its larger value. Choosing labels is like funding projects, where each reward requires both endpoint labels. | O(N^2 log V) with V at most 2N + N^2 |
+| [SHAKTI](SHAKTI/README.md) | Think of a row of blocks: removing one block from an even row leaves an odd row, and an odd row offers only odd-sized removals. The game reduces to parity, which is decided by one `mod` per number. | O(t) |
+| [SUBXOR](SUBXOR/README.md) | Think of a library shelf where each book is filed by its prefix XOR barcode. For the current barcode, a binary trie counts earlier barcodes whose XOR falls below K. | O(N bits) per test |
 
 ### Data structures, bits & simulation (44)
 
