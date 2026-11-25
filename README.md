@@ -1,10 +1,10 @@
-# SPOJ — 661 problems, one method
+# SPOJ — 667 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![661 problems](https://img.shields.io/badge/problems-661-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![667 problems](https://img.shields.io/badge/problems-667-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 661 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 667 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 661 problems
+## The 667 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -238,7 +238,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 
-### Graphs & trees (50)
+### Graphs & trees (52)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -294,6 +294,8 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [CERC07K](CERC07K/README.md) | Carry the set of collected keys with the position, like a traveler holding a ring of keys while walking a floor plan. Breadth-first search explores states in step order, so the first exit reached has the fewest steps. | O(1) |
 | [GSS4](GSS4/README.md) | Think of each number as a candle that shrinks until it reaches one, then never changes again. A segment tree stores sums and maximums, so a range with maximum one can be skipped without visiting it. | O(1) |
 | [REMGAME](REMGAME/README.md) | Treat every board as a bit pattern and let a move carve out one contiguous slice. A position wins when some move hands the opponent a losing position; taking the last piece is never a winning move. | O(V * M) for V visited boards and M moves |
+| [MSTS](MSTS/README.md) | Process equal weights in batches, like laying identical bricks one layer at a time before moving to the next layer. Kirchhoff matrix-tree theorem counts spanning trees of each batch graph after cheaper batches are contracted. | O(1) |
+| [QTREE4](QTREE4/README.md) | Split the tree into centre regions, like finding the longest trip between two neighbourhoods by keeping the best outgoing road from each neighbourhood. Centroid decomposition gives every node a logarithmic list of ancestor centroids. | O(1) |
 
 ### Dynamic programming (43)
 
@@ -441,7 +443,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (230)
+### Greedy, search & enumeration (234)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -677,6 +679,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [KPSORT](KPSORT/README.md) | Think of the sequence as beads on a string: one chosen bead stays put while both loose ends flip, like turning two halves of a necklace around a clasp. | O(1) |
 | [PUTIN](PUTIN/README.md) | Picture each given point as a corner of an upward block. That block swallows every lattice point above it. Count the uncovered lattice by adding and subtracting overlapping tiles. | O(1) |
 | [WAR](WAR/README.md) | Treat the map like a jigsaw puzzle: walk along a border with the puzzle piece on your left, and each closed walk traces one region. Planar face traversal turns every directed segment into the next directed segment at its endpoint. | O(1) |
+| [GANNHAT](GANNHAT/README.md) | Search a map by checking the nearest region first and skipping whole regions whose border lies farther than the best distance already found. A kd-tree splits points alternately by x and y around a median. | O(1) |
+| [POLYSSQ](POLYSSQ/README.md) | Pick the lowest-leftmost corner, then grow two chains around it like closing a fan one rib at a time. Every convex polygon has a unique lowest-leftmost vertex. Other vertices appear in increasing angle around that pivot. | O(N^4 K) |
+| [SPP](SPP/README.md) | Fast-forward the recurrence the way you skip ahead in a video: double the jump each time instead of stepping term by term. The algorithm exponentiates a matrix that carries the last k terms and the running prefix sum. | O(1) |
+| [UNTITLED](UNTITLED/README.md) | Rank each new value by how many earlier values are smaller, like placing a card into a sorted hand; matching hands share the same rank list. An Aho-Corasick trie stores pattern prefixes by these rank labels. | O((N + P) log(N + P)) |
 
 ### Data structures, bits & simulation (42)
 
