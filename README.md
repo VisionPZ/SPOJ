@@ -1,10 +1,10 @@
-# SPOJ — 879 problems, one method
+# SPOJ — 885 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![879 problems](https://img.shields.io/badge/problems-879-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![885 problems](https://img.shields.io/badge/problems-885-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 879 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 885 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 879 problems
+## The 885 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -467,7 +467,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [DCEPCA03](DCEPCA03/README.md) | Squaring a sum is like pairing every card in a pile with every card in the same pile. One pass builds all totients with a sieve, and a prefix array gives each sum at once. | O(N log log N + T) |
 | [NDIV](NDIV/README.md) | Stamp divisor counts across the interval, like marking every tenth house on a street. Each small prime visits its multiples once, so no number needs a fresh factor search. | O(sqrt(b) log log b + (b - a) log log b) |
 
-### Greedy, search & enumeration (420)
+### Greedy, search & enumeration (426)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -893,6 +893,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [DEC123](DEC123/README.md) | Count the binary choices, like counting coin flips without listing every sequence. An internal node with an odd value splits into two different ordered pairs, so it offers two choices. | O(H log modulus) per case |
 | [DIG](DIG/README.md) | Choose four vertices, like picking four corners of a quadrilateral. Its two diagonals cross once inside the polygon, and no other choice gives that crossing. So the answer is `C(n,4)` reduced modulo the prime. | O(T log modulus) |
 | [PUCMM223](PUCMM223/README.md) | Treat the two pieces as one traveller, like a pair of dancers moving together. The state is the pair of occupied cells, and one move changes both cells at once. | O((M*N)^2) per case |
+| [BUZZ](BUZZ/README.md) | Think of a city where two loops of wire meet: that junction belongs to both loops, the same way an articulation city belongs to several regions. Tarjan's edge stack cuts the graph into biconnected blocks, and isolated cities become single-city regions. | O(E + R log W times matching cost) |
+| [CEOI08A](CEOI08A/README.md) | Think of stretching a rubber band around a handful of nails: only the nails on the band need to be bought. Fix the lowest nail as an anchor and list the other holes by angle around it. | O(N^3 M) worst case |
+| [COT5](COT5/README.md) | Think of two climbers on a tree who meet after walking up to a common branch. Store a parent link on every node, walk each query node up to the root, then move the deeper climber up until the levels match. | O(1) |
+| [SGAME](SGAME/README.md) | Think of a post carrier who must walk every street once and end at the depot. Each crossing needs one arrival and one departure, so every city degree must be even, and all streets must belong to the depot's connected group. | O(total lines + 300 per case) |
+| [VPL0_C](VPL0_C/README.md) | Dividing a rope into evenly growing chunks is like this chain: each step adds one more unit than the last. A sieve writes every divisor count once, then each member is a table lookup. | O(N log N + T sqrt(N)) |
+| [VPL0_D](VPL0_D/README.md) | Think of two stacks of numbered cards: you may take a card only when the same number sits on both stacks in the same order. The weighted LCS table keeps the best sum for each pair of prefixes. | O(KN) per case |
 
 ### Data structures, bits & simulation (44)
 
