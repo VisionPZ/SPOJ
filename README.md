@@ -1,10 +1,10 @@
-# SPOJ — 619 problems, one method
+# SPOJ — 625 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![619 problems](https://img.shields.io/badge/problems-619-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![625 problems](https://img.shields.io/badge/problems-625-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 619 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 625 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 619 problems
+## The 625 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -439,7 +439,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (190)
+### Greedy, search & enumeration (196)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -635,6 +635,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [GETBACK](GETBACK/README.md) | Work backwards from Desertville and ask how much water each restpoint needs, like stocking depots before a long trek. A short leg can be ferried by making round trips that leave water behind. | O(1) |
 | [PIB](PIB/README.md) | Count the paths in the recursion tree instead of walking the tree, like counting routes on a ladder with steps of 1 and pi. Each route picks a number of unit steps and pi steps before dropping below 4. | O(1) |
 | [PUZZLE2](PUZZLE2/README.md) | Treat each column as a stack of bits, like a column of coins that can be turned over as a whole. A row flip turns every coin in that row, so it changes a column into its complement. | O(1) |
+| [CANDY](CANDY/README.md) | Equal shares are the average, and every moved candy leaves one surplus packet and fills one deficit packet, like shifting chairs to fill empty seats. Compute the average, reject a fractional average, then add the surplus above it. | O(N) per block |
+| [CERC07P](CERC07P/README.md) | Pair corners along each row and column like matching socks by alternating positions. On any row, boundary crossings alternate inside and outside, so sorted corners pair as first with second, third with fourth. | O(N^2) per building |
+| [CERC07R](CERC07R/README.md) | Translate every symbol word into one of three numbers, like sorting cards into three piles. Rock beats scissors, scissors beat paper, and paper beat rock form a cycle. | O(total rounds) |
+| [CERC07S](CERC07S/README.md) | Keep the samples in a splay tree and treat each node as a permanent handle, like a labeled book on a shifting shelf. The tree's in-order traversal is the current row; subtree sizes give ranks. | O(N log N) per scenario |
+| [CERC07W](CERC07W/README.md) | Adding water at a level above the current center of mass raises it; adding water below lowers it, like balancing a seesaw by pouring sand onto one side. | O(P) per integral, with P fixed by `integrationPrecision` |
+| [MINDIST](MINDIST/README.md) | Treat the answer as a radius, like placing a short hose. Ask whether some short path covers every node within that radius. Root the tree. | O(N log S) per case |
 
 ### Data structures, bits & simulation (42)
 
