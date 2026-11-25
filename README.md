@@ -1,10 +1,10 @@
-# SPOJ — 1248 problems, one method
+# SPOJ — 1254 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1248 problems](https://img.shields.io/badge/problems-1248-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1254 problems](https://img.shields.io/badge/problems-1254-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1248 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1254 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,11 +13,11 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1248 problems
+## The 1254 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
-### Strings & text (113)
+### Strings & text (114)
 
 KMP, borders, tries and rolling hashes keep matching linear. Expression parsing and text rewriting add one stack pass. DP over all substrings is the only quadratic corner.
 
@@ -136,6 +136,7 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [BLHETA](BLHETA/README.md) | Keep the surviving letters on a stack, like a text editor that undoes a typed word the moment it is completed. Store the spells backward in a trie so one backward walk of the stack finds every matching suffix. | O(1) |
 | [STRMATCH](STRMATCH/README.md) | Build a suffix automaton once, like a compressed map of every substring, and walk each query through it in linear time. Each state stores the number of end positions of its substrings, which is exactly the occurrence count. | O(N alphabet + total query length) |
 | [ADAJOBS](ADAJOBS/README.md) | Try each stored job length separately, like testing keys from several rings before opening a door. Hash every inserted job and keep it in a set for its own length. | O(sum of question lengths times active lengths) |
+| [ADASTRNG](ADASTRNG/README.md) | Picture a suffix automaton as a family tree of endings, where each node owns a short run of new substrings. Build that automaton once, then charge each owned substring to the letter where it starts. | O(1) |
 
 ### Geometry & grids (101)
 
@@ -245,7 +246,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [RROOT](RROOT/README.md) | Slice the square like a loaf of bread, then measure the slice below the parabola `c = b²` and divide by the whole loaf. The algorithm is analytic area integration in closed form, at O(1) cost per test. | O(T) |
 | [ADAKOHL](ADAKOHL/README.md) | Every line passes through at least one kohlrabi, so pick that one as an anchor, like choosing a hub before grouping spokes. From the hub, reduce each direction to a primitive integer vector; all points with the same vector lie on the same line. | O(1) |
 
-### Graphs & trees (81)
+### Graphs & trees (82)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -332,6 +333,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [ADAPHONE](ADAPHONE/README.md) | Count path nodes with a standard LCA, then count adjacent ID pairs on the path with a sweep over Euler-order rectangles, like sweeping a line across a map of intervals. | O((N + Q) log N) |
 | [ADAFTBLL](ADAFTBLL/README.md) | Unroll the tree into a line and slide a window while stepping through time, like replaying a film with a movable frame. An Euler tour turns each trip into one line segment plus one optional node. | O((N + Q) to the five thirds) |
 | [CATER](CATER/README.md) | Count connected groups at their highest station, like counting family reunions by the eldest relative present. Root the tree, then combine child polynomials at each station with a knapsack convolution. | O(N times K squared) |
+| [ADABRANC](ADABRANC/README.md) | Add branches from strongest to weakest, like unlocking roads as a storm fades and watching neighborhoods merge. Use a disjoint-set union for the merged neighborhoods. Answer each traveller the moment the weight drops to that traveller's value. | O(1) |
 
 ### Dynamic programming (74)
 
@@ -414,7 +416,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [ADAQUBIC](ADAQUBIC/README.md) | Maximise the current player's outcome by exploring moves, like a chess engine looking ahead, but stop as soon as a win or forced loss is visible. Minimax with alpha-beta pruning and a transposition table searches only relevant continuations. | O(visited states times 49), exponential worst case |
 | [ADAMOLD](ADAMOLD/README.md) | Split the row at the best places, like choosing where to cut a ribbon so the crooked parts stay together. For one segment, count ones and zeros at each bit; the bit contributes ones times zeros times the bit value. | O(K times N squared times 31) |
 
-### Number theory & big integers (110)
+### Number theory & big integers (111)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -530,8 +532,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [ADADIG](ADADIG/README.md) | Factor N into digits greater than one, then fill the remaining sum with ones, like choosing toppings and then adding plain crackers to reach a fixed total weight. | O(1) |
 | [VECTAR9](VECTAR9/README.md) | The divisibility pattern repeats every product of the primes, like a wallpaper tile that restarts after one full width. One period contains a fixed number of mangu values, so the period index and a local rank replace a huge k. | O(1) |
 | [NKDIV](NKDIV/README.md) | Treat each prime exponent as a pile of stones. One move takes stones from at most `k` piles. This is like a shopper grabbing items from a few shelves at once. | O(R times sqrt(n) over log n) |
+| [ADADIGIT](ADADIGIT/README.md) | Try every ordering of the digits, like rearranging a handful of numbered tiles and scoring each row. Use the next-permutation routine to walk the orderings in sorted order. | O(1) |
 
-### Greedy, search & enumeration (722)
+### Greedy, search & enumeration (725)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1259,6 +1262,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [SORTOUT](SORTOUT/README.md) | Sort the collection once, like alphabetising a card index, then use a binary search to find the insertion point of each query. The insertion point equals the number of strings not greater than the query. | O(N log N + Q log N) |
 | [ADAHOSE](ADAHOSE/README.md) | Cut the field side to side, like slicing a loaf to separate the top from the bottom. Planar min cut turns that slice into a cheapest left-to-right cell walk, and Dijkstra finds that walk. | O(N squared log N) |
 | [ADASQR](ADASQR/README.md) | Shrink each row to its sliding minima, then shrink those results down the columns, like folding a map twice. Each pass uses a monotonic deque and touches every cell once. | O(N squared) |
+| [ADAFIMBR](ADAFIMBR/README.md) | Treat each pile as a separate game with a score, like rating a stack of coins by the best move it offers. Compute that score, called a Grundy value, for every seed count up to the largest pile. | O(1) |
+| [ADAPLNTS](ADAPLNTS/README.md) | Pair each conflict like matching dancers, then let everyone without a pair stay on the floor. Build a bipartite graph whose edges are the killing pairs. By Konig's theorem, the smallest set of plants to remove has the same size as a largest matching. | O(1) |
+| [ADATREE](ADATREE/README.md) | Raise a height dial from zero upward and pin each tree onto a shelf the moment its height becomes allowed, like filing cards when their label turns green. | O(1) |
 
 ### Data structures, bits & simulation (47)
 
