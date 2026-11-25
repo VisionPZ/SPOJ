@@ -1,10 +1,10 @@
-# SPOJ — 1070 problems, one method
+# SPOJ — 1076 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1070 problems](https://img.shields.io/badge/problems-1070-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1076 problems](https://img.shields.io/badge/problems-1076-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1070 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1076 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1070 problems
+## The 1076 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -241,7 +241,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 | [RROOT](RROOT/README.md) | Slice the square like a loaf of bread, then measure the slice below the parabola `c = b²` and divide by the whole loaf. The algorithm is analytic area integration in closed form, at O(1) cost per test. | O(T) |
 
-### Graphs & trees (68)
+### Graphs & trees (71)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -315,6 +315,9 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [BRDGHRD](BRDGHRD/README.md) | Think of each bridge as a pin with two coordinates, and the chosen pins must let a rubber band pass without folding back. Two bridges cross exactly when their two endpoint orders disagree. | O(1) |
 | [IITWPC4I](IITWPC4I/README.md) | Think of an imaginary depot linked to every milkman for free, and buy the cheapest road tree that reaches that depot. Kruskal's algorithm sorts all roads by cost and joins components with a disjoint-set structure. | O((m + n) times log(m + n)) per case |
 | [TREEORD](TREEORD/README.md) | Check each subtree like verifying a family tree one branch at a time. The first preorder name is the parent; the inorder split says how many nodes sit on each side. | O(N) per case |
+| [UOFTCE](UOFTCE/README.md) | Think of the stores as parcels carried back to a depot: after each shop they return to the car, so every store except the first costs a round trip. | O(1) |
+| [VFRIEND2](VFRIEND2/README.md) | Treat each wish as a handshake request, and handshakes come in pairs. The Erdős–Gallai theorem checks those requests with N simple inequalities after sorting. The generator produces each wish in one step, and bucket counts sort the values without comparisons. | O(1) |
+| [VFRIENDS](VFRIENDS/README.md) | Treat the wishes like a seating chart: a table of N seats must give every guest the exact number of neighbours they request. The Erdős–Gallai theorem turns that chart into N cheap inequality checks. | O(1) |
 
 ### Dynamic programming (63)
 
@@ -493,7 +496,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [HG](HG/README.md) | Compare two towers by their bricks, then rebuild only the bricks they share. Prime factorization turns each product into a list of prime exponents. The gcd keeps the smaller exponent for every prime. | O(primeLimit log log primeLimit + (N+M) times divisions) |
 | [FONTSIZE](FONTSIZE/README.md) | Try a size, pack words greedily, then search for the largest size that still fits. This works like choosing the biggest text that fits a shelf: measure one candidate, then shift the guess up or down. | O(message length times log size bound) |
 
-### Greedy, search & enumeration (584)
+### Greedy, search & enumeration (587)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1083,6 +1086,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [FACTMULN](FACTMULN/README.md) | Give each prime in n its own small search, then take the largest result. That is like checking every locked door separately and leaving only when all doors open. | O(sieveLimit log log sieveLimit + cases times factors times log n) |
 | [LAWRENCE](LAWRENCE/README.md) | Give each group boundary a cost and let a hull pick the cheapest boundary for every endpoint. This resembles picking the shortest route to each station by keeping only the bus lines that can win. | O(N times P) |
 | [SNGMSG](SNGMSG/README.md) | Treat the key digits like a ball bouncing between two walls, touching each wall twice before turning. Each message letter consumes one digit from that bounce. The algorithm decodes each character directly. | O(total message length) |
+| [MXSBMTRX](MXSBMTRX/README.md) | Think of the matrix as a staircase: inside the rectangle, each step right and each step down must climb. The diagonal rule follows for free, so only rows and columns need checking. | O(1) |
+| [UOFTCC](UOFTCC/README.md) | Think of the channels as stepping stones: from any stone you can hop to any stone within C steps, and each hop costs T seconds. Greedy stepping chooses the farthest reachable stone every time. | O(1) |
+| [UOFTCD](UOFTCD/README.md) | Think of fear as a thermometer: Bob holds her hand only while the reading sits between two marks. Covering one moment removes one push on the mercury, and we try every single moment in turn. | O(1) |
 
 ### Data structures, bits & simulation (45)
 
