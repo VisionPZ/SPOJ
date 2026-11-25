@@ -1,10 +1,10 @@
-# SPOJ — 1022 problems, one method
+# SPOJ — 1040 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1022 problems](https://img.shields.io/badge/problems-1022-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1040 problems](https://img.shields.io/badge/problems-1040-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1022 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1040 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1022 problems
+## The 1040 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -134,7 +134,7 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [WOWTALENT](WOWTALENT/README.md) | Think of a receptionist writing the same greeting around each name on a list. The program holds the whole input in one buffer and walks to each line break. | O(1) |
 | [LONGCS](LONGCS/README.md) | Index every substring of the first string once, then read each other string through that index, like using one map to check several travellers. A suffix automaton stores all those substrings in a small graph. | O(1) |
 
-### Geometry & grids (99)
+### Geometry & grids (100)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
@@ -239,6 +239,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
+| [RROOT](RROOT/README.md) | Slice the square like a loaf of bread, then measure the slice below the parabola `c = b²` and divide by the whole loaf. The algorithm is analytic area integration in closed form, at O(1) cost per test. | O(T) |
 
 ### Graphs & trees (64)
 
@@ -483,7 +484,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [ATOMS](ATOMS/README.md) | Think of doubling grains in a jar with a fixed lid: keep pouring while the next doubling fits. Division answers the fit question without ever forming an overflowing product. | O(P log M) |
 | [RLTHREE](RLTHREE/README.md) | Think of three runners on a ladder where each rung belongs to two of them and one outsider. Equal distances mean each outsider gets the same number of losing rungs. | O(N) |
 
-### Greedy, search & enumeration (547)
+### Greedy, search & enumeration (563)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1036,8 +1037,24 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [RLCAT](RLCAT/README.md) | Treat each pen like a relay baton: the starting runner sets who may carry it, and an early handoff can help the next leg. A pen serves a consecutive block beginning at its owner. | O(N log N) per case |
 | [RLCIPHER](RLCIPHER/README.md) | Walk down stairs in strides of 3 or 4 and stop the moment you step below the ground floor. Your goal is the lowest step you can stop on. | O(total N) |
 | [RLTOUR](RLTOUR/README.md) | Work backward from the end of the line, like rebuilding a stack one box at a time. For a doll at position i, its count plus one counts dolls up to i with height at least its own. | O(N squared) per case |
+| [ABSHIP](ABSHIP/README.md) | One ship is caught by a square that touches any of its cells. This is like a net catching a tangled rope at any point. The algorithm first labels connected ship cells with a flood fill. | O(1) |
+| [BSHIP](BSHIP/README.md) | Linearity of expectation turns the problem into counting how many squares cover each ship, like counting how many camera frames include each tree in a field. The algorithm is a per-cell coverage count. | O(1) |
+| [CFATHER](CFATHER/README.md) | Think of donors pouring water into buckets, where each donor can pour at most one jug per bucket, like filling cups through a narrow spout shared by every pair. | O(1) |
+| [DIGCNT](DIGCNT/README.md) | Counting digits in a range is like counting house numbers on a whole street, one street block at a time. Use a place-value formula that counts one digit at one power of ten in constant time, then add the nine answers. | O(q × 9 × log b) |
+| [DOSA](DOSA/README.md) | Keeping a price is like reserving a seat in a row: each earlier seat needs a smaller positive ticket number. Subtract the position from each price, then keep the longest run of values that never decreases. | O(N log N) |
+| [FOXWOLF](FOXWOLF/README.md) | Both animals share one clock, like two runners who pause separately. One state holds both positions and both remaining pause times. The algorithm is a breadth-first search over joint states. | O(1) |
+| [FRND](FRND/README.md) | Count ones and zeros separately in each bit column, like tallying two teams' goals by position. The real algorithm is bitwise contribution counting, at O(20N) cost. Testing every pair would take O(N²) time and fail at one million residents. | O(20N) |
+| [GCJPURE](GCJPURE/README.md) | Rank-taking drops from n to the size of the chosen set. Think of following a chain of labels until label 1 appears. Each valid set is counted by its chosen size. | O(1) |
+| [MMMAGIC4](MMMAGIC4/README.md) | The order of table cards works like a combination lock: the arrangement itself carries a small number. Sort the hand, hide the card chosen by the sum modulo k, and write the rank of that card as a permutation of the three shown cards. | O((M + D) × k) |
+| [MMMAGIC5](MMMAGIC5/README.md) | The order of table cards works like a combination lock: the arrangement itself carries a small number. Sort the hand, hide the card chosen by the sum modulo k, and write the rank of that card as a permutation of the four shown cards. | O((M + D) × k) |
+| [MMMAGIC6](MMMAGIC6/README.md) | The order of table cards works like a combination lock: the arrangement itself carries a small number. Sort the hand, hide the card chosen by the sum modulo k, and write the rank of that card as a permutation of the five shown cards. | O((M + D) × k) |
+| [NAUGHTY](NAUGHTY/README.md) | Treat each label like a candidate team captain and count free players before paid substitutes. The real algorithm is a histogram sweep over labels, at O(n + 100001) cost. | O(n + 100001) |
+| [PIHU1](PIHU1/README.md) | Sort the values, then squeeze a pair around each fixed first value, like closing two hands toward each other. The real algorithm is sort plus a two-pointer scan, at O(N²) cost per case. | O(T · N²) |
+| [TKV1000](TKV1000/README.md) | Think of each company as a pile of chips where only the top two chips can make a weapon. The real algorithm is a greedy turn simulation with two max-heaps, at O(log N) cost per turn. | O((N + M) log(N + M)) |
+| [TWOCIR](TWOCIR/README.md) | Picture a coin pushed through a paper disk: one crossing inside the rim and one outside means the coin is hooked. The real algorithm intersects one circle with the other circle's plane in O(1) time. | O(T) |
+| [ULASER](ULASER/README.md) | Picture the beam walking diagonally across square floor tiles, one tile per second. Mark each tile by the direction of the diagonal it used, so a later crossing catches the earlier path. | O(N × area + steps) |
 
-### Data structures, bits & simulation (44)
+### Data structures, bits & simulation (45)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -1087,6 +1104,7 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [RELINETS](RELINETS/README.md) | A reliable net is like a circular bike route: cutting one stretch still lets you ride all the way around. The algorithm tries every link subset and keeps the cheapest one with no bridge. | O(1) |
 | [INVENT](INVENT/README.md) | Treat each tree edge like a gate that opens between two crowds, and charge every new cross-crowd pair as it passes. Union-find processes tree edges from light to heavy and counts pairs that become connected. | O(1) |
 | [HAYBALE](HAYBALE/README.md) | A range add is like marking the start and end of a fence segment, then walking the fence once to count planks. The algorithm uses a difference array. | O(N + K) |
+| [FOXLINGS](FOXLINGS/README.md) | One cracker spreads through a friendship group like ink through connected pipes, so the answer is the number of separate groups. The algorithm is a disjoint-set union with path compression and size-based joins. | O(1) |
 
 ## License
 
