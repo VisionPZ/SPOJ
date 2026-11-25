@@ -1,10 +1,10 @@
-# SPOJ — 601 problems, one method
+# SPOJ — 607 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![601 problems](https://img.shields.io/badge/problems-601-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![607 problems](https://img.shields.io/badge/problems-607-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 601 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 607 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 601 problems
+## The 607 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -438,7 +438,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (173)
+### Greedy, search & enumeration (179)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -617,6 +617,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [FCTRL4](FCTRL4/README.md) | Peel off factors of five in groups, like removing matched pairs from a stack until the last card shows. The recursive reduction by five uses a four-entry table for the small factorials and a four-cycle for powers of two. | O(1) |
 | [KROW](KROW/README.md) | Read each direction like a strip of tape and start counting only where a matching mark begins. The maximal-run scan walks each same-mark strip once in every one of the four directions. | O(1) |
 | [LABYR2](LABYR2/README.md) | Reading the map is like following a subway line, with each stop lowering the ticket counter by one. A direct simulation applies the printed rule at the current node, decrements the counter, and moves. | O(1) |
+| [COOLNUMS](COOLNUMS/README.md) | Treat the reachable digit sums as a row of light switches: adding a digit flips on every switch that is that many steps to the right. This is a bitset shift. | O(1) |
+| [DRAGONCU](DRAGONCU/README.md) | Folding a strip of paper twice gives a pattern whose second half mirrors the first, like a reflection in a mirror. The dragon curve has the same split: `s_m = s_{m-1} + '1' + reverseComplement(s_{m-1})`. | O(1) |
+| [EPURSE](EPURSE/README.md) | Coins at distance `W` form separate chains, like beads on parallel strings. A throw always empties one end of one string, so the coins left on a string form one continuous segment. | O(1) |
+| [FCATTLE](FCATTLE/README.md) | Think of each herb type as a queue of days it must serve. If a rectangle holds `c` herbs of a type, it can reach the day preceding that type's `(c+1)`-th need. | O(1) |
+| [POLEVAL](POLEVAL/README.md) | Nested multiplication is like peeling an onion: each step folds one coefficient into a running total and multiplies by the point. This is Horner's method, and it needs one multiply and one add per coefficient. | O(1) |
+| [TETRIS3D](TETRIS3D/README.md) | Think of the platform as a floor of tiles whose heights you can query and raise in rectangles. A quadtree stores the maximum height of each square region, like a map that zooms into four quadrants. | O(N * log^2(D+S)) |
 
 ### Data structures, bits & simulation (42)
 
