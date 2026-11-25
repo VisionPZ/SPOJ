@@ -1,10 +1,10 @@
-# SPOJ — 390 problems, one method
+# SPOJ — 395 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![390 problems](https://img.shields.io/badge/problems-390-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![395 problems](https://img.shields.io/badge/problems-395-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 390 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 395 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 390 problems
+## The 395 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -355,7 +355,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [FCTORISE](FCTORISE/README.md) | Finding the closest factor pair is like choosing the two nearest whole-number sides of a rectangle with a fixed area. The method takes the largest divisor not above the square root, then derives x and y from that pair. | O(1) |
 | [FUCT_FOR_PRIME](FUCT_FOR_PRIME/README.md) | Crossing out multiples of each small prime is like striking every second, third, and fifth name off a class list. A sieve builds one table of prime flags up to 500. | O(1) |
 
-### Greedy, search & enumeration (60)
+### Greedy, search & enumeration (62)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -421,8 +421,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [EDUPT52](EDUPT52/README.md) | Each job finishes on its own numbered visit, like shoppers at one counter who each need a known number of turns. The method counts visits with a ceiling division and sorts by visit count, then by arrival index. | O(N log N) |
 | [FNDMSNG](FNDMSNG/README.md) | The missing value is the gap between the sum you expect and the sum you see, like counting the empty chair in a row of numbered seats. The method uses the arithmetic series sum and one pass over the given values. | O(N) |
 | [FNDMSNG1](FNDMSNG1/README.md) | The missing value is the gap between the sum you expect and the sum you see, like counting the empty chair in a row of numbered seats. The method uses the arithmetic series sum and one pass over the given values. | O(N) |
+| [DNEQ](DNEQ/README.md) | Measure the gain in tenths, like pricing in cents instead of dollars. Multiply the integer count by N, divide back once, then add B. The real algorithm is fixed-point integer arithmetic. | O(t) |
+| [EDUPT27](EDUPT27/README.md) | Keep a stack of kept values, like a line of boxes that collapses whenever a matching group reaches the end. The real algorithm is a single left-to-right pass with a stack and a suffix check. | O(list length times pattern length) |
 
-### Data structures, bits & simulation (27)
+### Data structures, bits & simulation (30)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -455,6 +457,9 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [PRF03ARRAY0102](PRF03ARRAY0102/README.md) | Sorting numbered cards means sliding each card left until the cards before it sit in order, like arranging cards on a desk. Insertion sort is the real algorithm here. | O(N^2) |
 | [PRF03ARRAY0103](PRF03ARRAY0103/README.md) | Sorting numbered cards means sliding each card left until the cards before it sit in order, like arranging cards on a desk. Insertion sort is the real algorithm here. | O(N^2) |
 | [PRF03ARRAY0104](PRF03ARRAY0104/README.md) | Finding the smallest card in a hand is like picking the shortest pencil from a cup: keep the best one seen so far and replace it on a better find. | O(N) |
+| [DRSTWN](DRSTWN/README.md) | Scan the two integers and add them, like counting two piles of stones by combining them. The real algorithm is integer addition after a hand parse. A loop over every number would add needless work. | O(1) |
+| [EDUPT08](EDUPT08/README.md) | Walk two sorted lines like two zippers, like matching names on two sorted guest lists. The real algorithm is a two-pointer merge. Equal values go to the intersection and once to the union. | O(n + m) |
+| [EDUPT49](EDUPT49/README.md) | Push cars until the wanted one reaches the top, then pop it, like pulling plates off a stack exactly when a waiter asks for them. The real algorithm is a greedy stack simulation with one arrival cursor. | O(N) |
 
 ## License
 
