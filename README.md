@@ -1,10 +1,10 @@
-# SPOJ — 891 problems, one method
+# SPOJ — 903 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![891 problems](https://img.shields.io/badge/problems-891-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![903 problems](https://img.shields.io/badge/problems-903-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 891 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 903 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 891 problems
+## The 903 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -467,7 +467,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [DCEPCA03](DCEPCA03/README.md) | Squaring a sum is like pairing every card in a pile with every card in the same pile. One pass builds all totients with a sieve, and a prefix array gives each sum at once. | O(N log log N + T) |
 | [NDIV](NDIV/README.md) | Stamp divisor counts across the interval, like marking every tenth house on a street. Each small prime visits its multiples once, so no number needs a fresh factor search. | O(sqrt(b) log log b + (b - a) log log b) |
 
-### Greedy, search & enumeration (432)
+### Greedy, search & enumeration (444)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -905,6 +905,18 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [DCEPCA06](DCEPCA06/README.md) | Treat each allowed digit jump as an edge and count walks of length N minus one, like counting routes through a ten-station network. Squaring the ten by ten edge matrix repeatedly jumps many steps at once, so a billion digits need about thirty rounds. | O(1) |
 | [DCEPCA08](DCEPCA08/README.md) | The generated values cycle through every residue from one to fifty-two, like a clock with fifty-two positions. One full cycle can form every sum from zero up to its total, like having enough coins to pay any amount. | O(1) |
 | [DCEPCA10](DCEPCA10/README.md) | Treat the median as a majority vote: once one value holds a majority, it wins automatically, like electing a candidate with over half the ballots. Sort the values and find the longest equal run. | O(1) |
+| [BLACJACK](BLACJACK/README.md) | A round consumes between four and ten cards, so think of it as a short train car on a long track. Doubling tables jump over whole trains of rounds inside one block, while only the few rounds crossing a cut need fresh cards. | O(n^2 log n) per case |
+| [FLATAND](FLATAND/README.md) | Interior points never affect the answer, like loose ants inside a tight fence. Build the convex hull, then test side directions taken from hull edges. An optimal parallelogram has both pairs of sides parallel to hull edges, so a finite list of pairs covers every case. | O(n log n + h^2) per swarm |
+| [GSWORDS](GSWORDS/README.md) | Keep `x` letters at least three places apart, like parking cars with two empty spaces between them. That local rule enforces every prime-length condition, so a short recurrence counts all valid words. | O(log N) |
+| [MATHII](MATHII/README.md) | Every triple has a smallest entry, and that entry is at most the cube root of N, like finding the shortest side of a box. Split triples by which position holds that smallest entry and count the other two entries with divisor sums. | O(N^(2/3)) per case |
+| [PK11E](PK11E/README.md) | Treat each queen as a separate pile game, like several heaps in Nim that share one move counter. A queen's options depend only on its row and column, so its Grundy value is fixed. | O(25 * tableLimit^2) once, then O(Q) |
+| [PK11F](PK11F/README.md) | Skip words that cannot win before doing any real work, like ignoring books whose title length is wrong. Each insertion or deletion changes length by one and costs two, so length difference alone gives a lower bound. | O(Q * W * L * B) |
+| [PK11I](PK11I/README.md) | Every tree edge needs a return route, like a one-way street that needs a lane back. Count the arrows entering and leaving each node. A node with more incoming arrows than outgoing arrows starts that many reversed paths. | O(N) per case |
+| [ROT](ROT/README.md) | Treat each grid square at each minute as a separate room, like stations on a railway with several timetables. A step walks to a neighbouring room and picks the next timetable, one minute earlier, later, or the same. | O(R * C * Time) per case |
+| [SPP2](SPP2/README.md) | A recurrence acts like a machine that advances one step at a time, but squaring its transition jumps ahead in logarithmic time. Sort the exception positions and advance from one to the next with one polynomial power. | O((q+1) t^2 log n) per case |
+| [TRECOUNT](TRECOUNT/README.md) | Group trees by height before counting them, like sorting mail into pigeonholes before adding each pile. A balanced root has child heights that differ by zero or one, so counts at one height come from two neighbouring piles. | O(H * N^2) |
+| [TREEII](TREEII/README.md) | A level of equal-degree nodes acts like one stack of identical boxes: only its size matters. The root has c children, and each child subtree has the same shape, so removing the root leaves c identical trees. | O(n_max sqrt(n_max) + cases) |
+| [ZZPERM2](ZZPERM2/README.md) | Think of a fence with posts that must alternate high and low, like choosing a repeating up-down pattern of letter sizes. A prefix can be completed in a fixed number of ways, and that count tells how many ranks the prefix owns. | O(states * alphabet + outputs * length * alphabet) |
 
 ### Data structures, bits & simulation (44)
 
