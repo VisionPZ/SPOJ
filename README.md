@@ -1,10 +1,10 @@
-# SPOJ — 1135 problems, one method
+# SPOJ — 1141 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1135 problems](https://img.shields.io/badge/problems-1135-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1141 problems](https://img.shields.io/badge/problems-1141-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1135 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1141 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1135 problems
+## The 1141 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -501,7 +501,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NR1](NR1/README.md) | Applying a difference k times and then reading the constant is like taking a snapshot of how the polynomial changes at zero; no full basis conversion is needed. | O(25 squared + t times 25 times k) |
 | [SUFFIX](SUFFIX/README.md) | A suffix fixes the last digits, and those digits are the remainder modulo a power of the base, like reading only the last digits of a receipt. Convert each suffix to its remainder and modulus, then merge the congruences with the Chinese remainder theorem. | O(total suffix length times log of the modulus) |
 
-### Greedy, search & enumeration (640)
+### Greedy, search & enumeration (646)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1147,6 +1147,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [KIT](KIT/README.md) | Treat the pad as a deck of shift cards dealt once per letter, like dealing cards from a shuffled deck until none remain. Read the first N numbers into the deck, then walk the remaining tokens and shift each letter by the next card. | O(N + total letters) |
 | [MSCHED](MSCHED/README.md) | Treat time slots as parking spaces and send the highest-paying cow to the latest space before its deadline, like valet parking the biggest clients closest to the exit. | O(N log N) |
 | [VACATION](VACATION/README.md) | Every valid route connects through a hub, like a flight that must touch a hub airport before reaching its destination. Precompute shortest paths from each hub to every farm and from every farm to each hub. | O(K * N^2 + Q * K) |
+| [FACENEMY](FACENEMY/README.md) | Compare two turning arcs without measuring angles, like comparing two clock hands by their shadows. The cross product gives the swept area and the dot product gives the alignment. | O(1) |
+| [KSMALL](KSMALL/README.md) | Sort five million values and the judge clock runs out. Count their high 16 bits instead, like sorting mail by postcode before sorting by house number. The first pass finds which postcode holds the answer. | O(n + 2^16), with n = 5000000 |
+| [POWERCAR](POWERCAR/README.md) | Treat each position as a row in a table, like filling a trip log from start to finish. Each row keeps the best time for every number of bullets spent, both on and off the track. | O(1) |
+| [SUMPRIM2](SUMPRIM2/README.md) | Estimate the answer by area, then verify it locally, like finding a shelf from the total shelf length. The prime sum grows like `x^2 / (2 ln x)`. | O(1) |
+| [TFRIENDS](TFRIENDS/README.md) | Read the friendship rule backwards, like tracing a rumour to its source. "A is a friend of B" means a chain of knows links leads from B to A. | O(1) |
+| [VENOM](VENOM/README.md) | Treat the health before attack `k` as a running total, like a bank balance with weekly pay and rising bills. The fatal attack is the first one whose bill exceeds that balance. | O(1) |
 
 ### Data structures, bits & simulation (46)
 
