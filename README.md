@@ -1,10 +1,10 @@
-# SPOJ — 1106 problems, one method
+# SPOJ — 1112 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1106 problems](https://img.shields.io/badge/problems-1106-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1112 problems](https://img.shields.io/badge/problems-1112-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1106 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1112 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1106 problems
+## The 1112 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -500,7 +500,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [FONTSIZE](FONTSIZE/README.md) | Try a size, pack words greedily, then search for the largest size that still fits. This works like choosing the biggest text that fits a shelf: measure one candidate, then shift the guess up or down. | O(message length times log size bound) |
 | [NR1](NR1/README.md) | Applying a difference k times and then reading the constant is like taking a snapshot of how the polynomial changes at zero; no full basis conversion is needed. | O(25 squared + t times 25 times k) |
 
-### Greedy, search & enumeration (613)
+### Greedy, search & enumeration (619)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1119,6 +1119,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [GOPI_SW](GOPI_SW/README.md) | Splitting a unit fraction is like breaking one link into two longer links; always breaking the longest link gives the tiniest final piece. The real algorithm uses the Sylvester term sequence and stores every answer in a table. | O(max n + t) |
 | [HLP_RAMS](HLP_RAMS/README.md) | A binomial coefficient is odd exactly when every set bit of n also appears in the chosen position, like a lock whose every open notch must match. The real algorithm counts set bits and applies the Lucas parity rule. | O(t log n), at most 40 shifts per test |
 | [SPEC_SET](SPEC_SET/README.md) | Numbers sit on strings that link x to k times x, and picking numbers is like choosing non-touching seats in a row. The real algorithm finds a maximum independent set on disjoint paths, then collapses it to an alternating sum of floor divisions. | O(t log n), at most about 27 divisions per test |
+| [ACMT](ACMT/README.md) | Splitting a pile of members into teams is like fitting boxes onto a shelf: three items per box, with two shape choices. Each team always spends three people, so the count cannot exceed the total divided by three. | O(1) |
+| [DCEPC14A](DCEPC14A/README.md) | Counting larger cells behind each cell is like tallying taller people standing up-left in a seating chart. Visit values from large to small and mark their cells in a two-dimensional counter. | O(1) |
+| [DCEPC14C](DCEPC14C/README.md) | The win or loss of a pile repeats like a short drum loop: once the last few outcomes repeat, all later outcomes follow the same loop. Store one loop per move pair and fold a huge pile size back into it. | O(1) |
+| [DCEPC14D](DCEPC14D/README.md) | Counting progressions is like counting runs of dominoes placed end to end along a row of values. Each run starts at a value whose predecessor by the ratio is absent, then extends while the next multiple exists. | O(1) |
+| [FINGP](FINGP/README.md) | Checking the tail of a fingerprint is like checking the last word on a page: compare only the ending characters. Read each line whole and compare its final pattern-length slice. | O(1) |
+| [PROFF](PROFF/README.md) | A carry passes to the next digit like a baton passed down a row of runners. Walk both numbers from the last digit to the first and keep one carry flag. | O(1) |
 
 ### Data structures, bits & simulation (45)
 
