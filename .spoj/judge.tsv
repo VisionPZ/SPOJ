@@ -54,3 +54,16 @@ MOZMSLS	36107372	accepted
 MMFTEAM	36107375	accepted
 FUCT_FOR_PALIN	36107382	accepted
 RETO5	36107390	accepted (Python port; Nim unavailable)
+G10_11	36107471	accepted (Python 3.12 port; PyPy NZEC)
+G11	36107455	accepted (Python port; Nim unavailable)
+RG10	36107456	accepted (Python port; Nim unavailable)
+RG11	36107457	accepted (Python port; Nim unavailable)
+RG11_2	36107458	accepted (Python port; Nim unavailable)
+ENCAROC	36107441	accepted (Python port)
+ENGCD	36107443	accepted (Python port)
+ENLCD	36107445	accepted (Python port)
+PG10181	36107446	accepted (Python port)
+RF102	36107452	accepted (Python port)
+RF103	36107453	accepted (Python port)
+FUCT_IF_SEC2TIME	36107405	accepted
+MMFBTEAM	36107407	accepted
