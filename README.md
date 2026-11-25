@@ -1,10 +1,10 @@
-# SPOJ — 868 problems, one method
+# SPOJ — 873 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![868 problems](https://img.shields.io/badge/problems-868-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![873 problems](https://img.shields.io/badge/problems-873-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 868 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 873 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 868 problems
+## The 873 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -240,7 +240,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 
-### Graphs & trees (59)
+### Graphs & trees (60)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -305,6 +305,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [MTREE](MTREE/README.md) | Charge every pair to the vertex where its two branches meet, like sorting letters by their common post office. Root the tree once and walk it in reverse postorder. | O(N) |
 | [RPLN](RPLN/README.md) | Overlapping pairs of blocks answer each range in one step, like reading a ladder of precomputed answers instead of rescanning the list. The program builds a sparse table. | O(1) |
 | [SEGSQRSS](SEGSQRSS/README.md) | Store a sum and a square sum at each tree node, like keeping both a running total and a tally of squared scores for a class. A pending add and a pending set travel down only when a child is touched. | O(N + Q log N) per case |
+| [CNTPRIME](CNTPRIME/README.md) | Turn each value into a zero-or-one prime flag, like painting fence posts either marked or plain. A whole-range assignment paints one stretch a single color, so its prime count becomes either the stretch length or zero. | `O(1000000 log log 1000000)` once, then `O((n + q) log n)` per case |
 
 ### Dynamic programming (54)
 
@@ -466,7 +467,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [DCEPCA03](DCEPCA03/README.md) | Squaring a sum is like pairing every card in a pile with every card in the same pile. One pass builds all totients with a sieve, and a prefix array gives each sum at once. | O(N log log N + T) |
 | [NDIV](NDIV/README.md) | Stamp divisor counts across the interval, like marking every tenth house on a street. Each small prime visits its multiples once, so no number needs a fresh factor search. | O(sqrt(b) log log b + (b - a) log log b) |
 
-### Greedy, search & enumeration (410)
+### Greedy, search & enumeration (414)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -882,6 +883,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [RIOI_3_2](RIOI_3_2/README.md) | Slide every chosen number left by its rank, like pushing books together on a shelf. Distinct positive values become a nondecreasing list, and the problem turns into counting small partitions. | O(N*M + T log T) |
 | [VPL0_A](VPL0_A/README.md) | Treat gift floors like delivery stops and plan the order once the travel times are known. Breadth-first search gives ride costs between floors. Two subset searches give the walk inside each floor and the order of stops. | O(K * M * E + K^2 * 2^K) |
 | [VPL0_B](VPL0_B/README.md) | Sort the whole list once, like lining up books by height on one shelf. Equal stems then sit together, and their leaves are already in order. The algorithm sorts all values, walks consecutive equal stems, and prints one padded line per group. | O(T * N log N) |
+| [AMR12A](AMR12A/README.md) | Treat each hole as two seats that must be reserved by a deadline, like booking a train compartment where the lower berth must be occupied first. The second seat opens C minutes after the first, so a candidate deadline turns every hole into two fixed slots. | `O(log(maxTravel + C) * N^2 * M)` worst case |
+| [EPTT](EPTT/README.md) | Group requests by their minute remainder, like sorting appointments into separate calendars. A tutor who teaches at minute 30 cannot teach at 61, because lessons must touch, so times with different remainders mod 30 never share a tutor. | `O(R + 1410)` |
+| [PFORLOOP](PFORLOOP/README.md) | Sorting the scattered numbers makes each original loop appear as a contiguous run, like arranging shuffled playing cards into consecutive stacks. The algorithm sorts all integers, then walks the sorted list once and emits a loop whenever the next value is not one larger. | `O(N log N)` |
+| [VISION](VISION/README.md) | Each building becomes a line whose value is its slope from the observer, like adjusting a telescope dial as the observer rises. A newer building is visible exactly when its slope exceeds every earlier slope at that height. | `O(N log N + M log N)` |
 
 ### Data structures, bits & simulation (44)
 
