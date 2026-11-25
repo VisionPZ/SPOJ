@@ -1,10 +1,10 @@
-# SPOJ — 549 problems, one method
+# SPOJ — 555 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![549 problems](https://img.shields.io/badge/problems-549-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![555 problems](https://img.shields.io/badge/problems-555-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 549 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 555 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 549 problems
+## The 555 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -238,7 +238,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 
-### Graphs & trees (39)
+### Graphs & trees (40)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -283,6 +283,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [UNWIRED](UNWIRED/README.md) | Budget the wire like cutting ribbon with a thick blade: reserve the waste before sharing the rest. k sections need k minus one cuts, so the waste is k minus one times m. | O(t) |
 | [WIRED](WIRED/README.md) | Match labels like pairing socks by color: look at each left sock, then find the matching right sock. A fixed grid of four by four pairs does the job without building any map. | O(t) |
 | [WIJGT](WIJGT/README.md) | Think of the board as a bridge that can be reused at every gap, like a portable plank crossing streams along a route. The needed length is the largest gap on the best route, not the sum of gaps. | O(1) |
+| [GSS2](GSS2/README.md) | Think of a fence post moving right across the array: each new score extends every left endpoint that has not seen that score before. Range additions track those extensions, and a remembered maximum tracks the best slice seen so far. | O((N + Q) log N) |
 
 ### Dynamic programming (39)
 
@@ -425,7 +426,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SHAMIM9](SHAMIM9/README.md) | Think of a multiplication table where only the final column survives. The units digit of a product uses only the units digits of the factors. The program keeps the last digit while scanning each token and computes nine times that digit modulo ten. | O(1) |
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 
-### Greedy, search & enumeration (134)
+### Greedy, search & enumeration (139)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -565,6 +566,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [NSYSTEM](NSYSTEM/README.md) | Reading an MCXI-string is like counting coins in four labelled pockets: the letter names the pocket and a digit gives the coin count. Decode each string into an integer, add the integers, then rebuild the unique string from four decimal digits. | O(1) |
 | [OFORTUNE](OFORTUNE/README.md) | Treat the interest rate as a whole-number count of 8192ths, like counting eighths with a fixed measuring cup. Scale the rate to an integer once, then compute each year with integer division. | O(1) |
 | [PLSEARCH](PLSEARCH/README.md) | Compare lines as a dance routine of turns and step lengths. Translation drops out when steps replace coordinates, rotation adds one fixed offset to every turn, and reversing swaps each direction by two quarter turns. | O(1) |
+| [AMATH](AMATH/README.md) | Think of divisibility as two locks, one for factor 2 and one for factor 5. When n already carries enough of a factor, that lock opens for free. | O(k^2 log 10^k) per case |
+| [AMBM](AMBM/README.md) | Treat each day's pay as a coin worth more than all smaller coins combined, like canonical currency denominations. Take the largest coin that fits, then repeat. The program builds the pays with the recurrence b_i = 2*b_{i-1} + a_i and walks days from largest to smallest. | O(K) per case |
+| [GIWED](GIWED/README.md) | Think of the free park as rooms in a building: one tap floods a whole room, so choose the largest rooms. Compress carpet edges into a small grid, flood-fill each room, then add the L largest areas. | O(K^2) per case |
+| [TREEOI14](TREEOI14/README.md) | Think of replacing one tile in a mosaic: only its two neighbours and the other tile's two neighbours change. Write each candidate's cost as a V-shaped function of height, then sweep heights with nine range-minimum trees to find the best partner. | O(n log n) |
+| [ZOO](ZOO/README.md) | Think of a five-seat window sliding around a circle, like a train passing stations. Remember the last four removal choices, then try both choices for the new enclosure. | O(32*C + 512*N) |
 
 ### Data structures, bits & simulation (42)
 
