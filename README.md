@@ -1,10 +1,10 @@
-# SPOJ — 1088 problems, one method
+# SPOJ — 1094 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1088 problems](https://img.shields.io/badge/problems-1088-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1094 problems](https://img.shields.io/badge/problems-1094-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1088 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1094 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1088 problems
+## The 1094 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -321,7 +321,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [IITWPC4D](IITWPC4D/README.md) | Fill positions from right to left, like dealing cards from the bottom of a shuffled deck. At position i, choose the rank that leaves exactly A[i] taller ranks for the earlier positions. | O(n log n) per case |
 | [IITWPC4E](IITWPC4E/README.md) | Sweep a vertical line across the panels and measure the lit height at each x position, like counting water in a row of tanks as a wave passes. | O(N log N) |
 
-### Dynamic programming (63)
+### Dynamic programming (64)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -390,6 +390,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [INGRED](INGRED/README.md) | Think of the two friends as two hands passing ingredients around a table of at most ten relevant seats. Compute shortest walks from each relevant city, then try every collected subset and both hand positions. | O(1) |
 | [CODEM4](CODEM4/README.md) | Think of the remaining row as a corridor with one door at each end, and each turn closes one door. Use interval DP keyed by the left and right ends. | O(T times size squared) |
 | [IITWPC4J](IITWPC4J/README.md) | Think of seating fish one at a time, with a checklist marking every aquarium already taken. Use subset DP over occupied aquariums. A mask records the taken aquariums, and its set-bit count tells which fish moves next. | O(T times n times 2 to the n) |
+| [UOFTCF](UOFTCF/README.md) | Track both walkers at once with one state per pair of columns, like two fingers following separate lanes down a staircase. Each state holds the best hand-holding time when Alice and Bob end that row in those columns. | O(1) |
 
 ### Number theory & big integers (100)
 
@@ -498,7 +499,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [HG](HG/README.md) | Compare two towers by their bricks, then rebuild only the bricks they share. Prime factorization turns each product into a list of prime exponents. The gcd keeps the smaller exponent for every prime. | O(primeLimit log log primeLimit + (N+M) times divisions) |
 | [FONTSIZE](FONTSIZE/README.md) | Try a size, pack words greedily, then search for the largest size that still fits. This works like choosing the biggest text that fits a shelf: measure one candidate, then shift the guess up or down. | O(message length times log size bound) |
 
-### Greedy, search & enumeration (597)
+### Greedy, search & enumeration (602)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1101,6 +1102,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [FACTMULO](FACTMULO/README.md) | Group the divisible terms in batches, like counting every tenth customer in a long queue instead of asking each one. Legendre's count for k! gives the exponent of p as floor(k/p) + floor(k/p^2) + …, and summing those floors over k gives a closed form for each power p^j. | O(1) |
 | [FACTMULP](FACTMULP/README.md) | Collapse the many factorial contributions into one geometric sum, like adding a row of repeated payments with a single formula. For n = p^e, every relevant power p^j divides n exactly, so each term is a polynomial in p. | O(1) |
 | [UVA1](UVA1/README.md) | Sort the queries by first radius and turn on houses as they enter, like opening a gate and counting everyone already inside a second gate. Squared distances keep the comparison exact without square roots. | O(1) |
+| [AKVOD05](AKVOD05/README.md) | After K+1 generated values the sliding window holds K+1 different numbers, like a full set of numbered tickets with one ticket missing. That window then repeats every K+1 steps, so remote positions need only one lookup. | O(1) |
+| [AKVOD06](AKVOD06/README.md) | Each box acts like a Nim heap with a value that depends on money and cap, like a pile whose size shrinks under a rule. Compute that value once for every legal money and cap pair. | O(1) |
+| [FBTOURS](FBTOURS/README.md) | Cutting bridges turns the map into a tree of rooms, like hallways joining clusters of rooms. Every building in a cluster lies on the same set of tour routes. | O(1) |
+| [FBWHEELS](FBWHEELS/README.md) | Repeated pieces of a word share one score, like several copies of the same key opening the same lock. A suffix automaton groups substrings that occur the same number of times, and a sweep keeps the best few groups for each length. | O(1) |
+| [UOFTCG](UOFTCG/README.md) | A seating group is a path inside a tree, like linking train cars where each link must join two friends. One tree may need several paths when a student has too many friends. | O(1) |
 
 ### Data structures, bits & simulation (45)
 
