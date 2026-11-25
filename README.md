@@ -1,10 +1,10 @@
-# SPOJ — 926 problems, one method
+# SPOJ — 932 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![926 problems](https://img.shields.io/badge/problems-926-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![932 problems](https://img.shields.io/badge/problems-932-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 926 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 932 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 926 problems
+## The 932 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -472,7 +472,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CRAN02](CRAN02/README.md) | Count matching prefix totals the way you pair socks of the same color. A zero-sum block runs between two prefixes with the same total. A frequency table over prefix totals turns the count into one scan. | O(n) per case |
 | [CBANK](CBANK/README.md) | Scale all coins to quarters and count the integer solutions of one equation, like counting change with a fixed set of denominations. The algorithm derives a closed form for the number of solutions and evaluates it with modular arithmetic. | O(1) per case |
 
-### Greedy, search & enumeration (462)
+### Greedy, search & enumeration (468)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -940,6 +940,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [AMR12F](AMR12F/README.md) | Think of each deque pop as choosing the left or right end of a row of cards, like dealing from either end of a deck. A clue pins one pop choice and how many back pops came before it. | O(1) |
 | [AMR12G](AMR12G/README.md) | Treat each row as a coin whose parity decides its final face, like flipping a light switch an odd or even number of times. A row pressed an odd number of times shows `M - litCount` lamps, and an even row shows `litCount`. | O(1) |
 | [AMR12I](AMR12I/README.md) | Look at the last stroke that covers the newest soldier, like choosing the final brush pass when repainting a fence. That stroke starts within the last `K` positions and must cover a run of one color ending at this soldier. | O(1) |
+| [AMR12C](AMR12C/README.md) | Think of shrinking a target circle around each ent as time grows, like lowering a row of dipping sticks until their tips first touch. The meeting time is the smallest value where all reachability disks overlap. | O(S^2 * N) per test, with S fixed at 70 |
+| [AMR12H](AMR12H/README.md) | Treat the search for the mean like measuring a rope by weighing it at evenly spaced marks: sample a polynomial at fixed points and combine those samples exactly. | O(L) per test, with a fixed factor of 32 |
+| [AMR12J](AMR12J/README.md) | Sweep rooms left to right and keep the nested rooms open, like tracking which nested boxes a new box drops into. A segment tree over compressed y values holds a stack per node. | O(n log n) |
+| [AMR12K](AMR12K/README.md) | A random order makes each soldier equally likely to be first among its dead ancestors and itself, like drawing one name from a hat. So the chance of being checked is one over that set's size. | O(N) per test |
+| [CSLIKAR](CSLIKAR/README.md) | Compute when water reaches each cell first, like marking the high-water mark on every square. Then run a second breadth-first search that only enters a cell strictly before its water time. | O(R * C) |
+| [IZHONYT](IZHONYT/README.md) | Keep one number per track: the last wagon assigned there. Use the smallest track whose last wagon is smaller than the arriving wagon, like placing a card on the first pile that accepts it. | O(N log M) |
 
 ### Data structures, bits & simulation (44)
 
