@@ -1,10 +1,10 @@
-# SPOJ — 862 problems, one method
+# SPOJ — 868 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![862 problems](https://img.shields.io/badge/problems-862-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![868 problems](https://img.shields.io/badge/problems-868-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 862 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 868 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 862 problems
+## The 868 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -367,7 +367,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [M00PAIR](M00PAIR/README.md) | Think of each digit as a domino that flips into a two-character tile, so zero pairs can only appear where two tiles touch. The recurrence a(n) = a(n-2) + 2^(n-3) counts those touching edges with ordinary integer arithmetic. | O(999 d + q) with d answer digits and q queries |
 | [BYTESM2](BYTESM2/README.md) | Keep only the best total that can reach each tile, like marking the highest score on each step of a staircase. Each tile looks at the three tiles above it and adds its own stones. | O(T · h · w) |
 
-### Number theory & big integers (90)
+### Number theory & big integers (92)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -463,8 +463,10 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 | [PTIME](PTIME/README.md) | Count each prime inside a factorial by adding floor divisions, like counting how many rows of a fixed size fit in a stack. The real algorithm is Legendre's formula, computed after one sieve primes once. | O(maxN log log maxN + cases * pi(maxN) log maxN) |
+| [DCEPCA03](DCEPCA03/README.md) | Squaring a sum is like pairing every card in a pile with every card in the same pile. One pass builds all totients with a sieve, and a prefix array gives each sum at once. | O(N log log N + T) |
+| [NDIV](NDIV/README.md) | Stamp divisor counts across the interval, like marking every tenth house on a street. Each small prime visits its multiples once, so no number needs a fresh factor search. | O(sqrt(b) log log b + (b - a) log log b) |
 
-### Greedy, search & enumeration (406)
+### Greedy, search & enumeration (410)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -876,6 +878,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [DOJ2](DOJ2/README.md) | A column hands its overhang to the next column, like a row of dominoes falling in a fixed rhythm. The 32 possible overhang masks compress to eight states, and one short recurrence generates every column vector up front. | O(Nmax + T) |
 | [EKO](EKO/README.md) | Cutting higher removes less wood, like lowering a bar that each tree must reach under. Binary search on H finds the last height whose total reaches M. Each probe scans all N trees once and adds `treeHeights[treeIndex] - middleHeight` for the trees that are taller. | O(N log Hmax) |
 | [POWPOW](POWPOW/README.md) | The long sum of squared binomial coefficients collapses to one central binomial coefficient, like replacing a long hand count with a single known total. Fermat's rule then shrinks the huge exponent modulo 1000000006, and two modular exponentiations finish the job. | O(Nmax + T log Nmax) |
+| [DCEPCA09](DCEPCA09/README.md) | Reorder the work like a librarian pulling books from nearby shelves instead of crossing the room for each request. Mo's algorithm slides one interval across all queries, and a segment tree reports order statistics at each stop. | O((N + Q) sqrt(N) log N) |
+| [RIOI_3_2](RIOI_3_2/README.md) | Slide every chosen number left by its rank, like pushing books together on a shelf. Distinct positive values become a nondecreasing list, and the problem turns into counting small partitions. | O(N*M + T log T) |
+| [VPL0_A](VPL0_A/README.md) | Treat gift floors like delivery stops and plan the order once the travel times are known. Breadth-first search gives ride costs between floors. Two subset searches give the walk inside each floor and the order of stops. | O(K * M * E + K^2 * 2^K) |
+| [VPL0_B](VPL0_B/README.md) | Sort the whole list once, like lining up books by height on one shelf. Equal stems then sit together, and their leaves are already in order. The algorithm sorts all values, walks consecutive equal stems, and prints one padded line per group. | O(T * N log N) |
 
 ### Data structures, bits & simulation (44)
 
