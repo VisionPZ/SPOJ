@@ -1,10 +1,10 @@
-# SPOJ — 1224 problems, one method
+# SPOJ — 1230 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1224 problems](https://img.shields.io/badge/problems-1224-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1230 problems](https://img.shields.io/badge/problems-1230-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1224 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1230 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1224 problems
+## The 1230 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -406,7 +406,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [ALTSEQ](ALTSEQ/README.md) | Pick members like a lineup where each new person must be taller and must wear the opposite jersey, like picking players by height from alternating teams. Keep the best length ending at each position, then extend it from any earlier value with the opposite sign and smaller magnitude. | O(1) |
 | [CUBNUM](CUBNUM/README.md) | Fill a recipe book once, where every total stores the shortest recipe built from earlier totals plus one cube, like writing a multiplication table before answering questions about it. | O(1) |
 
-### Number theory & big integers (108)
+### Number theory & big integers (109)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -520,8 +520,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [POWFIB](POWFIB/README.md) | Skipping Fibonacci numbers is like counting seats in a row while reserving a few labelled seats. Only about forty-five Fibonacci values fit below the modulus, so binary search finds the Nth gap in a few steps. | O(T log N) |
 | [ADASUM](ADASUM/README.md) | A digit contributes to many blocks, like one brick supporting several overlapping arches. Count how many blocks start at or before that digit and how many end after it. | O(1) |
 | [ADADIG](ADADIG/README.md) | Factor N into digits greater than one, then fill the remaining sum with ones, like choosing toppings and then adding plain crackers to reach a fixed total weight. | O(1) |
+| [VECTAR9](VECTAR9/README.md) | The divisibility pattern repeats every product of the primes, like a wallpaper tile that restarts after one full width. One period contains a fixed number of mangu values, so the period index and a local rank replace a huge k. | O(1) |
 
-### Greedy, search & enumeration (709)
+### Greedy, search & enumeration (713)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1236,8 +1237,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [ADAROADS](ADAROADS/README.md) | Think of the forest as a set of strings tied into knots: a new road either ties two loose pieces or replaces the most expensive string already on the path. | O(1) |
 | [BILLI](BILLI/README.md) | A trie is like a family tree of surnames: walk a stolen word down the tree, and every node you pass represents a shared prefix. Each visited node gives one candidate cost, and the lowest wins. | O(1) |
 | [THREENUMBERS](THREENUMBERS/README.md) | Count how many qualifying numbers lie at or below a guess, then move the guess like a librarian locating a shelf by its label count. Binary search finds the smallest value whose count reaches n. | O(1) |
+| [VECTAR10](VECTAR10/README.md) | The deck sheds every other card each pass, like players counting off in a circle. One closed form replaces the whole simulation. The survivors of the first pass are the even cards in order. | O(1) |
+| [VECTAR6](VECTAR6/README.md) | Each new height multiplies the previous count by one running total, like extending a chain where each link adds to a shared sum. Let g(h) be the count for height h and P(h) be one plus the sum of g up to h. | O(1) |
+| [VECTAR7](VECTAR7/README.md) | A winning point closes the game, so all earlier points form an ordinary arrangement, like shuffling a row of win and loss tokens. If the loser has at most 23 points, the winner's 24 earlier points and the loser's points can appear in any order before the last point. | O(1) |
+| [VECTAR8](VECTAR8/README.md) | Build scary primes by adding one digit at a time on the left, like growing a chain where every link must already be prime. Start from the one-digit primes 2, 3, 5, and 7. | O(1) |
 
-### Data structures, bits & simulation (46)
+### Data structures, bits & simulation (47)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -1289,6 +1294,7 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [HAYBALE](HAYBALE/README.md) | A range add is like marking the start and end of a fence segment, then walking the fence once to count planks. The algorithm uses a difference array. | O(N + K) |
 | [FOXLINGS](FOXLINGS/README.md) | One cracker spreads through a friendship group like ink through connected pipes, so the answer is the number of separate groups. The algorithm is a disjoint-set union with path compression and size-based joins. | O(1) |
 | [NR2](NR2/README.md) | A bit lights up in a pair XOR when two switches disagree, and the final OR collects every lit bit across all pairs. Compute the OR and the AND of the whole list, then XOR those two results. | O(N) |
+| [NDS](NDS/README.md) | Keep the smallest possible ending value for each subsequence length, like a row of markers that slides left whenever a smaller tail appears. For each array value, find the longest length whose stored tail is strictly smaller. | O(1) |
 
 ## License
 
