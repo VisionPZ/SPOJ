@@ -1,10 +1,10 @@
-# SPOJ — 762 problems, one method
+# SPOJ — 768 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![762 problems](https://img.shields.io/badge/problems-762-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![768 problems](https://img.shields.io/badge/problems-768-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 762 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 768 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 762 problems
+## The 768 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -239,7 +239,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 
-### Graphs & trees (55)
+### Graphs & trees (56)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -300,8 +300,9 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [GSS5](GSS5/README.md) | Think of each range as a bucket holding candidate start and end points, like picking a doorway and an exit in two neighbouring halls. A segment tree reports four numbers for any interval: total sum, best prefix, best suffix, and best subarray. | O((N + M) log N) per case |
 | [QTREE5](QTREE5/README.md) | Think of each centroid as a lookout tower with a bucket for every branch leading away from it. Each bucket keeps the closest white node on that branch, like a guard reporting the nearest light. | O(N log N + Q log² N) |
 | [MKTHNUM](MKTHNUM/README.md) | Keep one sorted-history snapshot per array prefix, like saving a cumulative tally after each card is dealt. This is a persistent segment tree over compressed value ranks. Build a version for every prefix by copying one root-to-leaf path. | O(n log n + m log n) |
+| [MMINPAID](MMINPAID/README.md) | Prepaying a road is like buying a ticket at a booth: once bought, the ride costs nothing later. The algorithm is a shortest-path search over states made of a city and a prepaid-road mask. | O(N times m times two to the m) |
 
-### Dynamic programming (50)
+### Dynamic programming (51)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -357,6 +358,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [MARTIAN](MARTIAN/README.md) | Choosing belt directions is like drawing one staircase through a grid fence. Each row picks where the fence steps. Those steps only move right as you walk south. | O(n * m) per block |
 | [MCIRGAME](MCIRGAME/README.md) | Counting pairings works like counting balanced bracket strings: the partner of point 1 splits the remaining points into two smaller independent circles. The counts are Catalan numbers. Build them with the recurrence C(k+1) = C(k) times (4k+2), divided by (k+2). | O(1) |
 | [MBEEWALK](MBEEWALK/README.md) | Move a whole crowd of counters cell by cell, like pouring sand through a grid of buckets. This is dynamic programming on a hexagonal grid of coordinates. Precompute the answer for every step count from one to fourteen. | O(T + 14 * 6 * 29^2) |
+| [MINVEST](MINVEST/README.md) | Choosing bonds is like filling a backpack at each weight: keep the best interest for every exact load, then reuse that answer next year. Divide by 1000 and treat bond values as item weights and interests as item values. | O(1) |
 
 ### Number theory & big integers (89)
 
@@ -454,7 +456,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (317)
+### Greedy, search & enumeration (321)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -777,6 +779,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [RPS](RPS/README.md) | Raise opponents like seedlings in a nursery, then let the strongest plant keep winning: each level needs another player at the same win count, so the group sizes determine everything. | O(1) |
 | [VORONOI](VORONOI/README.md) | Place flags so every pixel salutes its nearest flag. Ties go to the alphabetically earlier letter. A flag stands on a pixel of its own letter. | O(1) |
 | [WALL](WALL/README.md) | Patch the dents like a tailor joining fabric edges. Use the shortest available stitches. Each chord across a dent adds area and costs wall length. | O(1) |
+| [MELE2](MELE2/README.md) | Grouping floors by remainder is like counting seats by row: once one seat in a row is reachable, every later seat in that row is reachable too. Let m be the smallest step. | O(m log m) |
+| [MJOURNEY](MJOURNEY/README.md) | Pairing heavy pigs with high rates is like pairing the heaviest boxes with the strongest movers: each sorted match beats every crossed match. The net rate of a village is p_j minus t times d_j. | O(n squared) |
+| [MMINMAX](MMINMAX/README.md) | Cutting a polygon is like sharing a cake so the biggest slice is as small as possible: each candidate cut leaves two smaller pieces to balance. Any triangulation of a vertex chain splits at one triangle and two smaller chains. | O(1) |
+| [MMMGAME](MMMGAME/README.md) | Leaving the last candy is like leaving the last move in a board game: you want your opponent holding it. This is misère Nim. When any pile holds more than one candy, the winning rule matches normal Nim: a nonzero pile XOR wins. | O(1) |
 
 ### Data structures, bits & simulation (43)
 
