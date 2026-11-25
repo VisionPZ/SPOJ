@@ -1,10 +1,10 @@
-# SPOJ — 956 problems, one method
+# SPOJ — 962 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![956 problems](https://img.shields.io/badge/problems-956-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![962 problems](https://img.shields.io/badge/problems-962-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 956 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 962 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 956 problems
+## The 962 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -478,7 +478,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CBANK](CBANK/README.md) | Scale all coins to quarters and count the integer solutions of one equation, like counting change with a fixed set of denominations. The algorithm derives a closed form for the number of solutions and evaluates it with modular arithmetic. | O(1) per case |
 | [APS](APS/README.md) | The sequence is a running total, like a row of monthly bills where each new bill is the smallest prime factor of the current index. Find every smallest prime factor with one sieve, then accumulate them once in order. | O(largest N log log largest N plus T) |
 
-### Greedy, search & enumeration (486)
+### Greedy, search & enumeration (492)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -970,6 +970,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [ISRANK](ISRANK/README.md) | Treat each school like a shelf of labeled boxes, one per predicted rank. A persistent segment tree keeps a snapshot after every rank, like saving a stack of photos. | O(S log S + Q L log S) |
 | [PGAME](PGAME/README.md) | Imagine each row as a stack of coins with a hidden bottom lid. Three reductions shrink the board without changing the result, like cancelling repeated terms in an expression. | O(N M log(N M)) |
 | [RDRUG](RDRUG/README.md) | Think of each compound as a suitcase that must carry at least one new strap, like tying boxes into one pile. A spanning tree of compounds uses exactly one bond per join and two atom slots per bond. | O(M + N log N) |
+| [AMSCO1](AMSCO1/README.md) | Filling the grid is like dealing cards into alternately wide and narrow piles, then collecting the piles by numbered ticket. This is an incomplete columnar transposition with alternating group sizes. | O(L) per line |
+| [GRIDFLIP](GRIDFLIP/README.md) | Finding the parameters is like identifying a shuffled deck from the backs of the cards before checking each card face. Every step permutes positions, so row effects and column effects can be separated. | O(n^2) |
+| [MANGOES](MANGOES/README.md) | Picking real boxes is like counting every other house on a street: only odd labels qualify. The closed form for the sum of the first k odd numbers gives the answer in one multiplication per case. | O(T) |
+| [PIBO2](PIBO2/README.md) | Treating the polynomial as a short memory is like summarizing a long song by its repeating chorus. A polynomial of degree d is annihilated by the difference operator to the power d+1, so the sequence obeys a linear recurrence of order d+3. | O(d^2 log n) |
+| [RANGZER2](RANGZER2/README.md) | Counting zeroes by place value is like tallying street numbers with a fixed digit slot held at zero. For each place, split the count into complete blocks and a partial block, then add the zeroes in each piece. | O(t log b) |
+| [STRINGQ](STRINGQ/README.md) | A string whose every substring has its reverse present must itself be a palindrome, like a row of tiles that matches its own mirror. A palindrome permutation exists when at most one letter has an odd count, and its count is a multinomial of the paired letters. | O(max length + total queried length) |
 
 ### Data structures, bits & simulation (44)
 
