@@ -1,21 +1,79 @@
-# SPOJ — 331 problems, one method
+# SPOJ — 381 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![331 problems](https://img.shields.io/badge/problems-331-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![381 problems](https://img.shields.io/badge/problems-381-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 331 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 381 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
+  Two problems (PLATON, QTREE) also carry an accepted C++ port because their judges refuse Nim.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
 - **`test.sh`** — byte diff, hard kill, time gate, output gate.
 - **`README.md`** — Problem, Idea, Why It Works, Code, Complexity.
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 331 problems
+## The 381 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
+
+### Classical category (50)
+
+Each entry below has an accepted submission on SPOJ. The cost column gives the dominant step for one case.
+
+| Code | Idea | Cost |
+|---|---|---|
+| [CABLETV](CABLETV/README.md) | Cutting a cable network is like blocking checkpoints between two cities. Different city pairs need different blockades, so we test every relay pair. | O(t * n^4 * (n + m)) worst case with Dinic over all pairs |
+| [BOOK](BOOK/README.md) | Lay the booklets out from fewest pages to most, then cut the row into school sized pieces. It works like dealing a sorted deck into fixed hands, then checking one hand. | O(t * N^2) with insertion sort |
+| [CANTON](CANTON/README.md) | Picture the fractions as cards in diagonal rows on a table. Row k holds k cards, so you count whole rows until the running total passes your position, then read the... | O(t log M), with M the largest position |
+| [UCUBE](UCUBE/README.md) | Start with every cell present, then erase only the cells a picture proves impossible. Think of crossing names off a list. A picture names the first block on a line. A... | O(p times `N` cubed) per case, for p passes |
+| [RATTERN](RATTERN/README.md) | Fill the first empty square first, like solving a crossword left to right. The algorithm is recursive exact cover with memoization. A 64-bit mask records covered... | O(S x P), where S is reachable masks and P is placements per state |
+| [PITPAIR](PITPAIR/README.md) | Split the odd number 2N + 1 into factors, then turn each factor into an exponent. Think of packing boxes: the largest item goes into the smallest box, because small... | O(2000 * d) to build, then O(N log N) per case |
+| [WINDMILL](WINDMILL/README.md) | Write each answer as two ascending runs with one common step, like two staircases sharing the same riser height. The second run slides down to ground level, so the... | O(t·n) |
+| [PLATON](PLATON/README.md) | Cross off pairs the way you cross names off a list after each clue. A product that points to one pair is crossed off, because its owner would have known the answer at... | O((r-l)^2) |
+| [BISHOPS](BISHOPS/README.md) | Give each sloping lane at most one bishop, like parking one car per marked lane. A bishop never leaves its diagonal, so one bishop per lane already fills the board's... | O(total input digits) |
+| [CALLS](CALLS/README.md) | Keep only prices that no two cheaper prices rebuild, like crossing names off a list. Once a price can be made from smaller ones, cross it off. What stays is the... | O(N^3) per flyer, O(t N^3) total |
+| [HARDQ](HARDQ/README.md) | Think of the park as a floor and the plots as whole tiles. A tile that pokes outside is useless. The kept tiles must fill the floor. | O(MN) per case |
+| [PHDISP](PHDISP/README.md) | Match the slow coordinate first, then let the fast coordinate sweep. Think of a painter walking slowly across a wall while waving a brush quickly up and down. | O(K) per case, with K the bands examined, at most about 160000 |
+| [EOPERA](EOPERA/README.md) | Walk the zero across the board like a traveller who tracks the distance to every destination. A running score adds the remaining distance of all other tiles. | O(4 ^ L) |
+| [ROADS](ROADS/README.md) | Process coin totals in order, like turning calendar pages one day at a time. Each page holds the best length for every city at that exact spend. | O((budget + 1) * (cityCount * cityCount + roadCount)) |
+| [SEQ](SEQ/README.md) | Picture the last `k` terms as cards in a row. One step shifts the row and writes a new card on the left. Companion-matrix exponentiation turns that shift into a jump,... | O(C log n · k^3) |
+| [POKER](POKER/README.md) | Group the cards by rank, like sorting coins into piles by denomination, then name the strongest pattern the piles make. The program counts ranks and suits in two... | O(t) for t hands, with a constant 26 checks per hand |
+| [MIXTURES](MIXTURES/README.md) | Treat the row as a chain of intervals and remember the best smoke for each span. The familiar image is a bracket that closes around a span of mixtures, choosing where... | O(n^3) per case |
+| [COINS](COINS/README.md) | Think of each coin as a choice between cashing it now and passing three smaller coins to the same rule. The trick is to solve each coin value once and remember the... | O(D), with D about 240 at n = 10^9 |
+| [LAZYCOWS](LAZYCOWS/README.md) | Think of painting two rows of panels with brushes. You pay for each painted panel, and a wide brush paints both rows at once. Sweep left to right and remember which... | O(M × K) per case, with M distinct cow columns ≤ N |
+| [EXPEDI](EXPEDI/README.md) | Keep the largest fuel amount passed so far in reserve, and spend it when the tank cannot reach the next stop. Think of holding the biggest bill in your wallet until a... | O(N log N) per case |
+| [AROUND](AROUND/README.md) | Record a signed degree total for every step, then search walks from farm 1 while remembering that total. The first return with a nonzero total is the answer. Think of... | O(S + input bytes + output bytes) |
+| [LANDSCAP](LANDSCAP/README.md) | Count hills while tracing the skyline, like a walker counting bumps that end when the ground drops away. Dynamic programming walks the row once and remembers the... | O(NHK) per case, with H at most N and K at most 25 |
+| [HAN01](HAN01/README.md) | Read each disk's own timetable instead of replaying the puzzle. Picture a bus timetable: a disk reaches its next peg at fixed intervals, so counting intervals tells... | O(t · n + output bytes) |
+| [ACT](ACT/README.md) | The winner of the last ball is the winner of the match. This works like a finish-line photo: the final name written down is the champion. | O(total transcript length) |
+| [IGARB](IGARB/README.md) | Treat the rank as a disguised base-seven number. The disguise is a fixed digit map, like swapping the labels on seven tiles. | O(D^2) per rank for D decimal digits, then O(T D^2) for T ranks |
+| [COPER](COPER/README.md) | Instead of maintaining a million-bit bitmap and an 8 MB column lookup table, exploit the fact that every box starts at one of at most `m <= 10 000` values `c_i`. | O(N + m log m) per distinct case, O(1) per repeated normalized tuple |
+| [LISA](LISA/README.md) | Try every grouping, but remember only the best value for each piece. This is like filling a table of shortest routes between stops, then reusing short routes to build... | O(k * d^3) for k cases and d digits |
+| [PHIDIAS](PHIDIAS/README.md) | Store every rectangle's waste twice, once in width order and once in height order, so each cut reads two neighbouring cells. Think of one address book sorted by... | O(W × H × (W + H)) worst case |
+| [FARMER](FARMER/README.md) | Pay for a group only when it is not a whole field. Think of crossing names off a list: a completed field crosses itself off for free, while every strip and partial... | O(M * Q/64 + K^2) |
+| [EMPODIA](EMPODIA/README.md) | Give each position a hook label, `value[i] - i`. The two ends of a framed segment share one hook. Sweep left to right and keep two stacks: one for positions that can... | `O(M)` per case, `O(total values)` overall |
+| [CSTREET](CSTREET/README.md) | Grow the paved set one building at a time, always taking the nearest outside building. Think of spreading paint from one building: each new touch reaches the closest... | O(n^2 + m) per case |
+| [MATH1](MATH1/README.md) | Treat the x values as a queue length. At step i, a_i customers arrive, and one customer may leave. Pick the S departure steps that hold the queue nearest one level. | O(n S log n) per case, with S at most n |
+| [ONEZERO](ONEZERO/README.md) | Build the number one digit at a time and keep only its remainder after division by `n`. Think of a maze whose rooms are remainders: adding 0 or 1 moves to a new room,... | O(n) per distinct divisor, plus O(K + output digits) for I/O |
+| [BOXES](BOXES/README.md) | Open the circle at one edge and solve the straight row, like sliding spare balls along a shelf until each slot holds one. | O(n²) per case, O(t·n²) total |
+| [BENEFACT](BENEFACT/README.md) | Walk to the farthest place, then walk from that place to its farthest place. Finding the two ends of a rope works the same way: grab any point and walk to the far... | O(n) per case, O(t n) for t cases |
+| [GREED](GREED/README.md) | Turn each exchange into one step on a map of labels, then pair cards with targets like matching couriers to addresses for the shortest total walk. | O(d(V + E) + N^3), where d is the number of distinct labels |
+| [MATRIX](MATRIX/README.md) | Fix two rows and read every column between them as one number, like checking fence posts while walking once along a fence. The algorithm is a row-pair sweep. For each... | O(M²N) |
+| [QTREE](QTREE/README.md) | Cut the tree into long strands so every path becomes a few straight runs. Think of folding a road map into strips: you follow one strip at a time and switch strips... | O(N + Q log² N) |
+| [ACS](ACS/README.md) | Track which original row and column sit at each position, like sliding name tags along two fixed rows of chairs. The values stay in place; only the labels move. | O(k) for k commands |
+| [TAXI](TAXI/README.md) | Turn the street grid until each diamond-shaped reach area becomes a square, then match people to taxis. Think of rotating a tilted photograph until its edges line up... | O(k · p · t · sqrt(p + t)) |
+| [PERMUT2](PERMUT2/README.md) | Applying the permutation twice must return to the starting position. Picture arrows between numbered seats: each seat points to one seat, and the arrangement is... | O(total input length) |
+| [BINGO](BINGO/README.md) | Count each word once per game, add the four counts, and divide by the number of finished games. Think of crossing names off a list: a name already crossed off gets no... | O(total input characters) |
+| [CHICAGO](CHICAGO/README.md) | Multiply the success chances along a route, then keep the largest product you can reach. Think of a relay race: every handoff has a success chance, and the team picks... | O(n^2 + m) per case, plus one pass over input bytes |
+| [DECORATE](DECORATE/README.md) | Slide the new painting down and left until an edge stops it, then test only the stopping places. This resembles a book pushed along a crowded shelf: it halts at a... | O(t n^2) for t cases with n at most 200, plus bytes read and written |
+| [EUROPEAN](EUROPEAN/README.md) | Think of marking a ruler with a pencil so several lengths can be read from pairs of marks. Start at zero, then add marks one gauge away from a mark already placed. | O(S times gauges per case), where S is the number of distinct rail sets visited |
+| [FOOL](FOOL/README.md) | Think of each start position as a notebook listing every place a valid list can end. Fill the notebooks from right to left, then read the answer from the notebook at... | O(n^3 / 64) per word, plus one pass over the input bytes |
+| [GAME](GAME/README.md) | Peel the outer layer first, like taking layers off an onion. The games form a tree, and each loser sits at the edge of the surviving tree. The program strips leaves... | O(n log n) |
+| [HELP](HELP/README.md) | Give each node more weight than every node below it, like a manager whose budget outweighs the whole team beneath them. That one rule forces the tree shape. | O(total input tokens plus total output digits) |
+| [TOURS](TOURS/README.md) | Pick one outgoing street per place and one incoming street per place, like assigning each worker one job and each job one worker. That is the assignment problem. The... | O(t × N^3) |
+| [MENU](MENU/README.md) | Picture a scorecard with one row per day. Writing a dish name earns full points, writing it again earns half, and a third time earns none. Keep the best score for... | O(k * n * min(m, k * cMax)) |
 
 ### Strings & text (73)
 

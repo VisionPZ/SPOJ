@@ -43,14 +43,7 @@ Create a new problem with `bin/new.sh CODE LIMIT_MS`, then copy `solution.nim`, 
 
 ## Judge submission
 
-Local green is not proof of acceptance. Submit and poll:
-
-```
-node bin/spoj_submit.mjs CODE CODE/solution.nim --lang nim
-node bin/spoj_status.mjs CODE
-```
-
-If a shared Vivaldi tab is occupied, set `SPOJ_PROFILE` and `SPOJ_PORT` to fresh paths under `/tmp/opencode`. Fix wrong answers and time limits, then resubmit until the status row says `accepted`. Some problems allow only Brainfuck or Intercal; submit those only if a solution exists in an allowed language.
+Local green is not proof of acceptance. Submit through the browse MCP using a tab the user has lent. Never open a new browser instance or tab. Navigate the lent tab to `https://www.spoj.com/submit/CODE/`, upload the source, select the judge language, and post the form. Read the verdict from `https://www.spoj.com/status/CODE/`. Restore the tab to its original URL when done. Fix wrong answers and time limits, then resubmit until the status row says `accepted`. Some problems forbid Nim; submit an allowed-language port there. Some problems allow only Brainfuck or Intercal; submit those only if a solution exists in an allowed language.
 
 ## Git convention
 

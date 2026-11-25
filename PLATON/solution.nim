@@ -3,6 +3,7 @@ const flushBlockBytes = 1 shl 18
 const hashBits = 17
 const hashSize = 1 shl hashBits
 const hashMask = hashSize - 1
+const hashShift = 32 - hashBits
 const hashMultiplier = 2654435761'i64
 const maxSum = 10000
 
@@ -29,7 +30,7 @@ var hashStamps = newSeq[int](hashSize)
 var currentStamp = 0
 
 proc hashSlot(value: int): int =
-  return int((int64(value) * hashMultiplier shr 32) and int64(hashMask))
+  return int(((int64(value) * hashMultiplier) shr hashShift) and int64(hashMask))
 
 proc bumpCount(value: int, stamp: int): int =
   var at = hashSlot(value)
@@ -51,9 +52,7 @@ proc lookupCount(value: int, stamp: int): int =
     if hashKeys[at] == value: return hashValues[at]
     at = (at + 1) and hashMask
 
-var sumSplitCount = newSeq[int](maxSum + 1)
-var sumBadCount = newSeq[int](maxSum + 1)
-var sumWinnerCount = newSeq[int](maxSum + 1)
+var goodSums = newSeq[int](maxSum + 1)
 var winnerLow = newSeq[int](maxSum + 1)
 var winnerHigh = newSeq[int](maxSum + 1)
 
@@ -67,51 +66,65 @@ proc appendOutput(text: string) =
 
 let caseCount = nextInt(inputData, scanPos)
 for caseIndex in 1..caseCount:
-  let rangeLow = nextInt(inputData, scanPos)
-  let rangeHigh = nextInt(inputData, scanPos)
-  let sumLow = 2 * rangeLow + 1
-  let sumHigh = 2 * rangeHigh - 1
-  for s in sumLow..sumHigh:
-    sumSplitCount[s] = 0
-    sumBadCount[s] = 0
-    sumWinnerCount[s] = 0
-  currentStamp += 1
-  let productStamp = currentStamp
-  for x in rangeLow..rangeHigh:
-    for y in x + 1..rangeHigh:
-      discard bumpCount(x * y, productStamp)
-  for x in rangeLow..rangeHigh:
-    for y in x + 1..rangeHigh:
-      let total = x + y
-      sumSplitCount[total] += 1
-      if lookupCount(x * y, productStamp) == 1:
-        sumBadCount[total] += 1
-  currentStamp += 1
-  let winnerStamp = currentStamp
-  for x in rangeLow..rangeHigh:
-    for y in x + 1..rangeHigh:
-      let total = x + y
-      if sumSplitCount[total] > 1 and sumBadCount[total] == 0:
-        discard bumpCount(x * y, winnerStamp)
-  for x in rangeLow..rangeHigh:
-    for y in x + 1..rangeHigh:
-      let total = x + y
-      if sumSplitCount[total] > 1 and sumBadCount[total] == 0 and lookupCount(x * y, winnerStamp) == 1:
-        sumWinnerCount[total] += 1
-        winnerLow[total] = x
-        winnerHigh[total] = y
+  let rangeLow = nextInt(inputData, scanPos) + 1
+  let rangeHigh = nextInt(inputData, scanPos) - 1
   var pairCount = 0
-  for s in sumLow..sumHigh:
-    if sumSplitCount[s] > 1 and sumBadCount[s] == 0 and sumWinnerCount[s] == 1:
-      pairCount += 1
+  if rangeLow < rangeHigh:
+    currentStamp += 1
+    let productStamp = currentStamp
+    for x in rangeLow..rangeHigh:
+      for y in x + 1..rangeHigh:
+        discard bumpCount(x * y, productStamp)
+    let sumLow = 2 * rangeLow + 1
+    let sumHigh = 2 * rangeHigh - 1
+    var goodSumCount = 0
+    for s in sumLow..sumHigh:
+      let loX = max(rangeLow, s - rangeHigh)
+      let hiX = (s - 1) div 2
+      if hiX - loX + 1 < 2:
+        continue
+      var allAmbiguous = true
+      for x in loX..hiX:
+        if lookupCount(x * (s - x), productStamp) == 1:
+          allAmbiguous = false
+          break
+      if allAmbiguous:
+        goodSums[goodSumCount] = s
+        goodSumCount += 1
+    if goodSumCount > 0:
+      currentStamp += 1
+      let winnerStamp = currentStamp
+      for i in 0..<goodSumCount:
+        let s = goodSums[i]
+        let loX = max(rangeLow, s - rangeHigh)
+        let hiX = (s - 1) div 2
+        for x in loX..hiX:
+          discard bumpCount(x * (s - x), winnerStamp)
+      for i in 0..<goodSumCount:
+        let s = goodSums[i]
+        let loX = max(rangeLow, s - rangeHigh)
+        let hiX = (s - 1) div 2
+        var uniqueCount = 0
+        var bestLow = 0
+        var bestHigh = 0
+        for x in loX..hiX:
+          if lookupCount(x * (s - x), winnerStamp) == 1:
+            uniqueCount += 1
+            bestLow = x
+            bestHigh = s - x
+            if uniqueCount > 1:
+              break
+        if uniqueCount == 1:
+          winnerLow[pairCount] = bestLow
+          winnerHigh[pairCount] = bestHigh
+          pairCount += 1
   appendOutput("case " & $caseIndex)
   outputBuffer.add '\n'
   appendOutput($pairCount)
   outputBuffer.add '\n'
-  for s in sumLow..sumHigh:
-    if sumSplitCount[s] > 1 and sumBadCount[s] == 0 and sumWinnerCount[s] == 1:
-      appendOutput($(winnerLow[s]) & " " & $(winnerHigh[s]))
-      outputBuffer.add '\n'
+  for i in 0..<pairCount:
+    appendOutput($(winnerLow[i]) & " " & $(winnerHigh[i]))
+    outputBuffer.add '\n'
 
 stdout.write outputBuffer
 outputBuffer.setLen 0

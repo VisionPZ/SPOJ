@@ -47,6 +47,7 @@ def divisor_oracle(low, high):
 
 
 def oracle_case(low, high):
+    low, high = low + 1, high - 1
     triples = []
     for left in range(low, high + 1):
         for right in range(left + 1, high + 1):
@@ -108,11 +109,11 @@ def write(name, cases):
 
 assert oracle_case(1, 10) == []
 assert oracle_case(2, 8) == []
-assert oracle_case(2, 100) == [(4, 13)]
-assert oracle_case(1, 30) == [(1, 6)]
+assert oracle_case(1, 100) == [(4, 13)]
+assert oracle_case(1, 63) == [(4, 13)]
 for check_low in range(1, 8):
     for check_high in range(check_low + 1, 21):
-        assert oracle_case(check_low, check_high) == divisor_oracle(check_low, check_high)
+        assert oracle_case(check_low, check_high) == divisor_oracle(check_low + 1, check_high - 1)
 
 SAMPLE = [(1, 10), (2, 8)]
 EDGES = [
