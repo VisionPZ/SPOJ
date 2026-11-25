@@ -1,0 +1,60 @@
+{
+  "cacheVersion": "D20260925T120000",
+  "outputFile": "/home/pingz/Code/SPOJ/LCMP/build/solution2",
+  "compile": [
+    [
+      "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem@sexceptions.nim.c",
+      "gcc -c   -w -fmax-errors=3 -fno-strict-aliasing -pthread -O3 -fno-ident -fno-math-errno   -I/home/pingz/.choosenim/toolchains/nim-2.4.2/lib -I/home/pingz/Code/SPOJ/LCMP -o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem@sexceptions.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem@sexceptions.nim.c"
+    ],
+    [
+      "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@sprivate@sdigitsutils.nim.c",
+      "gcc -c   -w -fmax-errors=3 -fno-strict-aliasing -pthread -O3 -fno-ident -fno-math-errno   -I/home/pingz/.choosenim/toolchains/nim-2.4.2/lib -I/home/pingz/Code/SPOJ/LCMP -o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@sprivate@sdigitsutils.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@sprivate@sdigitsutils.nim.c"
+    ],
+    [
+      "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@sassertions.nim.c",
+      "gcc -c   -w -fmax-errors=3 -fno-strict-aliasing -pthread -O3 -fno-ident -fno-math-errno   -I/home/pingz/.choosenim/toolchains/nim-2.4.2/lib -I/home/pingz/Code/SPOJ/LCMP -o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@sassertions.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@sassertions.nim.c"
+    ],
+    [
+      "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem@sdollars.nim.c",
+      "gcc -c   -w -fmax-errors=3 -fno-strict-aliasing -pthread -O3 -fno-ident -fno-math-errno   -I/home/pingz/.choosenim/toolchains/nim-2.4.2/lib -I/home/pingz/Code/SPOJ/LCMP -o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem@sdollars.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem@sdollars.nim.c"
+    ],
+    [
+      "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@ssyncio.nim.c",
+      "gcc -c   -w -fmax-errors=3 -fno-strict-aliasing -pthread -O3 -fno-ident -fno-math-errno   -I/home/pingz/.choosenim/toolchains/nim-2.4.2/lib -I/home/pingz/Code/SPOJ/LCMP -o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@ssyncio.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@ssyncio.nim.c"
+    ],
+    [
+      "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem.nim.c",
+      "gcc -c   -w -fmax-errors=3 -fno-strict-aliasing -pthread -O3 -fno-ident -fno-math-errno   -I/home/pingz/.choosenim/toolchains/nim-2.4.2/lib -I/home/pingz/Code/SPOJ/LCMP -o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem.nim.c"
+    ],
+    [
+      "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@palgorithm.nim.c",
+      "gcc -c   -w -fmax-errors=3 -fno-strict-aliasing -pthread -O3 -fno-ident -fno-math-errno   -I/home/pingz/.choosenim/toolchains/nim-2.4.2/lib -I/home/pingz/Code/SPOJ/LCMP -o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@palgorithm.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@palgorithm.nim.c"
+    ],
+    [
+      "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@msolution.nim.c",
+      "gcc -c   -w -fmax-errors=3 -fno-strict-aliasing -pthread -O3 -fno-ident -fno-math-errno   -I/home/pingz/.choosenim/toolchains/nim-2.4.2/lib -I/home/pingz/Code/SPOJ/LCMP -o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@msolution.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@msolution.nim.c"
+    ]
+  ],
+  "link": [
+    "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem@sexceptions.nim.c.o",
+    "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@sprivate@sdigitsutils.nim.c.o",
+    "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@sassertions.nim.c.o",
+    "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem@sdollars.nim.c.o",
+    "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@ssyncio.nim.c.o",
+    "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem.nim.c.o",
+    "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@palgorithm.nim.c.o",
+    "/home/pingz/Code/SPOJ/LCMP/.nimcache2/@msolution.nim.c.o"
+  ],
+  "linkcmd": "gcc   -o /home/pingz/Code/SPOJ/LCMP/build/solution2 /home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem@sexceptions.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@sprivate@sdigitsutils.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@sassertions.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem@sdollars.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@pstd@ssyncio.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@psystem.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@palgorithm.nim.c.o /home/pingz/Code/SPOJ/LCMP/.nimcache2/@msolution.nim.c.o   -pthread -pthread -lrt   -ldl",
+  "extraCmds": [],
+  "configFiles": [
+    "/home/pingz/.choosenim/toolchains/nim-2.4.2/config/nim.cfg",
+    "/home/pingz/.choosenim/toolchains/nim-2.4.2/config/config.nims"
+  ],
+  "stdinInput": false,
+  "projectIsCmd": false,
+  "cmdInput": "",
+  "currentDir": "/home/pingz/Code/SPOJ/LCMP",
+  "depfiles": [],
+  "nimexe": ""
+}
