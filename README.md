@@ -1,10 +1,10 @@
-# SPOJ — 1266 problems, one method
+# SPOJ — 1270 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1266 problems](https://img.shields.io/badge/problems-1266-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1270 problems](https://img.shields.io/badge/problems-1270-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1266 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1270 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1266 problems
+## The 1270 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -335,7 +335,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [CATER](CATER/README.md) | Count connected groups at their highest station, like counting family reunions by the eldest relative present. Root the tree, then combine child polynomials at each station with a knapsack convolution. | O(N times K squared) |
 | [ADABRANC](ADABRANC/README.md) | Add branches from strongest to weakest, like unlocking roads as a storm fades and watching neighborhoods merge. Use a disjoint-set union for the merged neighborhoods. Answer each traveller the moment the weight drops to that traveller's value. | O(1) |
 
-### Dynamic programming (75)
+### Dynamic programming (76)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -416,6 +416,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [ADAQUBIC](ADAQUBIC/README.md) | Maximise the current player's outcome by exploring moves, like a chess engine looking ahead, but stop as soon as a win or forced loss is visible. Minimax with alpha-beta pruning and a transposition table searches only relevant continuations. | O(visited states times 49), exponential worst case |
 | [ADAMOLD](ADAMOLD/README.md) | Split the row at the best places, like choosing where to cut a ribbon so the crooked parts stay together. For one segment, count ones and zeros at each bit; the bit contributes ones times zeros times the bit value. | O(K times N squared times 31) |
 | [LARMY](LARMY/README.md) | Choosing cuts is like placing dividers in a line of books to reduce disorder inside each segment. Build a table of inversion counts for every segment first, then run a partition dynamic program. | O(N^2 + K N log N) |
+| [ADACHES2](ADACHES2/README.md) | Treat a placement as a permutation, like assigning one seat per row and one seat per column. The tower rule forces distinct rows and columns; the king rule forbids neighbouring rows from using neighbouring columns. | O(T + max N) |
 
 ### Number theory & big integers (111)
 
@@ -535,7 +536,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NKDIV](NKDIV/README.md) | Treat each prime exponent as a pile of stones. One move takes stones from at most `k` piles. This is like a shopper grabbing items from a few shelves at once. | O(R times sqrt(n) over log n) |
 | [ADADIGIT](ADADIGIT/README.md) | Try every ordering of the digits, like rearranging a handful of numbered tiles and scoring each row. Use the next-permutation routine to walk the orderings in sorted order. | O(1) |
 
-### Greedy, search & enumeration (736)
+### Greedy, search & enumeration (739)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1277,6 +1278,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [ADALEMON](ADALEMON/README.md) | Two leaves leave the same tree exactly when a symmetry of the original tree can swap them, like matching folds on a paper snowflake. Root the tree at its center and give every rooted subtree a shape number by sorting child numbers. | O(N log N) per case |
 | [ADASALE](ADASALE/README.md) | Treat the bag count as gear positions on one dial, and record the best cash at each position after every city. At a licensed city, moving between any two positions costs the difference of two precomputed price totals. | O(cityCount * bagLimit) |
 | [ADATOMEL](ADATOMEL/README.md) | Each upward jump carries a pre-packed bag of flavors, like grabbing a packed lunch for every flight of stairs. Store those bags as 16 machine words, one bit per flavor. | O((N + Q) log N * K / 64) |
+| [ADACHESS](ADACHESS/README.md) | Add the two shortest walks to a chosen meeting square, like two friends picking a café and comparing travel times. Try all 64 squares and keep the smallest sum. | O(1) |
+| [FINDLR](FINDLR/README.md) | Split the modulus into prime powers and solve the recurrence there, like paying a bill in several currencies before converting the total. A composite modulus blocks ordinary division, while a prime-power ring allows division by any value not divisible by that prime. | O(1) |
+| [LCMP](LCMP/README.md) | Keep the tallest exponent in each prime bin while a window slides, like a clerk tracking the tallest stack in every bin. The product of those tallest powers is the range LCM modulo the modulus. | O(1) |
 
 ### Data structures, bits & simulation (47)
 
