@@ -1,10 +1,10 @@
-# SPOJ — 873 problems, one method
+# SPOJ — 879 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![873 problems](https://img.shields.io/badge/problems-873-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![879 problems](https://img.shields.io/badge/problems-879-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 873 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 879 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 873 problems
+## The 879 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -467,7 +467,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [DCEPCA03](DCEPCA03/README.md) | Squaring a sum is like pairing every card in a pile with every card in the same pile. One pass builds all totients with a sieve, and a prefix array gives each sum at once. | O(N log log N + T) |
 | [NDIV](NDIV/README.md) | Stamp divisor counts across the interval, like marking every tenth house on a street. Each small prime visits its multiples once, so no number needs a fresh factor search. | O(sqrt(b) log log b + (b - a) log log b) |
 
-### Greedy, search & enumeration (414)
+### Greedy, search & enumeration (420)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -887,6 +887,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [EPTT](EPTT/README.md) | Group requests by their minute remainder, like sorting appointments into separate calendars. A tutor who teaches at minute 30 cannot teach at 61, because lessons must touch, so times with different remainders mod 30 never share a tutor. | `O(R + 1410)` |
 | [PFORLOOP](PFORLOOP/README.md) | Sorting the scattered numbers makes each original loop appear as a contiguous run, like arranging shuffled playing cards into consecutive stacks. The algorithm sorts all integers, then walks the sorted list once and emits a loop whenever the next value is not one larger. | `O(N log N)` |
 | [VISION](VISION/README.md) | Each building becomes a line whose value is its slope from the observer, like adjusting a telescope dial as the observer rises. A newer building is visible exactly when its slope exceeds every earlier slope at that height. | `O(N log N + M log N)` |
+| [AMZRCK](AMZRCK/README.md) | Decide the fate of the last track, like choosing seats in a row with no neighbours. If the last track is skipped, the earlier tracks form any valid playlist. | O(T + n_max) |
+| [AMZSEQ](AMZSEQ/README.md) | Track counts by the last digit, like tallying passengers at three exits. A word ending in 0 can follow 0 or 1, so that count is the sum of two previous counts. | O(N) |
+| [BALLLSTA](BALLLSTA/README.md) | Tilt the triangle into columns, like turning a ladder on its side. Ball j in column i then needs the ball directly above it and the ball at the same height in column i-1. | O(N^2) per case |
+| [DEC123](DEC123/README.md) | Count the binary choices, like counting coin flips without listing every sequence. An internal node with an odd value splits into two different ordered pairs, so it offers two choices. | O(H log modulus) per case |
+| [DIG](DIG/README.md) | Choose four vertices, like picking four corners of a quadrilateral. Its two diagonals cross once inside the polygon, and no other choice gives that crossing. So the answer is `C(n,4)` reduced modulo the prime. | O(T log modulus) |
+| [PUCMM223](PUCMM223/README.md) | Treat the two pieces as one traveller, like a pair of dancers moving together. The state is the pair of occupied cells, and one move changes both cells at once. | O((M*N)^2) per case |
 
 ### Data structures, bits & simulation (44)
 
