@@ -1,10 +1,10 @@
-# SPOJ — 720 problems, one method
+# SPOJ — 726 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![720 problems](https://img.shields.io/badge/problems-720-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![726 problems](https://img.shields.io/badge/problems-726-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 720 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 726 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 720 problems
+## The 726 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -451,7 +451,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (278)
+### Greedy, search & enumeration (284)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -735,6 +735,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [NOTATRI](NOTATRI/README.md) | Sort the sticks, then treat each stick as the longest side and count pairs that fall short of it, like checking every possible shelf width against a fixed board. | O(N^2) per case |
 | [TRANSP1](TRANSP1/README.md) | Each link can be redirected straight to the base, like moving a whole branch of a tree to its shallowest position. That shortens the path for every nexus in the branch and raises base safety. | O(L * N^2 * M^2) worst case |
 | [VOL](VOL/README.md) | Send flow through a line of days, like routing trucks along a road where each toll booth sells a shortcut at a fixed price. Free edges carry unused volunteer coverage from one day to the next. | O(N * (N + M)) per case |
+| [MCITYHAL](MCITYHAL/README.md) | Read each column like a stack of empty slots and put one block into every unbroken run of damaged cells. The algorithm scans columns top to bottom and counts the lengths of maximal runs of zeros. | O(M times N) |
+| [MCONSTR](MCONSTR/README.md) | Think of each start position as a sticker album that must receive one of every sticker, in any order. The algorithm runs a subset DP whose states carry bitsets of start positions instead of single positions. | O(2^n times n times textLength / 64) |
+| [MMATRIX](MMATRIX/README.md) | Pin the first row and try every rotation of the rest, like turning dials until the busiest column is quietest. The algorithm enumerates all row rotation choices with a depth-first walk and tracks the running column sums. | O(n^(n-1) times n) per case |
+| [MPRIME1](MPRIME1/README.md) | Build a lookup table of counts once, like indexing every recipe before taking orders. The algorithm sieves the primes, then slides a window over them and tallies each sum it reaches. | O(L log log L plus queries), L = 11000 |
+| [MRECAMAN](MRECAMAN/README.md) | Fill the sequence once, like labelling every shelf before answering any question about a shelf. The algorithm is a direct simulation that records used values in an array. | O(max k + number of queries) |
+| [MSTICK](MSTICK/README.md) | Sort the sticks by size, then drop each stick onto the chain whose end fits it best, like stacking plates by decreasing diameter. The algorithm keeps the last weight of every open chain and extends the chain with the largest tail that is still no heavier than the stick. | O(n log n) per case |
 
 ### Data structures, bits & simulation (43)
 
