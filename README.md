@@ -1,10 +1,10 @@
-# SPOJ — 980 problems, one method
+# SPOJ — 986 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![980 problems](https://img.shields.io/badge/problems-980-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![986 problems](https://img.shields.io/badge/problems-986-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 980 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 986 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 980 problems
+## The 986 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -240,7 +240,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 
-### Graphs & trees (63)
+### Graphs & trees (64)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -309,6 +309,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [KOZE](KOZE/README.md) | Think of each enclosed yard as a locked room: count the animals inside before declaring a winner. Flood fill discovers each sector in one pass over the grid. | O(N * M) |
 | [SAFECRAC](SAFECRAC/README.md) | A passcode is a walk on the keypad, like tracing a route between neighbouring keys with at most one step per digit. Keep one count per ending digit and extend it by the neighbouring digits at each step. | O(max(N) plus T) |
 | [NITTROAD](NITTROAD/README.md) | Read the story backwards, like rewinding a film to see a broken bridge rebuilt. Removal becomes union, so one pass of disjoint-set union answers all queries. Store every query first and mark all roads that get removed. | O((N + Q) alpha(N)) per test case |
+| [RANGESUM](RANGESUM/README.md) | Push work to one end of a fixed array, like adding pages to the front of a notebook while keeping the page numbers. Store suffix totals anchored at the far right, so a front push only writes one new cell. | O(N + Q) |
 
 ### Dynamic programming (59)
 
@@ -376,7 +377,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [BAT3](BAT3/README.md) | Think of a slide with one elevator: you descend freely, and the elevator lifts you once at a marked stop. The algorithm runs two longest decreasing subsequence passes. | O(1) |
 | [BAT4](BAT4/README.md) | Picture a hiker choosing the gentlest steepest step, like picking the easiest rung on a ladder. A minimax DP finds the smallest possible worst climb to every cell. | O(1) |
 
-### Number theory & big integers (95)
+### Number theory & big integers (96)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -477,8 +478,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CRAN02](CRAN02/README.md) | Count matching prefix totals the way you pair socks of the same color. A zero-sum block runs between two prefixes with the same total. A frequency table over prefix totals turns the count into one scan. | O(n) per case |
 | [CBANK](CBANK/README.md) | Scale all coins to quarters and count the integer solutions of one equation, like counting change with a fixed set of denominations. The algorithm derives a closed form for the number of solutions and evaluates it with modular arithmetic. | O(1) per case |
 | [APS](APS/README.md) | The sequence is a running total, like a row of monthly bills where each new bill is the smallest prime factor of the current index. Find every smallest prime factor with one sieve, then accumulate them once in order. | O(largest N log log largest N plus T) |
+| [LOOPEXP](LOOPEXP/README.md) | The current maximum changes exactly when the largest value seen so far arrives, like noting each new high-water mark. Position i holds the largest of its first i entries with probability 1/i. | O(T + max N) |
 
-### Greedy, search & enumeration (510)
+### Greedy, search & enumeration (514)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -994,6 +996,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [VOLNTEER](VOLNTEER/README.md) | Pick magnitudes from two piles, largest first when the naughty count is even and smallest first when it is odd, like choosing balls to keep a tally positive or negative. | O(N log N + k) |
 | [VPL1_AE](VPL1_AE/README.md) | Pass probability like a baton through a graph, where each stop splits the baton among its outgoing paths. Build a stochastic transition matrix, then use binary exponentiation to apply T steps at once. | O(N^3 log T + Q qi N^2 log T) |
 | [WWAKER](WWAKER/README.md) | Reach the target by joining at most two arrows, like walking one street then a diagonal shortcut. An aligned displacement needs one direction plus the stop. Any other displacement needs two directions plus the stop. | O(1) per test case |
+| [CATHETEN](CATHETEN/README.md) | Fixing one leg turns the triangle count into a divisor count, like pairing page numbers whose product is fixed. Write the missing leg as half the difference of two divisors of n squared. | O(sieve limit + T times sqrt n) |
+| [DELTACA2](DELTACA2/README.md) | Turn the leg gap into a Pell equation, like replacing a moving target with a fixed one. Put X equal to twice the small leg plus d, and Y equal to the hypotenuse. | O(F terms built plus log n) per case |
+| [DELTACAT](DELTACAT/README.md) | Write the smaller leg as a, so the larger is a + d and the hypotenuse is c. Substituting into the Pythagorean equation gives a Pell equation, like turning a moving target into a fixed equation. | O(sqrt d plus F squared plus log n) per case |
+| [HAP01](HAP01/README.md) | Alternating positions act like counting coins in even and odd slots, like sorting coins into two jars. Counting from the left flips the two jars when the bit length changes parity, but the absolute difference stays the same. | O(table size plus N minus M summed over cases) |
 
 ### Data structures, bits & simulation (44)
 
