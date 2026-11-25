@@ -1,10 +1,10 @@
-# SPOJ — 411 problems, one method
+# SPOJ — 417 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![411 problems](https://img.shields.io/badge/problems-411-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![417 problems](https://img.shields.io/badge/problems-417-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 411 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 417 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 411 problems
+## The 417 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -118,7 +118,7 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [STARJUST](STARJUST/README.md) | Think of hanging a picture on a wall, then filling the empty space with equal stacks of stars on each side. The leftover star goes on the left when the gap is odd. | O(total output characters) |
 | [TIMORSE](TIMORSE/README.md) | Add durations like filling a timeline with blocks, like stacking tiles of length one and three. Each letter contributes its symbols plus the small gaps between them. A new letter after letters adds three; a new letter after spaces adds seven. | O(total input characters) |
 
-### Geometry & grids (87)
+### Geometry & grids (88)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
@@ -211,6 +211,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [VCYLINDER](VCYLINDER/README.md) | Apply the textbook volume rule, like filling a can and measuring the result to the nearest hundredth. Radius is half the diameter. Multiply pi by radius squared and by height. | O(1) apart from input bytes |
 | [ALIENCLK](ALIENCLK/README.md) | Reading both hands on a shared ruler is like measuring them in thirty-seconds of a degree. The minute hand advances 144 units per minute and the hour hand advances 9 units per minute. | O(test count) |
 | [AARTDARK](AARTDARK/README.md) | Count dark cells and divide, like tallying shaded squares on a grid sheet. The side length gives the total cell count directly. Scan each picture's characters once and count asterisks. | O(total pixels) |
+| [PAVEMENT](PAVEMENT/README.md) | Choosing steps is like picking non-adjacent coupons from a strip: each row pair offers two coupons, and one pick blocks the neighbouring row pair. Dynamic programming keeps the best total for the row pair after the current one. | O(N) |
 
 ### Graphs & trees (38)
 
@@ -368,7 +369,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [DCP](DCP/README.md) | A traffic light repeats red, green, green; Fibonacci parity repeats even, odd, odd. The algorithm counts one residue class of indexes inside the range. Each test costs constant time. | O(T) |
 | [DIVPALI](DIVPALI/README.md) | A mirror shows the same label from either side; a palindrome digit string behaves the same way. Walk divisor candidates up to the square root and record each divisor with its partner. | O(sqrt(N) + d^2), with d matching divisors |
 
-### Greedy, search & enumeration (65)
+### Greedy, search & enumeration (70)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -439,6 +440,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [ALEAVE](ALEAVE/README.md) | Counting with a difference table is like marking a calendar with plus signs at each start and minus signs at each return day. Walking the calendar once adds up the marks and tells which days are leave. | O(requests + 366) |
 | [BASICSUM](BASICSUM/README.md) | A circular running track lets a runner pass the start line and keep going; the repeating array behaves the same way. Build prefix sums over enough copies, then answer each question with one subtraction. | O(n + Q + R), where R is the largest end position |
 | [CINECOVI](CINECOVI/README.md) | Filling shelves gives the same picture: put each box on the left, leave one slot, then skip a shelf. A cursor walks the seats of one row and jumps two rows when the current row runs out. | O(R times C plus G) |
+| [PONDO1](PONDO1/README.md) | Picture the finish as a fence and the Pundu's steps as fixed strides: the race is lost only when a stride lands past the fence before the Pondo gets there. | O(1) |
+| [PONDO2](PONDO2/README.md) | Treat the giveaway like paying with credit: each `o` adds one credit, each `u` spends one, like coins dropped into a till from the right end. The program walks the strip from right to left and keeps this running balance. | O(n) |
+| [PONDO3](PONDO3/README.md) | Sharing the bomboos is like filling glasses of different widths to the same level: raise the common level until the supply runs out. The program guesses a day count and checks whether the bomboos cover it. | O(n log(x times d_max)) |
+| [PONDO4](PONDO4/README.md) | Work the number backwards, like rewinding a video of the count: undo additions by subtracting and undo triplings by dividing by three. When the current value divides by three, divide. | O(log n) |
+| [PONDORO](PONDORO/README.md) | Longer mouths are like wider nets: a wider net never catches fewer rain spots, so the widest mouth already shows the best possible catch. The program finds the best window for the longest mouth, then finds the shortest window span that reaches that same rainy-spot count. | O(n + m) |
 
 ### Data structures, bits & simulation (30)
 
