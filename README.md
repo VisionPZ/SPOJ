@@ -1,10 +1,10 @@
-# SPOJ — 561 problems, one method
+# SPOJ — 567 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![561 problems](https://img.shields.io/badge/problems-561-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![567 problems](https://img.shields.io/badge/problems-567-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 561 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 567 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 561 problems
+## The 567 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -238,7 +238,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 
-### Graphs & trees (42)
+### Graphs & trees (44)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -286,6 +286,8 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [GSS2](GSS2/README.md) | Think of a fence post moving right across the array: each new score extends every left endpoint that has not seen that score before. Range additions track those extensions, and a remembered maximum tracks the best slice seen so far. | O((N + Q) log N) |
 | [CLEANRBT](CLEANRBT/README.md) | Remember which dirty tiles are already clean while walking, like carrying a checklist through a building. Breadth-first search over position plus checklist states finds the first time every tile is clean. | O(1) |
 | [TRSTAGE](TRSTAGE/README.md) | Add one used ticket to the route description each time the coach moves, like ticking off coupons in a booklet. The coupon set and current city form a state, and states move only forward. | O(1) |
+| [EXPLOSN](EXPLOSN/README.md) | Think of guards on one-way roads: every road needs a guard at one end, and each junction has one outgoing road. Peel away people with no incoming testimonies, then solve each remaining cycle separately. | O(1) |
+| [TREASURY](TREASURY/README.md) | Treat pairing like assigning dance partners at a party: each person may join one pair at most. Process the office tree from the lowest subordinates upward, like closing branches before the root. | O(1) |
 
 ### Dynamic programming (40)
 
@@ -334,7 +336,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TWENDS](TWENDS/README.md) | Think of choosing cards like taking coins from a row where the opponent follows a fixed recipe. Once that recipe is known, each reply is predictable, so the first player can plan ahead. | O(1) |
 | [ACMAKER](ACMAKER/README.md) | Give each word a small set of tickets, one ticket for each possible letter it can donate, like choosing seats in a row. Count the tickets locally, then multiply choices across words with a running total. | O(1) |
 
-### Number theory & big integers (88)
+### Number theory & big integers (89)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -428,8 +430,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [G11_4](G11_4/README.md) | Think of house numbers on a long street, where each digit position has a rhythm. Fix a position and count how often a chosen digit fills it. Smaller leading digits leave all lower positions free. | O(1) |
 | [SHAMIM9](SHAMIM9/README.md) | Think of a multiplication table where only the final column survives. The units digit of a product uses only the units digits of the factors. The program keeps the last digit while scanning each token and computes nine times that digit modulo ten. | O(1) |
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
+| [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (142)
+### Greedy, search & enumeration (145)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -577,6 +580,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [CDOWN](CDOWN/README.md) | Walk upward from every person like tracing a family tree back through named parents. The person reached after exactly `d` steps is the ancestor who counts that person as a descendant. | O(1) |
 | [EOWAMRT](EOWAMRT/README.md) | Treat each pair of robots as a door that opens during certain time windows, like a train connection timetable. Compute every window when the pair is close enough, then spread information through those windows in time order. | O(1) |
 | [GAMEFIL](GAMEFIL/README.md) | Treat the parent pattern like a combination lock with one dial per cell, then try every combination. Brute-force enumeration over all cell subsets is exact because the grid has at most 16 cells. | O(1) |
+| [FUSION](FUSION/README.md) | Collisions swap electron identities, like runners passing a baton, so no travel path changes. Treat each source as choosing its longest clear run, then take the shortest run among sources. | O(1) |
+| [GEN](GEN/README.md) | Treat matching as a museum turnstile: once a visitor sees an exhibit, they join the counted crowd forever. Build an Aho-Corasick automaton whose states remember the current matching prefix. | O(1) |
+| [HALLOW](HALLOW/README.md) | Think of a row of prefix totals and two matching remainders, like two identical marks on a ruler. The sweets between those marks form a block whose sum is divisible by the number of children. | O(1) |
 
 ### Data structures, bits & simulation (42)
 
