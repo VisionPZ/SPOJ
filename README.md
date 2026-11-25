@@ -1,10 +1,10 @@
-# SPOJ — 838 problems, one method
+# SPOJ — 844 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![838 problems](https://img.shields.io/badge/problems-838-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![844 problems](https://img.shields.io/badge/problems-844-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 838 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 844 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,11 +13,11 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 838 problems
+## The 844 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
-### Strings & text (109)
+### Strings & text (110)
 
 KMP, borders, tries and rolling hashes keep matching linear. Expression parsing and text rewriting add one stack pass. DP over all substrings is the only quadratic corner.
 
@@ -132,6 +132,7 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [SEC01](SEC01/README.md) | A fixed sign needs no input; the program hangs the same sign on every run. The algorithm prints one constant string, so it performs no parsing. The output buffer collects the line and writes it once. | O(1) |
 | [TESTPASS](TESTPASS/README.md) | Scan each password once for character classes, then once more for repeated blocks. Think of a bouncer checking a guest list, then checking for a repeated dance move. | O(1) |
 | [WOWTALENT](WOWTALENT/README.md) | Think of a receptionist writing the same greeting around each name on a list. The program holds the whole input in one buffer and walks to each line break. | O(1) |
+| [LONGCS](LONGCS/README.md) | Index every substring of the first string once, then read each other string through that index, like using one map to check several travellers. A suffix automaton stores all those substrings in a small graph. | O(1) |
 
 ### Geometry & grids (99)
 
@@ -462,7 +463,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 | [PTIME](PTIME/README.md) | Count each prime inside a factorial by adding floor divisions, like counting how many rows of a fixed size fit in a stack. The real algorithm is Legendre's formula, computed after one sieve primes once. | O(maxN log log maxN + cases * pi(maxN) log maxN) |
 
-### Greedy, search & enumeration (384)
+### Greedy, search & enumeration (389)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -852,6 +853,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [MAKESUM](MAKESUM/README.md) | Think of the smallest sum as a handshake between the two smallest numbers, like the first two people in a line shaking hands. Fix the smallest number and the smallest remaining sum reveals the next number by subtraction. | O(M log M) per successful trial |
 | [REDCROSS](REDCROSS/README.md) | Picture stretching a rubber band around pins: it settles around two pins or three pins, never more. The smallest enclosing circle is fixed by at most three boundary points. | O(N) expected per case |
 | [WRONG](WRONG/README.md) | Treat a typo like swapping one carriage in a train: the rest of the coupling stays the same. Precompute the displacement of every suffix from every possible facing direction. | O(N) expected |
+| [CHEATCON](CHEATCON/README.md) | Build a map of the expression where each arrow is either a free jump or a letter, like drawing train tracks before running trains. Try each word by marking every station reachable without reading a letter, then following the matching letter arrows. | O(1) |
+| [GRAPHCUT](GRAPHCUT/README.md) | Give each edge a mark: one for the requested subset and zero for the rest. Then try to give every vertex a side, like colouring a map so each marked road crosses a border and each unmarked road stays inside. | O(1) |
+| [OFFSTRAT](OFFSTRAT/README.md) | Treat the passes as one-way roads, like a fleet of trucks that never drives back downhill. Every road must keep the truck the same distance or closer to the goal line. | O(1) |
+| [SCCCER](SCCCER/README.md) | Keep the row as it is wherever possible, like sliding books on a shelf only when a stack grows too tall. A dynamic program tracks the four used counts, the last letter, and its run length. | O(1) |
+| [SOCCERCH](SOCCERCH/README.md) | Treat the walk like drawing a loop with a pencil, then ask how many times the loop wraps each marked plot. Only the parity of that wrap count matters, like a light that flips each time the pencil crosses a ray. | O(1) |
 
 ### Data structures, bits & simulation (44)
 
