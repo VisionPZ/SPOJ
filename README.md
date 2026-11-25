@@ -1,10 +1,10 @@
-# SPOJ — 774 problems, one method
+# SPOJ — 780 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![774 problems](https://img.shields.io/badge/problems-774-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![780 problems](https://img.shields.io/badge/problems-780-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 774 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 780 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 774 problems
+## The 780 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -456,7 +456,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (326)
+### Greedy, search & enumeration (332)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -788,6 +788,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [CRDS](CRDS/README.md) | Each level adds a fixed count, like adding rungs to a ladder, so the whole total collapses to one product. The algorithm is closed-form arithmetic. Level i contributes `3 * i - 1` cards. | O(T) |
 | [PRENDON](PRENDON/README.md) | Treat each record like a card in a genealogy box, then check the family rules while sorting the cards. The algorithm strips each suffix to recover parents and gender. | O(1) |
 | [VIDEO](VIDEO/README.md) | Remember only the last few letters, like a reader who keeps the tail of a word in mind while scanning text. The algorithm builds an Aho-Corasick automaton over the combos. | O(K × states × 3) |
+| [ALIEN2](ALIEN2/README.md) | The trick is to treat each station as a fork with two lanes, like choosing between toll booths where changing lanes costs both tolls. Keep the cheapest total for each lane and carry only those two numbers forward. | O(N) |
+| [EALP1](EALP1/README.md) | The trick is to make the opponent face a board where every pile pairs off, like matching socks so that none is left over. A position with zero pile xor is exactly such a balanced board. | O(total piles) |
+| [IOPC1206](IOPC1206/README.md) | The trick is to count base-power pairs instead of inspecting integers. That is like counting stack heights instead of every coin. Each pair contributes a simple range of multipliers. | O(T * sqrt(b)) |
+| [IOPC1207](IOPC1207/README.md) | The trick is to store one parity per coordinate, not one color per plant. Think of a three-way switch circuit. A lamp is on when an odd number of switches are on. | O(Q * log(max dimension)) |
+| [OTOY1](OTOY1/README.md) | The trick is to turn each prime into a row of a counting triangle, like adding one more coin type to a running tally. Each new prime scales the previous diagonal and shifts it by one place. | O(500 * 500 + T) |
+| [RE1](RE1/README.md) | The trick is to count arrangements by their inversion count, like tallying how many pairs trade places in a single-file line. An inversion vector assigns each position a small counter, and those counters add up to K. | O(100 * 10000 + T) |
 
 ### Data structures, bits & simulation (44)
 
