@@ -4,19 +4,23 @@
 
 ## Problem
 
-The input is one list of numbers written in bracket form, like `[3,6,7,2,0,4]`. Add up the elements that come before the first 0. If no 0 appears, add every element. If the list is empty, the answer is 0.
+The input is one bracketed list of signed integers, such as [3,6,7,2,0,4]. Add the elements that appear before the first 0 and print the total. An empty list produces 0, and a missing 0 means every element counts.
 
-| Item | Bound |
+| item | bound |
 |---|---|
-| Input form | one bracketed list of integers |
-| Element values | fit in machine words |
-| Judge limit | 1000 ms, 1536 MB |
+| input form | one bracketed list of integers |
+| element values | fit in 64-bit signed integers |
+| judge limit | 1000 ms, 1536 MB |
 
-The sample case:
+The first 0 stops the sum even when more numbers follow it.
+
+Sample input:
 
 ```
 [3,6,7,2,0,4,0,45,32,0]
 ```
+
+Sample output:
 
 ```
 18
@@ -24,26 +28,27 @@ The sample case:
 
 ## Idea
 
-Walk the bytes once, pull out each signed integer as it appears, and keep a running total that stops at the first 0. Think of reading a number tape: you add each number to a tally and cut the tape the moment a 0 shows up. The hand scanner costs one character check per byte. Building the whole list first, with `eval`, allocates every element object before any adding happens.
+Think of the input as a number tape: you add each value to a tally and cut the tape the moment a 0 appears. The hand scanner skips brackets, commas, and spaces, then reads one signed integer at a time. Each byte gets a constant amount of work, and the loop stops at the first 0. Building the whole list first with an evaluator would allocate one object per element before any adding starts. Reading and adding in one pass avoids that allocation entirely.
 
 ## Why It Works
 
-1. Brackets, commas and spaces are not digits or minus signs, so the scanner skips them for free.
+1. Brackets, commas, and spaces are neither digits nor minus signs, so the scanner skips them.
 2. A minus sign flips the sign of the digit run that follows it.
-3. The running total equals the sum of elements before the first 0 by construction.
-4. An empty list yields no digit runs, so the total stays 0.
+3. Adding as we scan makes the running total equal the sum before the first 0.
+4. The zero test stops the loop at the first 0, leaving later elements untouched.
+5. An empty list yields no digit runs, so the total stays at its initial value.
 
-| Term | Meaning |
+| term | meaning |
 |---|---|
-| `nextSignedNumber` | reads one integer, with its optional minus sign |
-| `minusSignValue` | byte 45, the `-` character |
-| `elementValue` | the number just scanned |
-| `total` | running sum of elements before the first 0 |
-| `found` | true when a digit run existed at that spot |
+| `nextSignedInt` | reads one integer, including an optional minus sign |
+| `elementFound` | true when a digit run exists at the current position |
+| `elementValue` | the integer scanned in this call |
+| `total` | sum of elements before the first 0 |
+| `flushBlockBytes` | buffer size that triggers a write |
 
-The loop breaks on `found == False`, which covers both the first 0 and end of input.
+The found flag also ends the loop when the buffer runs out.
 
-A script-traced example from `gen.py`:
+A script-traced example from the generator:
 
 ```
 tokens 3, 6, 7, 2, 0, 4, ...
@@ -55,62 +60,85 @@ The trace matches the sample answer.
 
 ## Code
 
-**Signed scanner.** This block reads one integer, skipping punctuation.
+**Signed scanner.** The reader loads stdin once and parses one integer per call.
 
-```python
-def nextSignedNumber(data, position):
-    length = len(data)
-    while position < length:
-        byteValue = data[position]
-        if firstDigitValue <= byteValue <= firstDigitValue + 9 or byteValue == minusSignValue:
-            break
-        position += 1
-    sign = 1
-    if position < length and data[position] == minusSignValue:
-        sign = -1
-        position += 1
-    value = 0
-    found = position < length
-    while position < length and firstDigitValue <= data[position] <= firstDigitValue + 9:
-        value = value * 10 + data[position] - firstDigitValue
-        position += 1
-    return sign * value, position, found
+```nim
+const flushBlockBytes = 1 shl 17
+
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+proc nextSignedInt(data: string, pos: var int, found: var bool): int =
+  found = false
+  while pos < data.len and data[pos] != '-' and (data[pos] < '0' or data[pos] > '9'):
+    pos += 1
+  var sign = 1
+  if pos < data.len and data[pos] == '-':
+    sign = -1
+    pos += 1
+  var value = 0
+  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
+    value = value * 10 + int(data[pos]) - 48
+    pos += 1
+    found = true
+  return sign * value
+
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
 ```
 
-The skip loop ignores brackets, commas and whitespace.
+The skip loop ignores punctuation and whitespace.
 The sign branch keeps negative elements correct.
 Scanning costs one pass over the consumed characters.
 
-**Sum loop.** This block totals values until the first 0.
+**Sum loop.** The loop adds each value and stops at the first 0.
 
-```python
-inputData = sys.stdin.buffer.read()
-scanPos = 0
-total = 0
-while True:
-    elementValue, scanPos, found = nextSignedNumber(inputData, scanPos)
-    if not found:
-        break
-    if elementValue == 0:
-        break
-    total += elementValue
+```nim
+var total: int64 = 0
+while true:
+  var elementFound = false
+  let elementValue = nextSignedInt(inputData, scanPos, elementFound)
+  if not elementFound:
+    break
+  if elementValue == 0:
+    break
+  total = total + int64(elementValue)
+
+appendOutput($total)
+outputBuffer.add '\n'
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-Each call advances `scanPos` past one number.
-The zero test stops the sum exactly at the first 0.
-No list object is ever built.
+The accumulator holds sums that exceed a 32-bit integer.
+The zero test cuts the tape at the first 0.
+One short answer goes out after the loop ends.
 
 ## Complexity
 
-| Phase | Time | Space |
+The input size sets the cost because each byte is visited once.
+
+| phase | time | space |
 |---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Scan and sum | O(bytes) | constant |
-| Output | one write | one short string |
+| input read | one pass over input bytes | input string |
+| scan and sum | constant work per byte | running total |
+| output | one short line | block buffer |
 
-| Measure | Big O |
+The phase table shows that the scan is the only growing cost.
+
+| measure | Big O |
 |---|---|
-| Time | O(N) |
-| Space | O(N) for the input buffer |
+| time | O(N) for N input bytes |
+| space | O(N) for the input buffer |
 
-`eval` plus a loop also works but allocates one object per element first.
+Allocating every element first also costs O(N) time but needs O(N) extra storage; scanning in place uses no list.
