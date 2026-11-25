@@ -1,10 +1,10 @@
-# SPOJ — 786 problems, one method
+# SPOJ — 791 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![786 problems](https://img.shields.io/badge/problems-786-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![791 problems](https://img.shields.io/badge/problems-791-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 786 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 791 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 786 problems
+## The 791 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -239,7 +239,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 
-### Graphs & trees (56)
+### Graphs & trees (57)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -301,8 +301,9 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [QTREE5](QTREE5/README.md) | Think of each centroid as a lookout tower with a bucket for every branch leading away from it. Each bucket keeps the closest white node on that branch, like a guard reporting the nearest light. | O(N log N + Q log² N) |
 | [MKTHNUM](MKTHNUM/README.md) | Keep one sorted-history snapshot per array prefix, like saving a cumulative tally after each card is dealt. This is a persistent segment tree over compressed value ranks. Build a version for every prefix by copying one root-to-leaf path. | O(n log n + m log n) |
 | [MMINPAID](MMINPAID/README.md) | Prepaying a road is like buying a ticket at a booth: once bought, the ride costs nothing later. The algorithm is a shortest-path search over states made of a city and a prepaid-road mask. | O(N times m times two to the m) |
+| [MTREE](MTREE/README.md) | Charge every pair to the vertex where its two branches meet, like sorting letters by their common post office. Root the tree once and walk it in reverse postorder. | O(N) |
 
-### Dynamic programming (52)
+### Dynamic programming (53)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -360,6 +361,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [MBEEWALK](MBEEWALK/README.md) | Move a whole crowd of counters cell by cell, like pouring sand through a grid of buckets. This is dynamic programming on a hexagonal grid of coordinates. Precompute the answer for every step count from one to fourteen. | O(T + 14 * 6 * 29^2) |
 | [MINVEST](MINVEST/README.md) | Choosing bonds is like filling a backpack at each weight: keep the best interest for every exact load, then reuse that answer next year. Divide by 1000 and treat bond values as item weights and interests as item values. | O(1) |
 | [KOPC12H](KOPC12H/README.md) | Counting qualifying numbers resembles walking a digit-by-digit decision tree while keeping a balance scale that tips toward even digits. Precompute how many digit endings succeed from each balance and remaining length, then walk the upper bound once. | O(1) |
+| [M00PAIR](M00PAIR/README.md) | Think of each digit as a domino that flips into a two-character tile, so zero pairs can only appear where two tiles touch. The recurrence a(n) = a(n-2) + 2^(n-3) counts those touching edges with ordinary integer arithmetic. | O(999 d + q) with d answer digits and q queries |
 
 ### Number theory & big integers (89)
 
@@ -457,7 +459,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (337)
+### Greedy, search & enumeration (340)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -800,6 +802,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [KOPC12D](KOPC12D/README.md) | Fitting digits into positions resembles assigning guests to numbered seats, where a guest skips every seat whose number is a multiple of their digit. For a set of digits, the blocked seats are the common multiples of that set, so the useful positions are `L` minus those multiples. | O(1) |
 | [KOPC12G](KOPC12G/README.md) | A replacement changes `N` cells, while a count query wants one rectangle total, like keeping both a grid of current values and a running ledger of its sums. | O(1) |
 | [SRTMACH](SRTMACH/README.md) | Counting distinct smallest reorderings is the same as counting orbits of `G`, like counting distinct necklaces formed by rotation. Burnside's lemma gives the orbit count as the average number of fixed lists over the group. | O(1) |
+| [MCONVERT](MCONVERT/README.md) | Treat the digit order as a row of labeled stepping stones and each base as a stride length; walk the number once per legal stride and add the distances. | O(b L d) per number, with b bases, L digits, and d limbs |
+| [STARGATE](STARGATE/README.md) | Give each connected crowd one label, like stamping every name in a group with the same badge. Disjoint-set union keeps that badge in a parent array and follows parent links to find it. | O((N + P) alpha(N)) with P named pairs |
+| [TOPOLAND](TOPOLAND/README.md) | Picture the parts as entries in a tournament bracket, where each higher rung stores the larger of two lower rungs. That bracket is a segment tree, and it finds a range maximum in logarithmic time. | O((N + Q) log N) per testcase |
 
 ### Data structures, bits & simulation (44)
 
