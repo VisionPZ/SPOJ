@@ -1,10 +1,10 @@
-# SPOJ — 1159 problems, one method
+# SPOJ — 1165 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1159 problems](https://img.shields.io/badge/problems-1159-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1165 problems](https://img.shields.io/badge/problems-1165-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1159 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1165 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1159 problems
+## The 1165 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -241,7 +241,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 | [RROOT](RROOT/README.md) | Slice the square like a loaf of bread, then measure the slice below the parabola `c = b²` and divide by the whole loaf. The algorithm is analytic area integration in closed form, at O(1) cost per test. | O(T) |
 
-### Graphs & trees (74)
+### Graphs & trees (75)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -321,8 +321,9 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [IITWPC4D](IITWPC4D/README.md) | Fill positions from right to left, like dealing cards from the bottom of a shuffled deck. At position i, choose the rank that leaves exactly A[i] taller ranks for the earlier positions. | O(n log n) per case |
 | [IITWPC4E](IITWPC4E/README.md) | Sweep a vertical line across the panels and measure the lit height at each x position, like counting water in a row of tanks as a wave passes. | O(N log N) |
 | [CARDFLIP](CARDFLIP/README.md) | Picture the deck as a row of beads on a string, where cutting and rejoining segments is cheaper than sliding every bead. An implicit treap stores the deck in position order without storing positions. | O(q log n) expected |
+| [EAGLE1](EAGLE1/README.md) | A walk that never reuses a road follows one simple path, like walking away from a camp along one branch and never doubling back. The worst path from a node ends at a farthest node, and in a tree every farthest node is an endpoint of the diameter. | O(n) per test case |
 
-### Dynamic programming (66)
+### Dynamic programming (67)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -394,8 +395,9 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [UOFTCF](UOFTCF/README.md) | Track both walkers at once with one state per pair of columns, like two fingers following separate lanes down a staircase. Each state holds the best hand-holding time when Alice and Bob end that row in those columns. | O(1) |
 | [LOVEBIRDS](LOVEBIRDS/README.md) | Picking the root splits the remaining numbers into two piles, like dividing a deck into a left hand and a right hand. The count follows the Catalan recurrence, built once with dynamic programming. | O(1) |
 | [SMILEY1807](SMILEY1807/README.md) | Keeping four running lengths is like filling four cups in a row: you open the next cup only after the previous one holds a drop. Each new digit extends the current block or opens the next block. | O(L) |
+| [JARJAR](JARJAR/README.md) | Treat each possible piece count as a row of checkboxes, one box per reachable weight, like a chart that lights up when a new part is tried. Adding a part shifts the previous row's boxes forward by that part's weight and ORs them into the new row. | O(N^2 * 60000 / 64 + Q * N) |
 
-### Number theory & big integers (103)
+### Number theory & big integers (104)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -504,8 +506,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NR1](NR1/README.md) | Applying a difference k times and then reading the constant is like taking a snapshot of how the polynomial changes at zero; no full basis conversion is needed. | O(25 squared + t times 25 times k) |
 | [SUFFIX](SUFFIX/README.md) | A suffix fixes the last digits, and those digits are the remainder modulo a power of the base, like reading only the last digits of a receipt. Convert each suffix to its remainder and modulus, then merge the congruences with the Chinese remainder theorem. | O(total suffix length times log of the modulus) |
 | [BITPLAY](BITPLAY/README.md) | Editing the answer is like changing a price tag: keep the high digits, lower one digit, then spend the remaining ones on the largest low digits. Since N is even, the first changed bit must be a one in N. | O(1) |
+| [EASYFACT](EASYFACT/README.md) | Removing every factor of two from n! is like unwrapping a parcel to count the distinct boxes inside; only odd factors set the number of consecutive sums. The count equals the number of odd divisors of n! | O(1) |
 
-### Greedy, search & enumeration (660)
+### Greedy, search & enumeration (663)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1171,6 +1174,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [OVERLAP](OVERLAP/README.md) | Split the count into four independent sweeps, like sorting mail into same-street and cross-street piles before delivering it. Same-direction words overlap only on the same row or column, where a sorted-end binary search counts them. | O(N log N + N log M) |
 | [UJ01](UJ01/README.md) | Count how many merged values sit at or below a guess. Then find the smallest guess whose count reaches N. This is like finding a page by cutting the book in half. | O(1) |
 | [VAPI01](VAPI01/README.md) | Spend a key when its door arrives, like using the next ticket in a wallet; if no ticket waits, buy one. The algorithm is a single left-to-right scan with 26 counters, one per key letter. | O(1) |
+| [MOHIB](MOHIB/README.md) | Treat the averages as group bills: knowing both totals reveals how many friends paid, like counting seats from two headcounts. Algebra fixes the length at A - x, then the smallest possible companions leave the largest remaining value. | O(T) |
+| [MONKK](MONKK/README.md) | Treat each square as a rectangle whose sum can be read from four corners, like finding the weight of a crate from four scale readings. A cumulative table stores sums from the top-left corner to every cell, so each candidate square costs four lookups. | O(r * c * min(r, c)) per case |
+| [TREENUM2](TREENUM2/README.md) | Read the i-th tree number as a binary pattern recast in base 3, like turning a row of light switches into place values. A prefix sum over indices 0 to n - 1 is built one set bit at a time; each set bit fixes one switch and leaves the lower switches free. | O(T * 64) |
 
 ### Data structures, bits & simulation (46)
 
