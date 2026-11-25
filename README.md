@@ -1,10 +1,10 @@
-# SPOJ — 423 problems, one method
+# SPOJ — 429 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![423 problems](https://img.shields.io/badge/problems-423-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![429 problems](https://img.shields.io/badge/problems-429-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 423 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 429 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 423 problems
+## The 429 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -370,7 +370,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [DIVPALI](DIVPALI/README.md) | A mirror shows the same label from either side; a palindrome digit string behaves the same way. Walk divisor candidates up to the square root and record each divisor with its partner. | O(sqrt(N) + d^2), with d matching divisors |
 | [QUADEQ](QUADEQ/README.md) | Think of the discriminant as a gate: below zero there is no crossing, at zero there is one, and above zero there are two. Compute that gate with exact integer arithmetic, then evaluate the quadratic formula only when roots exist. | O(1) |
 
-### Greedy, search & enumeration (74)
+### Greedy, search & enumeration (79)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -450,8 +450,13 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [PRANAVHPTC](PRANAVHPTC/README.md) | Imagine walking around a circular track from one friend to the other. Going forward covers one arc, and going backward covers the other arc. The answer is the smaller arc length. | O(t) for t test cases |
 | [PZZAPGON](PZZAPGON/README.md) | Picture the final address as a point on graph paper. North and south change one coordinate, east and west change the other. The pigeon flies along the diagonal back to the start, so the answer is the diagonal length rounded up. | O(m + log d) for m moves and distance d |
 | [RAHIA](RAHIA/README.md) | Think of filling N ordered slots with distinct whole numbers starting from zero. The smallest possible strictly increasing array is 0, 1, 2 and so on. Slot i therefore needs at least i, and every original value that meets this floor can be lowered to it. | O(N) |
+| [HASANSM](HASANSM/README.md) | Both pack lists act like coins you may spend repeatedly, like paying with stacks of two coin sizes. Packs of 1, 2, 4 and 8 combine into any dairy count, so dairy spend is any multiple of M. | O(1) |
+| [MATHEXAM](MATHEXAM/README.md) | Similar questions form circles of friends, like circles that merge when any two members know each other. Every similarity pair joins two circles into one type. When all pairs are read, each circle is one type. | O((N + M) alpha(N)) |
+| [MAXROO](MAXROO/README.md) | Each day keeps the odd positions, like halving a queue and rounding up the survivors. If K kangaroos are hungry, the survivors are positions 1, 3, 5 and so on. | O(log N) |
+| [MLLOVE](MLLOVE/README.md) | The repeated step only reaches residues spaced by the greatest common divisor, like clock ticks that land on every third mark. Let g be the greatest common divisor of n and k. | O(log n) |
+| [MOMOS](MOMOS/README.md) | Use a marking sheet when the row is short, and count marks with inclusion-exclusion when the row is huge. When K exceeds twenty, N is at most a million, so a boolean array can mark each eaten momo directly. | O(1) |
 
-### Data structures, bits & simulation (31)
+### Data structures, bits & simulation (32)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -488,6 +493,7 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [EDUPT08](EDUPT08/README.md) | Walk two sorted lines like two zippers, like matching names on two sorted guest lists. The real algorithm is a two-pointer merge. Equal values go to the intersection and once to the union. | O(n + m) |
 | [EDUPT49](EDUPT49/README.md) | Push cars until the wanted one reaches the top, then pop it, like pulling plates off a stack exactly when a waiter asks for them. The real algorithm is a greedy stack simulation with one arrival cursor. | O(N) |
 | [POUPT15](POUPT15/README.md) | Treat each node like a shelf that must hold two side stacks of nearly equal height. Build the tree by plain insertion, then measure both subtrees at every node. | O(k) per case, for k keys |
+| [MAX10](MAX10/README.md) | Keep a running champion, like a scoreboard that only changes for a new high score. Start the champion at zero. Read each value and replace the champion only when the value is larger. | O(1) |
 
 ## License
 
