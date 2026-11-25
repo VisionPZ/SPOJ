@@ -1,10 +1,10 @@
-# SPOJ — 1052 problems, one method
+# SPOJ — 1058 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1052 problems](https://img.shields.io/badge/problems-1052-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1058 problems](https://img.shields.io/badge/problems-1058-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1052 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1058 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1052 problems
+## The 1058 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -382,7 +382,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [AUTOMATA](AUTOMATA/README.md) | Treat each star as a bookmark you can move forward when a later letter fails. This is the classic greedy wildcard scan: consume letters directly, remember the last star, and retry from it on mismatch. | O(length of pattern + length of subject) per ordinary case |
 | [INGRED](INGRED/README.md) | Think of the two friends as two hands passing ingredients around a table of at most ten relevant seats. Compute shortest walks from each relevant city, then try every collected subset and both hand positions. | O(1) |
 
-### Number theory & big integers (98)
+### Number theory & big integers (99)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -486,8 +486,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [LOOPEXP](LOOPEXP/README.md) | The current maximum changes exactly when the largest value seen so far arrives, like noting each new high-water mark. Position i holds the largest of its first i entries with probability 1/i. | O(T + max N) |
 | [ATOMS](ATOMS/README.md) | Think of doubling grains in a jar with a fixed lid: keep pouring while the next doubling fits. Division answers the fit question without ever forming an overflowing product. | O(P log M) |
 | [RLTHREE](RLTHREE/README.md) | Think of three runners on a ladder where each rung belongs to two of them and one outsider. Equal distances mean each outsider gets the same number of losing rungs. | O(N) |
+| [HG](HG/README.md) | Compare two towers by their bricks, then rebuild only the bricks they share. Prime factorization turns each product into a list of prime exponents. The gcd keeps the smaller exponent for every prime. | O(primeLimit log log primeLimit + (N+M) times divisions) |
 
-### Greedy, search & enumeration (572)
+### Greedy, search & enumeration (577)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1065,6 +1066,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [RETDIG](RETDIG/README.md) | Treat each stop height as a station, like hopping between ledges on a cliff where a sideways walk is free. From a ledge, choose any column and drill to the first rock below; that costs one bit and lands one metre above that rock. | O(N L log N) |
 | [SELFDESN](SELFDESN/README.md) | Treat each base as a shelf holding a few labeled boxes. This is like a row of counters where each box reports how often its label appears. Only four shapes of the count vector work in any base. | O(1) |
 | [TLIGHTS](TLIGHTS/README.md) | Think of each light as a toll booth with a repeating schedule, like a gate that opens on a fixed beat. If you arrive during the green beat you pass at once; otherwise you wait for the next opening. | O(K^2 + N) |
+| [IITWPC4A](IITWPC4A/README.md) | Treat each run of a as a stack of coupons, and each move trades one bundle for a new batch of b. Trades never create new a, so each run shrinks on its own. | O(total string length) |
+| [IITWPC4B](IITWPC4B/README.md) | Picture two cuts in a rope where the longest piece stays shorter than the other two together. Sort sides as a at most b at most c. The triangle condition becomes a plus b greater than c, with a plus b plus c equal to n. | O(T) |
+| [IITWPC4C](IITWPC4C/README.md) | Lay two arrows tip to tail; the third side runs from the start of the first to the tip of the second. That third vector equals the sum of the first two, so a triangle exists when some pair sums to a vector in the set. | O(N^2) per case |
+| [KURUK14](KURUK14/README.md) | Treat mirrored ticket numbers as sharing the same two seats. A position can hold its own index or the mirrored index. Two mirrored values claim the same two positions, so their combined count must be exactly two. | O(N) per case |
+| [RKS](RKS/README.md) | Count ballots, then line up candidates by vote count with earlier arrivals breaking ties. The program stores each distinct value once with its frequency and first position. It insertion-sorts the distinct indices by falling frequency and rising first position. | O(N * D + D^2), at most O(N^2) |
 
 ### Data structures, bits & simulation (45)
 
