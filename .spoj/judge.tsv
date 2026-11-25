@@ -31,3 +31,15 @@ BSCXOR	36107051	accepted
 PCROSS1	36107056	accepted
 PCROSS2	36107057	accepted
 SMPSEQ8	36107060	accepted
+CHI_ATAN	36107168	10 (full score)
+CHI_SIN	36107167	9.99 (partial score)
+CHI_ROOT	36107205	9.99 (partial score)
+GDGALKN	36107188	accepted
+BIPCSMR16	36107192	accepted
+BTCK	36107195	accepted
+WBAHD	36107196	accepted
+SPTTRN4	36107197	accepted
+NJEG1	36107202	accepted
+FINAL1	36107170	accepted (C++ port; Nim unavailable on judge)
+FINAL6	36107172	accepted (C++ port; Nim unavailable on judge)
+FINAL7	36107173	accepted (C++ port; Nim unavailable on judge)
