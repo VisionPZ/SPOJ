@@ -1,10 +1,10 @@
-# SPOJ — 625 problems, one method
+# SPOJ — 649 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![625 problems](https://img.shields.io/badge/problems-625-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![649 problems](https://img.shields.io/badge/problems-649-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 625 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 649 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 625 problems
+## The 649 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -238,7 +238,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 
-### Graphs & trees (49)
+### Graphs & trees (50)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -293,8 +293,9 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [CERC07B](CERC07B/README.md) | Fix the first row of taps, then let each row decide the next row, like pushing a row of dominoes downward. Once the taps in one row are known, the only way to clear that row is to tap exactly the black tiles left in the row below. | O(1) |
 | [CERC07K](CERC07K/README.md) | Carry the set of collected keys with the position, like a traveler holding a ring of keys while walking a floor plan. Breadth-first search explores states in step order, so the first exit reached has the fewest steps. | O(1) |
 | [GSS4](GSS4/README.md) | Think of each number as a candle that shrinks until it reaches one, then never changes again. A segment tree stores sums and maximums, so a range with maximum one can be skipped without visiting it. | O(1) |
+| [REMGAME](REMGAME/README.md) | Treat every board as a bit pattern and let a move carve out one contiguous slice. A position wins when some move hands the opponent a losing position; taking the last piece is never a winning move. | O(V * M) for V visited boards and M moves |
 
-### Dynamic programming (42)
+### Dynamic programming (43)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -342,6 +343,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [ACMAKER](ACMAKER/README.md) | Give each word a small set of tickets, one ticket for each possible letter it can donate, like choosing seats in a row. Count the tickets locally, then multiply choices across words with a running total. | O(1) |
 | [COUNT](COUNT/README.md) | Add one truck at a time, like stacking one more step onto a staircase, and reuse every smaller count. The algorithm is dynamic programming over computers and trucks. | O(NK + Q) |
 | [RAIN3](RAIN3/README.md) | Slide a window over the days and shrink it whenever the rain total exceeds the limit, like letting water drain from one end of a trough. The shortest violating window gives the answer directly: subtract one from its length. | O(1) |
+| [GNY07H](GNY07H/README.md) | Treat the right edge of the grid like a stack of four slots that a domino can fill, like packing a bookshelf one shelf at a time. Track three counts: full grids, grids with two corner cells missing, and grids with two cells missing on one side. | O(C + Wmax) |
 
 ### Number theory & big integers (89)
 
@@ -439,7 +441,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (196)
+### Greedy, search & enumeration (218)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -641,6 +643,28 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [CERC07S](CERC07S/README.md) | Keep the samples in a splay tree and treat each node as a permanent handle, like a labeled book on a shifting shelf. The tree's in-order traversal is the current row; subtree sizes give ranks. | O(N log N) per scenario |
 | [CERC07W](CERC07W/README.md) | Adding water at a level above the current center of mass raises it; adding water below lowers it, like balancing a seesaw by pouring sand onto one side. | O(P) per integral, with P fixed by `integrationPrecision` |
 | [MINDIST](MINDIST/README.md) | Treat the answer as a radius, like placing a short hose. Ask whether some short path covers every node within that radius. Root the tree. | O(N log S) per case |
+| [CIRCLES](CIRCLES/README.md) | Rotate a line tangent to one circle and watch which other circles it crosses, like sweeping a ruler around a coin and counting the coins it touches. For a fixed circle, every other circle contributes a range of angles where the tangent crosses it. | O(M times c squared log c) worst case |
+| [CLK](CLK/README.md) | Treat every legal position as a node in a game graph, like marking winning squares on a board one row at a time. A move cuts a top-right rectangle, so it always removes at least one piece. | O(184756 · moves) precompute, O(1) per case |
+| [GAMETIME](GAMETIME/README.md) | Treat the parent links as a family tree and keep two scores per castle, like tracking both an untouched pile and a pile whose bottom card has been taken. | O(N) per case |
+| [GNY07G](GNY07G/README.md) | Find where two vertical sight planes cross, then read the height of each ray at that crossing, like locating a flagpole from two compass bearings. Each sight line spans a vertical plane through its observer. | O(N) |
+| [GNY07I](GNY07I/README.md) | Treat each cube corner as a fixed trio of faces with fixed rotations, like listing the three walls that meet at a room corner. Fold the net once to get eight trios. | O(N) |
+| [HANOICAL](HANOICAL/README.md) | Find the largest disc on differing pegs, like clearing a table before sliding a heavy box. Clear its two pegs, then move it once. The algorithm walks discs from largest down and adds the cost of gathering each smaller stack onto one peg. | O(N^2) worst case, O(N) per gather |
+| [HHAND](HHAND/README.md) | Think of the chosen path as a ridge with hospitals like lamps along it. Longer ridges light more towns, so the best path uses as many roads as the cap allows. | O(NL) per test case |
+| [ICODER](ICODER/README.md) | A multiplication by an even number folds the possible values onto fewer residues, like folding a strip of paper and marking only every second line. The reachable set stays one residue class modulo a power of two. | O(N) per case |
+| [ININT](ININT/README.md) | Think of each number as a room with doors labelled by its digit values. Breadth-first search walks through these doors layer by layer, so the first arrival at a number is a shortest path. | O(K) for the largest query K |
+| [JAZZYJOB](JAZZYJOB/README.md) | Think of the energy cap as a gate on a one-way pipe system. Open gates from low energy upward until every destination is reachable, like raising a floodgate until water reaches each tap. | O((N+R) log N) per case |
+| [MINTRIAN](MINTRIAN/README.md) | Think of removing vertices one at a time, like peeling layers from an onion. A graph is chordal exactly when every step has a vertex whose neighbours already form a clique. | O(n^2 + m) per graph |
+| [ONEINSTR](ONEINSTR/README.md) | Treat each stack entry as a memory address that holds either a value or its negative. One `SUBLEQ` then combines two operands, because subtracting one address from another leaves the negative of the desired result. | O(T) emitted instructions per expression |
+| [PERMUT3](PERMUT3/README.md) | Track only the relative rank of the last value, like sorting a hand of cards after each new card. When a new value rises, the previous value must rank below it. | O(n^2 · D) per case, D = answer digits |
+| [PLD](PLD/README.md) | Think of each palindrome as a fold in paper, where one centre fixes every matching pair. Manacher's algorithm finds the longest palindrome radius at each centre in one pass. | O(n) |
+| [RABBIT1](RABBIT1/README.md) | Think of each month as one step of a doubling ladder, like folding a rope in half repeatedly. Fast doubling computes Fibonacci pairs in logarithmic steps instead of walking every month. | O(C log N) |
+| [RECTANGL](RECTANGL/README.md) | Two columns of points form one rectangle for every pair of y rows they share, like counting matching rungs between two ladders. Narrow columns contribute pairs of rungs into a hash table; each repeated pair across two columns becomes a rectangle. | O(N log N + N times columnSplit + N squared divided by columnSplit) |
+| [ROLLBALL](ROLLBALL/README.md) | Picture the contact circle as the rim of a spinning top; as the speed rises, the top's axis tilts to a steady angle. That tilt fixes the circle radius, so one closed-form evaluation replaces any search over speeds. | O(L) for L input lines |
+| [ROMANRDS](ROMANRDS/README.md) | Treat groups of mutually adjacent roads as cities, like gathering all spokes that meet at one hub. Each maximal group becomes one city, and each road joins the one or two cities whose groups contain it. | O(N squared) |
+| [SC1](SC1/README.md) | Try each possible number of new probes, like deciding how many extra workers to hire before a deadline. For a fixed count, start each build as early as minerals allow. | O(K^2) per case, K at most 100 |
+| [TILING](TILING/README.md) | Think of a tile as a stamp: pressing the same stamp on a regular grid reproduces the board exactly. Only stamps whose height divides `n` and width divides `m` can form that grid. | O(t * d(n) * d(m) * n * m) worst case |
+| [TRUTHORL](TRUTHORL/README.md) | Treat each person as a parity equation, like linking two ends of a chain with a known twist. A disjoint-set structure with a parity bit per parent merges the linked questions and detects contradictions. | O((n + m) alpha(m) + m^2 / word) per case |
+| [YKH](YKH/README.md) | Think of clients as beads on a string ordered by their favourite price; one certificate can serve a consecutive run of beads. Sorting by `a / b` makes every certificate cover one contiguous block. | O(C^2) per case |
 
 ### Data structures, bits & simulation (42)
 
