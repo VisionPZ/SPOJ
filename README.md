@@ -1,10 +1,10 @@
-# SPOJ — 543 problems, one method
+# SPOJ — 549 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![543 problems](https://img.shields.io/badge/problems-543-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![549 problems](https://img.shields.io/badge/problems-549-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 543 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 549 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 543 problems
+## The 549 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -238,7 +238,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 
-### Graphs & trees (38)
+### Graphs & trees (39)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -282,6 +282,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [WORDS1](WORDS1/README.md) | Model each word as a directed edge from its first letter to its last letter. Think of the words as one-way links between letters, and ask for a route using each link once. The question becomes whether that letter graph has an Eulerian path. | O(total input bytes) |
 | [UNWIRED](UNWIRED/README.md) | Budget the wire like cutting ribbon with a thick blade: reserve the waste before sharing the rest. k sections need k minus one cuts, so the waste is k minus one times m. | O(t) |
 | [WIRED](WIRED/README.md) | Match labels like pairing socks by color: look at each left sock, then find the matching right sock. A fixed grid of four by four pairs does the job without building any map. | O(t) |
+| [WIJGT](WIJGT/README.md) | Think of the board as a bridge that can be reused at every gap, like a portable plank crossing streams along a route. The needed length is the largest gap on the best route, not the sum of gaps. | O(1) |
 
 ### Dynamic programming (39)
 
@@ -424,7 +425,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SHAMIM9](SHAMIM9/README.md) | Think of a multiplication table where only the final column survives. The units digit of a product uses only the units digits of the factors. The program keeps the last digit while scanning each token and computes nine times that digit modulo ten. | O(1) |
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 
-### Greedy, search & enumeration (129)
+### Greedy, search & enumeration (134)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -559,6 +560,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [IMPORT1](IMPORT1/README.md) | A node is important when many shortest routes must pass through it, like a bridge that traffic has to cross. The algorithm runs Floyd Warshall once to get every distance and every shortest path count. | O(n cubed) per case |
 | [TCOUNT2](TCOUNT2/README.md) | Treat the hexagon as six copies of one triangle, like six slices of the same pie, and count all triangles in the whole picture with one polynomial. The algorithm evaluates a cubic formula with a parity split. | O(input bytes) |
 | [TCOUNT3](TCOUNT3/README.md) | Picture the star as two huge overlapping triangles, like two rulers laid across each other at sixty degrees, and count the triangles they form with one product. The algorithm evaluates the cubic formula N times (10 N squared plus 9 N plus 1). | O(input bytes) |
+| [COCONUTS](COCONUTS/README.md) | Think of each guard as a light switch wired to a power source and a drain. Flipping a switch across the cut costs a coin, and each friendship is a spring that charges one coin when its ends land on opposite sides. | O(1) |
+| [GRC](GRC/README.md) | Treat every sticker as a small card with a position and an outward arrow, like beads on a wire frame. A turn rotates the beads in one slice of the frame, carrying both the card and its arrow. | O(1) |
+| [NSYSTEM](NSYSTEM/README.md) | Reading an MCXI-string is like counting coins in four labelled pockets: the letter names the pocket and a digit gives the coin count. Decode each string into an integer, add the integers, then rebuild the unique string from four decimal digits. | O(1) |
+| [OFORTUNE](OFORTUNE/README.md) | Treat the interest rate as a whole-number count of 8192ths, like counting eighths with a fixed measuring cup. Scale the rate to an integer once, then compute each year with integer division. | O(1) |
+| [PLSEARCH](PLSEARCH/README.md) | Compare lines as a dance routine of turns and step lengths. Translation drops out when steps replace coordinates, rotation adds one fixed offset to every turn, and reversing swaps each direction by two quarter turns. | O(1) |
 
 ### Data structures, bits & simulation (42)
 
