@@ -1,10 +1,10 @@
-# SPOJ — 331 problems, one method
+# SPOJ — 340 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![331 problems](https://img.shields.io/badge/problems-331-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![340 problems](https://img.shields.io/badge/problems-340-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 331 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 340 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,11 +13,11 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 331 problems
+## The 340 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
-### Strings & text (73)
+### Strings & text (77)
 
 KMP, borders, tries and rolling hashes keep matching linear. Expression parsing and text rewriting add one stack pass. DP over all substrings is the only quadratic corner.
 
@@ -96,6 +96,10 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [TSMIVIOLET](TSMIVIOLET/README.md) | Think of a seven-page address book: you flip to the one page that matches the name in your hand. | O(1) |
 | [URJC2_D](URJC2_D/README.md) | Charge 50 ms for every character, then add the extra 100 ms once per newly learned letter. Think of a cover charge at a door: everyone pays the base fee, and first-time guests pay extra. Two 26-entry tables track known and already seen letters. | O(B) |
 | [WORDEQ](WORDEQ/README.md) | Treat each bit of each variable as a separate cell, then merge cells that must match. Think of connecting dots that must carry the same number, then counting the free dots left over. | O(2^M · N) |
+| [FIZZFIZZ](FIZZFIZZ/README.md) | Peeling layers from an onion resembles counting fizz words: each clean division by three removes one layer. The algorithm divides the position by three until a remainder appears. | O(n log n) with base 3 on each division count |
+| [ILOVEYOU](ILOVEYOU/README.md) | Filling a blank on a form works the same way: copy the entered number into one fixed sentence. The real work is reading digits and joining them with two text pieces. | O(L), where L is input length |
+| [PRF00](PRF00/README.md) | A vending machine that always dispenses the same snack ignores the button you press. This program behaves that way: it reads stdin for completeness, then prints the same fixed line. | O(L), where L is input length |
+| [UC_OLAMUNDO](UC_OLAMUNDO/README.md) | Copy the fixed greeting around the name, like filling a blank on a printed form. Read the first line once, then write the greeting with that line inserted between its two fixed parts. | O(input bytes) |
 
 ### Geometry & grids (84)
 
@@ -275,7 +279,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TRIP](TRIP/README.md) | Keep one cache of all best routes for every pair of list positions. Think of two travelers standing at positions in their own lists, choosing together whether to move forward or match the current city. | O(nm·k) |
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 
-### Number theory & big integers (42)
+### Number theory & big integers (46)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -323,6 +327,10 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [TETRA](TETRA/README.md) | Cut the tetrahedron into four pyramids whose tips meet at the sphere's center. Each pyramid has the same height, the radius `r`, and one face as its base. Their volumes add to the whole volume, so `V = (1/3) × S × r`, where `S` is the total surface area. Rearranging gives `r = 3V / S`. Heron's formula gives each triangular face's area from its three edges, and an expanded Cayley–Menger (edge-based volume) formula gives `V` from all six edges. Cost per case: about 60 floating-point operations, with no allocation. | O(1) |
 | [TWOSQRS](TWOSQRS/README.md) | Factor the value and inspect only primes of the form `4k + 3`. Such a prime blocks the answer when it appears an odd number of times; every other factor is harmless. | O(n) |
 | [VFMUL](VFMUL/README.md) | Split each operand into three-digit chunks and convolve the chunk lists. Think of long multiplication on paper, but folding all columns together in one wave instead of one at a time. | O(n^2) |
+| [MUJEO](MUJEO/README.md) | Treat the row as ordinary counting with a small swap at each position. Picture correcting a tally by adding one for odd labels and subtracting one for even labels. | O(t) |
+| [PRF0101](PRF0101/README.md) | Sorting letters into three trays works the same way: one number lands in the positive tray, the negative tray, or the zero tray. The program scans the integer, finds its sign, and joins the matching phrase to the prompt. | O(L), where L is input length |
+| [PRF0102](PRF0102/README.md) | Walking halfway toward a target each step closes in on a square root. The program instead uses one library square-root call, which already performs that work. It first rejects negative input, then formats the input and the root to six decimals. | O(L), where L is input length |
+| [ULTREVEN](ULTREVEN/README.md) | Look at blocks of length one, like checking every single card before checking any pile. Such a block has the value itself as its sum. An ultra even array therefore needs every value even, and that condition also suffices. | O(n) |
 
 ### Greedy, search & enumeration (46)
 
@@ -377,7 +385,7 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [TESTINT](TESTINT/README.md) | Add the two numbers once. The whole program is one read, one addition, and one write. | O(N) |
 | [VONNY](VONNY/README.md) | Place one domino at a time, always covering the square with the fewest legal partners. Think of solving a jigsaw by grabbing the piece that fits in the fewest spots first. | O(56 + 28) |
 
-### Data structures, bits & simulation (13)
+### Data structures, bits & simulation (14)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -396,6 +404,7 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [SQDANCE](SQDANCE/README.md) | A square appears when a new pair joins two primes already linked by earlier pairs. Think of relations as strings between numbered posts. A string inside one connected bunch closes a loop. | O(P) |
 | [SQRBR](SQRBR/README.md) | Walk the row left to right and keep one tally per current balance. Think of a tightrope walker who steps up or down but never goes below the ground. | O(n) |
 | [TAUT](TAUT/README.md) | Check every assignment at once by flipping whole rows of a truth table, like stamping an entire page instead of writing each word. One bit per assignment packs 64 rows into a single machine word. | O(L × 2^v) |
+| [CSETB](CSETB/README.md) | Count lit bulbs row by row, like tallying lamps that switch on as a row of counters climbs. Build two tables once, then answer each test with one lookup. | O(t + max n) |
 
 ## License
 
