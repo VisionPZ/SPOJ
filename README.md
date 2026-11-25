@@ -1,10 +1,10 @@
-# SPOJ — 1188 problems, one method
+# SPOJ — 1194 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1188 problems](https://img.shields.io/badge/problems-1188-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1194 problems](https://img.shields.io/badge/problems-1194-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1188 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1194 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1188 problems
+## The 1194 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -397,7 +397,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [SMILEY1807](SMILEY1807/README.md) | Keeping four running lengths is like filling four cups in a row: you open the next cup only after the previous one holds a drop. Each new digit extends the current block or opens the next block. | O(L) |
 | [JARJAR](JARJAR/README.md) | Treat each possible piece count as a row of checkboxes, one box per reachable weight, like a chart that lights up when a new part is tried. Adding a part shifts the previous row's boxes forward by that part's weight and ORs them into the new row. | O(N^2 * 60000 / 64 + Q * N) |
 
-### Number theory & big integers (105)
+### Number theory & big integers (106)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -508,8 +508,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [BITPLAY](BITPLAY/README.md) | Editing the answer is like changing a price tag: keep the high digits, lower one digit, then spend the remaining ones on the largest low digits. Since N is even, the first changed bit must be a one in N. | O(1) |
 | [EASYFACT](EASYFACT/README.md) | Removing every factor of two from n! is like unwrapping a parcel to count the distinct boxes inside; only odd factors set the number of consecutive sums. The count equals the number of odd divisors of n! | O(1) |
 | [IAPCR2D](IAPCR2D/README.md) | The divisor count of `X!` is a product of small factors, one for each prime exponent. Think of it as a sorted phone book: build the book once, then look up each query quickly. | O(1) |
+| [POWFIB](POWFIB/README.md) | Skipping Fibonacci numbers is like counting seats in a row while reserving a few labelled seats. Only about forty-five Fibonacci values fit below the modulus, so binary search finds the Nth gap in a few steps. | O(T log N) |
 
-### Greedy, search & enumeration (685)
+### Greedy, search & enumeration (690)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1200,6 +1201,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [NTHPRIME](NTHPRIME/README.md) | Counting primes up to a bound is like counting people in a stadium by sections instead of checking every seat. Lehmer's prime-counting formula counts primes up to x with a sieve and a few recursive sums. | roughly O(sieveLimit log log sieveLimit + log N times count cost) |
 | [ROOBOT](ROOBOT/README.md) | Track how far the walk sits from its highest point, like measuring how far a runner trails the record mark. That distance only grows, shrinks, or resets when a new record appears. | O(N^2) |
 | [SPACESHIP](SPACESHIP/README.md) | Squared distance is not a true metric, so stopping at a shop on the way can cost less than flying straight. Compute shortest travel costs between all stops first, like planning the cheapest leg between every pair of stations. | O(M^3 + 2^M M^2) |
+| [BLCATS](BLCATS/README.md) | Treat colors as digits zero, one, and two, like dial positions that always sum to zero modulo three. A conversation then sets both dials to the negative sum of their values, even when the values match. | O(n log n log k) |
+| [DRUIDEOI](DRUIDEOI/README.md) | Walking left is like asking who blocks the view first in a hallway of people with decreasing height. A monotonic stack keeps only people who could still be that first blocker. | O(sum of N across cases) |
+| [DWARFLOG](DWARFLOG/README.md) | A set of heights forms one block exactly when its leftmost and rightmost positions are as close as the count allows. Think of numbered books on a shelf: if the first and last book of a series sit the right number of slots apart, no other book interrupts the series. | O(M log N) |
+| [PETYABRO](PETYABRO/README.md) | Split the city into one region per milkman, where each citizen belongs to the region of their nearest milkman. Think of postal districts: every house must reach its own district office, and connecting two offices never helps. | O(M log M + M log N) |
+| [SIOKULE](SIOKULE/README.md) | Splitting a tower is like cutting a rope into pieces while the buyer names the piece they keep. A larger kept piece belongs earlier in the row, because later positions cost more. | O(answer times square root of answer times digits) |
 
 ### Data structures, bits & simulation (46)
 
