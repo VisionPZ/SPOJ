@@ -1,10 +1,10 @@
-# SPOJ — 460 problems, one method
+# SPOJ — 466 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![460 problems](https://img.shields.io/badge/problems-460-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![466 problems](https://img.shields.io/badge/problems-466-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 460 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 466 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 460 problems
+## The 466 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -310,7 +310,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (64)
+### Number theory & big integers (65)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -380,8 +380,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NUMTHEO01](NUMTHEO01/README.md) | Keep the running product small by reducing it after each factor, like paying down a balance after every purchase. Split the next factor into two small pieces so both partial products stay inside 64 bits. | O(t*n) worst case |
 | [SIS110G401](SIS110G401/README.md) | Treat each pair like two hands of counters and combine them into one pile. Read every integer in order, pair the values, and add them. The algorithm is a linear scan with a hand-written integer reader and a block output buffer. | O(total input bytes) |
 | [ZDIFFSQ2](ZDIFFSQ2/README.md) | Let the zero row pull three new terms back up the table, like filling a staircase from its top step down. The method is a finite-difference table extended one column at a time. | O(M^2) |
+| [SIS2002BO1](SIS2002BO1/README.md) | Walk down the diagonal strips of a tiled floor, counting tiles until reaching the requested one, like counting seats row by row in a stadium. The algorithm grows triangular sums until one covers the term number. | O(t times square root of the term number) |
 
-### Greedy, search & enumeration (95)
+### Greedy, search & enumeration (100)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -482,6 +483,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [SDF4B](SDF4B/README.md) | Think of each booking as a table that stays reserved while staff clear it, like a restaurant turning tables. Sort bookings by finish time, then place each in the room that frees latest but still before its start. | O(M log M + M min(N, M)) worst case |
 | [SDF4C](SDF4C/README.md) | Picture the number track as a staircase spiral, like a path that grows one step longer every two turns. A binary search on n times n plus n finds the run containing P. | O(1) |
 | [VZLA2019J](VZLA2019J/README.md) | Two cacti one unit apart sit next to each other in sorted order, like two adjacent seats in a row. Compare each cactus with the one before it. | O(total cacti) |
+| [THR18B](THR18B/README.md) | Compare a dart's squared distance with squared ring radii, like checking which box a parcel fits into before paying postage. The algorithm loops over the darts and then over the ten radii. | O(N) |
+| [TIEBRKR](TIEBRKR/README.md) | Keep only the winning tickets, then order them like sorting a hand of numbered cards by face value. The algorithm scans the tickets once, stores the winners, and insertion-sorts that short list. | O(t^2) worst case |
+| [VACCINEP](VACCINEP/README.md) | Sweep a detector across the map, adding a beacon when it enters range and removing it when it leaves, like scanning a crowd with a metal detector. The algorithm sorts events and town queries by x coordinate. | O((n + k) log n) |
+| [VIP](VIP/README.md) | Eliminate candidates with one comparison at a time, like finding a team captain by asking who knows whom. If the current candidate knows someone, the candidate cannot be the VIP. | O(n^2) per data set, dominated by input |
+| [VZLA2019I](VZLA2019I/README.md) | Choosing one item from each course multiplies the options, like assembling outfits from shirts, trousers and shoes. The algorithm reads six integers and multiplies them in one pass. | O(1) |
 
 ### Data structures, bits & simulation (36)
 
