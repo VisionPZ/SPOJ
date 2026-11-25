@@ -1,10 +1,10 @@
-# SPOJ — 1230 problems, one method
+# SPOJ — 1236 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1230 problems](https://img.shields.io/badge/problems-1230-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1236 problems](https://img.shields.io/badge/problems-1236-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1230 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1236 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1230 problems
+## The 1236 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -243,7 +243,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [RROOT](RROOT/README.md) | Slice the square like a loaf of bread, then measure the slice below the parabola `c = b²` and divide by the whole loaf. The algorithm is analytic area integration in closed form, at O(1) cost per test. | O(T) |
 | [ADAKOHL](ADAKOHL/README.md) | Every line passes through at least one kohlrabi, so pick that one as an anchor, like choosing a hub before grouping spokes. From the hub, reduce each direction to a primitive integer vector; all points with the same vector lie on the same line. | O(1) |
 
-### Graphs & trees (77)
+### Graphs & trees (78)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -326,6 +326,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [EAGLE1](EAGLE1/README.md) | A walk that never reuses a road follows one simple path, like walking away from a camp along one branch and never doubling back. The worst path from a node ends at a farthest node, and in a tree every farthest node is an endpoint of the diameter. | O(n) per test case |
 | [ADABASH](ADABASH/README.md) | Merge sets as wires arrive, like stamping every employee in a newly merged team with the same team label. Use a disjoint-set union, also called union-find. Each merge costs nearly constant time, while a fresh search from scratch per wire would cost up to O(M × N). | O(1) |
 | [OMWG](OMWG/README.md) | Think of every shared side as a ticket that gets cashed when its second cell is colored, like a turnstile that charges only on the way out. Count side-adjacent pairs directly; no ordering search is needed. | O(1) |
+| [LISTREE](LISTREE/README.md) | Think of each starting vertex as the first card in a hand, then walk every route and lay down more cards, like dealing along a branching path. Patience sorting reads each route in order and keeps the smallest useful tail for every subsequence length. | O(N^2 log N) in the worst case |
 
 ### Dynamic programming (72)
 
@@ -522,7 +523,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [ADADIG](ADADIG/README.md) | Factor N into digits greater than one, then fill the remaining sum with ones, like choosing toppings and then adding plain crackers to reach a fixed total weight. | O(1) |
 | [VECTAR9](VECTAR9/README.md) | The divisibility pattern repeats every product of the primes, like a wallpaper tile that restarts after one full width. One period contains a fixed number of mangu values, so the period index and a local rank replace a huge k. | O(1) |
 
-### Greedy, search & enumeration (713)
+### Greedy, search & enumeration (718)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1241,6 +1242,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [VECTAR6](VECTAR6/README.md) | Each new height multiplies the previous count by one running total, like extending a chain where each link adds to a shared sum. Let g(h) be the count for height h and P(h) be one plus the sum of g up to h. | O(1) |
 | [VECTAR7](VECTAR7/README.md) | A winning point closes the game, so all earlier points form an ordinary arrangement, like shuffling a row of win and loss tokens. If the loser has at most 23 points, the winner's 24 earlier points and the loser's points can appear in any order before the last point. | O(1) |
 | [VECTAR8](VECTAR8/README.md) | Build scary primes by adding one digit at a time on the left, like growing a chain where every link must already be prime. Start from the one-digit primes 2, 3, 5, and 7. | O(1) |
+| [AR2015PC](AR2015PC/README.md) | Think of the roads as a tree with a handful of shortcuts, like a rail map with only a few express lines. A shortest route either stays in the tree or enters a shortcut at one of its endpoints. | O(M log N + K (M log N) + Q K), K is at most 102 |
+| [AR2015PE](AR2015PE/README.md) | Think of inserting each height group into a row that already contains shorter soldiers, like adding taller books to a shelf. A new soldier survives only at the front; elsewhere an earlier shorter soldier kills it. | O(N + D K^2), D is the number of distinct heights |
+| [AR2015PF](AR2015PF/README.md) | Think of each rope slack as spare string that can be handed leftward, like passing a slack extension cord to the previous socket. A jump spends enough spare string to shrink its gap to D. | O(S n), S is the number of memoized states |
+| [AR2015PH](AR2015PH/README.md) | Think of the slab table as a staircase with equal steps, like measuring a wall with one ruler length. Once the ruler and its start are fixed, each student lands in a known slab. | O(W L D + N), W at most 150, L at most 151, D at most 100 |
+| [VECTAR11](VECTAR11/README.md) | A number is winning when one move reaches a losing number, like finding a safe rung below you on a ladder. Dynamic programming classifies every number from zero up to the largest query. | O(M sqrt M + T), M is the largest number |
 
 ### Data structures, bits & simulation (47)
 
