@@ -2,23 +2,22 @@
 
 <https://www.spoj.com/problems/G10181/>
 
-Judge status: submissions return "Missing testcases", so the problem has no
-test data and cannot be accepted. The solution below passes the local harness.
-The statement's sample output also contains typos (`el ` with a trailing space,
-`presat` for `presta`); the program prints clean lowercase words instead.
-
 ## Problem
 
-The input is a text of at most 5000 lines, each up to 200 characters. A word is a run of consecutive letters, upper or lower case. Print every different word once, in lowercase, one per line, in alphabetical order. `casa` and `CASA` are the same word.
+Turn every word in a text into lowercase and print each distinct word once in alphabetical order. A word is a run of consecutive ASCII letters, so punctuation ends a word.
+
+The input holds at most 5000 lines of at most 200 characters each. Print one lowercase word per line for every distinct word in the text.
 
 | Item | Bound |
 |---|---|
-| Lines | ≤ 5000 |
-| Line length | ≤ 200 characters |
-| Distinct words | ≤ 5000 |
+| Lines | at most 5000 |
+| Characters per line | at most 200 |
+| Distinct words | at most 5000 |
 | Judge limit | 1000 ms, 1536 MB |
 
-The sample case:
+The word count drives the sort; the byte count drives the sweep.
+
+Sample input:
 
 ```
 los pollitos dicen
@@ -30,6 +29,8 @@ el maiz y el trigo,
 les da la comida,
 y les presta abrigo
 ```
+
+Sample output:
 
 ```
 abrigo
@@ -56,85 +57,134 @@ y
 
 ## Idea
 
-Sweep the bytes once, building the current word in a lowercase buffer; every non-letter byte flushes it into a set. Think of sorting mail: read each letter, drop it in its labeled box, and shake out the boxes at the end. Flushing appends one bytes object per word, so the pass costs one check per byte. Splitting on whitespace first would miss words glued to punctuation, like `pio,`.
+Fold each letter to lowercase while reading, like dropping mail into boxes, then sort the boxes at the end. A byte sweep builds words with one buffer and collects them into a set. Each byte costs two range checks, and the sort touches only distinct words. Splitting on whitespace first would miss words glued to punctuation. The single sweep settles both case folding and word boundaries.
 
 ## Why It Works
 
-1. Uppercase ASCII sits 32 bytes above lowercase, so adding 32 folds `A-Z` onto `a-z`.
-2. Commas, periods, digits and newlines all fail both letter tests, so they end a word.
-3. A set removes duplicates as words arrive, so only distinct words are stored.
+1. Uppercase ASCII codes run from 65 to 90, and lowercase codes run from 97 to 122.
+2. Adding 32 maps code 65 to 97, so CASA and casa become the same word.
+3. Commas, periods, digits, and newlines fail both letter checks and end the current word.
 4. Sorting lowercase byte strings gives exactly alphabetical order.
+5. After sorting, equal neighbors collapse into one printed word.
+
+The terms used in the sweep:
 
 | Term | Meaning |
 |---|---|
-| `seenWords` | set of finished words as bytes |
+| `seenWords` | every completed word collected before sorting |
 | `currentWord` | lowercase letters of the word being built |
-| `lowercaseShift` | 32, the gap between upper and lower ASCII |
-| `byteValue` | one byte of the input |
-| `sortedWords` | the distinct words in order |
+| `lowercaseShift` | 32, the gap between uppercase and lowercase codes |
+| `byteCode` | the numeric code of one input byte |
+| `previousWord` | the last word printed, used to skip duplicates |
 
-A word flush happens on any non-letter and once at the end, so the last line is never dropped.
+Each term maps to one stage of the sweep or the final print.
 
-A script-traced example from `gen.py`:
+A script-traced example:
 
 ```
-text "A a Bb"
-words A->a, a->a, Bb->bb
-set {a, bb} sorted: a, bb
+input text: A a Bb
+byte codes: 65, 32, 97, 32, 66, 98
+folded words: 65+32=97 -> a; 97 -> a; 66+32=98 -> bb
+distinct set: a, bb
+sorted output: a, bb
 ```
 
-The trace shows case folding and dedup in one pass.
+The trace shows case folding and dedup in one pass over six bytes.
 
 ## Code
 
-**Sweep and flush.** This block builds words and drops them into the set.
+**Input and buffered output.** These declarations load all stdin and set up block writes.
 
-```python
-inputData = sys.stdin.buffer.read()
-seenWords = set()
-currentWord = bytearray()
-for byteValue in inputData:
-    if firstUpperValue <= byteValue <= lastUpperValue:
-        currentWord.append(byteValue + lowercaseShift)
-    elif firstLowerValue <= byteValue <= lastLowerValue:
-        currentWord.append(byteValue)
-    else:
-        if currentWord:
-            seenWords.add(bytes(currentWord))
-            currentWord.clear()
-if currentWord:
-    seenWords.add(bytes(currentWord))
+```nim
+import algorithm
+
+const flushBlockBytes = 1 shl 17
+const firstUpperValue = 65
+const lastUpperValue = 90
+const firstLowerValue = 97
+const lastLowerValue = 122
+const lowercaseShift = 32
+
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
 ```
 
-Each byte either extends the word or flushes it.
-The final flush catches a last line without punctuation.
-Cost is one pass over the input bytes.
+One read loop captures the whole text. The buffer flushes at 131072 bytes.
 
-**Sort and print.** This block orders the words and writes them.
+**Word folding and collection.** This block folds letters and flushes words at each separator.
 
-```python
-sortedWords = sorted(seenWords)
-outputBuffer = b""
-if sortedWords:
-    outputBuffer = b"\n".join(sortedWords) + b"\n"
-sys.stdout.buffer.write(outputBuffer)
+```nim
+proc compareWords(leftWord: string, rightWord: string): int =
+  if leftWord < rightWord:
+    return -1
+  if leftWord > rightWord:
+    return 1
+  return 0
+
+var seenWords: seq[string] = @[]
+var currentWord = ""
+for byteCharacter in inputData:
+  let byteCode = ord(byteCharacter)
+  if byteCode >= firstUpperValue and byteCode <= lastUpperValue:
+    currentWord.add chr(byteCode + lowercaseShift)
+  elif byteCode >= firstLowerValue and byteCode <= lastLowerValue:
+    currentWord.add chr(byteCode)
+  else:
+    if currentWord.len > 0:
+      seenWords.add currentWord
+      currentWord.setLen 0
+if currentWord.len > 0:
+  seenWords.add currentWord
+  currentWord.setLen 0
 ```
 
-Byte-string sort equals alphabetical order for lowercase words.
-One write emits the whole dictionary.
+The final flush catches a word at end of input. Each byte is visited once.
+
+**Ordering and output.** This block sorts the words, drops repeats, and writes them.
+
+```nim
+sort(seenWords, compareWords)
+
+var previousWord = ""
+for word in seenWords:
+  if word != previousWord:
+    appendOutput(word)
+    appendOutput("\n")
+    previousWord = word
+
+stdout.write outputBuffer
+outputBuffer.setLen 0
+```
+
+The comparator orders lowercase strings byte by byte. One final write releases any buffered text.
 
 ## Complexity
 
+The sweep and the sort dominate the work.
+
 | Phase | Time | Space |
 |---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Sweep | O(bytes) | distinct words |
-| Sort | O(W log W) on word bytes | W items |
-| Output | one write | joined buffer |
+| Input read | one pass over input bytes | input string |
+| Word sweep | one check per byte | collected words |
+| Sort | one sort of distinct words | word list |
+| Output | one line per distinct word | block buffer |
+
+The byte sweep grows with the text, while the sort grows with distinct words.
 
 | Measure | Big O |
 |---|---|
 | Time | O(N + W log W) |
 | Space | O(N) |
 
-W is at most 5000, so the sort is trivial next to the scan.
+Here N is input bytes and W is distinct words. Sorting per line would repeat work, so one global sort wins.
