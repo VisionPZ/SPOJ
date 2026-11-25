@@ -1,10 +1,10 @@
-# SPOJ — 491 problems, one method
+# SPOJ — 531 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![491 problems](https://img.shields.io/badge/problems-491-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![531 problems](https://img.shields.io/badge/problems-531-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 491 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 531 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,11 +13,11 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 491 problems
+## The 531 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
-### Strings & text (102)
+### Strings & text (109)
 
 KMP, borders, tries and rolling hashes keep matching linear. Expression parsing and text rewriting add one stack pass. DP over all substrings is the only quadratic corner.
 
@@ -125,8 +125,15 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [G11181](G11181/README.md) | Sort the words like cards dealt into alphabetical piles, then keep the first card of each matching group. A hand scanner extracts runs of letters and folds uppercase to lowercase as it goes. | O(w log w) for the sort |
 | [MATCHSTR](MATCHSTR/README.md) | Slide a window over the text and reuse what already matched, like a zipper that backs up only as far as needed. The Knuth–Morris–Pratt algorithm builds a prefix table for the pattern, then walks the text once. | O( |
 | [MEANSTRIC](MEANSTRIC/README.md) | Treat the three means as three ways to summarise one list, like averaging prices, growth rates and speeds. The three-accumulator algorithm sums values, sums logarithms and sums reciprocals in one pass. | O(n) per case |
+| [DPRSDCDR](DPRSDCDR/README.md) | Think of a lunch tray with fourteen open slots after the meal is set aside. Fill slots with classes, tests, and reports. If three or more slots stay empty, Tinni can program. | O(1) |
+| [EMO](EMO/README.md) | Read the whole input with one bulk call. Walk the raw bytes once and write corrected bytes into one output buffer. Split each line at ASCII spaces and at the non-breaking space. | O(1) |
+| [FR104](FR104/README.md) | Encrypting a name is like shifting every letter of a label by the same amount. The program reads all input once and walks it line by line. It keeps the key and collects every name until the `*` line. | O(1) |
+| [MOZPAS](MOZPAS/README.md) | Line the letters up in alphabetical order: m copies of 'a', then m copies of 'b', and so on, stopping when the string is full. Think of stacking identical letter tiles in rows, 'a' row first, then 'b'. | O(1) |
+| [SEC01](SEC01/README.md) | A fixed sign needs no input; the program hangs the same sign on every run. The algorithm prints one constant string, so it performs no parsing. The output buffer collects the line and writes it once. | O(1) |
+| [TESTPASS](TESTPASS/README.md) | Scan each password once for character classes, then once more for repeated blocks. Think of a bouncer checking a guest list, then checking for a repeated dance move. | O(1) |
+| [WOWTALENT](WOWTALENT/README.md) | Think of a receptionist writing the same greeting around each name on a list. The program holds the whole input in one buffer and walks to each line break. | O(1) |
 
-### Geometry & grids (93)
+### Geometry & grids (98)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
@@ -225,6 +232,11 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [PATIOSLB](PATIOSLB/README.md) | Turn each slab length into a weight that already includes its grout gap, like packing boxes with their own padding. Sort the slabs from largest to smallest and greedily keep a slab whenever a completion still exists. | O(m * T/64 + m^2) |
 | [MUJGEO](MUJGEO/README.md) | Picture two triangular plates hinged along edge AC. The far corners C and D lie on a circle sized by the span CD, like a compass opened to half that span. | O(1) |
 | [G11182](G11182/README.md) | Picture each vertical word as a ribbon hanging from a hook, with the shared letter at hook height. Two hooks share one horizontal baseline. The leading cross is the earliest horizontal letter found in the vertical word, paired with its earliest position there. | O(L) per line for L input characters |
+| [FUCT_FOR_ARROW](FUCT_FOR_ARROW/README.md) | Two rows are solid bars of n stars. Every row between them has exactly two stars, one on each edge. The left edge walks inward by two columns per row until the middle, then walks back out; the right edge stays the same distance to the right of it, so the gap never changes. | O(1) |
+| [FUCT_FOR_INVPYRA](FUCT_FOR_INVPYRA/README.md) | Row i is just two numbers: how many spaces to print, and how many stars to print. The spaces grow by two each row and the stars shrink by two each row, so a row is written directly without measuring anything else. | O(1) |
+| [FUCT_FOR_PYRAMID](FUCT_FOR_PYRAMID/README.md) | Each row is a fixed indent plus a fixed star run: the indent shrinks by two spaces each row and the star run grows by two stars. Analogy: a party garland hung from the center, one longer strand per row. | O(1) |
+| [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
+| [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 
 ### Graphs & trees (38)
 
@@ -316,7 +328,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (75)
+### Number theory & big integers (87)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -397,8 +409,20 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [TRIALDIV](TRIALDIV/README.md) | Think of a multiplication table where each cell already names its smallest prime factor, so factoring becomes reading a cell and dividing. The algorithm builds that table with a sieve: each prime marks its uncovered multiples starting at its square, and unmarked entries become their own smallest factor. | O(L log log L + T log L), with L = 1000000 |
 | [PRIONPRI](PRIONPRI/README.md) | Check a number against a few small divisors and a few modular keys, like testing a lock with several distinct keys. The algorithm is the Miller-Rabin primality test with bases 2, 3, 5, and 7. | O(T log n) for T cases |
 | [LAI1819ESUMDIV](LAI1819ESUMDIV/README.md) | Add the five numbers, then pick the divisor from parity, like splitting a bill between two friends when the total is even and five friends when it is odd. | O(n) over all input integers |
+| [AVRG](AVRG/README.md) | Like splitting a restaurant bill evenly among six friends, add the six amounts and divide the total by six. The statement promises the answer has no fractional part, so integer division is exact. | O(1) |
+| [CALENTAMIENTO](CALENTAMIENTO/README.md) | Think of sliding marks on a ruler by one fixed gap until all marks stack at one point. Call the shared endpoint V. An entry starting at V - step moves up, one at V + step moves down, and one at V stays. | O(1) |
+| [CHI_ROOT](CHI_ROOT/README.md) | Work in fixed point with base 1e9 limbs and 180 fractional digits. Parse the argument into significant digits and a decimal exponent. Shift the argument by a multiple of the degree before taking the root. | O(k * d^2) for d working limbs and k Newton steps |
+| [CHI_SIN](CHI_SIN/README.md) | Think of folding a paper strip into a smaller quadrant before measuring. The solution uses fixed-point limbs, a Machin pi constant, and sine or cosine Taylor series. One case costs about a hundred limb products. | O(k * d^2) for d working limbs and k series steps, plus O(log x) turns |
+| [FUCT_FOR_EXPONEN](FUCT_FOR_EXPONEN/README.md) | Use two paths, like choosing between exact counting and decimal measuring. A non-negative exponent uses repeated squaring on limb arrays, so huge powers stay exact. A negative exponent uses floating-point power and prints six decimals. | O(log n) limb work per exact case |
+| [FUCT_FOR_FACFOR](FUCT_FOR_FACFOR/README.md) | The answer line is the product spelled out, then its value. The value can have hundreds of digits, so the program keeps factorials as big numbers made of 9-digit blocks, like column arithmetic with base 1,000,000,000 columns. | O(1) |
+| [FUCT_FOR_FATNUM](FUCT_FOR_FATNUM/README.md) | Fat numbers are rare because a digit product grows by multiplication while a digit sum grows by addition, so only short numbers made mostly of 1s ever qualify. | O(1) |
+| [FUCT_FOR_REFRAC](FUCT_FOR_REFRAC/README.md) | Divide both numbers by their greatest common divisor. Euclid's algorithm does that in a few remainders, using absolute values so the sign never gets in the way. Afterwards, if the denominator ended up negative, flip both signs so the minus stays on top. | O(1) |
+| [FUCT_FOR_SUM2DIG](FUCT_FOR_SUM2DIG/README.md) | Once the tens digit is chosen, the ones digit is forced: it must be n minus the tens digit. So the program only loops over the legal tens digits instead of testing all 90 two-digit numbers. | O(1) |
+| [FUCT_FOR_TRINUM](FUCT_FOR_TRINUM/README.md) | Each row is just its row number counted down to 1, like reading the marks on a ruler backwards. Two nested loops print the rows directly: the outer loop walks the rows, the inner loop walks the values. | O(1) |
+| [G11_4](G11_4/README.md) | Think of house numbers on a long street, where each digit position has a rhythm. Fix a position and count how often a chosen digit fills it. Smaller leading digits leave all lower positions free. | O(1) |
+| [SHAMIM9](SHAMIM9/README.md) | Think of a multiplication table where only the final column survives. The units digit of a product uses only the units digits of the factors. The program keeps the last digit while scanning each token and computes nine times that digit modulo ten. | O(1) |
 
-### Greedy, search & enumeration (106)
+### Greedy, search & enumeration (120)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -510,8 +534,22 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [RETOCALENTAMIENT](RETOCALENTAMIENT/README.md) | Slide the record over the repeating cycle like a paper strip over a calendar, and let every fitting position vote on the next day. The algorithm tries all 30 phases and compares up to n days per phase. | O(n) per case, with a constant factor of 30 |
 | [RF115](RF115/README.md) | Compute each cell by adding its row and column and subtracting the category, like counting grid steps from a fixed offset. The nested loops visit every cell once in constant time. | O(d × d) |
 | [G11184](G11184/README.md) | Treat the differences as stepping stones that must include every distance from 1 to n−1, like checking names off a guest list. The difference-marking algorithm visits each neighbour pair once and ticks off the distance it finds. | O(N) over all input integers |
+| [CPOD1](CPOD1/README.md) | Sort the values, like lining up people by height before measuring neighbours. In sorted order the closest pair must sit side by side. Compare each adjacent pair once and keep the smallest gap. | O(n log n) per test |
+| [EVENEGG](EVENEGG/README.md) | Think of stacking equal bricks on a seven-foot doorway until the opening clears the dragon. Growth is linear, so day n height is the start plus n times the daily growth. | O(1) |
+| [FUCT_IF_CHKDATE](FUCT_IF_CHKDATE/README.md) | Check the month first, then check the day against the length of that month. Think of tearing a page off a calendar: the page only exists for months 1 through 12, and the day must fit the printed rows of that page. | O(1) |
+| [G10186](G10186/README.md) | Choosing the winner is like picking the shortest jump that still clears a bar. Results below the bar do not qualify, and the smallest qualifying result wins. The program reads four lines, then gives each participant one result. | O(1) |
+| [MOZMTF](MOZMTF/README.md) | The missing digit is forced: it is m minus the sum of the written digits. Only its position is free. Slide it left while doing so makes the number bigger, and stop in front of the first digit that is smaller than it; otherwise put it at the end. | O(1) |
+| [MOZSAS](MOZSAS/README.md) | Throw away the numbers and count positions. Every `2 × x` term is even, so it cannot change the parity of a sum; only the `2 × x + 1` terms, which sit at even positions, flip it. | O(1) |
+| [RETO1](RETO1/README.md) | Think of a whiteboard that a helper wipes whenever too much time passes between notes. Only the notes written since the last wipe are still visible. The program keeps a count instead of the words. | O(1) |
+| [RF101](RF101/README.md) | Checking balance is like counting forks and knives in a drawer: every fork needs a knife, and extra knives are fine. The program reads the whole input once and walks it line by line. | O(1) |
+| [RF105](RF105/README.md) | Finding the children with one treat is like crossing off every name that appears twice. The program reads the whole input once and scans the two rows by index. | O(1) |
+| [RF111](RF111/README.md) | Setting the price is like adding up a shopping receipt column by column. Each restaurant row holds competitor prices, one per dish. Each weight holds the diners that dish can bring. | O(1) |
+| [RF112](RF112/README.md) | Adding monthly sales is like filling one column total at a time on paper. The program reads all input once and scans each number by index. It keeps an array with one running sum per column. | O(1) |
+| [RF113](RF113/README.md) | Checking a diagonal is like inspecting the corner squares of a tiled floor. The program reads all input once and scans every number by index. Values in a square matrix arrive row by row. | O(1) |
+| [SECLAZY](SECLAZY/README.md) | Think of filling four prize boxes and checking whether the pile covers half a row of seats. The program adds the four counts, then compares twice that sum with N. | O(1) |
+| [TRIPPL](TRIPPL/README.md) | Spreading wins evenly is like filling cups to one level; the flattest cups leave the most cyclic triples. Every triple is cyclic or transitive. A transitive triple has one team that beats both others. | O(1) |
 
-### Data structures, bits & simulation (39)
+### Data structures, bits & simulation (41)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -556,6 +594,8 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [BUET19C](BUET19C/README.md) | Tick each ID once on a roster, like a teacher marking names as students arrive; a second tick for the same name adds nothing. The algorithm uses a direct lookup table indexed by ID. | O(1) |
 | [G11183](G11183/README.md) | Track each block with its pile number and height, like a book carrying a shelf number and a slot on that shelf. Then a command becomes a short pointer update instead of a search. | O(c times b) worst case |
 | [RG102](RG102/README.md) | Treat the day as a ruler with 1440 ticks: each clock time marks one tick, and the answer is the distance to the ruler's end. The program converts a time to minutes elapsed with one multiply and one add, then subtracts that count from 1440. | O(N) for N input lines |
+| [BACTERIA](BACTERIA/README.md) | A microphone check before a concert: the device is on, yet nobody speaks. The program opens the input stream, consumes whatever arrives, and writes nothing. The read loop appends each line to one string. | O(1) |
+| [G11185](G11185/README.md) | Imagine splitting a deck into red and blue cards, stacking reds high to low and blues low to high. The program fills cells by position parity, then splits them by value parity. | O(1) |
 
 ## License
 
