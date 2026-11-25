@@ -1,10 +1,10 @@
-# SPOJ — 1040 problems, one method
+# SPOJ — 1046 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1040 problems](https://img.shields.io/badge/problems-1040-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1046 problems](https://img.shields.io/badge/problems-1046-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1040 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1046 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1040 problems
+## The 1046 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -241,7 +241,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 | [RROOT](RROOT/README.md) | Slice the square like a loaf of bread, then measure the slice below the parabola `c = b²` and divide by the whole loaf. The algorithm is analytic area integration in closed form, at O(1) cost per test. | O(T) |
 
-### Graphs & trees (64)
+### Graphs & trees (65)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -311,8 +311,9 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [SAFECRAC](SAFECRAC/README.md) | A passcode is a walk on the keypad, like tracing a route between neighbouring keys with at most one step per digit. Keep one count per ending digit and extend it by the neighbouring digits at each step. | O(max(N) plus T) |
 | [NITTROAD](NITTROAD/README.md) | Read the story backwards, like rewinding a film to see a broken bridge rebuilt. Removal becomes union, so one pass of disjoint-set union answers all queries. Store every query first and mark all roads that get removed. | O((N + Q) alpha(N)) per test case |
 | [RANGESUM](RANGESUM/README.md) | Push work to one end of a fixed array, like adding pages to the front of a notebook while keeping the page numbers. Store suffix totals anchored at the far right, so a front push only writes one new cell. | O(N + Q) |
+| [GIVEAWAY](GIVEAWAY/README.md) | Think of the array as a row of sorted filing cabinets: each cabinet holds one block of entries in order. A count query scans the two partial cabinets by hand and binary-searches every full cabinet. | O(1) |
 
-### Dynamic programming (60)
+### Dynamic programming (61)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -378,6 +379,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [BAT3](BAT3/README.md) | Think of a slide with one elevator: you descend freely, and the elevator lifts you once at a marked stop. The algorithm runs two longest decreasing subsequence passes. | O(1) |
 | [BAT4](BAT4/README.md) | Picture a hiker choosing the gentlest steepest step, like picking the easiest rung on a ladder. A minimax DP finds the smallest possible worst climb to every cell. | O(1) |
 | [AUTOMATA](AUTOMATA/README.md) | Treat each star as a bookmark you can move forward when a later letter fails. This is the classic greedy wildcard scan: consume letters directly, remember the last star, and retry from it on mismatch. | O(length of pattern + length of subject) per ordinary case |
+| [INGRED](INGRED/README.md) | Think of the two friends as two hands passing ingredients around a table of at most ten relevant seats. Compute shortest walks from each relevant city, then try every collected subset and both hand positions. | O(1) |
 
 ### Number theory & big integers (98)
 
@@ -484,7 +486,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [ATOMS](ATOMS/README.md) | Think of doubling grains in a jar with a fixed lid: keep pouring while the next doubling fits. Division answers the fit question without ever forming an overflowing product. | O(P log M) |
 | [RLTHREE](RLTHREE/README.md) | Think of three runners on a ladder where each rung belongs to two of them and one outsider. Equal distances mean each outsider gets the same number of losing rungs. | O(N) |
 
-### Greedy, search & enumeration (563)
+### Greedy, search & enumeration (567)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1053,6 +1055,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [TKV1000](TKV1000/README.md) | Think of each company as a pile of chips where only the top two chips can make a weapon. The real algorithm is a greedy turn simulation with two max-heaps, at O(log N) cost per turn. | O((N + M) log(N + M)) |
 | [TWOCIR](TWOCIR/README.md) | Picture a coin pushed through a paper disk: one crossing inside the rim and one outside means the coin is hooked. The real algorithm intersects one circle with the other circle's plane in O(1) time. | O(T) |
 | [ULASER](ULASER/README.md) | Picture the beam walking diagonally across square floor tiles, one tile per second. Mark each tile by the direction of the diagonal it used, so a later crossing catches the earlier path. | O(N × area + steps) |
+| [DRUNK](DRUNK/README.md) | Think of each turn as a weighted three-way die: the player names a square handful, and luck picks the real handful, so we average the continuations before choosing. | O(1) |
+| [DURIN](DURIN/README.md) | Picture each fit as a tile of fixed width laid on a long strip; you may stack only tiles that do not touch. The algorithm is Knuth-Morris-Pratt matching followed by a one-pass subset count. | O(key length + row length) |
+| [MACHMAY](MACHMAY/README.md) | Think of a robot as a line of counters that must stay inside a narrow band, like people sharing a ladder with a two-rung limit. The algorithm first walks the counters a few thousand steps and records how many robots exist at each length. | O(1) |
+| [QSTABLE](QSTABLE/README.md) | Think of a bridge as the only plank across a river and an articulation person as the only knot tying two ropes together. One depth-first search finds both kinds of weak points. | O(1) |
 
 ### Data structures, bits & simulation (45)
 
