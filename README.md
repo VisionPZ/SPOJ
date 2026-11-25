@@ -1,10 +1,10 @@
-# SPOJ — 950 problems, one method
+# SPOJ — 956 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![950 problems](https://img.shields.io/badge/problems-950-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![956 problems](https://img.shields.io/badge/problems-956-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 950 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 956 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 950 problems
+## The 956 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -478,7 +478,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CBANK](CBANK/README.md) | Scale all coins to quarters and count the integer solutions of one equation, like counting change with a fixed set of denominations. The algorithm derives a closed form for the number of solutions and evaluates it with modular arithmetic. | O(1) per case |
 | [APS](APS/README.md) | The sequence is a running total, like a row of monthly bills where each new bill is the smallest prime factor of the current index. Find every smallest prime factor with one sieve, then accumulate them once in order. | O(largest N log log largest N plus T) |
 
-### Greedy, search & enumeration (480)
+### Greedy, search & enumeration (486)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -964,6 +964,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [SBW](SBW/README.md) | Two prefixes of a list mark the ends of a consecutive block. Their XOR is that block's XOR. Think of two landmarks naming a stretch of road. | O(Q log K + 47Q) plus cleared leaves |
 | [TJANDRA2](TJANDRA2/README.md) | Think of a nearly filled grid as a tiled floor with one corner strip missing, like a carpet trimmed along one edge. The best shapes have h rows, with k rows of width w and the rest of width w-1. | O(min(sqrt(N), 2e6) + 2e6) per test |
 | [WIMB](WIMB/README.md) | Treat the score as a position in a board game. Count the expected remaining moves from each position. This is like counting steps to the end of a ladder. | O(states per case + input length) |
+| [CHAOS_CC](CHAOS_CC/README.md) | Treat a fresh strip like a heap in a take-and-break game: one move blocks a small window and leaves two shorter independent strips. This is Treblecross, an impartial game solved by Grundy numbers. | O(T + N^2) |
+| [COLOR_CC](COLOR_CC/README.md) | Split the graph like sorting socks into two drawers, with no two socks in one drawer touching. Color one drawer first; every node in the other drawer then counts colors unused by its neighbors. | O(N^2 + 8^(N/2) x N) |
+| [INBOX](INBOX/README.md) | Think of filling two shopping bags with a fixed number of items, like balancing a scale. For a fixed cost sum, the average formula is linear in the chosen weight, so only the smallest and largest reachable weights matter. | O(N K C) |
+| [ISRANK](ISRANK/README.md) | Treat each school like a shelf of labeled boxes, one per predicted rank. A persistent segment tree keeps a snapshot after every rank, like saving a stack of photos. | O(S log S + Q L log S) |
+| [PGAME](PGAME/README.md) | Imagine each row as a stack of coins with a hidden bottom lid. Three reductions shrink the board without changing the result, like cancelling repeated terms in an expression. | O(N M log(N M)) |
+| [RDRUG](RDRUG/README.md) | Think of each compound as a suitcase that must carry at least one new strap, like tying boxes into one pile. A spanning tree of compounds uses exactly one bond per join and two atom slots per bond. | O(M + N log N) |
 
 ### Data structures, bits & simulation (44)
 
