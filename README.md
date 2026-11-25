@@ -1,10 +1,10 @@
-# SPOJ — 466 problems, one method
+# SPOJ — 467 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![466 problems](https://img.shields.io/badge/problems-466-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![467 problems](https://img.shields.io/badge/problems-467-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 466 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 467 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 466 problems
+## The 467 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -382,7 +382,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [ZDIFFSQ2](ZDIFFSQ2/README.md) | Let the zero row pull three new terms back up the table, like filling a staircase from its top step down. The method is a finite-difference table extended one column at a time. | O(M^2) |
 | [SIS2002BO1](SIS2002BO1/README.md) | Walk down the diagonal strips of a tiled floor, counting tiles until reaching the requested one, like counting seats row by row in a stadium. The algorithm grows triangular sums until one covers the term number. | O(t times square root of the term number) |
 
-### Greedy, search & enumeration (100)
+### Greedy, search & enumeration (101)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -488,6 +488,7 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [VACCINEP](VACCINEP/README.md) | Sweep a detector across the map, adding a beacon when it enters range and removing it when it leaves, like scanning a crowd with a metal detector. The algorithm sorts events and town queries by x coordinate. | O((n + k) log n) |
 | [VIP](VIP/README.md) | Eliminate candidates with one comparison at a time, like finding a team captain by asking who knows whom. If the current candidate knows someone, the candidate cannot be the VIP. | O(n^2) per data set, dominated by input |
 | [VZLA2019I](VZLA2019I/README.md) | Choosing one item from each course multiplies the options, like assembling outfits from shirts, trousers and shoes. The algorithm reads six integers and multiplies them in one pass. | O(1) |
+| [RETOCALENTAMIENTO](RETOCALENTAMIENTO/README.md) | Try every starting point on the moon's calendar, like sliding a printed year of phases under a fixed window of observations. Keep only starting points that reproduce all records. | O(30 n) |
 
 ### Data structures, bits & simulation (36)
 
