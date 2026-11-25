@@ -1,10 +1,10 @@
-# SPOJ — 483 problems, one method
+# SPOJ — 487 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![483 problems](https://img.shields.io/badge/problems-483-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![487 problems](https://img.shields.io/badge/problems-487-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 483 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 487 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 483 problems
+## The 487 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -314,7 +314,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (73)
+### Number theory & big integers (74)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -393,8 +393,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SUMSCALC](SUMSCALC/README.md) | Picture each sum as a staircase of blocks that folds into a rectangle, so one multiplication counts the whole shape. The algorithm uses closed-form power sums: n(n+1)/2, n(n+1), n², n(n+1)(2n+1)/6, and the square of n(n+1)/2. | O(T) for T test cases |
 | [SUMUNZ](SUMUNZ/README.md) | Think of the input as a number tape: you add each value to a tally and cut the tape the moment a 0 appears. The hand scanner skips brackets, commas, and spaces, then reads one signed integer at a time. | O(N) for N input bytes |
 | [TRIALDIV](TRIALDIV/README.md) | Think of a multiplication table where each cell already names its smallest prime factor, so factoring becomes reading a cell and dividing. The algorithm builds that table with a sieve: each prime marks its uncovered multiples starting at its square, and unmarked entries become their own smallest factor. | O(L log log L + T log L), with L = 1000000 |
+| [PRIONPRI](PRIONPRI/README.md) | Check a number against a few small divisors and a few modular keys, like testing a lock with several distinct keys. The algorithm is the Miller-Rabin primality test with bases 2, 3, 5, and 7. | O(T log n) for T cases |
 
-### Greedy, search & enumeration (102)
+### Greedy, search & enumeration (105)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -502,6 +503,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [VZLA2019I](VZLA2019I/README.md) | Choosing one item from each course multiplies the options, like assembling outfits from shirts, trousers and shoes. The algorithm reads six integers and multiplies them in one pass. | O(1) |
 | [RETOCALENTAMIENTO](RETOCALENTAMIENTO/README.md) | Try every starting point on the moon's calendar, like sliding a printed year of phases under a fixed window of observations. Keep only starting points that reproduce all records. | O(30 n) |
 | [BUET19A](BUET19A/README.md) | Fold each number into one of three slots, like dropping a ball into a three-slot wheel, then read the winner from the slot pair. The algorithm is modular reduction: dividing by 3 maps a number to ROCK, PAPER, or SCISSORS in constant time. | O(1) |
+| [P3FIFELE](P3FIFELE/README.md) | Take the fifth number like picking the fifth card from a row, then multiply it by itself. A hand scanner walks the input once and stops after five numbers. | O(input bytes + digits × digits) |
+| [RETOCALENTAMIENT](RETOCALENTAMIENT/README.md) | Slide the record over the repeating cycle like a paper strip over a calendar, and let every fitting position vote on the next day. The algorithm tries all 30 phases and compares up to n days per phase. | O(n) per case, with a constant factor of 30 |
+| [RF115](RF115/README.md) | Compute each cell by adding its row and column and subtracting the category, like counting grid steps from a fixed offset. The nested loops visit every cell once in constant time. | O(d × d) |
 
 ### Data structures, bits & simulation (39)
 
