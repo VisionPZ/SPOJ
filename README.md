@@ -1,10 +1,10 @@
-# SPOJ — 1147 problems, one method
+# SPOJ — 1153 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1147 problems](https://img.shields.io/badge/problems-1147-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1153 problems](https://img.shields.io/badge/problems-1153-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1147 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1153 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1147 problems
+## The 1153 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -322,7 +322,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [IITWPC4E](IITWPC4E/README.md) | Sweep a vertical line across the panels and measure the lit height at each x position, like counting water in a row of tanks as a wave passes. | O(N log N) |
 | [CARDFLIP](CARDFLIP/README.md) | Picture the deck as a row of beads on a string, where cutting and rejoining segments is cheaper than sliding every bead. An implicit treap stores the deck in position order without storing positions. | O(q log n) expected |
 
-### Dynamic programming (64)
+### Dynamic programming (66)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -392,8 +392,10 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [CODEM4](CODEM4/README.md) | Think of the remaining row as a corridor with one door at each end, and each turn closes one door. Use interval DP keyed by the left and right ends. | O(T times size squared) |
 | [IITWPC4J](IITWPC4J/README.md) | Think of seating fish one at a time, with a checklist marking every aquarium already taken. Use subset DP over occupied aquariums. A mask records the taken aquariums, and its set-bit count tells which fish moves next. | O(T times n times 2 to the n) |
 | [UOFTCF](UOFTCF/README.md) | Track both walkers at once with one state per pair of columns, like two fingers following separate lanes down a staircase. Each state holds the best hand-holding time when Alice and Bob end that row in those columns. | O(1) |
+| [LOVEBIRDS](LOVEBIRDS/README.md) | Picking the root splits the remaining numbers into two piles, like dividing a deck into a left hand and a right hand. The count follows the Catalan recurrence, built once with dynamic programming. | O(1) |
+| [SMILEY1807](SMILEY1807/README.md) | Keeping four running lengths is like filling four cups in a row: you open the next cup only after the previous one holds a drop. Each new digit extends the current block or opens the next block. | O(L) |
 
-### Number theory & big integers (102)
+### Number theory & big integers (103)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -501,8 +503,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [FONTSIZE](FONTSIZE/README.md) | Try a size, pack words greedily, then search for the largest size that still fits. This works like choosing the biggest text that fits a shelf: measure one candidate, then shift the guess up or down. | O(message length times log size bound) |
 | [NR1](NR1/README.md) | Applying a difference k times and then reading the constant is like taking a snapshot of how the polynomial changes at zero; no full basis conversion is needed. | O(25 squared + t times 25 times k) |
 | [SUFFIX](SUFFIX/README.md) | A suffix fixes the last digits, and those digits are the remainder modulo a power of the base, like reading only the last digits of a receipt. Convert each suffix to its remainder and modulus, then merge the congruences with the Chinese remainder theorem. | O(total suffix length times log of the modulus) |
+| [BITPLAY](BITPLAY/README.md) | Editing the answer is like changing a price tag: keep the high digits, lower one digit, then spend the remaining ones on the largest low digits. Since N is even, the first changed bit must be a one in N. | O(1) |
 
-### Greedy, search & enumeration (651)
+### Greedy, search & enumeration (654)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1159,6 +1162,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [OGLEDALA](OGLEDALA/README.md) | Picture each free run as a rope that gets cut in half whenever someone steps into its middle. Longer ropes are always used before shorter ones, like serving the longest queue first. | O(R log R + Q log^2 M), R is collected pairs |
 | [YOSSY](YOSSY/README.md) | Sort soldiers by power per food, like packing the most valuable items first. Depth-first search decides include or exclude for each soldier and keeps the best k complete powers in a small heap. | O(n log n + V), V is visited search nodes |
 | [ZAMENA](ZAMENA/README.md) | Think of each remembered ID as a rung on a ladder, like stepping only onto stones within one digit of the stone under your foot. The trick is to keep the best score for every exact ID already seen, then try all one-digit changes of the current ID. | O(N * 10 * D), D is the digit length |
+| [BOKAM143SOU](BOKAM143SOU/README.md) | Packing boxes from a shelf is a good picture: take box sizes in shelf order, so each packing is counted once. The program walks through cube values and records how many sums each cube count can reach. | O(R * N) with a factor of five |
+| [CS345A1](CS345A1/README.md) | Sweeping left to right is like reading a barcode: each red line asks how many blue lines lie under its pen at that moment. Represent each blue segment as an add event at its left end and a remove event at its right end. | O(n log n) |
+| [KNMD](KNMD/README.md) | Paying a bill is a good picture: keep as much as possible and set aside the smallest handful of coins that fixes the change. Since every number is positive, the best subsequence drops the cheapest group with the right remainder. | O(n log k + k^3) |
 
 ### Data structures, bits & simulation (46)
 
