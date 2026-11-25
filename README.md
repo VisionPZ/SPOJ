@@ -1,10 +1,10 @@
-# SPOJ — 531 problems, one method
+# SPOJ — 537 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![531 problems](https://img.shields.io/badge/problems-531-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![537 problems](https://img.shields.io/badge/problems-537-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 531 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 537 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 531 problems
+## The 537 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -283,7 +283,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [UNWIRED](UNWIRED/README.md) | Budget the wire like cutting ribbon with a thick blade: reserve the waste before sharing the rest. k sections need k minus one cuts, so the waste is k minus one times m. | O(t) |
 | [WIRED](WIRED/README.md) | Match labels like pairing socks by color: look at each left sock, then find the matching right sock. A fixed grid of four by four pairs does the job without building any map. | O(t) |
 
-### Dynamic programming (38)
+### Dynamic programming (39)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -327,8 +327,9 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TRIP](TRIP/README.md) | Keep one cache of all best routes for every pair of list positions. Think of two travelers standing at positions in their own lists, choosing together whether to move forward or match the current city. | O(nm·k) |
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
+| [TWENDS](TWENDS/README.md) | Think of choosing cards like taking coins from a row where the opponent follows a fixed recipe. Once that recipe is known, each reply is predictable, so the first player can plan ahead. | O(1) |
 
-### Number theory & big integers (87)
+### Number theory & big integers (88)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -421,8 +422,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [FUCT_FOR_TRINUM](FUCT_FOR_TRINUM/README.md) | Each row is just its row number counted down to 1, like reading the marks on a ruler backwards. Two nested loops print the rows directly: the outer loop walks the rows, the inner loop walks the values. | O(1) |
 | [G11_4](G11_4/README.md) | Think of house numbers on a long street, where each digit position has a rhythm. Fix a position and count how often a chosen digit fills it. Smaller leading digits leave all lower positions free. | O(1) |
 | [SHAMIM9](SHAMIM9/README.md) | Think of a multiplication table where only the final column survives. The units digit of a product uses only the units digits of the factors. The program keeps the last digit while scanning each token and computes nine times that digit modulo ten. | O(1) |
+| [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 
-### Greedy, search & enumeration (120)
+### Greedy, search & enumeration (123)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -548,8 +550,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [RF113](RF113/README.md) | Checking a diagonal is like inspecting the corner squares of a tiled floor. The program reads all input once and scans every number by index. Values in a square matrix arrive row by row. | O(1) |
 | [SECLAZY](SECLAZY/README.md) | Think of filling four prize boxes and checking whether the pile covers half a row of seats. The program adds the four counts, then compares twice that sum with N. | O(1) |
 | [TRIPPL](TRIPPL/README.md) | Spreading wins evenly is like filling cups to one level; the flattest cups leave the most cyclic triples. Every triple is cyclic or transitive. A transitive triple has one team that beats both others. | O(1) |
+| [PRMLX](PRMLX/README.md) | Counting earlier permutations resembles counting ticket numbers before a chosen ticket: fix one earlier letter and count every arrangement left. The algorithm adds a multinomial count for each unused smaller letter at every position. | O(1) |
+| [QKP](QKP/README.md) | Reading queen attacks is like shining eight flashlights from each queen, with pieces acting as walls. Knights instead hop to a short fixed list of squares. The algorithm marks attacked cells once and then scans the board. | O(1) |
+| [SQCOUNT](SQCOUNT/README.md) | Counting squares on a tiled floor is like stacking boxes: a wide room holds a predictable count at each size. The algorithm sums a closed form for each room, then adds the squares that fit through a door. | O(1) |
 
-### Data structures, bits & simulation (41)
+### Data structures, bits & simulation (42)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -596,6 +601,7 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [RG102](RG102/README.md) | Treat the day as a ruler with 1440 ticks: each clock time marks one tick, and the answer is the distance to the ruler's end. The program converts a time to minutes elapsed with one multiply and one add, then subtracts that count from 1440. | O(N) for N input lines |
 | [BACTERIA](BACTERIA/README.md) | A microphone check before a concert: the device is on, yet nobody speaks. The program opens the input stream, consumes whatever arrives, and writes nothing. The read loop appends each line to one string. | O(1) |
 | [G11185](G11185/README.md) | Imagine splitting a deck into red and blue cards, stacking reds high to low and blues low to high. The program fills cells by position parity, then splits them by value parity. | O(1) |
+| [RELINETS](RELINETS/README.md) | A reliable net is like a circular bike route: cutting one stretch still lets you ride all the way around. The algorithm tries every link subset and keeps the cheapest one with no bridge. | O(1) |
 
 ## License
 
