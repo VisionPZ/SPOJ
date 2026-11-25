@@ -1,10 +1,10 @@
-# SPOJ — 340 problems, one method
+# SPOJ — 355 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![340 problems](https://img.shields.io/badge/problems-340-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![355 problems](https://img.shields.io/badge/problems-355-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 340 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 355 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 340 problems
+## The 355 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -279,7 +279,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TRIP](TRIP/README.md) | Keep one cache of all best routes for every pair of list positions. Think of two travelers standing at positions in their own lists, choosing together whether to move forward or match the current city. | O(nm·k) |
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 
-### Number theory & big integers (46)
+### Number theory & big integers (48)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -331,8 +331,10 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [PRF0101](PRF0101/README.md) | Sorting letters into three trays works the same way: one number lands in the positive tray, the negative tray, or the zero tray. The program scans the integer, finds its sign, and joins the matching phrase to the prompt. | O(L), where L is input length |
 | [PRF0102](PRF0102/README.md) | Walking halfway toward a target each step closes in on a square root. The program instead uses one library square-root call, which already performs that work. It first rejects negative input, then formats the input and the root to six decimals. | O(L), where L is input length |
 | [ULTREVEN](ULTREVEN/README.md) | Look at blocks of length one, like checking every single card before checking any pile. Such a block has the value itself as its sum. An ultra even array therefore needs every value even, and that condition also suffices. | O(n) |
+| [PRF0103](PRF0103/README.md) | Ask for both numbers before answering, like a cashier who confirms the price and the count before quoting a total. The program scans each pair, tests the denominator, then formats one floating-point quotient. | O(total input characters) |
+| [TESTSTRX](TESTSTRX/README.md) | Add each pair as it arrives, like totaling items on a shopping list. The hand scanner walks the whole input once and reads two integers per case. Storing every pair first would add memory without changing any sum. | O(T) in the number of cases |
 
-### Greedy, search & enumeration (46)
+### Greedy, search & enumeration (54)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -384,8 +386,16 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [TEST](TEST/README.md) | Copy every line until the line reads `42`, then stop. Cost per line: one compare | O(1) |
 | [TESTINT](TESTINT/README.md) | Add the two numbers once. The whole program is one read, one addition, and one write. | O(N) |
 | [VONNY](VONNY/README.md) | Place one domino at a time, always covering the square with the fewest legal partners. Think of solving a jigsaw by grabbing the piece that fits in the fewest spots first. | O(56 + 28) |
+| [PRF01IF01](PRF01IF01/README.md) | Split incoming numbers into three bins, like sorting mail into even, odd, and zero slots before stamping each piece. The program scans an integer, tests its remainder on division by two, then appends one message. | O(total input characters) |
+| [PRF01IF02](PRF01IF02/README.md) | Sort each number into odd, even, or zero, like separating left socks from right socks and finding the odd pair first. The program scans an integer, tests its remainder on division by two, then appends one message. | O(total input characters) |
+| [PRF01IF03](PRF01IF03/README.md) | Treat the test like a two-key lock: the first key turns on multiples of five, and the second key must stay turned away from multiples of three. The program scans an integer and checks two remainders. | O(total input characters) |
+| [PRF01IF04](PRF01IF04/README.md) | Treat the test like a gate with two badges, one for five and one for two; a value with no badges at all cannot enter. The program scans an integer and checks two remainders plus the zero guard. | O(total input characters) |
+| [PRF02LOOP01](PRF02LOOP01/README.md) | A fixed alphabet is like a row of labelled mailboxes: walk down the row once and copy each label out. The program walks character codes 65 through 90 and converts each code to its letter. | O(1) |
+| [PRF02LOOP02](PRF02LOOP02/README.md) | A fixed alphabet is like a row of labelled mailboxes: walk down the row once and copy each label out. The program walks character codes 97 through 122 and converts each code to its letter. | O(1) |
+| [PRF02LOOP03](PRF02LOOP03/README.md) | A repeated-row triangle is like stacking blocks: each new row adds one more copy of the same label. The program reads N, prints the shared prompt, and splits into the invalid and valid paths. | O(N^2) |
+| [PRF02LOOP04](PRF02LOOP04/README.md) | A rising triangle is like writing a staircase: row r always adds the next step number. The program reads N, prints the shared prompt, and splits into the invalid and valid paths. | O(N^2) |
 
-### Data structures, bits & simulation (14)
+### Data structures, bits & simulation (19)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -405,6 +415,11 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [SQRBR](SQRBR/README.md) | Walk the row left to right and keep one tally per current balance. Think of a tightrope walker who steps up or down but never goes below the ground. | O(n) |
 | [TAUT](TAUT/README.md) | Check every assignment at once by flipping whole rows of a truth table, like stamping an entire page instead of writing each word. One bit per assignment packs 64 rows into a single machine word. | O(L × 2^v) |
 | [CSETB](CSETB/README.md) | Count lit bulbs row by row, like tallying lamps that switch on as a row of counters climbs. Build two tables once, then answer each test with one lookup. | O(t + max n) |
+| [AR2AVG](AR2AVG/README.md) | Add the entries, then split the total evenly, like sharing a restaurant bill. The hand scanner reads one token at a time and keeps a 64-bit running total. | O(n m) in the number of entries |
+| [AR2MAX](AR2MAX/README.md) | Keep the largest entry seen so far, like a judge holding the high score while the rounds play out. The hand scanner reads one token at a time and compares it with the current best. | O(n m) in the number of entries |
+| [AR2MIN](AR2MIN/README.md) | Keep the smallest entry seen so far, like a runner checking each new split time against a personal best. The hand scanner reads one token at a time and compares it with the current best. | O(n m) in the number of entries |
+| [AR2SUM](AR2SUM/README.md) | Add the entries as they arrive, like dropping coins into one jar. The hand scanner walks the input bytes once and keeps a running total. Building a table first would allocate memory and add a second pass. | O(n m) in the number of entries |
+| [PRF03ARRAY0101](PRF03ARRAY0101/README.md) | Filling an array is like completing a labelled form: write each field label while you read its value, then show the filled form. The program prints the count prompt, then one value prompt per input number. | O(N) |
 
 ## License
 
