@@ -4,23 +4,29 @@
 
 ## Problem
 
-Pertre wrote down the visible size of the moon for n consecutive days. The moon follows a fixed 30-day cycle: 0, 1, 2, …, 15, 14, …, 1, then it repeats. From her record, decide whether the next day's size is surely smaller, surely larger, or impossible to tell.
+Given n consecutive moon sizes from a repeating 30-day cycle, decide whether the next size is surely larger, surely smaller, or undetermined.
 
-Input gives n, then n recorded sizes on one line. Output prints "MENGUANTE" if the next size is surely smaller, "CRECIENTE" if it is surely larger, and -1 if the data cannot decide.
+Each case gives n followed by n recorded sizes. Print CRECIENTE for a larger next size, MENGUANTE for a smaller one, and -1 when the data cannot decide. Print one answer per case.
 
-| Item | Bound |
+The statement and judge give these bounds:
+
+| item | bound |
 |---|---|
-| Days recorded | 1 ≤ n ≤ 92 |
-| Recorded sizes | 0 ≤ ai ≤ 15 |
-| Consistency | record always fits the cycle |
-| Judge limit | 1000 ms, 1536 MB |
+| recorded days n | 1 to 92 |
+| recorded sizes | 0 to 15 |
+| cycle length | 30 |
+| judge limit | 1000 ms, 1536 MB |
 
-The sample case:
+The short cycle makes every alignment cheap to test.
+
+Sample input:
 
 ```
 5
 3 4 5 6 7
 ```
+
+Sample output:
 
 ```
 CRECIENTE
@@ -28,23 +34,33 @@ CRECIENTE
 
 ## Idea
 
-Slide the record over the 30-day cycle and test every alignment, like matching a strip of patterned paper against a repeating wall. Only some shifts line up. Each shift that fits predicts one direction for the next day: up or down. If every fitting shift predicts the same direction, that direction is the answer; otherwise print -1. The check costs at most 30 × 92 comparisons per case.
+Slide the record over the repeating cycle like a paper strip over a calendar, and let every fitting position vote on the next day.
+
+The algorithm tries all 30 phases and compares up to n days per phase. Each comparison costs constant time. Searching a long repeated string would redo the same comparisons many times. Thirty short alignments settle the answer directly.
+
+A fixed set of alignments gives the answer with a few thousand comparisons.
 
 ## Why It Works
 
-1. The cycle repeats every 30 days, so a record is fully described by its start phase, a number from 0 to 29.
-2. The statement guarantees consistency, so at least one phase matches.
-3. Neighboring cycle values are never equal, so the next day is either larger or smaller, never the same.
-4. Two matching phases with different next directions mean two possible futures, so the answer is -1.
-5. If all matching phases point the same way, that way is certain.
+1. The moon cycle has 30 entries and then repeats.
+2. A phase marks where the first recorded day sits in the cycle.
+3. A phase fits when all n recorded sizes match the cycle at that offset.
+4. A fitting phase predicts one next size from the cycle.
+5. Adjacent cycle sizes differ, so each prediction rises or falls.
+6. Two different predictions mean the next size is unknown.
+7. No fitting phase also means the next size is unknown.
 
-| Term | Meaning |
+The main terms are these:
+
+| term | meaning |
 |---|---|
-| `moonCycle` | the 30 sizes of one lunar cycle |
-| `moonRecord` | the n sizes Pertre wrote |
-| `phase` | where day 1 of the record sits in the cycle |
-| `decidedDirection` | direction shared by fitting phases so far |
-| `mixedDirections` | two fitting phases disagree |
+| `moonCycle` | the 30 sizes of one full lunar cycle |
+| `moonRecord` | the n sizes from the input case |
+| `phase` | the cycle position of the first recorded day |
+| `decidedDirection` | the direction shared by the fitting phases |
+| `mixedDirections` | a flag for two disagreeing phases |
+
+The flags turn many alignments into one verdict.
 
 A script-traced example from `gen.py`:
 
@@ -54,111 +70,127 @@ phase 3 in 30-day cycle
 next size 8
 ```
 
-The trace matches the sample answer: 8 is larger than 7, so "CRECIENTE".
+The next size 8 exceeds 7, so the sample answer is CRECIENTE.
 
 ## Code
 
-**Cycle and hand scanner.** This block builds the cycle and reads integers by index.
+**Bulk input and hand scanner.** This block builds the cycle and reads the case integers.
 
-```c
-static int nextInteger(const char *data, int length, int *position) {
-  while (*position < length && (data[*position] < '0' || data[*position] > '9')) {
-    (*position)++;
-  }
-  if (*position >= length) {
-    return -1;
-  }
-  int value = 0;
-  while (*position < length && data[*position] >= '0' && data[*position] <= '9') {
-    value = value * 10 + (data[*position] - FIRST_DIGIT);
-    (*position)++;
-  }
-  return value;
-}
+```nim
+const flushBlockBytes = 1 shl 17
+const cycleLength = 30
+const risingHalf = 16
+const fallingHalf = 14
+
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+proc nextInt(data: string, pos: var int): int =
+  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
+    pos += 1
+  if pos >= data.len:
+    return -1
+  var value = 0
+  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
+    value = value * 10 + int(data[pos]) - 48
+    pos += 1
+  return value
+
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
 ```
 
-One pass over the consumed characters reads each number.
-The -1 return marks end of input between cases.
-Scanning allocates nothing.
+A negative return marks the end of the input stream.
+The scanner skips all spaces and line breaks between sizes.
+The output buffer flushes after about 128 KiB of text.
+Each token costs one pass over its digits.
 
-**Bulk input.** This block loads all of stdin once.
+**Cycle construction.** This block writes the rising and falling halves.
 
-```c
-  int inputLength = 0;
-  size_t bytesRead;
-  while (inputLength < (int)sizeof(inputData)) {
-    bytesRead = fread(inputData + inputLength, 1, sizeof(inputData) - (size_t)inputLength, stdin);
-    if (bytesRead == 0) {
-      break;
-    }
-    inputLength += (int)bytesRead;
-  }
+```nim
+var moonCycle = newSeq[int](cycleLength)
+for dayIndex in 0 .. risingHalf - 1:
+  moonCycle[dayIndex] = dayIndex
+for dayIndex in 0 .. fallingHalf - 1:
+  moonCycle[risingHalf + dayIndex] = fallingHalf - dayIndex
 ```
 
-A 64 MiB buffer holds even a 200000-case stress file.
-One `fread` loop replaces per-token reads.
+The first 16 positions rise from 0 to 15.
+The last 14 positions fall from 14 to 1.
+Both loops run once at program start.
+The table costs 30 integers of space.
 
-**Phase test.** This block walks all 30 alignments.
+**Phase scan and output.** This block tests every alignment and prints the verdict.
 
-```c
-    int decidedDirection = 0;
-    int mixedDirections = 0;
-    int phase;
-    for (phase = 0; phase < CYCLE_LENGTH; phase++) {
-      int matches = 1;
-      for (recordIndex = 0; recordIndex < dayCount; recordIndex++) {
-        if ((int)moonCycle[(phase + recordIndex) % CYCLE_LENGTH] != (int)moonRecord[recordIndex]) {
-          matches = 0;
-          break;
-        }
-      }
-      if (!matches) {
-        continue;
-      }
-      int lastSize = (int)moonCycle[(phase + dayCount - 1) % CYCLE_LENGTH];
-      int nextSize = (int)moonCycle[(phase + dayCount) % CYCLE_LENGTH];
-      int direction = nextSize > lastSize ? 1 : -1;
-      if (decidedDirection == 0) {
-        decidedDirection = direction;
-      } else if (decidedDirection != direction) {
-        mixedDirections = 1;
-        break;
-      }
-    }
+```nim
+while true:
+  let dayCount = nextInt(inputData, scanPos)
+  if dayCount < 0:
+    break
+  var moonRecord = newSeq[int](dayCount)
+  for recordIndex in 0 .. dayCount - 1:
+    moonRecord[recordIndex] = nextInt(inputData, scanPos)
+  var decidedDirection = 0
+  var mixedDirections = 0
+  for phase in 0 .. cycleLength - 1:
+    var matches = 1
+    for recordIndex in 0 .. dayCount - 1:
+      if moonCycle[(phase + recordIndex) mod cycleLength] != moonRecord[recordIndex]:
+        matches = 0
+        break
+    if matches == 0:
+      continue
+    let lastSize = moonCycle[(phase + dayCount - 1) mod cycleLength]
+    let nextSize = moonCycle[(phase + dayCount) mod cycleLength]
+    let direction = if nextSize > lastSize: 1 else: -1
+    if decidedDirection == 0:
+      decidedDirection = direction
+    elif decidedDirection != direction:
+      mixedDirections = 1
+      break
+  if mixedDirections == 1 or decidedDirection == 0:
+    appendOutput("-1\n")
+  elif decidedDirection > 0:
+    appendOutput("CRECIENTE\n")
+  else:
+    appendOutput("MENGUANTE\n")
+stdout.write outputBuffer
+outputBuffer.setLen 0
 ```
 
-Mismatched phases exit after one bad day, so most cost is on true matches.
-The break on disagreement stops the whole scan early.
-Each case costs at most 30 × 92 byte compares.
-
-**Answer and buffered output.** This block prints the decision.
-
-```c
-    if (mixedDirections || decidedDirection == 0) {
-      appendText("-1\n");
-    } else if (decidedDirection > 0) {
-      appendText("CRECIENTE\n");
-    } else {
-      appendText("MENGUANTE\n");
-    }
-```
-
-`appendText` fills a 128 KiB buffer and flushes when full.
-The final `fwrite` emits the last partial block.
+A mismatched day ends that phase early.
+A disagreement between two fitting phases ends the whole scan.
+The last matching phase supplies the predicted next size.
+One final write flushes the remaining text.
 
 ## Complexity
 
 The cost splits into input, the phase scan, and output.
 
-| Phase | Time | Space |
+| phase | time | space |
 |---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Phase scan | O(30 × n) per case | record array |
-| Output | one write per 128 KiB block | block buffer |
+| input read | one pass over stdin bytes | one input string |
+| phase scan | up to 30 × n comparisons per case | one record array |
+| output | one line per case | block buffer |
 
-| Measure | Big O |
+The phase scan dominates because n stays small and the cycle is fixed.
+
+The asymptotic costs are these:
+
+| measure | Big O |
 |---|---|
-| Time | O(n) per case, 30 is a constant |
-| Space | O(input size) |
+| time | O(n) per case, with a constant factor of 30 |
+| space | O(input bytes + n) |
 
-Reading only the last two sizes would fail: a size of 8 sits on both a rising and a falling part of the cycle.
+Reading only the last two sizes would miss ambiguous alignments.
+Testing all 30 phases catches every possible future.
