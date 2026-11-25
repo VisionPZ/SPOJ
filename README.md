@@ -1,10 +1,10 @@
-# SPOJ — 417 problems, one method
+# SPOJ — 423 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![417 problems](https://img.shields.io/badge/problems-417-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![423 problems](https://img.shields.io/badge/problems-423-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 417 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 423 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 417 problems
+## The 423 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -303,7 +303,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (59)
+### Number theory & big integers (60)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -368,8 +368,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [BOSIS2022](BOSIS2022/README.md) | A queue at three ticket counters holds the next candidate from each multiplier; pick the smallest and refill that counter. The algorithm is a three-pointer dynamic program over the ugly sequence. | O(c + L), for c requests and largest rank L |
 | [DCP](DCP/README.md) | A traffic light repeats red, green, green; Fibonacci parity repeats even, odd, odd. The algorithm counts one residue class of indexes inside the range. Each test costs constant time. | O(T) |
 | [DIVPALI](DIVPALI/README.md) | A mirror shows the same label from either side; a palindrome digit string behaves the same way. Walk divisor candidates up to the square root and record each divisor with its partner. | O(sqrt(N) + d^2), with d matching divisors |
+| [QUADEQ](QUADEQ/README.md) | Think of the discriminant as a gate: below zero there is no crossing, at zero there is one, and above zero there are two. Compute that gate with exact integer arithmetic, then evaluate the quadratic formula only when roots exist. | O(1) |
 
-### Greedy, search & enumeration (70)
+### Greedy, search & enumeration (74)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -445,8 +446,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [PONDO3](PONDO3/README.md) | Sharing the bomboos is like filling glasses of different widths to the same level: raise the common level until the supply runs out. The program guesses a day count and checks whether the bomboos cover it. | O(n log(x times d_max)) |
 | [PONDO4](PONDO4/README.md) | Work the number backwards, like rewinding a video of the count: undo additions by subtracting and undo triplings by dividing by three. When the current value divides by three, divide. | O(log n) |
 | [PONDORO](PONDORO/README.md) | Longer mouths are like wider nets: a wider net never catches fewer rain spots, so the widest mouth already shows the best possible catch. The program finds the best window for the longest mouth, then finds the shortest window span that reaches that same rainy-spot count. | O(n + m) |
+| [PPAANNDD](PPAANNDD/README.md) | Think of matching five consecutive blocks of tickets, each block needing the same number of tickets. Try a level, walk the string once, and grab the earliest matching letter for each needed copy. | O(n log n) |
+| [PRANAVHPTC](PRANAVHPTC/README.md) | Imagine walking around a circular track from one friend to the other. Going forward covers one arc, and going backward covers the other arc. The answer is the smaller arc length. | O(t) for t test cases |
+| [PZZAPGON](PZZAPGON/README.md) | Picture the final address as a point on graph paper. North and south change one coordinate, east and west change the other. The pigeon flies along the diagonal back to the start, so the answer is the diagonal length rounded up. | O(m + log d) for m moves and distance d |
+| [RAHIA](RAHIA/README.md) | Think of filling N ordered slots with distinct whole numbers starting from zero. The smallest possible strictly increasing array is 0, 1, 2 and so on. Slot i therefore needs at least i, and every original value that meets this floor can be lowered to it. | O(N) |
 
-### Data structures, bits & simulation (30)
+### Data structures, bits & simulation (31)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -482,6 +487,7 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [DRSTWN](DRSTWN/README.md) | Scan the two integers and add them, like counting two piles of stones by combining them. The real algorithm is integer addition after a hand parse. A loop over every number would add needless work. | O(1) |
 | [EDUPT08](EDUPT08/README.md) | Walk two sorted lines like two zippers, like matching names on two sorted guest lists. The real algorithm is a two-pointer merge. Equal values go to the intersection and once to the union. | O(n + m) |
 | [EDUPT49](EDUPT49/README.md) | Push cars until the wanted one reaches the top, then pop it, like pulling plates off a stack exactly when a waiter asks for them. The real algorithm is a greedy stack simulation with one arrival cursor. | O(N) |
+| [POUPT15](POUPT15/README.md) | Treat each node like a shelf that must hold two side stacks of nearly equal height. Build the tree by plain insertion, then measure both subtrees at every node. | O(k) per case, for k keys |
 
 ## License
 
