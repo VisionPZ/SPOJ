@@ -1,10 +1,10 @@
-# SPOJ — 1182 problems, one method
+# SPOJ — 1188 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1182 problems](https://img.shields.io/badge/problems-1182-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1188 problems](https://img.shields.io/badge/problems-1188-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1182 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1188 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1182 problems
+## The 1188 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -509,7 +509,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [EASYFACT](EASYFACT/README.md) | Removing every factor of two from n! is like unwrapping a parcel to count the distinct boxes inside; only odd factors set the number of consecutive sums. The count equals the number of odd divisors of n! | O(1) |
 | [IAPCR2D](IAPCR2D/README.md) | The divisor count of `X!` is a product of small factors, one for each prime exponent. Think of it as a sorted phone book: build the book once, then look up each query quickly. | O(1) |
 
-### Greedy, search & enumeration (679)
+### Greedy, search & enumeration (685)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1194,6 +1194,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [FN16ROAD](FN16ROAD/README.md) | Think of each road time as a slider between two marks, with past trips acting as rubber bands that pull linked sliders together. Each slider is an LP variable, and each past trip is an equation. | O(n^3 + q · simplex iterations · edge count) |
 | [FN16SWAP](FN16SWAP/README.md) | Create room before you consume it, like emptying small boxes before discarding large ones. Split drives into those that gain space and those that lose it. Do gaining drives in increasing old capacity, then losing drives in decreasing new capacity. | O(N log N) per case |
 | [IAPCR2F](IAPCR2F/README.md) | Treat acquaintances as mergeable piles of money, like combining stacks of coins into boxes. A disjoint-set union merges two piles in almost constant time. Each merge adds one budget into another, and no edge is revisited. | O(N + M + G^2) per case |
+| [BGSHOOT](BGSHOOT/README.md) | Overlap only changes where an interval starts or ends, like people entering and leaving a room. Sweep those change points once, then store the overlap level for each stretch between them. | O((N + Q) log(N + Q)) |
+| [EIUASSEMBLY](EIUASSEMBLY/README.md) | Raising the line rate is like raising a row of fences: every fence below the target must be lifted before the row improves. Guess a target rate and add up the cost of all missing units. | O(N log(M + max Pi)) per test |
+| [HC10000](HC10000/README.md) | Draw a tree where each index points to a(n), like each child pointing to its parent. The indices appear in breadth-first order, and each level ends at a power of two. | O(log^4 n + T log^3 n) worst case |
+| [NTHPRIME](NTHPRIME/README.md) | Counting primes up to a bound is like counting people in a stadium by sections instead of checking every seat. Lehmer's prime-counting formula counts primes up to x with a sieve and a few recursive sums. | roughly O(sieveLimit log log sieveLimit + log N times count cost) |
+| [ROOBOT](ROOBOT/README.md) | Track how far the walk sits from its highest point, like measuring how far a runner trails the record mark. That distance only grows, shrinks, or resets when a new record appears. | O(N^2) |
+| [SPACESHIP](SPACESHIP/README.md) | Squared distance is not a true metric, so stopping at a shop on the way can cost less than flying straight. Compute shortest travel costs between all stops first, like planning the cheapest leg between every pair of stations. | O(M^3 + 2^M M^2) |
 
 ### Data structures, bits & simulation (46)
 
