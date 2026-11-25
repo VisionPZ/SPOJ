@@ -1,10 +1,10 @@
-# SPOJ — 487 problems, one method
+# SPOJ — 491 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![487 problems](https://img.shields.io/badge/problems-487-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![491 problems](https://img.shields.io/badge/problems-491-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 487 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 491 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,11 +13,11 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 487 problems
+## The 491 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
-### Strings & text (100)
+### Strings & text (102)
 
 KMP, borders, tries and rolling hashes keep matching linear. Expression parsing and text rewriting add one stack pass. DP over all substrings is the only quadratic corner.
 
@@ -123,6 +123,8 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [G10181](G10181/README.md) | Fold each letter to lowercase while reading, like dropping mail into boxes, then sort the boxes at the end. A byte sweep builds words with one buffer and collects them into a set. | O(1) |
 | [G10182](G10182/README.md) | Tally letters into 26 slots, then rank them like a hand of Scrabble tiles sorted by how many of each you hold. One pass over the bytes fills the slots. | O(1) |
 | [G11181](G11181/README.md) | Sort the words like cards dealt into alphabetical piles, then keep the first card of each matching group. A hand scanner extracts runs of letters and folds uppercase to lowercase as it goes. | O(w log w) for the sort |
+| [MATCHSTR](MATCHSTR/README.md) | Slide a window over the text and reuse what already matched, like a zipper that backs up only as far as needed. The Knuth–Morris–Pratt algorithm builds a prefix table for the pattern, then walks the text once. | O( |
+| [MEANSTRIC](MEANSTRIC/README.md) | Treat the three means as three ways to summarise one list, like averaging prices, growth rates and speeds. The three-accumulator algorithm sums values, sums logarithms and sums reciprocals in one pass. | O(n) per case |
 
 ### Geometry & grids (93)
 
@@ -314,7 +316,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (74)
+### Number theory & big integers (75)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -394,8 +396,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SUMUNZ](SUMUNZ/README.md) | Think of the input as a number tape: you add each value to a tally and cut the tape the moment a 0 appears. The hand scanner skips brackets, commas, and spaces, then reads one signed integer at a time. | O(N) for N input bytes |
 | [TRIALDIV](TRIALDIV/README.md) | Think of a multiplication table where each cell already names its smallest prime factor, so factoring becomes reading a cell and dividing. The algorithm builds that table with a sieve: each prime marks its uncovered multiples starting at its square, and unmarked entries become their own smallest factor. | O(L log log L + T log L), with L = 1000000 |
 | [PRIONPRI](PRIONPRI/README.md) | Check a number against a few small divisors and a few modular keys, like testing a lock with several distinct keys. The algorithm is the Miller-Rabin primality test with bases 2, 3, 5, and 7. | O(T log n) for T cases |
+| [LAI1819ESUMDIV](LAI1819ESUMDIV/README.md) | Add the five numbers, then pick the divisor from parity, like splitting a bill between two friends when the total is even and five friends when it is odd. | O(n) over all input integers |
 
-### Greedy, search & enumeration (105)
+### Greedy, search & enumeration (106)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -506,6 +509,7 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [P3FIFELE](P3FIFELE/README.md) | Take the fifth number like picking the fifth card from a row, then multiply it by itself. A hand scanner walks the input once and stops after five numbers. | O(input bytes + digits × digits) |
 | [RETOCALENTAMIENT](RETOCALENTAMIENT/README.md) | Slide the record over the repeating cycle like a paper strip over a calendar, and let every fitting position vote on the next day. The algorithm tries all 30 phases and compares up to n days per phase. | O(n) per case, with a constant factor of 30 |
 | [RF115](RF115/README.md) | Compute each cell by adding its row and column and subtracting the category, like counting grid steps from a fixed offset. The nested loops visit every cell once in constant time. | O(d × d) |
+| [G11184](G11184/README.md) | Treat the differences as stepping stones that must include every distance from 1 to n−1, like checking names off a guest list. The difference-marking algorithm visits each neighbour pair once and ticks off the distance it finds. | O(N) over all input integers |
 
 ### Data structures, bits & simulation (39)
 
