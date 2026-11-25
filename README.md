@@ -1,10 +1,10 @@
-# SPOJ — 400 problems, one method
+# SPOJ — 405 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![400 problems](https://img.shields.io/badge/problems-400-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![405 problems](https://img.shields.io/badge/problems-405-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 400 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 405 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 400 problems
+## The 405 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -118,7 +118,7 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [STARJUST](STARJUST/README.md) | Think of hanging a picture on a wall, then filling the empty space with equal stacks of stars on each side. The leftover star goes on the left when the gap is odd. | O(total output characters) |
 | [TIMORSE](TIMORSE/README.md) | Add durations like filling a timeline with blocks, like stacking tiles of length one and three. Each letter contributes its symbols plus the small gaps between them. A new letter after letters adds three; a new letter after spaces adds seven. | O(total input characters) |
 
-### Geometry & grids (85)
+### Geometry & grids (86)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
@@ -209,6 +209,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [WMELON](WMELON/README.md) | Compress the used coordinates, then slide one window over columns and another over rows. Think of sliding a picture frame across a photo until it contains enough faces. | O(Dx^2·Dy^2) |
 | [ZEBRA](ZEBRA/README.md) | Only people with your crossing time can collide. Think of picking a lane on a crosswalk and counting paths that cross your own. | O(n) |
 | [VCYLINDER](VCYLINDER/README.md) | Apply the textbook volume rule, like filling a can and measuring the result to the nearest hundredth. Radius is half the diameter. Multiply pi by radius squared and by height. | O(1) apart from input bytes |
+| [ALIENCLK](ALIENCLK/README.md) | Reading both hands on a shared ruler is like measuring them in thirty-seconds of a degree. The minute hand advances 144 units per minute and the hour hand advances 9 units per minute. | O(test count) |
 
 ### Graphs & trees (38)
 
@@ -300,7 +301,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (53)
+### Number theory & big integers (56)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -359,8 +360,11 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NUMPDROM](NUMPDROM/README.md) | Build the reversed number by peeling digits off the right, like moving beads from one side of an abacus to the other. Each peeled digit is appended to a new number. | O(number of digits) |
 | [FCTORISE](FCTORISE/README.md) | Finding the closest factor pair is like choosing the two nearest whole-number sides of a rectangle with a fixed area. The method takes the largest divisor not above the square root, then derives x and y from that pair. | O(1) |
 | [FUCT_FOR_PRIME](FUCT_FOR_PRIME/README.md) | Crossing out multiples of each small prime is like striking every second, third, and fifth name off a class list. A sieve builds one table of prime flags up to 500. | O(1) |
+| [ABNDNTNM](ABNDNTNM/README.md) | Stamping each divisor onto its multiples is like walking a street and leaving a number on every second door, then every third door, and so on. At the end, each door holds the sum of its proper divisors. | O(N log N) |
+| [ADDEVENA](ADDEVENA/README.md) | Splitting the list into even and odd values is like separating socks into two drawers before counting pairs. Each new value pairs only with earlier values from its own drawer. | O(n) |
+| [ADDEVENB](ADDEVENB/README.md) | Keeping the last k values in view is like sliding a short frame along a row of socks. Each new value pairs with earlier values of the same kind that still sit inside the frame. | O(n) |
 
-### Greedy, search & enumeration (62)
+### Greedy, search & enumeration (63)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -428,6 +432,7 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [FNDMSNG1](FNDMSNG1/README.md) | The missing value is the gap between the sum you expect and the sum you see, like counting the empty chair in a row of numbered seats. The method uses the arithmetic series sum and one pass over the given values. | O(N) |
 | [DNEQ](DNEQ/README.md) | Measure the gain in tenths, like pricing in cents instead of dollars. Multiply the integer count by N, divide back once, then add B. The real algorithm is fixed-point integer arithmetic. | O(t) |
 | [EDUPT27](EDUPT27/README.md) | Keep a stack of kept values, like a line of boxes that collapses whenever a matching group reaches the end. The real algorithm is a single left-to-right pass with a stack and a suffix check. | O(list length times pattern length) |
+| [ALEAVE](ALEAVE/README.md) | Counting with a difference table is like marking a calendar with plus signs at each start and minus signs at each return day. Walking the calendar once adds up the marks and tells which days are leave. | O(requests + 366) |
 
 ### Data structures, bits & simulation (30)
 
