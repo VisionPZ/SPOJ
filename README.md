@@ -1,10 +1,10 @@
-# SPOJ — 696 problems, one method
+# SPOJ — 702 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![696 problems](https://img.shields.io/badge/problems-696-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![702 problems](https://img.shields.io/badge/problems-702-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 696 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 702 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 696 problems
+## The 702 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -297,7 +297,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [MSTS](MSTS/README.md) | Process equal weights in batches, like laying identical bricks one layer at a time before moving to the next layer. Kirchhoff matrix-tree theorem counts spanning trees of each batch graph after cheaper batches are contracted. | O(1) |
 | [QTREE4](QTREE4/README.md) | Split the tree into centre regions, like finding the longest trip between two neighbourhoods by keeping the best outgoing road from each neighbourhood. Centroid decomposition gives every node a logarithmic list of ancestor centroids. | O(1) |
 
-### Dynamic programming (47)
+### Dynamic programming (48)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -350,6 +350,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [CSUBSEQS](CSUBSEQS/README.md) | Count each distinct string at the earliest place it can finish, like filing a book under the first shelf where the whole title appears. For a chosen first letter, use its first occurrence in each string. | O(26 S), with S reachable states |
 | [INCSEQ](INCSEQ/README.md) | Each new value extends shorter subsequences, like stacking blocks where every new block must be taller than the top one. A Fenwick tree stores counts grouped by last value, so the sum of all smaller tops is one prefix query. | O(N K log V) |
 | [HELPBOB](HELPBOB/README.md) | Think of coupons as stamps collected while walking through a set of pizzas; a later pizza gets every stamp gathered so far. Try every subset and every order inside it, but share work with a bitmask DP that stores the cheapest cost for each bought set. | O(m * 2^m) per case |
+| [MARTIAN](MARTIAN/README.md) | Choosing belt directions is like drawing one staircase through a grid fence. Each row picks where the fence steps. Those steps only move right as you walk south. | O(n * m) per block |
 
 ### Number theory & big integers (89)
 
@@ -447,7 +448,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (258)
+### Greedy, search & enumeration (263)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -711,6 +712,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [LARGE](LARGE/README.md) | Count rotations with Burnside's lemma, like counting distinct bracelets by asking how many patterns survive each turn. A rotation that survives fixes a repeated pattern of length equal to the gcd of the seat count and the turn. | O(Nmax log log Nmax + cases times divisors times N divided by K) |
 | [PRHYME](PRHYME/README.md) | Reverse every word and store the dictionary in a trie, like filing books by the letters at the end of their titles. A shared reversed prefix is exactly a shared original suffix, so walking the trie as far as the query allows finds the maximum suffix length. | O(total input characters times alphabet lookup) |
 | [RAIL](RAIL/README.md) | Think of each ordinary station as a bead on a string between two junctions, and simply add the string lengths when you remove the bead. Each surviving station starts one walk along its incident segments. | O(1) |
+| [CLONE](CLONE/README.md) | Counting stacks of identical name tags is like sorting a pile of cards and reading each pile size once. The code packs each DNA string into a 64-bit integer and counts equal keys with an open-addressing hash table. | O(n * m) per block |
+| [PARTY2](PARTY2/README.md) | Numbering groups is like numbering seats around a circular table. Every sighting says the next person sits one seat along, so walking around a closed chain of sightings must bring you back to the same seat. | O(N + E) per block |
+| [WARE](WARE/README.md) | Treat each whole warehouse layout as one square on a giant floor plan. Breadth-first search walks from layout to layout, like finding the shortest route through a maze. | O(S) per block, where S is the number of reachable layouts |
+| [WIDGET](WIDGET/README.md) | Solving the records is like balancing scales that wrap around after seven days. Each record weighs a multiset of widget types against a residue, so the whole set forms a linear system modulo 7. | O(m * n^2) per block |
+| [WORDRING](WORDRING/README.md) | Think of each letter pair as a station and each word as a one-way train whose travel time is its length. The best ring is the loop with the highest average travel time per train, like finding the slowest closed tour in a rail map. | O(V * n) per block, with V = 676 |
 
 ### Data structures, bits & simulation (43)
 
