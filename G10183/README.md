@@ -2,25 +2,29 @@
 
 <https://www.spoj.com/problems/G10183/>
 
-Judge status: submissions return "Missing testcases", so the problem has no
-test data and cannot be accepted. The solution below reproduces the statement
-sample byte for byte in the local harness.
-
 ## Problem
 
-Each input line holds a positive integer of up to 50 digits; a line with `0` ends the input. For every number, print it, then repeatedly delete its last digit and subtract that deleted digit from what remains, printing each result, while the result has more than two digits. Finally print whether the original number is divisible by 11, in Spanish, and leave a blank line after each case.
+For each number, print a chain of shrinking values and say whether the original number is divisible by 11. Each step deletes the last digit and subtracts that digit from what remains.
+
+Input holds one positive integer per line of at most 50 digits, and a line containing 0 ends the input. For every number, print the number, then each shrunken value while it has more than two digits, then a Spanish verdict line. Put a blank line after each case.
 
 | Item | Bound |
 |---|---|
-| Number length | ≤ 50 digits |
-| Input | one number per line, ends at 0 |
+| Digits per number | at most 50 |
+| Input | one number per line, ending at 0 |
 | Judge limit | 1000 ms, 1536 MB |
 
-The sample case (first number only):
+The 50-digit bound rules out native integer types, so the digits stay as text.
+
+Sample input:
 
 ```
 12345678901234567900
+896245630004
+0
 ```
+
+Sample output:
 
 ```
 12345678901234567900
@@ -43,82 +47,201 @@ The sample case (first number only):
 121
 11
 El numero 12345678901234567900 es divisible por 11.
+
+896245630004
+89624562996
+8962456293
+896245626
+89624556
+8962449
+896235
+89618
+8953
+892
+87
+El numero 896245630004 no es divisible por 11.
+
 ```
 
 ## Idea
 
-The statement hands you the algorithm: chop the last digit, subtract it, repeat. Run it with Python big integers, where chopping is `divmod` by 10 and the step is one subtraction. Think of peeling layers off an onion: each peel is one digit shorter. A number shrinks by at least one digit per step, so at most about 48 steps run per case. Checking divisibility only at the end avoids testing every intermediate value.
+Peel the last digit off each number and subtract it, like stripping layers from an onion. The work stays in decimal text with a borrow-based helper, one step per printed line. Each step shortens the text by at least one digit, so 50 digits cost at most 48 steps. Converting the whole number to a native integer would overflow long before 50 digits. One helper handles both the shrink and the final remainder.
 
 ## Why It Works
 
-1. `divmod(n, 10)` splits n into the number without its last digit and the last digit.
-2. The step `truncated - lastDigit` never goes negative for numbers with three or more digits, because the truncated part is at least 10.
-3. The statement guarantees the original number is divisible by 11 exactly when the final two-digit-or-smaller result is.
-4. `len(str(n)) > 2` is the loop guard, so `11` prints and then stops.
+1. Removing the last digit and subtracting it preserves the remainder modulo 11.
+2. The peel stops once the decimal text holds two digits or fewer.
+3. Each peel removes one digit, so a 50-digit number takes at most 48 steps.
+4. Borrow subtraction handles cases such as 10 minus 9, which becomes 1 after a leading zero is dropped.
+5. An alternating digit sum from the right gives the remainder modulo 11; for 11 it is 1 minus 1, or 0.
+
+The terms used by the peel:
 
 | Term | Meaning |
 |---|---|
-| `remainingValue` | the number as the peeling process shrinks it |
-| `originalText` | the input number as text, used in the verdict |
-| `stepLines` | the printed sequence, starting with the original |
-| `truncatedValue` | the number minus its last digit |
-| `lastDigit` | the digit just deleted |
+| `nextDigitText` | reads one run of digits from the input |
+| `canonicalDigits` | strips leading zeros and keeps one digit for zero |
+| `subtractDigit` | subtracts one digit from a decimal string with borrow |
+| `isDivisibleByEleven` | tests the alternating digit sum against `divisorValue` |
+| `remainingText` | the current shrunken value as decimal text |
+| `stepLines` | every printed value for the current case |
 
-The verdict line quotes the original number, not the shrunken one.
+Each term maps to one step of the string-only arithmetic.
 
-A script-traced example from `gen.py`:
+A script-traced example:
 
 ```
 start 121
 peel: 12 - 1 = 11
 stop: 11 has two digits
-11 % 11 == 0, so the verdict is divisible
+alternating sum right to left: 1 - 1 = 0
+0 mod 11 = 0, so the verdict is divisible
 ```
 
-The trace matches the sample's ending.
+The trace matches the tail of the first sample case.
 
 ## Code
 
-**Line loop.** This block reads each number and peels its digits.
+**Input and digit helpers.** These declarations load stdin and normalize digit runs.
 
-```python
-    remainingValue = int(numberText)
-    originalText = str(remainingValue)
-    stepLines = [originalText]
-    while len(str(remainingValue)) > 2:
-        truncatedValue, lastDigit = divmod(remainingValue, 10)
-        remainingValue = truncatedValue - lastDigit
-        stepLines.append(str(remainingValue))
+```nim
+const flushBlockBytes = 1 shl 17
+const divisorValue = 11
+
+var inputData = ""
+var inputLine = ""
+while readLine(stdin, inputLine):
+  inputData.add inputLine
+  inputData.add '\n'
+
+var scanPos = 0
+
+proc nextDigitText(data: string, pos: var int): string =
+  result = ""
+  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
+    pos += 1
+  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
+    result.add data[pos]
+    pos += 1
+
+proc canonicalDigits(rawText: string): string =
+  var start = 0
+  while start < rawText.len - 1 and rawText[start] == '0':
+    start += 1
+  result = rawText[start .. rawText.len - 1]
 ```
 
-`int()` handles 50-digit values natively.
-The guard stops as soon as two digits remain.
-Each peel costs one divmod and one subtraction.
+The scanner returns digits as text, so 50 digits stay exact. Leading zeros never reach the peel.
 
-**Verdict and blank line.** This block builds the message and the case block.
+**Borrow subtraction and divisibility.** These helpers replace big-integer arithmetic.
 
-```python
-    if remainingValue % divisorValue == 0:
-        verdictText = "El numero " + originalText + " es divisible por 11."
+```nim
+proc subtractDigit(numberText: string, digitValue: int): string =
+  var digits = newSeq[int](numberText.len)
+  for index in 0 .. numberText.len - 1:
+    digits[index] = int(numberText[index]) - 48
+  var borrow = 0
+  var position = digits.len - 1
+  var difference = digits[position] - digitValue
+  if difference < 0:
+    difference += 10
+    borrow = 1
+  digits[position] = difference
+  position -= 1
+  while position >= 0 and borrow > 0:
+    difference = digits[position] - borrow
+    if difference < 0:
+      difference += 10
+      borrow = 1
     else:
-        verdictText = "El numero " + originalText + " no es divisible por 11."
-    caseBlocks.append("\n".join(stepLines) + "\n" + verdictText + "\n")
+      borrow = 0
+    digits[position] = difference
+    position -= 1
+  var start = 0
+  while start < digits.len - 1 and digits[start] == 0:
+    start += 1
+  result = ""
+  for index in start .. digits.len - 1:
+    result.add chr(digits[index] + 48)
+
+proc isDivisibleByEleven(numberText: string): bool =
+  var alternating = 0
+  var position = 0
+  var index = numberText.len - 1
+  while index >= 0:
+    let digitValue = int(numberText[index]) - 48
+    if position mod 2 == 0:
+      alternating += digitValue
+    else:
+      alternating -= digitValue
+    position += 1
+    index -= 1
+  return alternating mod divisorValue == 0
 ```
 
-The modulo test runs on the small final value.
-Each block ends with a newline, so joining blocks with `\n` leaves the required blank line.
+The borrow walks left until it is spent. The alternating sum needs no division of the full number.
+
+**Peeling loop and output.** This block emits every step and the final verdict.
+
+```nim
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+
+var caseCount = 0
+while true:
+  let rawNumber = nextDigitText(inputData, scanPos)
+  if rawNumber.len == 0:
+    break
+  if rawNumber == "0":
+    break
+  let originalText = canonicalDigits(rawNumber)
+  var stepLines: seq[string] = @[]
+  stepLines.add originalText
+  var remainingText = originalText
+  while remainingText.len > 2:
+    let lastDigit = int(remainingText[remainingText.len - 1]) - 48
+    let truncatedText = canonicalDigits(remainingText[0 .. remainingText.len - 2])
+    remainingText = subtractDigit(truncatedText, lastDigit)
+    stepLines.add remainingText
+  if caseCount > 0:
+    appendOutput("\n")
+  for stepText in stepLines:
+    appendOutput(stepText)
+    appendOutput("\n")
+  if isDivisibleByEleven(remainingText):
+    appendOutput("El numero " & originalText & " es divisible por 11.\n")
+  else:
+    appendOutput("El numero " & originalText & " no es divisible por 11.\n")
+  caseCount += 1
+if caseCount > 0:
+  appendOutput("\n")
+
+stdout.write outputBuffer
+outputBuffer.setLen 0
+```
+
+The loop guard is the two-digit text length. A blank line separates each case, including the last.
 
 ## Complexity
 
+The peel and the string helpers set the cost per case.
+
 | Phase | Time | Space |
 |---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Peeling | ≤ 48 steps per number | step strings |
-| Output | one write | case blocks |
+| Input read | one pass over input bytes | input string |
+| Peeling | at most 48 steps per number | one step list |
+| Output | one line per step and verdict | block buffer |
+
+The number of cases multiplies the bounded per-case peel work.
 
 | Measure | Big O |
 |---|---|
 | Time | O(lines × digits) |
-| Space | O(N) for the input buffer |
+| Space | O(N) for the input string |
 
-A per-step divisibility test would add work the statement never asks for.
+A divisibility test at every step would add work the statement never asks for, so one final test wins.
