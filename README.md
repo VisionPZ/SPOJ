@@ -1,10 +1,10 @@
-# SPOJ — 750 problems, one method
+# SPOJ — 762 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![750 problems](https://img.shields.io/badge/problems-750-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![762 problems](https://img.shields.io/badge/problems-762-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 750 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 762 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 750 problems
+## The 762 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -454,7 +454,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (305)
+### Greedy, search & enumeration (317)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -765,6 +765,18 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [MMOD29](MMOD29/README.md) | Factor 2004 once, then treat each prime separately, like adding the rungs of three ladders and multiplying the totals. A divisor sum of a prime power is a short geometric series, and fast exponentiation finds its top term. | O(T log X) for T test lines |
 | [MPOLSTAR](MPOLSTAR/README.md) | Treat every edge as a fence that keeps allowed points on its left, like slicing a cake with straight cuts. The center exists exactly when all those half-planes share a point. | O(n cubed) per dataset |
 | [MTREECOL](MTREECOL/README.md) | Treat each finished group of nodes as one block, like stacking boxes from heaviest to lightest. Repeatedly pull the block with the highest average factor next to its parent, then fuse the two blocks. | O(N squared) per case |
+| [CVXPOLY](CVXPOLY/README.md) | Give every polygon one home by naming its lowest point, like filing each shape under its bottom corner. Once that corner is fixed, the remaining points above it must form a chain that always turns left. | O(1) |
+| [FINFRAC](FINFRAC/README.md) | Peel off whole numbers like counting floors before looking at the leftover crumbs. If a whole number lies inside the interval, denominator one wins. Otherwise the fractional remainders are flipped, which turns the same task into a smaller one. | O(1) |
+| [LINE](LINE/README.md) | String the given segments like beads on one cord. Keep the shortest way to join consecutive beads. Each join uses one endpoint from each neighbouring segment. | O(1) |
+| [MAXISET](MAXISET/README.md) | Split the vertices into two halves, like sorting two piles of cards before pairing them. Precompute the best choice inside the right pile for every subset, then try every legal choice from the left pile and look up the matching right answer. | O(1) |
+| [MCQUERY](MCQUERY/README.md) | Compress all pairwise cut values into a tree, like replacing a road map with a skeletal route that preserves every travel bottleneck. In that tree, the cut between two vertices is the smallest edge on their path. | O(1) |
+| [MTRGAME](MTRGAME/README.md) | Treat each column as a sloped line showing the payoff for every row mixture, then keep only the lowest line at each point. P1 picks the mixture at the highest point of that lower envelope, like choosing the tallest peak in a valley made of straight walls. | O(1) |
+| [MUL2COM](MUL2COM/README.md) | Strip the signs from two temperatures before multiplying them, then decide whether the result fits the thermometer: work with magnitudes first and attach the sign later. Convert each bit string into base-2^32 limbs. | O(1) |
+| [OILCOMP](OILCOMP/README.md) | View the grid as a checkerboard of black and white stones. Remove the cheapest set that blocks every touching pair. Pick cells by paying the least forbidden cost. | O(1) |
+| [PALDR](PALDR/README.md) | Match characters like snapping together paired dominoes: whenever two equal characters touch, they disappear. An even palindrome always vanishes under this matching rule, so a whole string is splittable exactly when all its characters vanish. | O(1) |
+| [RPS](RPS/README.md) | Raise opponents like seedlings in a nursery, then let the strongest plant keep winning: each level needs another player at the same win count, so the group sizes determine everything. | O(1) |
+| [VORONOI](VORONOI/README.md) | Place flags so every pixel salutes its nearest flag. Ties go to the alphabetically earlier letter. A flag stands on a pixel of its own letter. | O(1) |
+| [WALL](WALL/README.md) | Patch the dents like a tailor joining fabric edges. Use the shortest available stitches. Each chord across a dent adds area and costs wall length. | O(1) |
 
 ### Data structures, bits & simulation (43)
 
