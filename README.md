@@ -1,10 +1,10 @@
-# SPOJ — 714 problems, one method
+# SPOJ — 720 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![714 problems](https://img.shields.io/badge/problems-714-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![720 problems](https://img.shields.io/badge/problems-720-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 714 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 720 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 714 problems
+## The 720 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -133,7 +133,7 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [TESTPASS](TESTPASS/README.md) | Scan each password once for character classes, then once more for repeated blocks. Think of a bouncer checking a guest list, then checking for a repeated dance move. | O(1) |
 | [WOWTALENT](WOWTALENT/README.md) | Think of a receptionist writing the same greeting around each name on a list. The program holds the whole input in one buffer and walks to each line break. | O(1) |
 
-### Geometry & grids (98)
+### Geometry & grids (99)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
@@ -237,6 +237,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [FUCT_FOR_PYRAMID](FUCT_FOR_PYRAMID/README.md) | Each row is a fixed indent plus a fixed star run: the indent shrinks by two spaces each row and the star run grows by two stars. Analogy: a party garland hung from the center, one longer strand per row. | O(1) |
 | [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
+| [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 
 ### Graphs & trees (54)
 
@@ -450,7 +451,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (273)
+### Greedy, search & enumeration (278)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -729,6 +730,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [LIFEGAME](LIFEGAME/README.md) | self-propagation is a fixed linear map, like repeatedly multiplying a vector by one matrix. Fast exponentiation applies that map `log L` times instead of `L` times. Each colony keeps its own viruses and sends one copy to each neighbour, so the matrix has a one on the diagonal and ones at neighbour positions. | O(1) |
 | [PAINTBLC](PAINTBLC/README.md) | merge adjacent equal blocks and count arrangements of the merged runs. Inclusion-exclusion turns each kind into a small polynomial whose coefficients track merged pairs. Multiply the polynomials once per case, then read the answer from one convolution sum. | O(1) |
 | [PAINTBLK](PAINTBLK/README.md) | merge adjacent equal blocks and count arrangements of the merged runs. Inclusion-exclusion turns each kind into a small polynomial whose coefficients track merged pairs. Multiply the polynomials once per case, then read the answer from one convolution sum. | O(1) |
+| [CANDY4](CANDY4/README.md) | Count the ways each emptying event can happen, like listing all possible orders of red and blue draws before the first failed draw. The last draw must hit the empty box. | O(n) per case |
+| [GCD2](GCD2/README.md) | Reduce the long number modulo the small number first, like measuring a long rope with a short ruler before comparing lengths. Euclid's algorithm then runs on two small integers. | O(t * d + t log A) with d at most 250 |
+| [NOTATRI](NOTATRI/README.md) | Sort the sticks, then treat each stick as the longest side and count pairs that fall short of it, like checking every possible shelf width against a fixed board. | O(N^2) per case |
+| [TRANSP1](TRANSP1/README.md) | Each link can be redirected straight to the base, like moving a whole branch of a tree to its shallowest position. That shortens the path for every nexus in the branch and raises base safety. | O(L * N^2 * M^2) worst case |
+| [VOL](VOL/README.md) | Send flow through a line of days, like routing trucks along a road where each toll booth sells a shortcut at a fixed price. Free edges carry unused volunteer coverage from one day to the next. | O(N * (N + M)) per case |
 
 ### Data structures, bits & simulation (43)
 
