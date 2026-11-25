@@ -1,10 +1,10 @@
-# SPOJ — 844 problems, one method
+# SPOJ — 850 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![844 problems](https://img.shields.io/badge/problems-844-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![850 problems](https://img.shields.io/badge/problems-850-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 844 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 850 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 844 problems
+## The 850 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -463,7 +463,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 | [PTIME](PTIME/README.md) | Count each prime inside a factorial by adding floor divisions, like counting how many rows of a fixed size fit in a stack. The real algorithm is Legendre's formula, computed after one sieve primes once. | O(maxN log log maxN + cases * pi(maxN) log maxN) |
 
-### Greedy, search & enumeration (389)
+### Greedy, search & enumeration (395)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -858,6 +858,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [OFFSTRAT](OFFSTRAT/README.md) | Treat the passes as one-way roads, like a fleet of trucks that never drives back downhill. Every road must keep the truck the same distance or closer to the goal line. | O(1) |
 | [SCCCER](SCCCER/README.md) | Keep the row as it is wherever possible, like sliding books on a shelf only when a stack grows too tall. A dynamic program tracks the four used counts, the last letter, and its run length. | O(1) |
 | [SOCCERCH](SOCCERCH/README.md) | Treat the walk like drawing a loop with a pencil, then ask how many times the loop wraps each marked plot. Only the parity of that wrap count matters, like a light that flips each time the pencil crosses a ray. | O(1) |
+| [BFTRI](BFTRI/README.md) | Rows grow one character at a time, like adding one block to each step of a staircase. The solution writes characters straight into one output buffer and flushes in large blocks. | O(T × i²) with maximum size `i` |
+| [DONALDO](DONALDO/README.md) | Two texts less than `I` seconds apart cannot share a sender, like overlapping meetings that need separate rooms. The answer is the largest number of texts inside any window of length `I`. | O(T × 86400 + total N) |
+| [FUKU11G](FUKU11G/README.md) | Pack each digit's remaining count into four bits of one integer, like keeping a row of abacus beads that move only when a nearby chest is placed. Then walk the candidate sections in order and try both choices at each one. | O(candidates × reachable states) |
+| [FUKU11J](FUKU11J/README.md) | Reverse the return leg so both legs climb uphill, then walk them together like two hikers who take turns moving forward. The lower hiker always moves first, so only towns at one altitude can still be paid twice. | O(n² × 1024 × log states) worst case |
+| [POSAO](POSAO/README.md) | Extra computers help until the grid front is one cell wide, like extra checkout lanes once a single customer remains. The solution evaluates a closed form instead of simulating seconds. | O(1) |
+| [POWPOW2](POWPOW2/README.md) | Vandermonde's identity collapses the whole sum into one central binomial coefficient, like replacing a long hand count with a single labelled box. The solution computes that coefficient modulo the factors of `500000002`, reduces the double exponent with Fermat's theorem, and finishes with modular exponentiation. | O(148721 + T log n) |
 
 ### Data structures, bits & simulation (44)
 
