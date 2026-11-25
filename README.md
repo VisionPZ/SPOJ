@@ -1,10 +1,10 @@
-# SPOJ — 655 problems, one method
+# SPOJ — 661 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![655 problems](https://img.shields.io/badge/problems-655-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![661 problems](https://img.shields.io/badge/problems-661-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 655 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 661 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 655 problems
+## The 661 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -441,7 +441,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (224)
+### Greedy, search & enumeration (230)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -671,6 +671,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [GNY07F](GNY07F/README.md) | Treat each bracket pair like a two-pan balance: the heavier pan decides how many monkeys both pans need. A vine with several junctions in a row needs the largest count among them, because all monkeys jump at once. | O(L * D) worst case |
 | [MAGIC4](MAGIC4/README.md) | Group the product by its base instead of by pairs. All pairs with the same i share one base, so only their exponents must be added. Möbius inversion turns that exponent sum into a short walk over the divisors of i. | O(n log n) |
 | [PHONELIN](PHONELIN/README.md) | Imagine each tower as a box with a price tag and coins from cities placed inside. Picking a box collects its coins and pays its tag, but picking a later box first is forbidden. | O(C*T + T^3) worst case per case |
+| [EXAMPLE](EXAMPLE/README.md) | Treat the description like a recipe card: the sentence name says how many lines to print, and each fragment says which tile to stamp and how many times. | O(input size + output size) |
+| [ILLUM](ILLUM/README.md) | Treat the bulb like a projector and each face of the other cube like a screen. Project the blocking cube onto every visible face, then measure the overlap. | O(1) |
+| [KPARCH](KPARCH/README.md) | Treat the middle of the text like the seam of a folded strip: count folds whose two halves match, then fold the strip in half and repeat. The Main–Lorentz divide-and-conquer algorithm counts squares that straddle a seam in linear time using four Z-functions. | O(n log n) |
+| [KPSORT](KPSORT/README.md) | Think of the sequence as beads on a string: one chosen bead stays put while both loose ends flip, like turning two halves of a necklace around a clasp. | O(1) |
+| [PUTIN](PUTIN/README.md) | Picture each given point as a corner of an upward block. That block swallows every lattice point above it. Count the uncovered lattice by adding and subtracting overlapping tiles. | O(1) |
+| [WAR](WAR/README.md) | Treat the map like a jigsaw puzzle: walk along a border with the puzzle piece on your left, and each closed walk traces one region. Planar face traversal turns every directed segment into the next directed segment at its endpoint. | O(1) |
 
 ### Data structures, bits & simulation (42)
 
