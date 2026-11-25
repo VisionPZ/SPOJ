@@ -1,10 +1,10 @@
-# SPOJ — 768 problems, one method
+# SPOJ — 774 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![768 problems](https://img.shields.io/badge/problems-768-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![774 problems](https://img.shields.io/badge/problems-774-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 768 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 774 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 768 problems
+## The 774 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -456,7 +456,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (321)
+### Greedy, search & enumeration (326)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -783,8 +783,13 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [MJOURNEY](MJOURNEY/README.md) | Pairing heavy pigs with high rates is like pairing the heaviest boxes with the strongest movers: each sorted match beats every crossed match. The net rate of a village is p_j minus t times d_j. | O(n squared) |
 | [MMINMAX](MMINMAX/README.md) | Cutting a polygon is like sharing a cake so the biggest slice is as small as possible: each candidate cut leaves two smaller pieces to balance. Any triangulation of a vertex chain splits at one triangle and two smaller chains. | O(1) |
 | [MMMGAME](MMMGAME/README.md) | Leaving the last candy is like leaving the last move in a board game: you want your opponent holding it. This is misère Nim. When any pile holds more than one candy, the winning rule matches normal Nim: a nonzero pile XOR wins. | O(1) |
+| [BTTNS](BTTNS/README.md) | Treat each button like a light switch with two positions, so pressing twice cancels out and only parity matters. The algorithm builds one GF(2) equation per cell. The variables are the buttons, and a variable appears in an equation when its diamond covers that cell. | O(1) |
+| [CHEESE](CHEESE/README.md) | Scan a name once for palindromes, then treat each chosen city as a separate water pipe network. The palindrome scan uses Manacher's even-radius method. At each gap between letters it stores the number of even palindromes centered there, and their lengths sum to `radius * (radius + 1)`. | O(1) |
+| [CRDS](CRDS/README.md) | Each level adds a fixed count, like adding rungs to a ladder, so the whole total collapses to one product. The algorithm is closed-form arithmetic. Level i contributes `3 * i - 1` cards. | O(T) |
+| [PRENDON](PRENDON/README.md) | Treat each record like a card in a genealogy box, then check the family rules while sorting the cards. The algorithm strips each suffix to recover parents and gender. | O(1) |
+| [VIDEO](VIDEO/README.md) | Remember only the last few letters, like a reader who keeps the tail of a word in mind while scanning text. The algorithm builds an Aho-Corasick automaton over the combos. | O(K × states × 3) |
 
-### Data structures, bits & simulation (43)
+### Data structures, bits & simulation (44)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -833,6 +838,7 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [G11185](G11185/README.md) | Imagine splitting a deck into red and blue cards, stacking reds high to low and blues low to high. The program fills cells by position parity, then splits them by value parity. | O(1) |
 | [RELINETS](RELINETS/README.md) | A reliable net is like a circular bike route: cutting one stretch still lets you ride all the way around. The algorithm tries every link subset and keeps the cheapest one with no bridge. | O(1) |
 | [INVENT](INVENT/README.md) | Treat each tree edge like a gate that opens between two crowds, and charge every new cross-crowd pair as it passes. Union-find processes tree edges from light to heavy and counts pairs that become connected. | O(1) |
+| [HAYBALE](HAYBALE/README.md) | A range add is like marking the start and end of a fence segment, then walking the fence once to count planks. The algorithm uses a difference array. | O(N + K) |
 
 ## License
 
