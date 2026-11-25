@@ -28,7 +28,7 @@ The sample case:
 
 ## Idea
 
-Row i is just two numbers: how many spaces to print, and how many stars to print. The spaces grow by two each row and the stars shrink by two each row, so a row is written directly without measuring anything else. No grid, no trimming.
+Row i has two numbers: how many spaces to print, and how many stars to print. The spaces grow by two each row and the stars shrink by two each row, so a row is written directly without measuring anything else. No grid, no trimming.
 
 ## Why It Works
 

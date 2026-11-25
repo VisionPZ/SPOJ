@@ -32,7 +32,7 @@ The sample output:
 
 ## Idea
 
-Think of museum guards standing in the corners of a crooked gallery. A guard at one corner watches the whole triangular wedge in front of that corner. Chvátal's art gallery theorem gives the exact answer: `N` corners need at most `floor(N / 3)` guards. Some polygon shapes really need that many.
+Think of museum guards standing in the corners of a crooked gallery. A guard at one corner watches the whole triangular wedge in front of that corner. Chvátal's art gallery theorem gives the exact answer: `N` corners need at most `floor(N / 3)` guards. Some polygon shapes need that many.
 
 Triangulate the polygon and color its vertices with three colors, one per triangle. The smallest color class has at most `floor(N / 3)` vertices. Cameras on those vertices cover every triangle. A comb-shaped polygon with three spikes per guard shows the bound cannot be improved.
 

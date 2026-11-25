@@ -134,4 +134,4 @@ Total work does not grow with anything except the short input token.
 | Time | O(L), where L is the input length |
 | Space | O(L) for the single input buffer |
 
-A map or a sorted table costs O(1) expected lookup but needs a build step and more memory. For seven fixed names, direct comparisons are simpler and just as fast.
+A map or a sorted table costs O(1) expected lookup but needs a build step and more memory. For seven fixed names, direct comparisons are simpler and as fast.

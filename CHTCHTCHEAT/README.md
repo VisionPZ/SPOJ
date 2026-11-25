@@ -26,7 +26,7 @@ cow
 3
 Cow is a domesticated animal.
 She helps mankind in many ways.
-Her milk is very healthy for babies.
+Her milk is healthy for babies.
 gandhi
 3
 Gandhi was an Indian leader.

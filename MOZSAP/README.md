@@ -22,7 +22,7 @@ The statement's example block reads:
 Input:
 
 Output:
-This is just a demo output
+This is a demo output
 ```
 
 The required output line is:
