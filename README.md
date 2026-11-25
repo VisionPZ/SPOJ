@@ -1,10 +1,10 @@
-# SPOJ — 395 problems, one method
+# SPOJ — 400 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![395 problems](https://img.shields.io/badge/problems-395-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![400 problems](https://img.shields.io/badge/problems-400-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 395 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 400 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,11 +13,11 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 395 problems
+## The 400 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
-### Strings & text (89)
+### Strings & text (94)
 
 KMP, borders, tries and rolling hashes keep matching linear. Expression parsing and text rewriting add one stack pass. DP over all substrings is the only quadratic corner.
 
@@ -112,6 +112,11 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [PRF04STRING04](PRF04STRING04/README.md) | Treat a run of whitespace like a closed door: it opens the way to the next word, but only one space passes through. Scan the text once and keep a flag that says a space is waiting. | O(L) for input length L |
 | [PRF04STRING05](PRF04STRING05/README.md) | Think of a ten-slot shelf: you load characters until the shelf is full, then ignore the rest. Find where the first line ends, copy at most ten characters from its start, and print them. | O(L) to read input of length L |
 | [REDIRECT](REDIRECT/README.md) | Think of the board as a one-way street with one allowed U-turn, like a bus route that can loop only at one terminal. If the player can reach the charged tile and travel from its backward landing spot back to it, the route repeats forever and every value of m wins. | O(n) |
+| [FIZBBZIF](FIZBBZIF/README.md) | Check from both ends like two people reading the same word from opposite sides. Each side skips punctuation, lowers capitals, and compares one character per step. This is a two-pointer palindrome scan costing O(L) time for a phrase of length L. | O(total input characters) |
+| [SEGSI](SEGSI/README.md) | Count matches in one copy, like counting windows on one repeating strip of wallpaper. A window that fits inside a copy appears k times; one that crosses a seam appears k minus one times. | O(n) |
+| [SIMPACR](SIMPACR/README.md) | Treat each word as a ticket at a gate, like guests whose names are on a skip list. Trim the ticket, lower it before checking the list, then take its first character. | O(total input characters) |
+| [STARJUST](STARJUST/README.md) | Think of hanging a picture on a wall, then filling the empty space with equal stacks of stars on each side. The leftover star goes on the left when the gap is odd. | O(total output characters) |
+| [TIMORSE](TIMORSE/README.md) | Add durations like filling a timeline with blocks, like stacking tiles of length one and three. Each letter contributes its symbols plus the small gaps between them. A new letter after letters adds three; a new letter after spaces adds seven. | O(total input characters) |
 
 ### Geometry & grids (85)
 
