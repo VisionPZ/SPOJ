@@ -1,10 +1,10 @@
-# SPOJ — 809 problems, one method
+# SPOJ — 814 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![809 problems](https://img.shields.io/badge/problems-809-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![814 problems](https://img.shields.io/badge/problems-814-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 809 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 814 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 809 problems
+## The 814 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -459,7 +459,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (358)
+### Greedy, search & enumeration (363)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -823,6 +823,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [IOPC1202](IOPC1202/README.md) | One lattice corner slides inside a fixed parallelogram, like a loose pin in a hinged frame. The algorithm combines Varignon's theorem with Pick's theorem. Varignon makes every valid quadrilateral have area twice the square's area. | O(testCount) |
 | [IOPC1203](IOPC1203/README.md) | A run of keypresses is a row of beads, and each gap cuts the row into shorter words. The algorithm counts bounded compositions of each run. Only cycle lengths 3 and 4 occur, so two precomputed tables cover every case. | O(maximumPresses + N) |
 | [WALKROBO](WALKROBO/README.md) | Knowledge becomes a second map coordinate, like unlocking doors while walking through a maze. The algorithm runs breadth-first search over pairs of a cell and a knowledge mask. | O(M N 2 to the K K) per case |
+| [ALICESIE](ALICESIE/README.md) | Numbers above half the limit have no larger multiple nearby, like the top row of a multiplication table. The rest all feed into that top row and get crossed off. | O(T) |
+| [BUNNIES](BUNNIES/README.md) | Keep only the cheapest line at each usage level, like picking a phone plan by how many minutes you use. Here each threshold becomes a line, and a hull discards lines that can never win. | O(N log N + NK) per case |
+| [DELIVER](DELIVER/README.md) | Put a bus stop at each farm and near each farm, then hop between stops, like walking around a closed building. A shortest leg becomes a chain of L-shaped hops on this small graph. | O(N^3) |
+| [DERP](DERP/README.md) | Stretch the cloud along eight diagonals, like measuring a tilted box from opposite corners. The farthest pair shows up as the widest gap on one diagonal. The method is the eight-sign Manhattan transform. | O(8N) per sample |
+| [MINI](MINI/README.md) | Choose the inner cells freely, like filling the middle of a sudoku; the border cells then lock into place. The count collapses to a single power of N. | O(total digits + T log 1000000009) |
 
 ### Data structures, bits & simulation (44)
 
