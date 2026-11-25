@@ -1,10 +1,10 @@
-# SPOJ — 1165 problems, one method
+# SPOJ — 1171 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1165 problems](https://img.shields.io/badge/problems-1165-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1171 problems](https://img.shields.io/badge/problems-1171-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1165 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1171 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1165 problems
+## The 1171 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -508,7 +508,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [BITPLAY](BITPLAY/README.md) | Editing the answer is like changing a price tag: keep the high digits, lower one digit, then spend the remaining ones on the largest low digits. Since N is even, the first changed bit must be a one in N. | O(1) |
 | [EASYFACT](EASYFACT/README.md) | Removing every factor of two from n! is like unwrapping a parcel to count the distinct boxes inside; only odd factors set the number of consecutive sums. The count equals the number of odd divisors of n! | O(1) |
 
-### Greedy, search & enumeration (663)
+### Greedy, search & enumeration (669)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1177,6 +1177,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [MOHIB](MOHIB/README.md) | Treat the averages as group bills: knowing both totals reveals how many friends paid, like counting seats from two headcounts. Algebra fixes the length at A - x, then the smallest possible companions leave the largest remaining value. | O(T) |
 | [MONKK](MONKK/README.md) | Treat each square as a rectangle whose sum can be read from four corners, like finding the weight of a crate from four scale readings. A cumulative table stores sums from the top-left corner to every cell, so each candidate square costs four lookups. | O(r * c * min(r, c)) per case |
 | [TREENUM2](TREENUM2/README.md) | Read the i-th tree number as a binary pattern recast in base 3, like turning a row of light switches into place values. A prefix sum over indices 0 to n - 1 is built one set bit at a time; each set bit fixes one switch and leaves the lower switches free. | O(T * 64) |
+| [FN16ASGN](FN16ASGN/README.md) | Group cost uses one number per branch, like sorting parcels by weight before packing them into boxes. Dijkstra finds that round-trip number for every branch. Sorting lets us cut the list into contiguous blocks, and a dynamic program picks the cut sizes. | O(1) |
+| [FN16BASE](FN16BASE/README.md) | Think of a car odometer: a larger base uses fewer wheels, and fewer wheels show a smaller number. A base above one million gives at most three digits, so checking a small window of bases settles the hard cases. | O(1) |
+| [FN16CEIL](FN16CEIL/README.md) | Shape is like a family tree of left and right branches: names on the nodes do not change its outline. Replace each value by its rank, insert the ranks into a binary search tree, and write the tree as a string of parentheses. | O(1) |
+| [FN16CLK](FN16CLK/README.md) | Treat the pictures like photos of a clock taken at unknown minutes. Try all 1440 possible start minutes, like sliding a film strip past a fixed template. A start time is valid when every segment that changed in the photos also changes in the template. | O(1) |
+| [FN16DIET](FN16DIET/README.md) | Treat each next sweet as a recurring appointment: the appointment is due by a known day, so serve the earliest deadline first. This is greedy scheduling with a min-heap of next due days. | O(1) |
+| [FN16RIVER](FN16RIVER/README.md) | Think of a relay race: at each exchange, one runner's name stays on the baton, and we may pick which runner. Give one river a target length `L`, then count how many rivers must end longer than `L`. | O((n + m) log n) |
 
 ### Data structures, bits & simulation (46)
 
