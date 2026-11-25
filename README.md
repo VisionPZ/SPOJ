@@ -1,10 +1,10 @@
-# SPOJ — 1200 problems, one method
+# SPOJ — 1206 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1200 problems](https://img.shields.io/badge/problems-1200-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1206 problems](https://img.shields.io/badge/problems-1206-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1200 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1206 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,11 +13,11 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1200 problems
+## The 1206 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
-### Strings & text (110)
+### Strings & text (111)
 
 KMP, borders, tries and rolling hashes keep matching linear. Expression parsing and text rewriting add one stack pass. DP over all substrings is the only quadratic corner.
 
@@ -133,6 +133,7 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [TESTPASS](TESTPASS/README.md) | Scan each password once for character classes, then once more for repeated blocks. Think of a bouncer checking a guest list, then checking for a repeated dance move. | O(1) |
 | [WOWTALENT](WOWTALENT/README.md) | Think of a receptionist writing the same greeting around each name on a list. The program holds the whole input in one buffer and walks to each line break. | O(1) |
 | [LONGCS](LONGCS/README.md) | Index every substring of the first string once, then read each other string through that index, like using one map to check several travellers. A suffix automaton stores all those substrings in a small graph. | O(1) |
+| [BLHETA](BLHETA/README.md) | Keep the surviving letters on a stack, like a text editor that undoes a typed word the moment it is completed. Store the spells backward in a trie so one backward walk of the stack finds every matching suffix. | O(1) |
 
 ### Geometry & grids (100)
 
@@ -241,7 +242,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 | [RROOT](RROOT/README.md) | Slice the square like a loaf of bread, then measure the slice below the parabola `c = b²` and divide by the whole loaf. The algorithm is analytic area integration in closed form, at O(1) cost per test. | O(T) |
 
-### Graphs & trees (75)
+### Graphs & trees (76)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -322,8 +323,9 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [IITWPC4E](IITWPC4E/README.md) | Sweep a vertical line across the panels and measure the lit height at each x position, like counting water in a row of tanks as a wave passes. | O(N log N) |
 | [CARDFLIP](CARDFLIP/README.md) | Picture the deck as a row of beads on a string, where cutting and rejoining segments is cheaper than sliding every bead. An implicit treap stores the deck in position order without storing positions. | O(q log n) expected |
 | [EAGLE1](EAGLE1/README.md) | A walk that never reuses a road follows one simple path, like walking away from a camp along one branch and never doubling back. The worst path from a node ends at a farthest node, and in a tree every farthest node is an endpoint of the diameter. | O(n) per test case |
+| [ADABASH](ADABASH/README.md) | Merge sets as wires arrive, like stamping every employee in a newly merged team with the same team label. Use a disjoint-set union, also called union-find. Each merge costs nearly constant time, while a fresh search from scratch per wire would cost up to O(M × N). | O(1) |
 
-### Dynamic programming (68)
+### Dynamic programming (69)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -397,8 +399,9 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [SMILEY1807](SMILEY1807/README.md) | Keeping four running lengths is like filling four cups in a row: you open the next cup only after the previous one holds a drop. Each new digit extends the current block or opens the next block. | O(L) |
 | [JARJAR](JARJAR/README.md) | Treat each possible piece count as a row of checkboxes, one box per reachable weight, like a chart that lights up when a new part is tried. Adding a part shifts the previous row's boxes forward by that part's weight and ORs them into the new row. | O(N^2 * 60000 / 64 + Q * N) |
 | [MOWGLI](MOWGLI/README.md) | Treat the far bank as one extra stone, like counting stair climbs with strides of at most K + 1 steps. A crossing becomes a composition of A + 1 whose parts are legal jump lengths. | O(D times maxA + R) |
+| [SHUB1307](SHUB1307/README.md) | Track which totals are possible at each tile, like crossing a bridge and marking every weight the bridge can still carry. Store all totals from zero to `K` as bits in one row of machine words. | O(1) |
 
-### Number theory & big integers (106)
+### Number theory & big integers (107)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -510,8 +513,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [EASYFACT](EASYFACT/README.md) | Removing every factor of two from n! is like unwrapping a parcel to count the distinct boxes inside; only odd factors set the number of consecutive sums. The count equals the number of odd divisors of n! | O(1) |
 | [IAPCR2D](IAPCR2D/README.md) | The divisor count of `X!` is a product of small factors, one for each prime exponent. Think of it as a sorted phone book: build the book once, then look up each query quickly. | O(1) |
 | [POWFIB](POWFIB/README.md) | Skipping Fibonacci numbers is like counting seats in a row while reserving a few labelled seats. Only about forty-five Fibonacci values fit below the modulus, so binary search finds the Nth gap in a few steps. | O(T log N) |
+| [ADASUM](ADASUM/README.md) | A digit contributes to many blocks, like one brick supporting several overlapping arches. Count how many blocks start at or before that digit and how many end after it. | O(1) |
 
-### Greedy, search & enumeration (695)
+### Greedy, search & enumeration (697)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1212,6 +1216,8 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [ORDSUM23](ORDSUM23/README.md) | The last term is either a domino of length 2 or a triomino of length 3, like finishing a tiled row with one of two tile sizes. Removing that last term leaves a smaller ordered sum, so each count is the sum of two earlier counts. | O(maxN + T) |
 | [VECTAR1](VECTAR1/README.md) | Cells with the same xor value form one pile, like sorting cards into labelled stacks before numbering the whole deck. The rule orders whole piles but never orders cards inside a pile. | O(1000 + T times 1024 times 10) |
 | [VECTAR4](VECTAR4/README.md) | Build the tallest hill that still lands back at one, like stacking blocks up to a peak and then back down. A peak of h gives a perfect square of h squared enemies in 2h - 1 days. | O(T log 1000000000) |
+| [BLBONO](BLBONO/README.md) | Treat each board like a pile in Nim: the piles add by XOR, so equal piles cancel. Compute a Grundy number for every one of the 512 board states by working backward from full boards. | O(1) |
+| [VECTAR12](VECTAR12/README.md) | The x-coordinate must rise by one on every step, like climbing one stair per move to reach step `n` in `n` moves. That leaves three choices per move: go up, stay, or go down in y. | O(1) |
 
 ### Data structures, bits & simulation (46)
 
