@@ -1,10 +1,10 @@
-# SPOJ — 856 problems, one method
+# SPOJ — 862 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![856 problems](https://img.shields.io/badge/problems-856-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![862 problems](https://img.shields.io/badge/problems-862-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 856 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 862 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 856 problems
+## The 862 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -240,7 +240,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 | [GEOPROB](GEOPROB/README.md) | Double the middle length and subtract the two shorter lengths, like measuring a board by adding twice one span and removing two gaps. Store each number as decimal digits in reverse order. | O(t * d) with d at most 200 |
 
-### Graphs & trees (58)
+### Graphs & trees (59)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -304,6 +304,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [MMINPAID](MMINPAID/README.md) | Prepaying a road is like buying a ticket at a booth: once bought, the ride costs nothing later. The algorithm is a shortest-path search over states made of a city and a prepaid-road mask. | O(N times m times two to the m) |
 | [MTREE](MTREE/README.md) | Charge every pair to the vertex where its two branches meet, like sorting letters by their common post office. Root the tree once and walk it in reverse postorder. | O(N) |
 | [RPLN](RPLN/README.md) | Overlapping pairs of blocks answer each range in one step, like reading a ladder of precomputed answers instead of rescanning the list. The program builds a sparse table. | O(1) |
+| [SEGSQRSS](SEGSQRSS/README.md) | Store a sum and a square sum at each tree node, like keeping both a running total and a tally of squared scores for a class. A pending add and a pending set travel down only when a child is touched. | O(N + Q log N) per case |
 
 ### Dynamic programming (54)
 
@@ -463,7 +464,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 | [PTIME](PTIME/README.md) | Count each prime inside a factorial by adding floor divisions, like counting how many rows of a fixed size fit in a stack. The real algorithm is Legendre's formula, computed after one sieve primes once. | O(maxN log log maxN + cases * pi(maxN) log maxN) |
 
-### Greedy, search & enumeration (401)
+### Greedy, search & enumeration (406)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -870,6 +871,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [PRLGAME2](PRLGAME2/README.md) | Start from a uniform guess about the red count, then update that guess with the balls already seen, like revising a coin's bias after watching a few tosses. | O(lines of input) |
 | [REBOUND](REBOUND/README.md) | Treat the bounce like a mirror with a doubled angle, then turn the angle rule into one quadratic equation, the way a surveyor turns two sight lines into one triangle. | O(T log C), where C is the largest coordinate |
 | [SPIRALGR](SPIRALGR/README.md) | Lay the spiral out once, mark walls, then walk the shortest route like a pedestrian avoiding blocked streets. The spiral is a square walk: move right, up, left, down, and grow each straight run after two turns. | O(1) |
+| [BSPRIME](BSPRIME/README.md) | Treat the stream as a long tape and mark the running one counts at every prime boundary, like page numbers in a book. A binary search finds the last prime that fits wholly inside N, then a short prefix of the next prime finishes the count. | O(L log log L + T log π(L)) |
+| [DOJ1](DOJ1/README.md) | A floor pattern repeats column by column, like laying the same brick course again and again. A matrix records how one column hands its overhang to the next, and fast exponentiation lays many columns at once. | O(T log M) worst case |
+| [DOJ2](DOJ2/README.md) | A column hands its overhang to the next column, like a row of dominoes falling in a fixed rhythm. The 32 possible overhang masks compress to eight states, and one short recurrence generates every column vector up front. | O(Nmax + T) |
+| [EKO](EKO/README.md) | Cutting higher removes less wood, like lowering a bar that each tree must reach under. Binary search on H finds the last height whose total reaches M. Each probe scans all N trees once and adds `treeHeights[treeIndex] - middleHeight` for the trees that are taller. | O(N log Hmax) |
+| [POWPOW](POWPOW/README.md) | The long sum of squared binomial coefficients collapses to one central binomial coefficient, like replacing a long hand count with a single known total. Fermat's rule then shrinks the huge exponent modulo 1000000006, and two modular exponentiations finish the job. | O(Nmax + T log Nmax) |
 
 ### Data structures, bits & simulation (44)
 
