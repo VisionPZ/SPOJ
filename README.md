@@ -1,10 +1,10 @@
-# SPOJ — 467 problems, one method
+# SPOJ — 483 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![467 problems](https://img.shields.io/badge/problems-467-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![483 problems](https://img.shields.io/badge/problems-483-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 467 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 483 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,11 +13,11 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 467 problems
+## The 483 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
-### Strings & text (97)
+### Strings & text (100)
 
 KMP, borders, tries and rolling hashes keep matching linear. Expression parsing and text rewriting add one stack pass. DP over all substrings is the only quadratic corner.
 
@@ -120,8 +120,11 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [MOZSACL](MOZSACL/README.md) | Stamping powers of a divisor is like labelling lockers 2, 4, and 8 with one tag, then asking how many tags of a color sit in a hallway. | O(1) |
 | [MOZSATC](MOZSATC/README.md) | Think of a zipper sliding along the string: you open it past one comma and close it when a fourth comma appears. That is the two-pointer sliding window, costing one look at each character. | O(n) |
 | [MOZSATSK](MOZSATSK/README.md) | Think of each position as a room whose doors depend on the digit you carry. At each minute, the doors open to four nearby positions whose digits differ by at most one around the clock. | O(n) |
+| [G10181](G10181/README.md) | Fold each letter to lowercase while reading, like dropping mail into boxes, then sort the boxes at the end. A byte sweep builds words with one buffer and collects them into a set. | O(1) |
+| [G10182](G10182/README.md) | Tally letters into 26 slots, then rank them like a hand of Scrabble tiles sorted by how many of each you hold. One pass over the bytes fills the slots. | O(1) |
+| [G11181](G11181/README.md) | Sort the words like cards dealt into alphabetical piles, then keep the first card of each matching group. A hand scanner extracts runs of letters and folds uppercase to lowercase as it goes. | O(w log w) for the sort |
 
-### Geometry & grids (92)
+### Geometry & grids (93)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
@@ -219,6 +222,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [MOZGEOL](MOZGEOL/README.md) | The short side is the shadow of the hypotenuse, like a ladder's height against its length. Divide the short side by the sine of the small angle to recover the long side. | O(1) |
 | [PATIOSLB](PATIOSLB/README.md) | Turn each slab length into a weight that already includes its grout gap, like packing boxes with their own padding. Sort the slabs from largest to smallest and greedily keep a slab whenever a completion still exists. | O(m * T/64 + m^2) |
 | [MUJGEO](MUJGEO/README.md) | Picture two triangular plates hinged along edge AC. The far corners C and D lie on a circle sized by the span CD, like a compass opened to half that span. | O(1) |
+| [G11182](G11182/README.md) | Picture each vertical word as a ribbon hanging from a hook, with the shared letter at hook height. Two hooks share one horizontal baseline. The leading cross is the earliest horizontal letter found in the vertical word, paired with its earliest position there. | O(L) per line for L input characters |
 
 ### Graphs & trees (38)
 
@@ -310,7 +314,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [TTABLE](TTABLE/README.md) | Work backward from the destination and keep only journeys that cannot be beaten. Think of planning the last leg of a trip first, then saving the best departure and arrival pair for each earlier station. | O(T^2) |
 | [MOZSAMSA](MOZSAMSA/README.md) | Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. | O(n) per case |
 
-### Number theory & big integers (65)
+### Number theory & big integers (73)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -381,8 +385,16 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SIS110G401](SIS110G401/README.md) | Treat each pair like two hands of counters and combine them into one pile. Read every integer in order, pair the values, and add them. The algorithm is a linear scan with a hand-written integer reader and a block output buffer. | O(total input bytes) |
 | [ZDIFFSQ2](ZDIFFSQ2/README.md) | Let the zero row pull three new terms back up the table, like filling a staircase from its top step down. The method is a finite-difference table extended one column at a time. | O(M^2) |
 | [SIS2002BO1](SIS2002BO1/README.md) | Walk down the diagonal strips of a tiled floor, counting tiles until reaching the requested one, like counting seats row by row in a stadium. The algorithm grows triangular sums until one covers the term number. | O(t times square root of the term number) |
+| [BUET19B](BUET19B/README.md) | Keep one running divisor and shrink it per number, like a sieve that drops holes as stones pass. The algorithm folds Euclid's gcd over the list. Each step costs a handful of divisions, so the whole pass stays near the input size. | O(1) |
+| [ENPRIME](ENPRIME/README.md) | Build the product in columns, like doing long multiplication on paper with a fresh carry for each column. The algorithm is grade-school multiplication in base one billion, using int64 arithmetic per step. | O(1) |
+| [G10183](G10183/README.md) | Peel the last digit off each number and subtract it, like stripping layers from an onion. The work stays in decimal text with a borrow-based helper, one step per printed line. | O(1) |
+| [G10184](G10184/README.md) | Keep every amount in exact hundredths, like counting money in cents, and format only at the end. Rice is diners divided by 8, chicken is diners divided by 16, and cost is diners times twice the rice price plus the chicken price, all over 16. | O(1) |
+| [G10185](G10185/README.md) | Stack the primes like books in a widening tower, adding one more book to each row. The sieve of Eratosthenes marks composites up to 1000, and a downward scan collects the primes in order. | O(p) after fixed sieve work |
+| [SUMSCALC](SUMSCALC/README.md) | Picture each sum as a staircase of blocks that folds into a rectangle, so one multiplication counts the whole shape. The algorithm uses closed-form power sums: n(n+1)/2, n(n+1), n², n(n+1)(2n+1)/6, and the square of n(n+1)/2. | O(T) for T test cases |
+| [SUMUNZ](SUMUNZ/README.md) | Think of the input as a number tape: you add each value to a tally and cut the tape the moment a 0 appears. The hand scanner skips brackets, commas, and spaces, then reads one signed integer at a time. | O(N) for N input bytes |
+| [TRIALDIV](TRIALDIV/README.md) | Think of a multiplication table where each cell already names its smallest prime factor, so factoring becomes reading a cell and dividing. The algorithm builds that table with a sieve: each prime marks its uncovered multiples starting at its square, and unmarked entries become their own smallest factor. | O(L log log L + T log L), with L = 1000000 |
 
-### Greedy, search & enumeration (101)
+### Greedy, search & enumeration (102)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -489,8 +501,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [VIP](VIP/README.md) | Eliminate candidates with one comparison at a time, like finding a team captain by asking who knows whom. If the current candidate knows someone, the candidate cannot be the VIP. | O(n^2) per data set, dominated by input |
 | [VZLA2019I](VZLA2019I/README.md) | Choosing one item from each course multiplies the options, like assembling outfits from shirts, trousers and shoes. The algorithm reads six integers and multiplies them in one pass. | O(1) |
 | [RETOCALENTAMIENTO](RETOCALENTAMIENTO/README.md) | Try every starting point on the moon's calendar, like sliding a printed year of phases under a fixed window of observations. Keep only starting points that reproduce all records. | O(30 n) |
+| [BUET19A](BUET19A/README.md) | Fold each number into one of three slots, like dropping a ball into a three-slot wheel, then read the winner from the slot pair. The algorithm is modular reduction: dividing by 3 maps a number to ROCK, PAPER, or SCISSORS in constant time. | O(1) |
 
-### Data structures, bits & simulation (36)
+### Data structures, bits & simulation (39)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -532,6 +545,9 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [MOZSAPAR](MOZSAPAR/README.md) | Filling gaps is like balancing a stack of plates: add enough plates early so every later removal has one to take. Count the openings required by the final totals, then spend that budget on the earliest question marks. | O(1) |
 | [MOZSATLA](MOZSATLA/README.md) | Think of two crowds pushing a row of posts from each end. A rising code pushes the right post higher; a falling code pushes the left post higher. | O(n) per case |
 | [MOZVAPA](MOZVAPA/README.md) | Think of pairing every opening bracket with one closing bracket. A valid sequence needs exactly one partner of each kind, so equal counts are both necessary and enough. | O(n + Q) per case |
+| [BUET19C](BUET19C/README.md) | Tick each ID once on a roster, like a teacher marking names as students arrive; a second tick for the same name adds nothing. The algorithm uses a direct lookup table indexed by ID. | O(1) |
+| [G11183](G11183/README.md) | Track each block with its pile number and height, like a book carrying a shelf number and a slot on that shelf. Then a command becomes a short pointer update instead of a search. | O(c times b) worst case |
+| [RG102](RG102/README.md) | Treat the day as a ruler with 1440 ticks: each clock time marks one tick, and the answer is the distance to the ruler's end. The program converts a time to minutes elapsed with one multiply and one add, then subtracts that count from 1440. | O(N) for N input lines |
 
 ## License
 
