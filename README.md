@@ -1,10 +1,10 @@
-# SPOJ — 455 problems, one method
+# SPOJ — 458 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![455 problems](https://img.shields.io/badge/problems-455-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![458 problems](https://img.shields.io/badge/problems-458-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 455 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 458 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 455 problems
+## The 458 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -380,7 +380,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NUMTHEO01](NUMTHEO01/README.md) | Keep the running product small by reducing it after each factor, like paying down a balance after every purchase. Split the next factor into two small pieces so both partial products stay inside 64 bits. | O(t*n) worst case |
 | [SIS110G401](SIS110G401/README.md) | Treat each pair like two hands of counters and combine them into one pile. Read every integer in order, pair the values, and add them. The algorithm is a linear scan with a hand-written integer reader and a block output buffer. | O(total input bytes) |
 
-### Greedy, search & enumeration (91)
+### Greedy, search & enumeration (94)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -477,6 +477,9 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [MOZTAIP](MOZTAIP/README.md) | Think of copying a sign letter by letter instead of reading its meaning. A backslash followed by `t` is two marks on the paper, not a tab. Print the 26 characters as one constant string. | O(1) |
 | [MOVES000](MOVES000/README.md) | Treat the row like a row of beads on a zipper. Unclip one run of beads and clip it onto the front. An implicit treap stores the beads in order, and subtree sizes replace stored positions. | O(1) |
 | [RCKTFUEL](RCKTFUEL/README.md) | Treat the fuel like a debt that charges interest on itself. Every quarter of weight creates another quarter of fuel, yet the whole endless chain settles on one simple total. | O(1) |
+| [SDF4A](SDF4A/README.md) | Treat plants as dots and pipes as roads, like linking towns with the shortest road network. Prim's algorithm grows one connected tree, adding the nearest outside plant each round. | O(1) |
+| [SDF4B](SDF4B/README.md) | Think of each booking as a table that stays reserved while staff clear it, like a restaurant turning tables. Sort bookings by finish time, then place each in the room that frees latest but still before its start. | O(M log M + M min(N, M)) worst case |
+| [SDF4C](SDF4C/README.md) | Picture the number track as a staircase spiral, like a path that grows one step longer every two turns. A binary search on n times n plus n finds the run containing P. | O(1) |
 
 ### Data structures, bits & simulation (36)
 
