@@ -1,10 +1,10 @@
-# SPOJ — 685 problems, one method
+# SPOJ — 691 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![685 problems](https://img.shields.io/badge/problems-685-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![691 problems](https://img.shields.io/badge/problems-691-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 685 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 691 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 685 problems
+## The 691 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -297,7 +297,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [MSTS](MSTS/README.md) | Process equal weights in batches, like laying identical bricks one layer at a time before moving to the next layer. Kirchhoff matrix-tree theorem counts spanning trees of each batch graph after cheaper batches are contracted. | O(1) |
 | [QTREE4](QTREE4/README.md) | Split the tree into centre regions, like finding the longest trip between two neighbourhoods by keeping the best outgoing road from each neighbourhood. Centroid decomposition gives every node a logarithmic list of ancestor centroids. | O(1) |
 
-### Dynamic programming (46)
+### Dynamic programming (47)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -349,6 +349,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [DSUBSEQ](DSUBSEQ/README.md) | Adding one letter doubles the pile of subsequences, like flipping a switch for every existing choice, and repeats collapse by subtracting the previous total for that same letter. | O(total string length) |
 | [CSUBSEQS](CSUBSEQS/README.md) | Count each distinct string at the earliest place it can finish, like filing a book under the first shelf where the whole title appears. For a chosen first letter, use its first occurrence in each string. | O(26 S), with S reachable states |
 | [INCSEQ](INCSEQ/README.md) | Each new value extends shorter subsequences, like stacking blocks where every new block must be taller than the top one. A Fenwick tree stores counts grouped by last value, so the sum of all smaller tops is one prefix query. | O(N K log V) |
+| [HELPBOB](HELPBOB/README.md) | Think of coupons as stamps collected while walking through a set of pizzas; a later pizza gets every stamp gathered so far. Try every subset and every order inside it, but share work with a bitmask DP that stores the cheapest cost for each bought set. | O(m * 2^m) per case |
 
 ### Number theory & big integers (89)
 
@@ -446,7 +447,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (249)
+### Greedy, search & enumeration (254)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -701,6 +702,11 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [PDECODE](PDECODE/README.md) | Undoing a shuffle is like walking backward around a carousel: after a whole cycle, every seat returns home. Compute the shuffled map after m applications, then place each encoded character at its original seat. | O(n log m) per case |
 | [SDGAME](SDGAME/README.md) | Keep only remainders, like a shop clerk who totals prices using their last digits. A range product modulo M needs only each die modulo M. A segment tree stores those products and supports point replacement plus range query in O(log N). | O((R + N) log N) |
 | [TLE](TLE/README.md) | Treat each value as a switch pattern, and each neighbor must press none of the switches you pressed. A subset total adds every compatible predecessor at once, like summing one whole spreadsheet column with a single formula. | O(T * N * M * 2^M) |
+| [DOCTOR](DOCTOR/README.md) | A set can be dropped when every disease in it appears in some smaller kept set. Think of a recipe shelf: keep every ingredient that no smaller recipe can supply, and all other recipes become redundant. | O(m^2) per case |
+| [FOREST2](FOREST2/README.md) | Treat each tree as a shadow cast on a compass; a tree stays visible when its shadow has a sliver no nearer shadow covers. Sweep trees from near to far and test each tree before adding its shadow to the union. | O(n^2) per case |
+| [KNIGHTS](KNIGHTS/README.md) | Turn hate edges into friendship edges; a legal table is then an odd cycle in the friendship graph. Think of cycles as rooms joined by single doors: a knight sits when some room has an odd loop and contains him. | O(n^2 + m) per case |
+| [SDGAME2](SDGAME2/README.md) | Treat the dice as a row of numbered tiles and keep a running product for each stretch of tiles. A segment tree answers each stretch query and each value change in logarithmic time. | O(R log N) |
+| [WILD](WILD/README.md) | Treat each evil member as a shadow over the score cube and count the cells outside every shadow. Flip the last two axes so the shadow edge becomes a running minimum, then sweep the first axis while keeping a staircase of breakpoints. | O(n log n) per case |
 
 ### Data structures, bits & simulation (42)
 
