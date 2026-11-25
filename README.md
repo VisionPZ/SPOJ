@@ -1,10 +1,10 @@
-# SPOJ — 613 problems, one method
+# SPOJ — 619 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![613 problems](https://img.shields.io/badge/problems-613-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![619 problems](https://img.shields.io/badge/problems-619-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 613 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 619 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 613 problems
+## The 619 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -439,7 +439,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (184)
+### Greedy, search & enumeration (190)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -629,6 +629,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [COWCAR](COWCAR/README.md) | Think of filling lanes with cars from slowest to fastest, like stacking books so the heavier ones go underneath. A cow placed at rank `r` in a lane loses `D*r` speed, and ranks repeat every `M` cows. | O(N log N) |
 | [GLASNICI](GLASNICI/README.md) | Picture each messenger walking on a moving walkway that shifts left by `K` units per position. After that shift, the largest drop from any earlier messenger is twice the answer. | O(N) per test |
 | [QUADAREA](QUADAREA/README.md) | Treat the four walls like a hinged frame: it opens widest when its corners lie on one circle. Brahmagupta's formula gives that widest area from the four sides alone. | O(T) |
+| [ARRANGE](ARRANGE/README.md) | The best order is almost sorted descending, like stacking the heaviest boxes lowest. A descending order wins because each later factor raises an already large exponent. The one exception is a leading pair 3 then 2, where the incoming signal is still 1. | O(1) |
+| [BUILD](BUILD/README.md) | Treat every stone as one unit at its binary level, like stacking coins of equal denomination. Two units at one level combine into one unit at the next level. | O(1) |
+| [CANDY2](CANDY2/README.md) | The total moves equal all candies minus the candies already sitting in their chosen bags, like keeping the fullest three shelves. So minimizing moves means maximizing the sum of three entries taken from different rows and different columns. | O(N) |
+| [GETBACK](GETBACK/README.md) | Work backwards from Desertville and ask how much water each restpoint needs, like stocking depots before a long trek. A short leg can be ferried by making round trips that leave water behind. | O(1) |
+| [PIB](PIB/README.md) | Count the paths in the recursion tree instead of walking the tree, like counting routes on a ladder with steps of 1 and pi. Each route picks a number of unit steps and pi steps before dropping below 4. | O(1) |
+| [PUZZLE2](PUZZLE2/README.md) | Treat each column as a stack of bits, like a column of coins that can be turned over as a whole. A row flip turns every coin in that row, so it changes a column into its complement. | O(1) |
 
 ### Data structures, bits & simulation (42)
 
