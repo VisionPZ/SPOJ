@@ -1,10 +1,10 @@
-# SPOJ — 998 problems, one method
+# SPOJ — 1004 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![998 problems](https://img.shields.io/badge/problems-998-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1004 problems](https://img.shields.io/badge/problems-1004-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 998 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1004 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 998 problems
+## The 1004 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -481,7 +481,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [APS](APS/README.md) | The sequence is a running total, like a row of monthly bills where each new bill is the smallest prime factor of the current index. Find every smallest prime factor with one sieve, then accumulate them once in order. | O(largest N log log largest N plus T) |
 | [LOOPEXP](LOOPEXP/README.md) | The current maximum changes exactly when the largest value seen so far arrives, like noting each new high-water mark. Position i holds the largest of its first i entries with probability 1/i. | O(T + max N) |
 
-### Greedy, search & enumeration (525)
+### Greedy, search & enumeration (531)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1012,6 +1012,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [PYTRIP2](PYTRIP2/README.md) | Generate primitive triples once, then count legal multiples for each query with two divisions. This is like listing every bread recipe once and scaling portions to fit an order. | O(1) |
 | [SCIENCE](SCIENCE/README.md) | A flow test checks how many complete rounds the graph can support before any assignment is printed, like checking how many full deals a deck can supply before reshuffling. | O(1) |
 | [WITTYBOY](WITTYBOY/README.md) | Treat each remote state as a room and walk the cheapest route with a priority queue, like planning a trip with a map. A state remembers the current channel, the channel shown immediately before it, and how many required channels are already watched. | O(S * D) for S states and D digit candidates |
+| [BBM](BBM/README.md) | Each precomputed factorial is a milestone, like a marker on a long road that shortens the remaining walk. To get factorial(x), start at the last milestone at or below x and multiply the remaining numbers, fewer than 262144 of them. | O(d(n) log n + 262144) per case |
+| [DTPOLY2](DTPOLY2/README.md) | The closed form turns a huge dissection count into two binomial coefficients divided by K, like pricing a crate by weight instead of counting every item. Legendre's formula gives the prime exponent of each factorial, so no large integer is ever built. | O(L log log L + pi(L) log N) with L = max N+K-2 |
+| [GHALIBC](GHALIBC/README.md) | The sum stops depending on the exponent after one parity check, like a light bulb toggled once and then left on the same circuit. Sun and Tauraso's congruence gives the closed forms: odd exponents keep Catalan(r), even exponents use 4^r times (2 minus 2^p), all modulo p squared. | O(p + log p) per odd case, O(log p) per even case |
+| [KAYKAY](KAYKAY/README.md) | Cutting one edge separates any valid pair, like cutting a rope to hang two baskets on opposite sides. Tree knapsack computes the best connected subtree containing each vertex inside its rooted part. | O(n times k squared) |
+| [SUDOGOB](SUDOGOB/README.md) | Choose the empty cell with the fewest legal digits, like picking the tightest knot first when tying a bundle. Bit masks hold the used digits for each row, column, and box, so candidates come from one bitwise complement. | O(9 to the number of empty cells) worst case |
+| [TMB](TMB/README.md) | The answer is the sum of uniform set partitions, like tallying every way to pack a crate into equal boxes then adding the box sizes. For a fixed team size d, the recurrence multiplies by a binomial when one more group is added. | O(n squared log n) worst case for one total |
 
 ### Data structures, bits & simulation (44)
 
