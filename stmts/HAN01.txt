@@ -1,0 +1,570 @@
+HAN01 - Ha-noi!
+
+
+
+	
+				no tags 
+				
+
+
+
+
+	Little Sabrina loves solving puzzles. Last week she got a new puzzle: The "Tower of Hanoi" puzzle. This puzzle is based on an old legend:  "The temple priests of Hanoi have to transfer a tower consisting of 64 fragile disks of gold from one part of the temple to another, one disk at a time. The disks are arranged in order, no two of them the same size, with the largest on the bottom and the smallest on top. Because of their fragility, a larger disk may never be placed on a smaller one, and there is only one intermediate location where disks can be temporarily placed. It is said that before the priests complete their task the temple will crumble into dust and the world will vanish in a clap of thunder." Sabrina reconstructed the problem with some coins of different size. She solved the puzzle for three coins in 7 steps, for four coins in 15 steps,... after solving the problem with 7 coins she had the hang of it. Yesterday she started to solve the puzzle with 31 coins and her optimal strategy. After hours of moving coins from one pile to the other she was very tired and went to bed. This was a bad idea! Her little brother Robin discovered the towers of coins and - whoops! - threw it on the floor. Then he noticed a sheet of paper: "Don't touch this towers! Steps: 16543". "Oh no!" Robin has to reconstruct the tower because his sister can get very, very angry... Your task is to help Robin to reconstruct the towers.  Sabrina started the game with all disks on peg number one and her goal was to move the disks to peg number two. She used her optimal strategy and noted the number of steps she had done.
+Input
+The first line of input contains one integer t: the number of test cases. t lines follow. Each line contains two integers n (2 < n < 61) and k (0 < k < 2n). n is the number of disks of the Hanoi puzzle and k the number of steps Sabrina had done. Please be careful, the number k can be very large, it may not fit in a 32 bit integer.
+Output
+Output the reconstructed configuration of the towers after k steps. For each testcase output three lines. One for each tower. Each line consists of the tower identifier (1, 2, 3) a colon, one space and the disk numbers (n, n-1 ... 2, 1) which are separated by a '|' - character.
+Example
+Input:
+3
+3 6
+32 889397450
+31 16543
+
+Output:
+1: 1
+2: 3|2
+3:
+1: 32|31|28|25|18|17|14|3
+2: 30|29|26|13|12|11|10|9|6|5|2
+3: 27|24|23|22|21|20|19|16|15|8|7|4|1
+1: 31|30|29|28|27|26|25|24|23|22|21|20|19|18|17|16|7|6
+2: 15|8|5|4|3|2|1
+3: 14|13|12|11|10|9
+
+
+
+
+	 Submit solution!
+
+
+			
+			
+			
+			
+			
+
+hide comments
+
+
+
+		
+		
+				
+	
+	
+		
+				
+	
+	
+	
+	<!--
+	$(document).ready(function(){
+        $('.pager_link').bind('click', function(me){
+                var href=$(me.currentTarget).attr('href');
+		$('#ccontent').animate({opacity: 0.5},1);
+                $.ajax({
+                        type: "GET",
+                        url: href+",ajax=1",
+                        contentType: "application/x-www-form-urlencoded;charset=ISO-8859-2",
+                        success: function(data){
+                                $('#ccontent').html(data);
+				$('#ccontent').animate({opacity: 1.0},1);
+                        },
+                        error: function(err){
+                                alert('error');
+                        }
+                });
+                return false;
+        });
+	});
+	-->
+	
+	
+
+
+
+			
+	
+		
+			
+		
+		
+			Patrick Schneider: 
+								2014-10-27 13:55:08
+		
+				Why exactly is Erlang forbidden?
+						
+	
+				
+	
+		
+			
+		
+		
+			setu basak: 
+								2014-06-11 17:55:09
+		
+				any special case?? the answer correct for this sample test cases but i am getting wa :(
+
+						
+	
+				
+	
+		
+			
+		
+		
+			Garg Ankit: 
+								2012-10-31 16:38:59
+		
+				sol id: 5525726
+correct implementation...still getting WA :(:(
+plz help
+got AC :D
+				Last edit: 2011-08-17 18:10:14
+						
+	
+			
+
+
+
+
+<!--
+function getCookieVal (offset) {
+        var endstr = document.cookie.indexOf (";", offset);
+        if (endstr == -1) { 
+                endstr = document.cookie.length; 
+        }
+        return unescape(document.cookie.substring(offset, endstr));
+}
+
+function GetCookie (name) {
+  var arg = name + "=";
+  var alen = arg.length;
+  var clen = document.cookie.length;
+  var i = 0;
+  while (i < clen) {
+    var j = i + alen;
+    if (document.cookie.substring(i, j) == arg) {
+      return getCookieVal (j);
+      }
+    i = document.cookie.indexOf(" ", i) + 1;
+    if (i == 0) break; 
+    }
+  return null;
+}
+
+function toggleComments() {
+        var a = document.getElementById('comments_table');
+        var d = a.style.display;
+        if( d == "" || d == "block" ){
+                d = "none";
+                document.getElementById('comments_sh').innerHTML = 'show';
+        } else {
+                d = "block";
+                document.getElementById('comments_sh').innerHTML = 'hide';
+        }
+        a.style.display = d;
+        document.cookie="comments_table="+d+"; path=/;";
+}
+
+if( GetCookie('comments_table') == 'none' ){
+        document.getElementById('comments_sh').innerHTML = 'show';
+        document.getElementById('comments_table').style.display = 'hide';
+}
+
+-->
+
+
+
+			
+			
+			
+                
+                
+        
+        
+         Leave a Comment 
+        
+                
+                
+        
+        
+                
+                        
+                        
+                
+        
+
+
+
+Notes:
+1. Don't post any source code here.
+2. Please be careful, leave short comments only. Don't spam here.
+3. For more discussion (hints, ideas, solutions) please visit our forum.
+4. Authors of the problems are allowed to delete the post and use html code here (e.g. to provide some useful links).
+
+
+        
+        
+
+		
+	
+	
+	
+	
+				
+			 Submit solution!
+		
+		
+		
+
+		
+		
+			
+				
+				
+			
+			
+			Added by:Simon
+			Date:2005-05-03
+			Time limit:2s
+			
+			Source limit:8082B
+						Memory limit:1536MB
+										
+					Cluster:
+					
+													Cube (Intel G860)
+								
+					
+				
+						Languages:All except: ERL GOSU JS-RHINO PERL6 
+			Resource:Ulm Algorithm Course SoSe 2005													
+		
+	
+		
+												
+					
+						Vote requirements
+					
+					
+						
+							  user for 3 from 5 needed days							
+							  solve at least 15 problems							
+							  solve this problem
+						
+					
+				
+					
+				
+		
+	
+				
+				
+				
+					Own tags
+				
+				
+			
+					
+						
+	No tags
+					
+					
+					
+				      
+				      
+				        Add
+				      
+				    
+				    
+				    
+				    
+				    $(document).ready(function(){
+				    	$(document).on('click', '#problem-mytags-btn-add', function(){
+				    		$.ajax({
+				    			url: '/?a=tags&act=cpriv',
+				    			method: 'post',
+				    			dataType: 'json',
+				    			data: {'name': $("#problem-mytags-new").val(), 'pid': '351'},
+				    			success: function(data){
+				    				if(data['result'] == 'success'){
+				    					$('#problem-mytags').html(data['html']);
+				    				}
+				    				$("#problem-mytags-new").val('');
+				    				$("#problem-mytags-new").focus();
+				    			},
+				    			error: function(data){
+				    				//alert('error');
+				    			}
+				    		});
+				    	});
+				    	$(document).on('click', '.mytag', function(){
+				    		
+				    		var tid = $(this).attr('data-id');
+				    		var pid = '351';
+				    		
+				    		$.ajax({
+				    			url: '/?a=tags&act=spriv',
+				    			method: 'post',
+				    			dataType: 'json',
+				    			data: {'pid': pid, 'tid': tid},
+				    			success: function(data){
+				    				if(data['result'] == 'success'){
+				    					$('#problem-mytags').html(data['html']);
+				    				}
+				    			},
+				    			error: function(data){
+				    				//alert('error');
+				    			}
+				    		});
+				    		
+				    		
+				    		return false;
+				    	});
+				    });
+				    
+				    
+		
+				
+		
+				
+		
+		
+			function callback_after_vote(type, data)
+			{
+				var response = $.parseJSON(data);
+				manage_vote_interface(type);
+				//.html('<div class="vote-thank-you">Thank you!</div>');
+				
+
+				if (type == "problem" || type == "implementation") {
+					var progressBarValue = Math.round(2 + 98 * response.avg / 3);
+					var progressBarType;
+					if (progressBarValue < 25) progressBarType = "progress-bar-primary";
+					else if (progressBarValue < 50) progressBarType = "progress-bar-success";
+					else if (progressBarValue < 75) progressBarType = "progress-bar-warning";
+					else progressBarType = "progress-bar-danger";
+					
+					$("#rate-" + type + "-box .progress-bar").css("width", progressBarValue.toString() +"%");
+					$("#rate-" + type + "-box .progress-bar").attr("aria-valuenow", progressBarValue.toString());
+					$("#rate-" + type + "-box .progress-bar").attr("class", "progress-bar " + progressBarType);
+					$("#rate-" + type + "-box .progress-value").html(progressBarValue.toString() +"%");
+				}
+				else if (type == "quality") {
+					var quality_plus = response.sum_plus;
+					var quality_minus = response.sum_minus;
+
+					var box_content = '';
+
+					if (quality_plus > 0 || quality_minus > 0) {
+						if (quality_plus > 0) {
+							box_content += '<font size="+2"><span class="label label-success">' +
+								quality_plus.toString() + 
+								' <span class="fa fa-thumbs-o-up"></span></span></font>';
+						}
+						if (quality_minus > 0) {
+							box_content += '<font size="+2"><span class="label label-danger">' +
+								quality_minus.toString() + 
+								' <span class="fa fa-thumbs-o-down"></span></span></font>';
+						}
+					}
+
+					$( "#rate-" + type + "-box" ).empty().html(box_content);
+				}
+
+				// update count
+				if (response.update_count == 1) {
+					var count = parseInt($("#votes_count").html(), 10);
+					count++;
+					var votes_word = " vote";
+					if (count > 1) votes_word += "s";
+					$("#votes_count").empty().html(count.toString() + votes_word);
+				}
+			}
+			$( ".rate-btn" ).click(function() {
+				var rate_type = $(this).attr('data-rate-type').toString();
+				var rate_type_full = "";
+				var rate = $(this).attr('data-rate').toString();
+				if (rate_type == "p") rate_type_full = "problem";
+				else if (rate_type == "i") rate_type_full = "implementation";
+				else if (rate_type == "q") rate_type_full = "quality";
+				$.get( '/?a=vote&pid=351&t=' + rate_type + '&r=' + rate, function( data ) {
+				  callback_after_vote(rate_type_full, data);
+				});
+			});
+			function manage_vote_interface(type) {
+				number_of_voteboxes--;
+				/*
+				if (number_of_voteboxes == 0) {
+					$( "#vote-box" ).fadeOut(1500, function() {
+						$(this).remove();
+					});
+				} else {
+					$( "#vote-" + type + "-box" ).fadeOut(1500, function() {
+						$(this).remove();
+					});
+				}
+				*/
+				var n = $('.vote-thank-you').length;
+				var offset = (n * 60).toString() + "px";
+				$(document.body).append(
+					'<div class="vote-thank-you" style="margin: 40%;">' +
+					'<div class="alert alert-success" style="position: fixed; top: '+offset+';">' +
+					'<strong>Thank you for voting!</strong>' +				
+					'</div></div>');
+				setTimeout(function(){$( ".vote-thank-you" ).fadeOut(1500, function() {
+					$(this).remove();
+				});},2000);
+			}
+		
+		
+		
+	
+
+
+
+
+
+
+
+
+ul.list-unstyled li{
+	margin-bottom: 5px;
+}
+ul.list-unstyled li a.btn{
+	width: 100%;
+}
+ul.ui-autocomplete{
+	z-index: 10000;
+	width: 200px !important;
+}
+
+
+	
+
+		
+		
+		
+			
+				
+					About | Tutorial | Tools | Clusters | Credits | API | Widgets
+					Legal: 
+					   Terms of Service | Privacy Policy | GDPR Info
+					
+				
+				
+					 RSS 
+				
+			
+		
+		
+		
+			
+	© Spoj.com. All Rights Reserved. Spoj uses Sphere Engine™ © by Sphere Research Labs.
+
+		 
+	
+
+	
+	
+		
+	
+	
+	$(function(){
+		setTimeout(function(){
+			$('.no_a_info').css('visibility', 'visible');
+		}, 5000);
+		
+		if(!$('.aProblemTop').length && !$('.aProblemsTop').length && !$('.aSubmitTop').length && !$('.aStatusTop').length && !$('.aMainRight').length){
+			ga('send', 'event', 'ads', 'no-ads', 'main-contest');
+		}
+		if ($('.aProblemTop').height() == 0){
+			$('.aProblemTop').css({'border': '1px solid #ddd', 'background': '#f0f4e3', 'height': 90});
+			$('.aProblemTop').html($('<p class="text-center">using adblock?</p><h4 class="text-center">Online ads help us to maintain site.</h4><p class="text-center"><strong>please whitelist *.spoj.com</strong></p>'));
+			ga('send', 'event', 'ads', 'adblock2', 'aProblemTop');
+		}
+		if ($('.aProblemsTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aProblemsTop');
+		}
+		if ($('.aSubmitTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aSubmitTop');
+		}
+		if ($('.aStatusTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aStatusTop');
+		}
+		if ($('.aMainRight').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aMainRight');
+		}
+	});
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	(function(d, s, id) {
+	  var js, fjs = d.getElementsByTagName(s)[0];
+	  if (d.getElementById(id)) return;
+	  js = d.createElement(s); js.id = id;
+	  js.src = "//connect.facebook.net/pl_PL/sdk.js#xfbml=1&appId=321676846207&version=v2.0";
+	  fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+	
+	
+
+
+
+
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-YF5KJ19JWE');
+
+
+
+
+    (function(h,o,t,j,a,r){
+        h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+        h._hjSettings={hjid:334656,hjsv:5};
+        a=o.getElementsByTagName('head')[0];
+        r=o.createElement('script');r.async=1;
+        r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+        a.appendChild(r);
+    })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
+
+
+
+(function(){
+  if(typeof _bsa !== 'undefined' && _bsa) {
+    // format, zoneKey, segment:value, options
+    _bsa.init('flexbar', 'CK7D4KJL', 'placement:demo');
+  }
+})();
+
+
+	$(function(){
+		$(document).on('click', '.track', function(){
+			var event = $(this).attr('data-event');
+			var action = $(this).attr('data-action');
+			var value = $(this).attr('data-value');
+			ga('send', 'event', event, action, value);
+		});
+	});
+	//window.open('http://incoming.hotjar.com/s/7366', '_blank');
+	
+
+
+
+

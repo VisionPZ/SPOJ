@@ -1,0 +1,223 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+The Tall Windmills
+
+Status
+
+Ranking
+
+WINDMILL - The Tall Windmills
+
+no tags
+
+In the later days of his career Johnny purchased a long and narrow strip of land on which he intended to erect a row of windmills, and live off the electrical energy produced by his little power plant. To his dismay, he soon discovered that he had been badly cheated - throughout most of the year the wind blew lengthwise through the strip, rather than in a perpendicular direction. As a result, the wind was certain to lose most of its force on the first windmill it encountered, leaving all the others idle. Johnny could only see one way of coping with this problem, namely - to vary the height of windmills situated relatively close to each other. More precisely, Johnny intends to build exactly
+n
+ windmills along a straight line, with equal spacing (of one Bytelandian furlong) between adjacent windmills. It has been established by a team of experts that if two windmills are
+k
+ Bytelandian furlongs apart from each other, their height must differ by at least
+n-k
+ Bytelandian yards. No windmill may ever be lower than 1 Bytelandian yard, and some, obviously, may need to be considerably higher. But tall windmills are far more expensive to construct, and thus you have been asked to choose the heights of Johnny's windmills in such a way as to guarantee that the tallest windmill has the minimum possible height.
+
+Input
+
+Input starts with a single integer
+t
+, the number of test cases (
+t
+<=100).
+t
+ test cases follow.
+
+Each test case consists of exactly one integer
+n
+ (1<=
+n
+<=100) - the number of windmills Johnny intends to construct.
+
+Output
+
+For each test case output a line with exactly
+n
+ numbers, denoting the heights of successive windmills given in the order in which they are arranged along the road.
+
+Example
+
+Input:
+
+3
+1
+2
+3
+
+Output:
+
+1
+1 2
+2 4 1
+
+ Submit solution!
+
+hide
+ comments
+
+numerix
+:
+
+2014-11-15 22:56:29
+
+Problem has been fixed today and rejudge has been done. Seems okay, now.
+
+--ans(Francky)--> Special thanks for Piotr Kąkol who solved this case very quickly.
+
+Last edit: 2014-11-15 23:54:47
+
+Francky
+:
+
+2014-11-15 22:15:43
+
+@numerix : I found this fact with TIP3, and min_25 found it in another problem, I'm waiting for his mail to remind what problem ; then I'll write to admin with "the package" related to "internal error". I will appreciate if some other problem is found with that feature.
+
+edit(Francky)--> It is
+SHUNT
+. Thanks @min_25 for the quick answer. Email sent to admins.
+
+Last edit: 2014-11-15 11:43:17
+
+numerix
+:
+
+2014-11-15 22:15:43
+
+This problem is still broken. All submissions within the last 3 months lead to "internal error".
+
+surayans tiwari(http://bit.ly/1EPzcpv)
+:
+
+2014-11-15 22:15:43
+
+why is there an internal error?
+
+numerix
+:
+
+2014-11-15 22:15:43
+
+There seems to be a problem with the judge.
+
+My former AC solution now leads to INTERNAL ERROR. Please check that.
+
+surayans tiwari(http://bit.ly/1EPzcpv)
+:
+
+2014-11-15 22:15:43
+
+@Adrian Kosowski:very weak test cases please improve the test case else remove the problem
+
+just for idea
+
+for
+
+input
+
+1
+
+4
+
+6
+
+output
+
+1
+
+3 6 1 4
+
+4 9 14 1 6 11
+
+Last edit: 2014-07-25 00:25:27
+
+knight
+:
+
+2014-11-15 22:15:43
+
+@P.S. may i know for n=3 why it is 2 4 1 and not 1 4 2?
+
+ Submit solution!
+
+Added by:
+adrian
+
+Date:
+2005-04-13
+
+Time limit:
+0.5s
+
+Source limit:
+50000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All
+
+Resource:
+DASM Programming League 2004, problemset 9
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.

@@ -1,0 +1,247 @@
+sign in
+
+ sign up
+
+ forgot
+
+Toggle navigation
+
+ PROBLEMS
+
+ STATUS
+
+ RANKS
+
+ DISCUSS
+
+CONTESTS
+
+ sign in
+
+Problems
+
+classical
+
+Bishops
+
+Status
+
+Ranking
+
+BISHOPS - Bishops
+
+#math
+
+#big-numbers
+
+#ad-hoc-1
+
+ Yesterday was Sam's birthday. The most interesting gift was definitely the chessboard. Sam quickly learned the rules of chess and defeated his father, all his friends, his little sister, and now no one wants to play with him any more.
+
+So he decided to play with another birthday gift – a Book of Math Problems for Young Mathematicians. He opened the book somewhere in the middle and read the following problem: "How many knights can be placed on a chessboard without threatening each other?" After a while he realized that this was trivial and moved on to the next problem: "How many bishops can be placed on a chessboard without threatening each other?". Sam is in trouble here. He is not able to solve this problem and needs your help./p>
+
+Sam's chessboard has size N × N. A bishop can move to any distance in any of the four diagonal directions. A bishop threatens another bishop if it can move to the other bishop's position. Your task is to compute the maximum number of bishops that can be placed on a chessboard in such a way that no two bishops threaten each other.
+
+Input
+
+The input file consists of several lines. The line number i contains a single positive integer N representing the size of the i-th chessboard. [1 ≤ N ≤ 10
+100
+]
+
+Output
+
+The output file should contain the same number of lines as the input file. The i-th line should contain one number – the maximum number of bishops that can be placed on i-th chessboard without threatening each other.
+
+Example
+
+Input:
+
+2
+3
+
+Output:
+
+2
+4
+
+ Submit solution!
+
+hide
+ comments
+
+<
+
+Previous
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+Next
+
+>
+
+verseth
+:
+
+2021-04-15 12:20:44
+
+If you're using Ruby then you can very easily iterate through the input lines indefinitely (reads all the lines it's given) by using:
+
+```
+
+# will iterate through the lines of files given as arguments (or STDIN if no arguments are given)
+
+ARGF.each_line do |line|
+
+  # do something
+
+end
+
+```
+
+aditigedam
+:
+
+2020-09-02 13:44:50
+
+for taking input use
+
+"' while(cin>>n)'''
+
+amar_shukla1
+:
+
+2020-07-20 18:51:46
+
+take sc.hasNextBigInteger()
+
+Last edit: 2020-07-20 19:01:42
+
+wargang
+:
+
+2020-06-23 07:06:21
+
+took some WA's. but really worth it.
+
+vansh_1610
+:
+
+2020-06-03 08:28:35
+
+how many test cases we have to take??
+
+ocean_bh11
+:
+
+2020-05-20 21:42:42
+
+Use sc.hasNextBigInteger() for taking test cases in java
+
+mrmajumder
+:
+
+2020-02-05 11:36:26
+
+Check for the corner case, very important!
+
+mriow
+:
+
+2019-10-29 10:11:43
+
+std::cin.fail() will be your friend to check for the EOF
+
+nikhil_sarda
+:
+
+2019-08-26 14:48:00
+
+as far as the input is concerned,use getline(cin,<string_name>) ,and while <string_name>!="",
+
+works fine for C++
+
+sanket17
+:
+
+2019-07-08 11:50:40
+
+Use try except in python
+
+and take case of n=0,n=1
+
+ Submit solution!
+
+Added by:
+Roman Sol
+
+Date:
+2005-04-17
+
+Time limit:
+1s
+
+Source limit:
+10000B
+
+Memory limit:
+1536MB
+
+Cluster:
+
+Cube (Intel G860)
+
+Languages:
+All
+
+Resource:
+IPSC 2004
+
+About
+ |
+Tutorial
+ |
+Tools
+ |
+Clusters
+ |
+Credits
+ |
+API
+ |
+Widgets
+
+Legal:
+
+Terms of Service
+ |
+Privacy Policy
+ |
+GDPR Info
+
+ RSS
+
+	© Spoj.com. All Rights Reserved. Spoj uses
+Sphere Engine
+™ © by
+Sphere Research Labs
+.
