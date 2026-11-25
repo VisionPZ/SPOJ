@@ -1,10 +1,10 @@
-# SPOJ — 702 problems, one method
+# SPOJ — 708 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![702 problems](https://img.shields.io/badge/problems-702-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![708 problems](https://img.shields.io/badge/problems-708-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 702 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 708 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 702 problems
+## The 708 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -238,7 +238,7 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [FUCT_FOR_RHOMBUS](FUCT_FOR_RHOMBUS/README.md) | Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. | O(1) |
 | [PG1118](PG1118/README.md) | Filling the square is like walking a circular staircase: step up and right, and step sideways when the next landing is taken. The program keeps one grid of n² cells, all initially empty. | O(1) |
 
-### Graphs & trees (52)
+### Graphs & trees (54)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -296,6 +296,8 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [REMGAME](REMGAME/README.md) | Treat every board as a bit pattern and let a move carve out one contiguous slice. A position wins when some move hands the opponent a losing position; taking the last piece is never a winning move. | O(V * M) for V visited boards and M moves |
 | [MSTS](MSTS/README.md) | Process equal weights in batches, like laying identical bricks one layer at a time before moving to the next layer. Kirchhoff matrix-tree theorem counts spanning trees of each batch graph after cheaper batches are contracted. | O(1) |
 | [QTREE4](QTREE4/README.md) | Split the tree into centre regions, like finding the longest trip between two neighbourhoods by keeping the best outgoing road from each neighbourhood. Centroid decomposition gives every node a logarithmic list of ancestor centroids. | O(1) |
+| [GSS5](GSS5/README.md) | Think of each range as a bucket holding candidate start and end points, like picking a doorway and an exit in two neighbouring halls. A segment tree reports four numbers for any interval: total sum, best prefix, best suffix, and best subarray. | O((N + M) log N) per case |
+| [QTREE5](QTREE5/README.md) | Think of each centroid as a lookout tower with a bucket for every branch leading away from it. Each bucket keeps the closest white node on that branch, like a guard reporting the nearest light. | O(N log N + Q log² N) |
 
 ### Dynamic programming (48)
 
@@ -448,7 +450,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 | [CYLINDER](CYLINDER/README.md) | Picture a paper strip wrapped around a can, like a label with extra overlap. Only a few cuts matter: the ones where the base stops growing or the strip stops reaching around. | O(1) |
 
-### Greedy, search & enumeration (263)
+### Greedy, search & enumeration (267)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -717,6 +719,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [WARE](WARE/README.md) | Treat each whole warehouse layout as one square on a giant floor plan. Breadth-first search walks from layout to layout, like finding the shortest route through a maze. | O(S) per block, where S is the number of reachable layouts |
 | [WIDGET](WIDGET/README.md) | Solving the records is like balancing scales that wrap around after seven days. Each record weighs a multiset of widget types against a residue, so the whole set forms a linear system modulo 7. | O(m * n^2) per block |
 | [WORDRING](WORDRING/README.md) | Think of each letter pair as a station and each word as a one-way train whose travel time is its length. The best ring is the loop with the highest average travel time per train, like finding the slowest closed tour in a rail map. | O(V * n) per block, with V = 676 |
+| [ECLIPSE](ECLIPSE/README.md) | Picture a flashlight shining past a ball onto a second ball, like a hand making a shadow puppet. The dark core is a cone that narrows to a point, and the fuzzy outer cone widens forever. | O(1) per test case |
+| [SHOOTING](SHOOTING/README.md) | Treat each target as a box that multiplies every bullet placed inside it, like stacking weights whose effects compound. We need to split all bullets into `m` boxes and choose the split with the largest summed product. | O(3^n * m) |
+| [TRIOMINO](TRIOMINO/README.md) | Treat each empty run as a heap whose size is its Grundy number, like counting leftover stones in Nim. Combine Grundy values with exclusive-or, then take the mex of reachable values. | O(800² + T) |
+| [UNTITLE1](UNTITLE1/README.md) | Treat the array as shelves in a warehouse, each holding a fixed number of boxes. A full shelf gets a single sticky note recording the change, like marking the whole shelf at once. | O((N / 512 + 512) M) |
 
 ### Data structures, bits & simulation (43)
 
