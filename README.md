@@ -1,10 +1,10 @@
-# SPOJ — 537 problems, one method
+# SPOJ — 543 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![537 problems](https://img.shields.io/badge/problems-537-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![543 problems](https://img.shields.io/badge/problems-543-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 537 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 543 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 537 problems
+## The 543 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -424,7 +424,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SHAMIM9](SHAMIM9/README.md) | Think of a multiplication table where only the final column survives. The units digit of a product uses only the units digits of the factors. The program keeps the last digit while scanning each token and computes nine times that digit modulo ten. | O(1) |
 | [SWTHIN](SWTHIN/README.md) | Treating each spot as a pivot resembles fanning a ruler around a pin: every other spot lands on one direction. Spots with the same reduced direction from the pivot lie on one line. | O(1) |
 
-### Greedy, search & enumeration (123)
+### Greedy, search & enumeration (129)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -553,6 +553,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [PRMLX](PRMLX/README.md) | Counting earlier permutations resembles counting ticket numbers before a chosen ticket: fix one earlier letter and count every arrangement left. The algorithm adds a multinomial count for each unused smaller letter at every position. | O(1) |
 | [QKP](QKP/README.md) | Reading queen attacks is like shining eight flashlights from each queen, with pieces acting as walls. Knights instead hop to a short fixed list of squares. The algorithm marks attacked cells once and then scans the board. | O(1) |
 | [SQCOUNT](SQCOUNT/README.md) | Counting squares on a tiled floor is like stacking boxes: a wide room holds a predictable count at each size. The algorithm sums a closed form for each room, then adds the squares that fit through a door. | O(1) |
+| [CPRMT](CPRMT/README.md) | Think of two boxes of letter tiles and keep the smaller stack of each letter, like making one sandwich from whatever both kitchens have. The algorithm counts letters in each string, then writes each letter in alphabetical order as many times as the smaller count. | O(total letters + 26 times pairs) |
+| [EQU2](EQU2/README.md) | Expand the square root of n as a repeating continued fraction, like unfolding a strip of paper that curls back on itself. The algorithm finds the repeat length, then builds convergents up to index length minus one for an even period or twice the length minus one for an odd period. | O(period length) per case |
+| [EXCHANGE](EXCHANGE/README.md) | A buy and a later sell are like money passing through a tunnel. The entry fee comes from the buy day. The exit price comes from the sell day. | O(n log n) per case |
+| [IMPORT1](IMPORT1/README.md) | A node is important when many shortest routes must pass through it, like a bridge that traffic has to cross. The algorithm runs Floyd Warshall once to get every distance and every shortest path count. | O(n cubed) per case |
+| [TCOUNT2](TCOUNT2/README.md) | Treat the hexagon as six copies of one triangle, like six slices of the same pie, and count all triangles in the whole picture with one polynomial. The algorithm evaluates a cubic formula with a parity split. | O(input bytes) |
+| [TCOUNT3](TCOUNT3/README.md) | Picture the star as two huge overlapping triangles, like two rulers laid across each other at sixty degrees, and count the triangles they form with one product. The algorithm evaluates the cubic formula N times (10 N squared plus 9 N plus 1). | O(input bytes) |
 
 ### Data structures, bits & simulation (42)
 
