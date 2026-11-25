@@ -43,46 +43,58 @@ The sample wastes 10 units of area.
 
 ## Idea
 
-Score every possible sub-rectangle once, like filling a price list before shopping. Later cuts then read earlier scores instead of repeating work. The algorithm is dynamic programming over rectangle sizes. Each size tries every legal cut position and keeps the smallest waste. A size matching a desired plate scores zero.
+Store every rectangle's waste twice, once in width order and once in height order, so each cut reads two neighbouring cells. Think of one address book sorted by street and the same book sorted by name.
 
-A state costs one pass over candidate cut positions, at most 600 per direction. Exploring cut trees by recursion repeats the same sub-rectangles many times, so one table answers each size once. Only sums of plate widths or heights can end a useful cut, which shortens each pass.
+The program fills a dynamic-programming table of rectangle sizes. For each size it tries cuts up to `currentWidth div 2` or `currentHeight div 2`. A reversed copy supplies the matching half, so both reads advance through adjacent memory. A size matching a desired plate scores zero.
 
-Takeaway: one table of at most 360,000 sizes replaces an exponential search.
+Each size costs one pass over at most half of the widths and heights. Exploring cut trees by recursion repeats the same subrectangles many times, while one table answers each size once.
+
+Takeaway: two views of one table turn every cut pair into a neighbouring read.
 
 ## Why It Works
 
 1. A straight cut splits a rectangle into two smaller rectangles, so each subproblem shrinks in one dimension.
 2. A size matching a desired plate needs no cuts, so its waste is zero.
 3. Any other size wastes its whole area, or the sum of the two children's wastes at some cut.
-4. A useful cut leaves plates on at least one side. Moving that side's boundary to the end of its plates never raises waste, so cut positions are sums of plate widths or heights.
-5. A state whose waste equals its area saves nothing. If neither child can save area, no cut helps.
+4. A cut at `x` and a cut at `w − x` use the same pair of children, so testing `x ≤ w div 2` covers every vertical cut. The same holds for height cuts.
+5. `wasteByHeight` stores width `w` in height row `h`. `reversedByHeight` stores that value at `W − w`, so the second child of a vertical cut sits next to the first in a forward scan.
+6. For one width, `reversedColumn` holds height `h` at `H − h`. The two children of a horizontal cut then sit next to each other as well.
 
 The terms in each candidate value:
 
 | Term | Meaning |
 |---|---|
-| whole waste | area w × h when no cut helps |
+| whole waste | area `w × h` when no cut helps |
 | plate size | zero waste when the rectangle matches a desired plate |
-| vertical cut at x | waste(x, h) + waste(w − x, h) |
-| horizontal cut at y | waste(w, y) + waste(w, h − y) |
-| reachable sum | any total built by adding desired widths or desired heights |
+| vertical cut at `x` | `wasteByHeight[x] + reversedByHeight[W − w + x]` in height row `h` |
+| horizontal cut at `y` | `wasteByWidth[y] + reversedColumn[H − h + y]` in width row `w` |
+| cut bound | `currentWidth div 2` or `currentHeight div 2`, one copy of each pair |
 
-Every candidate is a sum of two earlier table entries, so one table pass settles every case.
+Every candidate adds two earlier table entries, so one sweep settles every case.
 
 A script traced a 10 by 10 slab with one 3 by 3 plate:
 
 ```
-reachable width sums: 0 3 6 9
-reachable height sums: 0 3 6 9
-h= 1 w= 1:1 w= 3:3 w= 4:4 w= 6:6 w= 7:7 w= 9:9 w=10:10
-h= 3 w= 1:3 w= 3:0 w= 4:3 w= 6:0 w= 7:3 w= 9:0 w=10:3
-h= 4 w= 1:4 w= 3:3 w= 4:7 w= 6:6 w= 7:10 w= 9:9 w=10:13
-h= 6 w= 1:6 w= 3:0 w= 4:6 w= 6:0 w= 7:6 w= 9:0 w=10:6
-h= 7 w= 1:7 w= 3:3 w= 4:10 w= 6:6 w= 7:13 w= 9:9 w=10:16
-h= 9 w= 1:9 w= 3:0 w= 4:9 w= 6:0 w= 7:9 w= 9:0 w=10:9
-h=10 w= 1:10 w= 3:3 w= 4:13 w= 6:6 w= 7:16 w= 9:9 w=10:19
-vertical cuts of 10x10: x=3 -> 19, x=6 -> 19, x=9 -> 19
-horizontal cuts of 10x10: y=3 -> 19, y=6 -> 19, y=9 -> 19
+  h   w=1  w=3  w=4  w=6  w=7  w=9  w=10
+  1   1    3    4    6    7    9    10
+  3   3    0    3    0    3    0    3
+  4   4    3    7    6    10   9    13
+  6   6    0    6    0    6    0    6
+  7   7    3    10   6    13   9    16
+  9   9    0    9    0    9    0    9
+ 10  10   3    13   6    16   9    19
+vertical cut pairs for 10x10:
+  x=1 -> waste(1,10)+waste(9,10) = 10+9 = 19
+  x=2 -> waste(2,10)+waste(8,10) = 20+26 = 46
+  x=3 -> waste(3,10)+waste(7,10) = 3+16 = 19
+  x=4 -> waste(4,10)+waste(6,10) = 13+6 = 19
+  x=5 -> waste(5,10)+waste(5,10) = 23+23 = 46
+horizontal cut pairs for 10x10:
+  y=1 -> waste(10,1)+waste(10,9) = 10+9 = 19
+  y=2 -> waste(10,2)+waste(10,8) = 20+26 = 46
+  y=3 -> waste(10,3)+waste(10,7) = 3+16 = 19
+  y=4 -> waste(10,4)+waste(10,6) = 13+6 = 19
+  y=5 -> waste(10,5)+waste(10,5) = 23+23 = 46
 answer 19
 ```
 
@@ -126,8 +138,6 @@ for _ in 1 .. caseCount:
   let slabHeight = nextInt(inputData, scanPos)
   let plateCount = nextInt(inputData, scanPos)
 
-  var desiredWidths = newSeq[int](plateCount)
-  var desiredHeights = newSeq[int](plateCount)
   let widthStride = slabHeight + 1
   let heightStride = slabWidth + 1
   var plateFlags = newSeq[bool]((slabWidth + 1) * widthStride)
@@ -135,94 +145,57 @@ for _ in 1 .. caseCount:
   for plateIndex in 0 ..< plateCount:
     let plateWidth = nextInt(inputData, scanPos)
     let plateHeight = nextInt(inputData, scanPos)
-    desiredWidths[plateIndex] = plateWidth
-    desiredHeights[plateIndex] = plateHeight
     plateFlags[plateWidth * widthStride + plateHeight] = true
 ```
 
-The read loop appends every line to one `inputData` string. `plateFlags` marks sizes that score zero. Cost: one pass plus one byte per plate.
+The read loop appends every line to one `inputData` string. `plateFlags` marks sizes that score zero. Cost: one input pass plus one byte per plate.
 
-**Cut positions.** Builds reachable sums and flat cut lists.
-
-```nim
-  var reachableWidth = newSeq[bool](slabWidth + 1)
-  var reachableHeight = newSeq[bool](slabHeight + 1)
-  reachableWidth[0] = true
-  reachableHeight[0] = true
-  for sumValue in 0 .. slabWidth:
-    if reachableWidth[sumValue]:
-      for plateIndex in 0 ..< plateCount:
-        let reached = sumValue + desiredWidths[plateIndex]
-        if reached <= slabWidth: reachableWidth[reached] = true
-  for sumValue in 0 .. slabHeight:
-    if reachableHeight[sumValue]:
-      for plateIndex in 0 ..< plateCount:
-        let reached = sumValue + desiredHeights[plateIndex]
-        if reached <= slabHeight: reachableHeight[reached] = true
-
-  var widthCutValues: seq[int] = @[]
-  var heightCutValues: seq[int] = @[]
-  var widthCutStart = newSeq[int](slabWidth + 2)
-  var widthCutCount = newSeq[int](slabWidth + 1)
-  var heightCutStart = newSeq[int](slabHeight + 2)
-  var heightCutCount = newSeq[int](slabHeight + 1)
-  for currentWidth in 1 .. slabWidth:
-    widthCutStart[currentWidth] = widthCutValues.len
-    for cutWidth in 1 ..< currentWidth:
-      if reachableWidth[cutWidth]: widthCutValues.add cutWidth
-    widthCutCount[currentWidth] = widthCutValues.len - widthCutStart[currentWidth]
-  for currentHeight in 1 .. slabHeight:
-    heightCutStart[currentHeight] = heightCutValues.len
-    for cutHeight in 1 ..< currentHeight:
-      if reachableHeight[cutHeight]: heightCutValues.add cutHeight
-    heightCutCount[currentHeight] = heightCutValues.len - heightCutStart[currentHeight]
-```
-
-Reachable sums come from repeated addition of desired widths and heights. Flat lists avoid a new sequence per rectangle. Cost: at most (W + H) × N steps.
-
-**Waste table.** Fills two layouts of the same values.
+**Waste tables.** Allocates the forward and reversed views of the grid.
 
 ```nim
   var wasteByWidth = newSeq[int32]((slabWidth + 1) * widthStride)
   var wasteByHeight = newSeq[int32]((slabHeight + 1) * heightStride)
-  var usefulWidthByHeight = newSeq[int](slabHeight + 1)
+  var reversedByHeight = newSeq[int32]((slabHeight + 1) * heightStride)
+  var reversedColumn = newSeq[int32](slabHeight + 1)
+```
 
+Two tables hold the same values in opposite orders. Cost: four allocations per case, with no work inside the sweep.
+
+**Sweep.** Fills each waste cell from cuts up to the middle.
+
+```nim
   for currentWidth in 1 .. slabWidth:
     let rowOffset = currentWidth * widthStride
-    var usefulHeightForRow = 0
+    for reverseHeight in 0 .. slabHeight:
+      reversedColumn[reverseHeight] = 0'i32
     for currentHeight in 1 .. slabHeight:
       let wholeWaste = currentWidth * currentHeight
       var bestWaste = int32(wholeWaste)
       if plateFlags[rowOffset + currentHeight]:
         bestWaste = 0'i32
       else:
-        if usefulWidthByHeight[currentHeight] > 0:
-          let verticalStart = widthCutStart[currentWidth]
-          for cutIndex in verticalStart ..< verticalStart + widthCutCount[currentWidth]:
-            let cutWidth = widthCutValues[cutIndex]
-            let leftOffset = currentHeight * heightStride + cutWidth
-            let rightOffset = currentHeight * heightStride + (currentWidth - cutWidth)
-            let candidateWaste = wasteByHeight[leftOffset] + wasteByHeight[rightOffset]
+        let transposedBase = currentHeight * heightStride
+        let widthShift = slabWidth - currentWidth
+        for cutWidth in 1 .. currentWidth div 2:
+          let candidateWaste = wasteByHeight[transposedBase + cutWidth] +
+                               reversedByHeight[transposedBase + widthShift + cutWidth]
+          if candidateWaste < bestWaste: bestWaste = candidateWaste
+        if bestWaste != 0'i32:
+          let columnShift = slabHeight - currentHeight
+          for cutHeight in 1 .. currentHeight div 2:
+            let candidateWaste = wasteByWidth[rowOffset + cutHeight] +
+                                 reversedColumn[columnShift + cutHeight]
             if candidateWaste < bestWaste: bestWaste = candidateWaste
-            if bestWaste == 0'i32: break
-        if bestWaste != 0'i32 and usefulHeightForRow > 0:
-          let horizontalStart = heightCutStart[currentHeight]
-          for cutIndex in horizontalStart ..< horizontalStart + heightCutCount[currentHeight]:
-            let cutHeight = heightCutValues[cutIndex]
-            let lowerOffset = rowOffset + cutHeight
-            let upperOffset = rowOffset + (currentHeight - cutHeight)
-            let candidateWaste = wasteByWidth[lowerOffset] + wasteByWidth[upperOffset]
-            if candidateWaste < bestWaste: bestWaste = candidateWaste
-            if bestWaste == 0'i32: break
-      if bestWaste < int32(wholeWaste):
-        usefulWidthByHeight[currentHeight] += 1
-        usefulHeightForRow += 1
       wasteByWidth[rowOffset + currentHeight] = bestWaste
+      reversedColumn[slabHeight - currentHeight] = bestWaste
     for currentHeight in 1 .. slabHeight:
-      wasteByHeight[currentHeight * heightStride + currentWidth] = wasteByWidth[rowOffset + currentHeight]
+      let transposedBase = currentHeight * heightStride
+      let storedWaste = wasteByWidth[rowOffset + currentHeight]
+      wasteByHeight[transposedBase + currentWidth] = storedWaste
+      reversedByHeight[transposedBase + slabWidth - currentWidth] = storedWaste
 ```
 
-Vertical reads stay contiguous in `wasteByHeight`, horizontal reads in `wasteByWidth`. `usefulWidthByHeight` skips scans that cannot improve the answer. One transposed copy per width costs O(W × H) writes.
+Vertical reads advance through `wasteByHeight` and `reversedByHeight` together. Horizontal reads do the same inside one width row. The final loop stores each new column in both height-order tables. Cost: half of the cut positions, all read from adjacent cells.
 
 **Answer and output.** Appends one line per case and flushes in blocks.
 
@@ -246,12 +219,12 @@ The program pays for the grid, not for the number of desired plates.
 
 | Phase | Time | Space |
 |---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Reachable sums and cut lists | at most (W + H) × N additions | W + H booleans plus cut lists |
-| Waste table | one pass over candidate cuts per cell | two tables of (W + 1)(H + 1) values |
+| Input scan | one pass over input bytes | input bytes |
+| Plate flags | one byte per plate | (W + 1)(H + 1) bytes |
+| Waste sweep | one pass over half the cuts per cell | four tables over (W + 1)(H + 1) |
 | Output | one write per 128 KiB block | block buffer |
 
-The table dominates, while input and output stay linear in their byte counts.
+The sweep dominates, while input and output stay linear in their byte counts.
 
 The overall bounds:
 
