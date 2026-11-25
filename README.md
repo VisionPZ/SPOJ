@@ -1,10 +1,10 @@
-# SPOJ — 1171 problems, one method
+# SPOJ — 1176 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1171 problems](https://img.shields.io/badge/problems-1171-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1176 problems](https://img.shields.io/badge/problems-1176-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1171 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1176 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1171 problems
+## The 1176 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -397,7 +397,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [SMILEY1807](SMILEY1807/README.md) | Keeping four running lengths is like filling four cups in a row: you open the next cup only after the previous one holds a drop. Each new digit extends the current block or opens the next block. | O(L) |
 | [JARJAR](JARJAR/README.md) | Treat each possible piece count as a row of checkboxes, one box per reachable weight, like a chart that lights up when a new part is tried. Adding a part shifts the previous row's boxes forward by that part's weight and ORs them into the new row. | O(N^2 * 60000 / 64 + Q * N) |
 
-### Number theory & big integers (104)
+### Number theory & big integers (105)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -507,8 +507,9 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [SUFFIX](SUFFIX/README.md) | A suffix fixes the last digits, and those digits are the remainder modulo a power of the base, like reading only the last digits of a receipt. Convert each suffix to its remainder and modulus, then merge the congruences with the Chinese remainder theorem. | O(total suffix length times log of the modulus) |
 | [BITPLAY](BITPLAY/README.md) | Editing the answer is like changing a price tag: keep the high digits, lower one digit, then spend the remaining ones on the largest low digits. Since N is even, the first changed bit must be a one in N. | O(1) |
 | [EASYFACT](EASYFACT/README.md) | Removing every factor of two from n! is like unwrapping a parcel to count the distinct boxes inside; only odd factors set the number of consecutive sums. The count equals the number of odd divisors of n! | O(1) |
+| [IAPCR2D](IAPCR2D/README.md) | The divisor count of `X!` is a product of small factors, one for each prime exponent. Think of it as a sorted phone book: build the book once, then look up each query quickly. | O(1) |
 
-### Greedy, search & enumeration (669)
+### Greedy, search & enumeration (673)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1183,6 +1184,10 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [FN16CLK](FN16CLK/README.md) | Treat the pictures like photos of a clock taken at unknown minutes. Try all 1440 possible start minutes, like sliding a film strip past a fixed template. A start time is valid when every segment that changed in the photos also changes in the template. | O(1) |
 | [FN16DIET](FN16DIET/README.md) | Treat each next sweet as a recurring appointment: the appointment is due by a known day, so serve the earliest deadline first. This is greedy scheduling with a min-heap of next due days. | O(1) |
 | [FN16RIVER](FN16RIVER/README.md) | Think of a relay race: at each exchange, one runner's name stays on the baton, and we may pick which runner. Give one river a target length `L`, then count how many rivers must end longer than `L`. | O((n + m) log n) |
+| [HJB](HJB/README.md) | Each boundary between seats splits the array into a left part and a right part. Picture a turnstile: count left segments that have already entered, then match them with right segments that start at the boundary. | O(n log n) |
+| [IAPCR2C](IAPCR2C/README.md) | Each working computer lights three seats, like a lamp that reaches its own seat and both neighbours. Mark every lit seat, then count the marks. The program uses a boolean array of seats. | O(1) |
+| [IAPCR2E](IAPCR2E/README.md) | Think of the biggest color as a pile that can supply at most three balloons to each student. Two limits decide the answer: four balloons per student, and enough other colors to mix into every group. | O(1) |
+| [SQRMINSUM](SQRMINSUM/README.md) | Each move saves the difference between a number and its floored square root. Think of each array entry as a stack of coins, where each move takes the biggest visible coin from the tallest stack. | O(1) |
 
 ### Data structures, bits & simulation (46)
 
