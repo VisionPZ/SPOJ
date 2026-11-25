@@ -1,10 +1,10 @@
-# SPOJ — 1016 problems, one method
+# SPOJ — 1022 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1016 problems](https://img.shields.io/badge/problems-1016-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1022 problems](https://img.shields.io/badge/problems-1022-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1016 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1022 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1016 problems
+## The 1022 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -483,7 +483,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [ATOMS](ATOMS/README.md) | Think of doubling grains in a jar with a fixed lid: keep pouring while the next doubling fits. Division answers the fit question without ever forming an overflowing product. | O(P log M) |
 | [RLTHREE](RLTHREE/README.md) | Think of three runners on a ladder where each rung belongs to two of them and one outsider. Equal distances mean each outsider gets the same number of losing rungs. | O(N) |
 
-### Greedy, search & enumeration (541)
+### Greedy, search & enumeration (547)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1030,6 +1030,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [GCJ1C09A](GCJ1C09A/README.md) | Treat each new symbol as a fresh digit, like handing out the smallest unused number tag to each new guest in a queue. The base is the smallest that fits all distinct symbols, and never one. | O(L) per message |
 | [GCJ1C09B](GCJ1C09B/README.md) | The average of moving points moves in a straight line, like the average position of a group of walkers on parallel paths. Sum the positions and velocities once, then minimise the squared norm of one linear function of time. | O(N) per case |
 | [GCJ1C09C](GCJ1C09C/README.md) | Releasing a prisoner splits its current block of occupied cells into two smaller blocks, like cutting a rope at a chosen point. Treat released cells and both row ends as fixed boundaries, then solve each interval between boundaries by trying every prisoner inside as the next cut. | O(Q^3) per case |
+| [CHOTU](CHOTU/README.md) | Picture a loop of string around two pins: it traces an ellipse, and every point on it has the same total distance to the pins. The students stand on such an ellipse inside the rectangle. | O(t) |
+| [GSHOP](GSHOP/README.md) | Spend flips on the most negative values first, like paying the largest debts first to lift a balance fastest. A flip of a negative value adds twice its magnitude to the total. | O(total n + total k) |
+| [QTGIFT1](QTGIFT1/README.md) | Place skipped packs like toll booths along a road: no stretch of k exits may lack a booth, and you want the cheapest booths. Every legal choice skips at least one pack in each group of k. | O(n) |
+| [RLCAT](RLCAT/README.md) | Treat each pen like a relay baton: the starting runner sets who may carry it, and an early handoff can help the next leg. A pen serves a consecutive block beginning at its owner. | O(N log N) per case |
+| [RLCIPHER](RLCIPHER/README.md) | Walk down stairs in strides of 3 or 4 and stop the moment you step below the ground floor. Your goal is the lowest step you can stop on. | O(total N) |
+| [RLTOUR](RLTOUR/README.md) | Work backward from the end of the line, like rebuilding a stack one box at a time. For a doll at position i, its count plus one counts dolls up to i with height at least its own. | O(N squared) per case |
 
 ### Data structures, bits & simulation (44)
 
