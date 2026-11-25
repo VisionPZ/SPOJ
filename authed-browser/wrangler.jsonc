@@ -1,0 +1,26 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "authed-browser",
+	"main": "src/index.js",
+	"compatibility_date": "2026-11-24",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"browser": {
+		"binding": "MYBROWSER"
+	},
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "a5b46ec8378d4d31b3025008abe21cc2",
+			"remote": true
+		}
+	],
+	"vars": {
+		"LOGIN_URL": "",
+		"LOGIN_USER_SELECTOR": "input[name=\"username\"], input[name=\"login_user\"], input[name=\"email\"], input[type=\"email\"], #username, #email",
+		"LOGIN_PASS_SELECTOR": "input[type=\"password\"]",
+		"LOGIN_SUBMIT_SELECTOR": "button[type=\"submit\"], input[type=\"submit\"], button:has-text(\"Log in\"), button:has-text(\"Sign in\")",
+		"LOGIN_SUCCESS_SELECTOR": ""
+	}
+}
