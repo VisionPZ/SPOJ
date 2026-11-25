@@ -1,10 +1,10 @@
-# SPOJ — 220 problems, one method
+# SPOJ — 244 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![220 problems](https://img.shields.io/badge/problems-220-brightgreen) ![1101 cases](https://img.shields.io/badge/cases-1101-blue) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![244 problems](https://img.shields.io/badge/problems-244-brightgreen) ![1221 cases](https://img.shields.io/badge/cases-1221-blue) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 220 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 244 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 220 problems
+## The 244 problems
 
 Every row links to a full write-up. The last group comes from the SPOJ basics list. Cost is the dominant step for one case; `N` means the whole input.
 

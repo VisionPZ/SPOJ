@@ -1,0 +1,637 @@
+DPRSDCDR - Depressed Coder
+
+
+
+	
+				no tags 
+				
+
+
+
+
+	Tinni is passionate about coding. But due to classes, CTs, and lab report, everyday she cannot code for at least three hours as suggested by Sadivai. So, sometimes she becomes depressed. But when she is able to code up to the mark she is jolly. Everyday Tinni eats, sleeps and does other household chores for 10 hours. She spends rest of her day attending classes, writing lab reports and preparing for CTs. And if there's time she smiles and does programming. Tinni's BF knows this fact but as he is illiterate he cannot calculate. So he seeks your help to make a program which can calculate whether Tinni will be jolly or depressed based on the input data.
+Input
+The input contains a number (1 ≤ N ≤ 1000) at the first line representing the number of test case. The next N lines contain 5 integers each, representing number of CT (0 ≤ nCT ≤ 3), number of Lab Reports (0 ≤ nLab ≤ 3), time required for each CT preparation (1 ≤ tCT ≤ 5) hours, time required for each Lab Report writing (1 ≤ tLab ≤ 5) hours and time for attending classes (3 ≤ tCls ≤ 8) hours.
+Output
+For each test cases print "Khushi" (means jolly in Bengali) or "Hotash" (means depressed in Bengali) in a new line.
+Example
+Input:
+2
+2 2 3 1 6
+1 2 1 2 3
+
+Output:
+Hotash
+Khushi
+
+
+
+
+	 Submit solution!
+
+
+			
+			
+			
+			
+			
+
+hide comments
+
+
+
+		
+		
+				
+	
+	
+		
+				
+	
+	
+	
+	<!--
+	$(document).ready(function(){
+        $('.pager_link').bind('click', function(me){
+                var href=$(me.currentTarget).attr('href');
+		$('#ccontent').animate({opacity: 0.5},1);
+                $.ajax({
+                        type: "GET",
+                        url: href+",ajax=1",
+                        contentType: "application/x-www-form-urlencoded;charset=ISO-8859-2",
+                        success: function(data){
+                                $('#ccontent').html(data);
+				$('#ccontent').animate({opacity: 1.0},1);
+                        },
+                        error: function(err){
+                                alert('error');
+                        }
+                });
+                return false;
+        });
+	});
+	-->
+	
+	
+
+
+
+			
+	
+		
+			
+		
+		
+			cameron_knows: 
+								2021-10-20 19:28:38
+		
+				Sad that Python wasn't included. Oh well, I'll do it anyways. 
+						
+	
+				
+	
+		
+			
+		
+		
+			dawid_zwiewka: 
+								2017-10-15 14:15:55
+		
+				It took me literally 1 minute to write a code and get AC in first go :)
+						
+	
+				
+	
+		
+			
+		
+		
+			shivam_mnnit: 
+								2017-05-17 20:20:35
+		
+				on ideone its perfectly fine but here it is showing wrong answer.how should i solve it??
+						
+	
+				
+	
+		
+			
+		
+		
+			ritiek: 
+								2017-04-13 18:36:32
+		
+				why so less languages?
+						
+	
+				
+	
+		
+			
+		
+		
+			vengatesh15: 
+								2017-02-17 16:41:55
+		
+				easy one AC in 1 go:-)
+						
+	
+				
+	
+		
+			
+		
+		
+			jedenxct: 
+								2017-02-10 20:40:58
+		
+				I now feel like a depressed coder.
+
+						
+	
+				
+	
+		
+			
+		
+		
+			varunhawk19: 
+								2017-01-16 16:51:35
+		
+				not working i checked another compiler working perfectly fine
+first of all does she need 3hrs to code?
+						
+	
+				
+	
+		
+			
+		
+		
+			ekayesorko: 
+								2016-10-31 07:25:10
+		
+				scrutinized and edited. sorry for the inconvenience. happy coding. :)
+						
+	
+				
+	
+		
+			
+		
+		
+			abhisheksms97: 
+								2016-09-29 13:37:09
+		
+				The second input
+1 2 1 2 "2"
+is wrong
+as time for attending classes should be 3 ≤ tCls ≤8
+but input is shown as 2
+Certainly making anyone a "Depressed Coder" 
+				Last edit: 2016-09-29 13:45:34
+						
+	
+			
+
+
+
+
+<!--
+function getCookieVal (offset) {
+        var endstr = document.cookie.indexOf (";", offset);
+        if (endstr == -1) { 
+                endstr = document.cookie.length; 
+        }
+        return unescape(document.cookie.substring(offset, endstr));
+}
+
+function GetCookie (name) {
+  var arg = name + "=";
+  var alen = arg.length;
+  var clen = document.cookie.length;
+  var i = 0;
+  while (i < clen) {
+    var j = i + alen;
+    if (document.cookie.substring(i, j) == arg) {
+      return getCookieVal (j);
+      }
+    i = document.cookie.indexOf(" ", i) + 1;
+    if (i == 0) break; 
+    }
+  return null;
+}
+
+function toggleComments() {
+        var a = document.getElementById('comments_table');
+        var d = a.style.display;
+        if( d == "" || d == "block" ){
+                d = "none";
+                document.getElementById('comments_sh').innerHTML = 'show';
+        } else {
+                d = "block";
+                document.getElementById('comments_sh').innerHTML = 'hide';
+        }
+        a.style.display = d;
+        document.cookie="comments_table="+d+"; path=/;";
+}
+
+if( GetCookie('comments_table') == 'none' ){
+        document.getElementById('comments_sh').innerHTML = 'show';
+        document.getElementById('comments_table').style.display = 'hide';
+}
+
+-->
+
+
+
+			
+			
+			
+                
+                
+        
+        
+         Leave a Comment 
+        
+                
+                
+        
+        
+                
+                        
+                        
+                
+        
+
+
+
+Notes:
+1. Don't post any source code here.
+2. Please be careful, leave short comments only. Don't spam here.
+3. For more discussion (hints, ideas, solutions) please visit our forum.
+4. Authors of the problems are allowed to delete the post and use html code here (e.g. to provide some useful links).
+
+
+        
+        
+
+		
+	
+	
+	
+	
+				
+			 Submit solution!
+		
+		
+		
+
+		
+		
+			
+				
+				
+			
+			
+			Added by:ekayesorko
+			Date:2016-09-26
+			Time limit:1s
+			
+			Source limit:50000B
+						Memory limit:1536MB
+										
+					Cluster:
+					
+													Cube (Intel G860)
+								
+					
+				
+						Languages:MAWK BC C NCSHARP C++ 4.3.2 CPP CPP14 COFFEE DART FORTH JAVA JULIA KTLN OCT PROLOG PYPY3 R RACKET SQLITE SWIFT UNLAMBDA 
+																
+		
+	
+		
+												
+					
+						Vote requirements
+					
+					
+						
+							  user for 3 from 5 needed days							
+							  solve at least 15 problems							
+							  solve this problem
+						
+					
+				
+					
+				
+		
+	
+				
+				
+				
+					Own tags
+				
+				
+			
+					
+						
+	No tags
+					
+					
+					
+				      
+				      
+				        Add
+				      
+				    
+				    
+				    
+				    
+				    $(document).ready(function(){
+				    	$(document).on('click', '#problem-mytags-btn-add', function(){
+				    		$.ajax({
+				    			url: '/?a=tags&act=cpriv',
+				    			method: 'post',
+				    			dataType: 'json',
+				    			data: {'name': $("#problem-mytags-new").val(), 'pid': '28499'},
+				    			success: function(data){
+				    				if(data['result'] == 'success'){
+				    					$('#problem-mytags').html(data['html']);
+				    				}
+				    				$("#problem-mytags-new").val('');
+				    				$("#problem-mytags-new").focus();
+				    			},
+				    			error: function(data){
+				    				//alert('error');
+				    			}
+				    		});
+				    	});
+				    	$(document).on('click', '.mytag', function(){
+				    		
+				    		var tid = $(this).attr('data-id');
+				    		var pid = '28499';
+				    		
+				    		$.ajax({
+				    			url: '/?a=tags&act=spriv',
+				    			method: 'post',
+				    			dataType: 'json',
+				    			data: {'pid': pid, 'tid': tid},
+				    			success: function(data){
+				    				if(data['result'] == 'success'){
+				    					$('#problem-mytags').html(data['html']);
+				    				}
+				    			},
+				    			error: function(data){
+				    				//alert('error');
+				    			}
+				    		});
+				    		
+				    		
+				    		return false;
+				    	});
+				    });
+				    
+				    
+		
+				
+		
+				
+		
+		
+			function callback_after_vote(type, data)
+			{
+				var response = $.parseJSON(data);
+				manage_vote_interface(type);
+				//.html('<div class="vote-thank-you">Thank you!</div>');
+				
+
+				if (type == "problem" || type == "implementation") {
+					var progressBarValue = Math.round(2 + 98 * response.avg / 3);
+					var progressBarType;
+					if (progressBarValue < 25) progressBarType = "progress-bar-primary";
+					else if (progressBarValue < 50) progressBarType = "progress-bar-success";
+					else if (progressBarValue < 75) progressBarType = "progress-bar-warning";
+					else progressBarType = "progress-bar-danger";
+					
+					$("#rate-" + type + "-box .progress-bar").css("width", progressBarValue.toString() +"%");
+					$("#rate-" + type + "-box .progress-bar").attr("aria-valuenow", progressBarValue.toString());
+					$("#rate-" + type + "-box .progress-bar").attr("class", "progress-bar " + progressBarType);
+					$("#rate-" + type + "-box .progress-value").html(progressBarValue.toString() +"%");
+				}
+				else if (type == "quality") {
+					var quality_plus = response.sum_plus;
+					var quality_minus = response.sum_minus;
+
+					var box_content = '';
+
+					if (quality_plus > 0 || quality_minus > 0) {
+						if (quality_plus > 0) {
+							box_content += '<font size="+2"><span class="label label-success">' +
+								quality_plus.toString() + 
+								' <span class="fa fa-thumbs-o-up"></span></span></font>';
+						}
+						if (quality_minus > 0) {
+							box_content += '<font size="+2"><span class="label label-danger">' +
+								quality_minus.toString() + 
+								' <span class="fa fa-thumbs-o-down"></span></span></font>';
+						}
+					}
+
+					$( "#rate-" + type + "-box" ).empty().html(box_content);
+				}
+
+				// update count
+				if (response.update_count == 1) {
+					var count = parseInt($("#votes_count").html(), 10);
+					count++;
+					var votes_word = " vote";
+					if (count > 1) votes_word += "s";
+					$("#votes_count").empty().html(count.toString() + votes_word);
+				}
+			}
+			$( ".rate-btn" ).click(function() {
+				var rate_type = $(this).attr('data-rate-type').toString();
+				var rate_type_full = "";
+				var rate = $(this).attr('data-rate').toString();
+				if (rate_type == "p") rate_type_full = "problem";
+				else if (rate_type == "i") rate_type_full = "implementation";
+				else if (rate_type == "q") rate_type_full = "quality";
+				$.get( '/?a=vote&pid=28499&t=' + rate_type + '&r=' + rate, function( data ) {
+				  callback_after_vote(rate_type_full, data);
+				});
+			});
+			function manage_vote_interface(type) {
+				number_of_voteboxes--;
+				/*
+				if (number_of_voteboxes == 0) {
+					$( "#vote-box" ).fadeOut(1500, function() {
+						$(this).remove();
+					});
+				} else {
+					$( "#vote-" + type + "-box" ).fadeOut(1500, function() {
+						$(this).remove();
+					});
+				}
+				*/
+				var n = $('.vote-thank-you').length;
+				var offset = (n * 60).toString() + "px";
+				$(document.body).append(
+					'<div class="vote-thank-you" style="margin: 40%;">' +
+					'<div class="alert alert-success" style="position: fixed; top: '+offset+';">' +
+					'<strong>Thank you for voting!</strong>' +				
+					'</div></div>');
+				setTimeout(function(){$( ".vote-thank-you" ).fadeOut(1500, function() {
+					$(this).remove();
+				});},2000);
+			}
+		
+		
+		
+	
+
+
+
+
+
+
+
+
+ul.list-unstyled li{
+	margin-bottom: 5px;
+}
+ul.list-unstyled li a.btn{
+	width: 100%;
+}
+ul.ui-autocomplete{
+	z-index: 10000;
+	width: 200px !important;
+}
+
+
+	
+
+		
+		
+		
+			
+				
+					About | Tutorial | Tools | Clusters | Credits | API | Widgets
+					Legal: 
+					   Terms of Service | Privacy Policy | GDPR Info
+					
+				
+				
+					 RSS 
+				
+			
+		
+		
+		
+			
+	© Spoj.com. All Rights Reserved. Spoj uses Sphere Engine™ © by Sphere Research Labs.
+
+		 
+	
+
+	
+	
+		
+	
+	
+	$(function(){
+		setTimeout(function(){
+			$('.no_a_info').css('visibility', 'visible');
+		}, 5000);
+		
+		if(!$('.aProblemTop').length && !$('.aProblemsTop').length && !$('.aSubmitTop').length && !$('.aStatusTop').length && !$('.aMainRight').length){
+			ga('send', 'event', 'ads', 'no-ads', 'main-contest');
+		}
+		if ($('.aProblemTop').height() == 0){
+			$('.aProblemTop').css({'border': '1px solid #ddd', 'background': '#f0f4e3', 'height': 90});
+			$('.aProblemTop').html($('<p class="text-center">using adblock?</p><h4 class="text-center">Online ads help us to maintain site.</h4><p class="text-center"><strong>please whitelist *.spoj.com</strong></p>'));
+			ga('send', 'event', 'ads', 'adblock2', 'aProblemTop');
+		}
+		if ($('.aProblemsTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aProblemsTop');
+		}
+		if ($('.aSubmitTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aSubmitTop');
+		}
+		if ($('.aStatusTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aStatusTop');
+		}
+		if ($('.aMainRight').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aMainRight');
+		}
+	});
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	(function(d, s, id) {
+	  var js, fjs = d.getElementsByTagName(s)[0];
+	  if (d.getElementById(id)) return;
+	  js = d.createElement(s); js.id = id;
+	  js.src = "//connect.facebook.net/pl_PL/sdk.js#xfbml=1&appId=321676846207&version=v2.0";
+	  fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+	
+	
+
+
+
+
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-YF5KJ19JWE');
+
+
+
+
+    (function(h,o,t,j,a,r){
+        h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+        h._hjSettings={hjid:334656,hjsv:5};
+        a=o.getElementsByTagName('head')[0];
+        r=o.createElement('script');r.async=1;
+        r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+        a.appendChild(r);
+    })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
+
+
+
+(function(){
+  if(typeof _bsa !== 'undefined' && _bsa) {
+    // format, zoneKey, segment:value, options
+    _bsa.init('flexbar', 'CK7D4KJL', 'placement:demo');
+  }
+})();
+
+
+	$(function(){
+		$(document).on('click', '.track', function(){
+			var event = $(this).attr('data-event');
+			var action = $(this).attr('data-action');
+			var value = $(this).attr('data-value');
+			ga('send', 'event', event, action, value);
+		});
+	});
+	//window.open('http://incoming.hotjar.com/s/7366', '_blank');
+	
+
+
+
+

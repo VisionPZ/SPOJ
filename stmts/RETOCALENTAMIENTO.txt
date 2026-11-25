@@ -1,0 +1,234 @@
+
+
+	
+	
+	
+	
+	
+		
+			
+				
+					
+										
+					
+				
+			
+		
+			
+				
+					
+						
+					
+					
+				      
+				        Toggle navigation
+				        
+				      
+				    
+				
+				
+				
+					
+					
+					
+				      
+				      						        
+					           PROBLEMS
+					        
+					        					        
+					           STATUS
+					        
+					        
+					           RANKS
+					        
+					        
+					           DISCUSS
+					        
+					        
+					          CONTESTS
+					        
+											        					        
+						        						      	
+						      							      	
+						      		
+						      			
+						      		
+						      	
+						      						        
+					        
+					        	
+					        		
+					        		PROFILE 
+					        		
+			
+									
+										  My profile
+										  Manage profile
+										  Submissions history
+										
+										  Sign out
+									
+								
+					        
+					        
+					        						
+				        
+				      
+				    
+				    
+				    
+				    
+				
+			
+			
+		
+		
+		
+			
+		
+		
+		
+		
+
+
+
+
+In a few seconds you will be redirected to link
+
+
+
+
+<!--
+function redirect()
+{
+	window.location = "/";
+}
+setTimeout(redirect, 1000);
+-->
+
+
+	
+
+		
+		
+		
+			
+				
+					About | Tutorial | Tools | Clusters | Credits | API | Widgets
+					Legal: 
+					   Terms of Service | Privacy Policy | GDPR Info
+					
+				
+				
+					 RSS 
+				
+			
+		
+		
+		
+			
+	© Spoj.com. All Rights Reserved. Spoj uses Sphere Engine™ © by Sphere Research Labs.
+
+		 
+	
+
+	
+	
+		
+	
+	
+	$(function(){
+		setTimeout(function(){
+			$('.no_a_info').css('visibility', 'visible');
+		}, 5000);
+		
+		if(!$('.aProblemTop').length && !$('.aProblemsTop').length && !$('.aSubmitTop').length && !$('.aStatusTop').length && !$('.aMainRight').length){
+			ga('send', 'event', 'ads', 'no-ads', 'main-contest');
+		}
+		if ($('.aProblemTop').height() == 0){
+			$('.aProblemTop').css({'border': '1px solid #ddd', 'background': '#f0f4e3', 'height': 90});
+			$('.aProblemTop').html($('<p class="text-center">using adblock?</p><h4 class="text-center">Online ads help us to maintain site.</h4><p class="text-center"><strong>please whitelist *.spoj.com</strong></p>'));
+			ga('send', 'event', 'ads', 'adblock2', 'aProblemTop');
+		}
+		if ($('.aProblemsTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aProblemsTop');
+		}
+		if ($('.aSubmitTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aSubmitTop');
+		}
+		if ($('.aStatusTop').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aStatusTop');
+		}
+		if ($('.aMainRight').height() == 0){
+			ga('send', 'event', 'ads', 'adblock2', 'aMainRight');
+		}
+	});
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	(function(d, s, id) {
+	  var js, fjs = d.getElementsByTagName(s)[0];
+	  if (d.getElementById(id)) return;
+	  js = d.createElement(s); js.id = id;
+	  js.src = "//connect.facebook.net/pl_PL/sdk.js#xfbml=1&appId=321676846207&version=v2.0";
+	  fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+	
+	
+
+
+
+
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-YF5KJ19JWE');
+
+
+
+
+    (function(h,o,t,j,a,r){
+        h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+        h._hjSettings={hjid:334656,hjsv:5};
+        a=o.getElementsByTagName('head')[0];
+        r=o.createElement('script');r.async=1;
+        r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+        a.appendChild(r);
+    })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
+
+
+
+(function(){
+  if(typeof _bsa !== 'undefined' && _bsa) {
+    // format, zoneKey, segment:value, options
+    _bsa.init('flexbar', 'CK7D4KJL', 'placement:demo');
+  }
+})();
+
+
+	$(function(){
+		$(document).on('click', '.track', function(){
+			var event = $(this).attr('data-event');
+			var action = $(this).attr('data-action');
+			var value = $(this).attr('data-value');
+			ga('send', 'event', event, action, value);
+		});
+	});
+	//window.open('http://incoming.hotjar.com/s/7366', '_blank');
+	
+
+
+
+
