@@ -1,10 +1,10 @@
-# SPOJ — 1123 problems, one method
+# SPOJ — 1129 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1123 problems](https://img.shields.io/badge/problems-1123-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1129 problems](https://img.shields.io/badge/problems-1129-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1123 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1129 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
@@ -13,7 +13,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed. Statements live in `stmts/`.
 
-## The 1123 problems
+## The 1129 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -501,7 +501,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NR1](NR1/README.md) | Applying a difference k times and then reading the constant is like taking a snapshot of how the polynomial changes at zero; no full basis conversion is needed. | O(25 squared + t times 25 times k) |
 | [SUFFIX](SUFFIX/README.md) | A suffix fixes the last digits, and those digits are the remainder modulo a power of the base, like reading only the last digits of a receipt. Convert each suffix to its remainder and modulus, then merge the congruences with the Chinese remainder theorem. | O(total suffix length times log of the modulus) |
 
-### Greedy, search & enumeration (629)
+### Greedy, search & enumeration (635)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1136,6 +1136,12 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [RETRO](RETRO/README.md) | Counting a segment repeats work across queries, like recounting the same shelf for every visitor. Build a suffix-match table once: each cell stores matches from its two positions to the ends. | O(N² + Q) |
 | [SEGFAULT](SEGFAULT/README.md) | Treat every free cell as a race between two runners, like two people reaching the same doorway. Nikolaj reaches a cell one step after his program enters its distance from the start, while Petar reaches it in his shortest path length. | O(rows · columns + programCount) |
 | [STAVATAR](STAVATAR/README.md) | Swapping a range twice changes nothing, like flipping a light switch twice. Record only how many swaps cover each position, modulo two. The algorithm is a difference array of parity bits: mark each range endpoint, then sweep once with a running `xor`. | O(N + M) |
+| [BASECONV](BASECONV/README.md) | Store the number in base 2³² limbs, like writing a long sum on many small slips of paper. Read the source digits from the top down, multiplying the whole limb array by B1 and adding one digit each time. | O(1) |
+| [BOILING](BOILING/README.md) | Pick the largest final piece M, like choosing the tallest jar that every vegetable must fit under. Each original piece of weight w becomes enough parts that no part exceeds M. | O(N² × 500) worst case |
+| [DUKKAR2](DUKKAR2/README.md) | Subtract the non-divisible entries from all entries, like counting empty seats by counting full rows first. Row n contributes (n + 1) minus the Lucas product of its digits plus one. | O(1) |
+| [INS14A](INS14A/README.md) | Treat the chosen ones like people filling M adjacent seats, like a row of friends sliding to the middle. Each person walks to a reserved seat, and the best reserved seats center on the median position. | O(1) |
+| [INS14B](INS14B/README.md) | Hypotenuses can only meet other hypotenuses, like puzzle tabs that only fit matching sockets. This forces an even number of triangles. Every even divisor of N² then works by slicing the square into equal horizontal strips and cutting each strip diagonally. | O(1) |
+| [PIHEX2](PIHEX2/README.md) | Extract one digit from pi without computing all earlier digits, like reading a single page number from a book by formula instead of turning every page. The BBP series expresses pi as a sum of powers of 1/16 with small rational coefficients. | O(1) |
 
 ### Data structures, bits & simulation (45)
 
