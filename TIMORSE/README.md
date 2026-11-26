@@ -4,28 +4,23 @@
 
 ## Problem
 
-Compute the Morse Code length of each message, measured in dot durations. A dot lasts one unit, a dash three. Gaps inside a letter last one, between letters three, and between words seven.
+Each message is a line of letters, spaces and other characters. The task is to print the length of that message in Morse code, measured in dot units, where a dash costs 3, a gap inside a character costs 1, the gap between characters costs 3, and the gap between words costs 7.
 
-Input: first line n, the number of messages. Each of the next n lines holds one message of lowercase letters and spaces; other characters are ignored. Output: n lines, each in the form original message, colon, space, length equals, space, and the number.
+Input starts with `n`, the number of messages, followed by `n` lines, one per message. Output holds each message line, then `: length = L`.
 
-| item | bound |
+| Item | Bound |
 |---|---|
-| messages | given by n on the first line |
-| message characters | a to z and space; other characters ignored |
-| dot, dash, inner, letter, word gaps | 1, 3, 1, 3, 7 units |
-| judge limit | 1000 ms, 1536 MB |
+| Messages `n` | positive integer, tests use up to 2500 |
+| Message letters | `a` to `z`, space, and ignorable other characters |
+| Judge limit | 1000 ms, 1536 MB |
 
-The original message text must appear again before the colon.
-
-The sample input:
+The sample case:
 
 ```
 2
 hi joe
 sos
 ```
-
-The sample output:
 
 ```
 hi joe: length = 51
@@ -34,42 +29,39 @@ sos: length = 27
 
 ## Idea
 
-Add durations like filling a timeline with blocks, like stacking tiles of length one and three. Each letter contributes its symbols plus the small gaps between them. A new letter after letters adds three; a new letter after spaces adds seven. This runs in O(m) time for a message of m characters with a fixed table lookup per letter. Simulating the whole timeline with a list costs the same time and extra space. Keep a running total instead.
+Walk the message character by character and add up durations, exactly like a telegraph key being pressed. A letter contributes its dot and dash durations plus the 1-unit gaps between its symbols; a letter that follows another letter also pays the 3-unit character gap, and a letter that starts a new word after a gap pays the 7-unit word gap. This needs no Morse string building and no second pass: one left-to-right scan gives the total.
 
 ## Why It Works
 
-1. A letter with m symbols and d dashes spans 2d + 2m - 1 units.
-2. Two letters in one word add a three-unit letter gap.
-3. The first letter after any run of spaces adds a seven-unit word gap.
-4. Repeated spaces still form one word gap, because the letter flag stays cleared.
-5. Ignored characters add nothing and do not break a word.
+1. A letter of `k` symbols has `k` symbol durations and `k - 1` one-unit gaps, which `letterDuration` adds up directly from the code table.
+2. Two letters in the same word are separated by 3 units, which the `previousWasLetter` branch adds before the next letter.
+3. Words are separated by 7 units. A space turns off `previousWasLetter`, so the next letter takes the 7-unit branch instead of the 3-unit one.
+4. Leading spaces, repeated spaces and trailing spaces never start a letter, so they add nothing: the 7-unit gap is charged only when a letter follows a gap and the message already contains a letter.
+5. Characters outside `a` to `z` and space are skipped by both branches, matching "any other characters can be ignored".
+6. The message is echoed before the number, so the output line keeps the exact spacing of the input line.
 
-| term | meaning |
+| Term | Meaning |
 |---|---|
-| `morseCodes` | fixed code string for each letter a to z |
-| `letterDuration` | units for one code, including inner gaps |
-| `previousWasLetter` | true when the last kept character was a letter |
-| `messageHasLetter` | true once any letter has been read |
-| `totalLength` | running unit count for one message |
+| `morseCodes` | dot and dash strings for `a` to `z` |
+| `letterDuration` | symbol durations plus inner gaps for one letter |
+| `totalLength` | running length of the current message |
+| `previousWasLetter` | the previous character was a letter |
+| `messageHasLetter` | the message has produced at least one letter |
 
-The two flags decide which gap, if any, comes before a letter.
-
-A trace from the generator with visible units:
+A traced run of the first sample message:
 
 ```
-h = .... -> 4 dots + 3 inner gaps = 7
-i = ..   -> 2 dots + 1 inner gap  = 3
-gap h/i  -> 3 units -> hi = 13
-joe      -> 13 + 3 + 11 + 3 + 1 = 31
-hi joe   -> 13 + 7 + 31 = 51
-sos      -> 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 = 27
+h ....  -> 4 dots + 3 inner gaps = 7
+i ..    -> +3 character gap, +2 dots +1 inner gap = 3   running 13
+space   -> ends the word, adds nothing
+j .---  -> +7 word gap, +1 dot +3 dashes +3 inner gaps = 13   running 33
+o ---   -> +3 gap, +3 dashes +2 inner gaps = 11   running 47
+e .     -> +3 gap, +1 dot = 1   running 51
 ```
-
-The word gap of seven turns 13 plus 31 into the sample answer 51.
 
 ## Code
 
-**Input and Morse helpers.** The fixed table and reader cover all needed characters.
+**Input, scanner and line reader.** This block loads stdin and slices out whole message lines.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -102,7 +94,15 @@ proc nextRawLine(data: string, pos: var int): string =
   let rawText = data[pos .. lineEnd - 1]
   pos = lineEnd + 1
   return rawText
+```
 
+One readLine loop collects all input bytes.
+`nextRawLine` keeps every character of a message, including spaces.
+Scanning costs one pass over the consumed characters.
+
+**Letter durations.** This block turns one Morse string into dot units.
+
+```nim
 proc letterDuration(code: string): int =
   var duration = 0
   for symbolIndex in 0 .. code.len - 1:
@@ -115,11 +115,10 @@ proc letterDuration(code: string): int =
   return duration
 ```
 
-The table index comes from the letter code minus the start of the lowercase range.
-Raw line reads keep the message exactly as it appeared in the input.
-Inner gaps are counted only between symbols, never after the last one.
+A dash counts 3 and a dot counts 1.
+The extra 1 is added between symbols only, never after the last one.
 
-**Buffered message loop.** One pass per message adds symbols and gaps to a counter.
+**Buffered output.** This block holds the finished answer lines.
 
 ```nim
 var outputBuffer = ""
@@ -129,7 +128,14 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+The buffer flushes after reaching 128 KiB.
+One final write emits any remaining bytes.
+
+**Message loop.** This block scans each message and writes its line.
+
+```nim
 let messageCount = nextInt(inputData, scanPos)
 discard nextRawLine(inputData, scanPos)
 for messageIndex in 0 .. messageCount - 1:
@@ -157,25 +163,23 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-A space clears the letter flag but leaves the message flag intact.
-Characters outside a to z and space change neither flag nor the total.
-The original message precedes the computed length on every output line.
+The discarded line after the count absorbs the newline that the bulk read appended.
+Only letters and spaces change the state, so punctuation is ignored for free.
+Each message costs one scan of its own characters.
 
 ## Complexity
 
-Each message character takes a constant number of steps.
+The cost splits into input, one scan per message, and output.
 
-| phase | time | space |
+| Phase | Time | Space |
 |---|---|---|
-| input read | one pass over all input characters | one input string |
-| duration scan | one table lookup per letter | fixed code table |
-| output | block writes | block buffer |
+| Input read | one pass over input bytes | input bytes |
+| Timing | O(total message characters) | constant |
+| Output | one write per 128 KiB block | block buffer |
 
-The Morse table has 26 fixed entries, independent of input size.
-
-| measure | Big O |
+| Measure | Big O |
 |---|---|
-| time | O(total input characters) |
-| space | O(total input characters) |
+| Time | O(total characters) |
+| Space | O(input size) |
 
-Building a duration list for every symbol would use the same time but more space; one counter per message keeps the scan lean.
+Building the Morse string first and then counting its symbols would cost the same time but store a much longer text.
