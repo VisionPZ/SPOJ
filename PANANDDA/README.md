@@ -124,6 +124,7 @@ while middleCursor < stateCount:
       toCursor += 1
     fromCursor += 1
   middleCursor += 1
+
 ```
 
 Five unit edges describe all legal insertions.
