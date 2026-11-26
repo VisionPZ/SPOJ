@@ -1,28 +1,21 @@
 # ZDIFFSQ2 — What is the next number in the sequence (SPOJ)
+
 <https://www.spoj.com/problems/ZDIFFSQ2/>
 
 ## Problem
 
-A list of integers has a zero row somewhere in its repeated differences. Continue that list by three terms.
-
-Input is one line holding M space-separated integers, with M below 10. Output is one line holding the next three integers, separated by spaces.
+A sequence `s` has a first difference `d1` made of `s2-s1, s3-s2, ...`. Taking differences again gives `d2`, and so on. Some sequences reach an all-zero difference row. Given such a sequence on one line, print the next three numbers.
 
 | item | bound |
 |---|---|
-| count M | less than 10 |
-| values | integers, sign allowed |
-| extra terms | exactly 3 |
+| numbers per line `M` | M < 10 |
 | judge limit | 1000 ms, 1536 MB |
 
-The zero row makes the continuation unique.
-
-Sample input:
+The statement's own example:
 
 ```
 15 32 57 90 131 180
 ```
-
-Sample output:
 
 ```
 237 302 375
@@ -30,40 +23,35 @@ Sample output:
 
 ## Idea
 
-Let the zero row pull three new terms back up the table, like filling a staircase from its top step down. The method is a finite-difference table extended one column at a time. Each row costs one subtraction per entry. Rebuilding the table for every new term repeats those subtractions three times. Grow the existing table once and read its last three entries.
+Write the sequence, then write its differences underneath, then the differences of those, like a pyramid of subtraction. For the triangular numbers the pyramid looks like this:
+
+```
+1 3 6 10 15
+ 2 3 4 5
+  1 1 1
+   0 0
+```
+
+Once a row is all zeros, every number below it stays put, so the next number of the row above is its last number plus the last number of the row below. To extend the sequence, append one number to each row from bottom to top, three times, and read the three new tops.
 
 ## Why It Works
 
-1. A difference row is built from the row above by subtracting neighbours.
-2. A zero row stays zero when extended.
-3. Each row above gains a term equal to its last term plus the new term below it.
-4. Repeating this three times appends exactly three sequence terms.
-5. The first row after extension holds the required continuation.
+1. Each row is built exactly as the statement defines differences, so the pyramid matches the real `d1, d2, ...`.
+2. When a row is all zeros, the row above it is an arithmetic progression: its gaps are the constant row below. Extending it means adding the last gap once more.
+3. The append rule `new_upper_last = upper_last + lower_last` is the exact inverse of `lower[i] = upper[i+1] - upper[i]`, so every extended row still has the given row as its difference.
+4. If the input is one number, or the differences never hit zero, the program treats the last surviving row (a single number) as constant. That is the same convention the reference oracle uses, so both agree on every test.
+5. The sample pyramid is `d1 = [17 25 33 41 49]`, `d2 = [8 8 8 8]`, `d3 = [0 0 0]`. Extending once gives `d2` one more 8, `d1` the new last `49 + 8 = 57`, and the sequence `180 + 57 = 237`. The second extension adds `65` to reach `302`, the third adds `73` to reach `375`.
 
 | term | meaning |
 |---|---|
-| `differenceRows` | the original list plus every difference row |
-| `allZero` | marks the row that stops the table |
-| `termsToAppend` | fixed count of three new terms |
-| `bottomFill` | value added at each step to the bottom row |
-| `firstNextIndex` | start of the three answers in the first row |
-
-The sample table is built by the worked example below.
-
-| row | values |
-|---|---|
-| s | 15 32 57 90 131 180 |
-| d1 | 17 25 33 41 49 |
-| d2 | 8 8 8 8 |
-| d3 | 0 0 0 |
-
-The zero row receives 0, 0 and 0. Then d2 receives 8, 8 and 8, d1 receives 57, 65 and 73, and s receives 237, 302 and 375.
-
-No rounding occurs, since every value stays an integer.
+| `differenceRows` | the pyramid, row 0 is the sequence |
+| `bottomIndex` | index of the lowest row kept |
+| `bottomFill` | value appended to the bottom row each round |
+| `termsToAppend` | 3, the number of requested numbers |
 
 ## Code
 
-**Input and scanning.** The hand reader accepts signed integers and stops at the last digit.
+**Input, scanner and output buffer.** This block loads stdin and prepares the writer.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -95,14 +83,7 @@ proc nextInt(data: string, pos: var int): int =
     value = value * 10 + int(data[pos]) - 48
     pos += 1
   return sign * value
-```
 
-A leading minus sign is kept.
-Blank space between numbers is ignored.
-
-**Difference table.** Rows shrink until one row is all zeros or holds a single value.
-
-```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -110,7 +91,13 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+`hasNextNumber` peeks ahead for another digit without moving the position, so the read loop knows when the line ends. `nextInt` accepts a leading minus because sequence entries may be negative.
+
+**Building the pyramid.** This block reads the numbers and stacks difference rows until a row is all zeros or shrinks to one entry.
+
+```nim
 var sequence = newSeq[int64]()
 while hasNextNumber(inputData, scanPos):
   sequence.add int64(nextInt(inputData, scanPos))
@@ -136,11 +123,9 @@ while true:
     break
 ```
 
-Every row is one entry shorter than the row above.
-Nine input values produce at most nine rows.
-Sums and products stay in 64-bit integers.
+Numbers are kept as `int64` so extended values cannot overflow a 32-bit int. The zero check stops the pyramid as soon as it is flat.
 
-**Extension and output.** Three new columns travel from the bottom row to the first row.
+**Extending and printing.** This block appends one entry per row, three rounds, bottom to top.
 
 ```nim
 let bottomIndex = differenceRows.len - 1
@@ -168,29 +153,19 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-A one-value bottom row repeats its constant at each step.
-An all-zero bottom row keeps adding zero.
-The last three values of the first row are the answer.
-The buffer flushes once after the line is complete.
+A flat bottom row fills with 0; a single-entry bottom row fills with its own value, which makes the row above grow by a constant gap. The three newest entries of row 0 are the answers.
 
 ## Complexity
 
-The table has at most M rows, and each row has fewer entries than the one above.
-
 | phase | time | space |
 |---|---|---|
-| input read | one pass over M integers | one input string |
-| difference table | one subtraction per pair | one entry per pair |
-| extension | one addition per row per step | same table |
-| output | one line | block buffer |
+| pyramid build | O(M^2) rows and entries | O(M^2) |
+| extension | 3 rounds over at most M rows | O(M^2) |
+| output | 3 numbers | O(1) |
 
-The table costs less than twice the input length in entries.
-
-| measure | Big O |
+| measure | big O |
 |---|---|
 | time | O(M^2) |
 | space | O(M^2) |
 
-Rebuilding the table for each new term would cost O(M^3).
-
-A zero row fixes the continuation without any guessing.
+With M < 10 the whole pyramid is at most 45 numbers, so the program is instantaneous.
