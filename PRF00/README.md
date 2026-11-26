@@ -67,6 +67,7 @@ var inputLine = ""
 while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
+
 ```
 
 Each line keeps its trailing newline.
