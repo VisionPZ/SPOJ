@@ -36,3 +36,6 @@ def build():
 (ROOT / "out").mkdir(exist_ok=True)
 write("1_sample", SAMPLE)
 build()
+
+if __name__ == "__main__":
+    Path("/tmp/NIT241A_big.txt").write_text(("2718281828459045" * 100000) + "\n")

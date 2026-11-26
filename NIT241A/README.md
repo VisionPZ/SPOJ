@@ -4,28 +4,22 @@
 
 ## Problem
 
-Print the fixed greeting line, then stop. The judge supplies no input bytes at all.
+Print the greeting line `Hello NIT OJ.` and nothing else. The statement warns that any extra output causes a wrong answer.
 
-The input is empty and the output is one line with the exact text `Hello NIT OJ.`. Case and the final period both matter.
-
-The bounds from the statement:
+There is no input. The output is one line.
 
 | item | bound |
 |---|---|
-| input bytes | 0 |
-| output lines | 1 |
-| output text | Hello NIT OJ. |
+| input | none |
+| output | one fixed line |
 | judge limit | 1000 ms, 1536 MB |
 
-The missing input is the only constraint that shapes the program.
+The whole job is one write to standard output.
 
-Sample input (empty):
-
-```
+Sample input:
 
 ```
-
-An empty input produces the single greeting line.
+```
 
 Sample output:
 
@@ -33,110 +27,58 @@ Sample output:
 Hello NIT OJ.
 ```
 
-The sample answer matches the required text byte for byte.
-
 ## Idea
 
-A fixed greeting is like a sign nailed to a wall: it reads the same every time. The algorithm is one string write, so the cost per input item is zero.
+A name tag that already reads the answer needs no work. The program drains standard input, then writes the greeting string exactly as given.
 
-A naive program could scan input and branch on each line, yet that adds work without changing the answer. Skip that work and emit the constant.
+Draining input keeps the run clean when the judge pipes a file in, and the literal guarantees the punctuation, the single spaces, and the final period.
 
-One write gives the whole answer.
+Takeaway: when the answer is a constant, just print it.
 
 ## Why It Works
 
-1. The statement fixes the output text as one exact string.
-2. No input bytes exist, so no token can alter that string.
-3. A single append and one flush write exactly those bytes.
+1. The statement fixes the output text, so a string literal is the exact answer.
+2. Reading every line first means no unread input is left behind.
+3. One `stdout.write` call emits the line with its newline.
+4. Nothing else is printed, so the byte match is exact.
 
-The main terms:
+For the sample, the empty input still produces the one required line.
 
-| term | meaning |
-|---|---|
-| `inputData` | full text read from standard input |
-| `outputBuffer` | pending output bytes |
-| `appendOutput` | adds text and flushes a full block |
-| `flushBlockBytes` | buffer size that triggers a write |
-
-The buffer keeps output work in one place.
-
-A trace from the generator with visible numbers:
-
-```
-input lines: 0
-output bytes: 14
-output: Hello NIT OJ.
-```
-
-The trace confirms that zero input lines still yield fourteen output bytes.
+The period after `OJ` is part of the string; dropping it would fail.
 
 ## Code
 
-**Input and output setup.** The driver reads all input, defines the scanner, and buffers output.
+**Input draining.** All lines are read and thrown away.
 
 ```nim
-const flushBlockBytes = 1 shl 17
-
 var inputData = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var scanPos = 0
-
-proc nextInt(data: string, pos: var int): int =
-  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
-    pos += 1
-  var value = 0
-  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    value = value * 10 + int(data[pos]) - 48
-    pos += 1
-  return value
-
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
+discard inputData.len
+stdout.write "Hello NIT OJ.\n"
 ```
 
-The read loop handles any input, including none.
-The scanner skips non-digits and builds each value digit by digit.
-The buffer writes once its size reaches `flushBlockBytes`.
-
-**Fixed greeting.** The program emits one string and flushes the buffer.
-
-```nim
-discard nextInt(inputData, scanPos)
-appendOutput("Hello NIT OJ.")
-outputBuffer.add '\n'
-stdout.write outputBuffer
-outputBuffer.setLen 0
-```
-
-The discard consumes any stray number without using it.
-The append adds the greeting and the newline.
-The final write flushes the short buffer to standard output.
+The loop ends when standard input closes.
+The `discard` line marks the collected text as unused on purpose.
+The write contains the greeting and its newline.
 
 ## Complexity
 
-The work is a single read pass and one write.
+The program touches each input character once and writes 13 bytes.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over input bytes | one input string |
-| output | one block write | block buffer |
-
-Both phases finish in constant time for this problem.
+| read input | one pass over the file | one string |
+| output | one write | none |
 
 | measure | Big O |
 |---|---|
-| time | O(1) |
-| space | O(1) |
+| time | O(input size) |
+| space | O(input size) |
 
-A naive line-by-line decision would add loops without changing the constant answer.
+With no input the work is constant.
 
-One append and one flush solve the whole problem.
+Takeaway: a constant answer runs in constant time.
