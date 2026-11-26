@@ -4,16 +4,17 @@
 
 ## Problem
 
-Decide whether one positive integer reads the same from right to left. Print YA when it does and TIDAK when it does not.
+Read one integer and decide whether it reads the same backwards. Print `YA` for yes and `TIDAK` for no.
 
-The input holds a single integer below 100000. Print one word.
+The input is a single integer n with n < 100000. The output is one word on its own line.
 
 | item | bound |
 |---|---|
-| integer n | positive, below 100000 |
+| n | n < 100000 |
+| output | `YA` or `TIDAK` |
 | judge limit | 1000 ms, 1536 MB |
 
-The bound is small enough for digit-by-digit arithmetic.
+Reversing the digits once answers the question.
 
 Sample input:
 
@@ -29,38 +30,27 @@ YA
 
 ## Idea
 
-Build the reversed number by peeling digits off the right, like moving beads from one side of an abacus to the other. Each peeled digit is appended to a new number. Comparing that new number with the original settles the question. No text conversion is needed.
+A word is a palindrome when it matches its mirror image. The program builds the digit-reverse of the number by peeling the last digit onto the front of a new value, then compares the two.
+
+No string handling or array storage is needed; plain arithmetic does the mirror.
+
+Takeaway: reverse by arithmetic, then compare.
 
 ## Why It Works
 
-1. Taking the last digit and dividing by ten removes one digit from the right.
-2. Appending that digit to a growing value builds the mirror image.
-3. Repeating until zero consumes every digit exactly once.
-4. Equality of the mirror and the original is the palindrome test.
+1. `remaining mod 10` gives the current last digit.
+2. Shifting the reversed value left by one place and adding that digit grows the mirror correctly.
+3. `remaining div 10` drops the digit that was just copied.
+4. The loop ends when every digit has been copied, so the mirror is complete.
+5. Equal numbers mean the digit sequence reads the same both ways.
 
-| term | meaning |
-|---|---|
-| `originalNumber` | the number read from input |
-| `reversedNumber` | value built by appending peeled digits |
-| `remainingNumber` | digits still waiting to be peeled |
+For the sample, 1221 reverses to 1221, so the answer is `YA`.
 
-The loop costs one division per digit.
-
-Script-generated trace for the sample number:
-
-```
-step | remaining | peeled | reversed
-1 | 1221 | 1 | 1
-2 | 122 | 2 | 12
-3 | 12 | 2 | 122
-4 | 1 | 1 | 1221
-```
-
-The reversed value equals 1221, so the program prints YA.
+A number ending in zero, such as 10, reverses to 1 and is not a palindrome, which the comparison catches.
 
 ## Code
 
-**Bulk input and scanner.** The whole stream is read once and parsed by a digit scanner.
+**Input and scanning.** The hand reader loads the file and parses one integer.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -83,11 +73,10 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-The scanner skips spaces and line breaks.
-One number is all the input contains.
-Parsing costs a few digit operations.
+The scanner skips spaces and newlines.
+Every value is positive, so no minus branch is needed.
 
-**Digit reversal and output.** Peeled digits rebuild the mirror value.
+**Buffered output.** One string collects the answer line.
 
 ```nim
 var outputBuffer = ""
@@ -97,7 +86,14 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+Large outputs flush in blocks.
+One final write closes the remaining text.
+
+**Digit mirror.** The reverse is built one digit at a time.
+
+```nim
 let originalNumber = nextInt(inputData, scanPos)
 var remainingNumber = originalNumber
 var reversedNumber = 0
@@ -114,25 +110,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Every digit is visited once.
-The final comparison chooses one word.
-The verdict is written from the block buffer.
+Each turn moves one digit from the back of the source to the back of the mirror.
+The loop stops when the source is empty.
+The two words are the exact answers from the statement.
 
 ## Complexity
 
-One short loop handles the whole input.
+The mirror loop runs once per digit.
 
 | phase | time | space |
 |---|---|---|
-| input read | one integer | one input string |
-| digit reversal | one step per digit | three integers |
-| output | one word | block buffer |
-
-No string allocation is needed.
+| read input | one pass over the file | one string |
+| reverse | one step per digit | none |
+| output | one line | one block buffer |
 
 | measure | Big O |
 |---|---|
-| time | O(number of digits) |
-| space | O(1) apart from buffers |
+| time | O(digits of n) |
+| space | O(1) |
 
-Converting to text and reversing a string would do the same work with extra allocation.
+Comparing digit by digit from both ends would need the number stored as text.
+
+Takeaway: one arithmetic reversal settles the question.

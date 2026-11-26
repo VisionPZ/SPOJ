@@ -34,3 +34,6 @@ def build():
 (ROOT / "out").mkdir(exist_ok=True)
 write("1_sample", 1221)
 build()
+
+if __name__ == "__main__":
+    Path("/tmp/NUMPDROM_big.txt").write_text("1000000000000000001\n")
