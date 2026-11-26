@@ -1,66 +1,78 @@
-# THR18A — ICPC (SPOJ)
+# THR18A — ICPC Finals (SPOJ)
 
 <https://www.spoj.com/problems/THR18A/>
 
 ## Problem
 
-Two football matches decide a winner. Compare the combined goals first, then the goals scored away from home, and name the winner or a penalty shootout.
+A two-legged football final between Persepolis and Esteghlal is decided by aggregate goals, then by the away goals rule, and otherwise by penalty kicks. The program reads both match scores and prints the winner or `Penalty`.
 
-The input has four numbers: the goals in the first match, Persepolis at home, then the goals in the second match, Esteghlal at home. Print one team name or Penalty.
+Input holds two lines. The first line gives `p1` and `s1`, the goals of Persepolis and Esteghlal in the match where Persepolis is at home. The second line gives `s2` and `p2`, the goals of Esteghlal and Persepolis in the match where Esteghlal is at home. Output holds one line with the verdict.
 
-| item | bound |
+| Item | Bound |
 |---|---|
-| each goal count | 0 to 20 |
-| judge limit | 1000 ms, 1536 MB |
+| Goals per match | 0 ≤ every integer ≤ 20 |
+| Judge limit | 1000 ms, 1536 MB |
 
-Exactly one case is given per run.
-
-Sample input:
+The sample cases:
 
 ```
 3 0
 2 1
 ```
 
-Sample output:
-
 ```
 Persepolis
 ```
 
+```
+3 1
+2 0
+```
+
+```
+Esteghlal
+```
+
+```
+2 0
+2 0
+```
+
+```
+Penalty
+```
+
 ## Idea
 
-Score the tie like a two-round contest with a backup rule. Add each team's goals from both matches. When totals tie, count only goals scored in the other team's stadium. If those also tie, nobody wins on the rules. Three comparisons produce the answer.
+Add the two scores for each team, compare the totals, and only look at away goals when the totals match. Think of a referee following a fixed checklist: total goals first, away goals second, shootout third. The whole decision is four additions and a few comparisons, so it costs constant time. Scanning the four numbers is the only real work.
 
 ## Why It Works
 
-1. Aggregate score is the sum of a team's goals in both matches.
-2. A larger aggregate decides the winner immediately.
-3. On a tie, away goals count for the team visiting that stadium.
-4. Equal away goals mean the rules cannot decide, so penalties follow.
+1. Each team plays one home and one away match, so its aggregate is home goals plus away goals.
+2. The rules rank aggregate goals above away goals, which the comparison order follows.
+3. Away goals are read from the match where the team was the visitor: `s1` for Esteghlal, `p2` for Persepolis.
+4. Equal aggregates and equal away goals leave no rule to break the tie, so the verdict is `Penalty`.
 
-| term | meaning |
+| Term | Meaning |
 |---|---|
-| `persepolisAggregate` | goals Persepolis scored across both matches |
-| `esteghlalAggregate` | goals Esteghlal scored across both matches |
-| `persepolisAwayGoals` | goals Persepolis scored in the second match |
-| `esteghlalAwayGoals` | goals Esteghlal scored in the first match |
+| `persepolisHomeGoals` | `p1`, Persepolis goals at home |
+| `persepolisAwayGoals` | `p2`, Persepolis goals away |
+| `esteghlalHomeGoals` | `s2`, Esteghlal goals at home |
+| `esteghlalAwayGoals` | `s1`, Esteghlal goals away |
+| `persepolisAggregate` | `p1 + p2` |
+| `esteghlalAggregate` | `s2 + s1` |
 
-The order of input lines is fixed by the home team.
-
-Script-generated trace for the second sample case:
+The first sample runs through the checklist as:
 
 ```
-team | home goals | away goals | aggregate
-Persepolis | 3 | 0 | 3
-Esteghlal | 2 | 1 | 3
+p1=3 s1=0 s2=2 p2=1
+Persepolis aggregate 3+1=4, Esteghlal aggregate 2+0=2
+4 > 2, so the first rule already decides: Persepolis
 ```
-
-Away goals are 0 against 1, so Esteghlal wins.
 
 ## Code
 
-**Bulk input and scanner.** The whole stream is read once and parsed by a digit scanner.
+**Input and hand scanner.** This block loads stdin and reads the four integers.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -83,11 +95,11 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-The four goals are read in input order.
-The scanner skips spaces and line breaks.
-Parsing costs a few digit operations.
+One readLine loop collects all input bytes.
+The scanner skips whitespace between digits.
+Scanning costs one pass over the consumed characters.
 
-**Winner decision and output.** Ordered comparisons apply the rules.
+**Buffered output.** This block holds the verdict line.
 
 ```nim
 var outputBuffer = ""
@@ -97,7 +109,14 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+The buffer flushes after reaching 128 KiB.
+One final write emits any remaining bytes.
+
+**Decision ladder.** This block applies the two rules in order.
+
+```nim
 let persepolisHomeGoals = nextInt(inputData, scanPos)
 let esteghlalAwayGoals = nextInt(inputData, scanPos)
 let esteghlalHomeGoals = nextInt(inputData, scanPos)
@@ -120,25 +139,23 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Aggregate goals are checked before away goals.
-The last branch covers a complete tie.
-One word is written from the block buffer.
+The four reads follow the statement order exactly.
+The `elif` chain reaches away goals only when aggregates tie.
+Each verdict costs one string append.
 
 ## Complexity
 
-One case needs only a handful of operations.
+The cost splits into reading four numbers and one comparison chain.
 
-| phase | time | space |
+| Phase | Time | Space |
 |---|---|---|
-| input read | four integers | one input string |
-| comparison | constant comparisons and sums | five integers |
-| output | one word | block buffer |
+| Input read | one pass over input bytes | input bytes |
+| Decision | constant | constant |
+| Output | one small write | buffer |
 
-No loop or table is needed.
-
-| measure | Big O |
+| Measure | Big O |
 |---|---|
-| time | O(1) apart from input bytes |
-| space | O(1) apart from buffers |
+| Time | O(1) |
+| Space | O(1) |
 
-Enumerating score scenarios would add work without changing the rule.
+Nothing scales with the input: the program always reads four integers and compares two pairs of sums.
