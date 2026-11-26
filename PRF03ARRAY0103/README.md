@@ -7,7 +7,7 @@ Read a count N and N signed integers, then show the input prompts and the values
 
 The input is N, then N integers, one per line. The output starts with How many element of numeric array: followed by The value of a[k] is: for k from 1 to N, all on one line.
 
-Two newlines follow, then N element of numeric array: on its own line. The next N lines hold each prompt and one sorted value.
+Two newlines follow, then DESC: on its own line, then N element of numeric array:. The next N lines hold each prompt and one sorted value.
 
 The bounds and judge limits are:
 
@@ -15,7 +15,7 @@ The bounds and judge limits are:
 | --- | --- |
 | element count N | not stated; examples use 3 and 5 |
 | values | signed integers, examples include -1 |
-| output lines | N + 3 |
+| output lines | N + 4 |
 | judge time | 1000 ms |
 | judge memory | 1536 MB |
 
@@ -36,6 +36,7 @@ The expected output follows.
 
     How many element of numeric array:The value of a[1] is:The value of a[2] is:The value of a[3] is:The value of a[4] is:The value of a[5] is:
 
+    DESC:
     5 element of numeric array:
     The value of a[1] is:8
     The value of a[2] is:3
@@ -47,17 +48,17 @@ The listing holds the same values in descending order.
 
 ## Idea
 
-Sorting numbered cards means sliding each card left until the cards before it sit in order, like arranging cards on a desk. Insertion sort is the real algorithm here.
+Sorting a hand of cards from biggest to smallest is the same job as sorting upward, just read backwards. This program sorts upward with the compiler's battle-tested routine, then walks the sorted row from the far end, so the biggest value prints first.
 
-Each inserted value scans at most N earlier values, so the cost is O(N) per item and O(N^2) overall. A naive approach rereads the raw text for every output line and reparses every digit. Storing the values once and sorting them keeps parsing linear.
+A naive approach rereads the raw text for every output line and reparses every digit. Storing the values once, calling one library sort, and printing from the stored list keeps parsing linear and the code short.
 
 ## Why It Works
 
 1. The count prompt and N value prompts are emitted before the listing.
 2. Each parsed integer is stored before the next prompt is written.
-3. Two appended newlines place one blank line before the heading.
-4. Insertion sort moves each value left past smaller values, so the list ends descending.
-5. The listing loop pairs one-based prompts with sorted values in matching positions.
+3. Two appended newlines place one blank line, then the DESC: label line, then the heading.
+4. The library sort orders the stored list from smallest to largest.
+5. Walking the sorted list backwards, with a counter that starts at 1, pairs each one-based prompt with the right value: a[1] gets the largest, a[N] the smallest.
 
 The terms carry the proof.
 
@@ -66,27 +67,32 @@ The terms carry the proof.
 | `countPrompt` | fixed text before the count |
 | `valuePromptPrefix` | fixed text before a one-based index |
 | `valuePromptSuffix` | fixed text after each index |
+| `orderLabel` | the DESC: line between blank line and heading |
 | `listHeadingSuffix` | fixed text after the count in the heading |
 | `elementCount` | parsed number of values |
-| `arrayValues` | stored values, then sorted descending |
-| `holdValue` | value being inserted during a sort step |
-| `priorIndex` | position scanned left during a sort step |
+| `arrayValues` | stored values, then sorted ascending |
+| `cmp` | library comparator for the ascending order |
+| `sort` | library routine that rearranges the list |
+| `displayIndex` | one-based label counter for the listing |
 
 These names cover the whole driver.
 
-The generator's oracle turns the sample values 2, -1, 8, 3, 0 into 8, 3, 2, 0, -1. The third sort step holds 8 and moves 2 and -1 right. The listing prints 8 at a[1] and -1 at a[5].
+The generator's oracle merge-sorts the sample values 2, -1, 8, 3, 0 into -1, 0, 2, 3, 8, then reads that row backwards to get 8, 3, 2, 0, -1. The listing prints 8 at a[1] and -1 at a[5].
 
 No rounding applies. The scanner keeps the minus sign, so -1 survives the parse.
 
 ## Code
 
-**Constants and full input read.** The header holds the four fixed output strings.
+**Constants and full input read.** The header holds the five fixed output strings.
 
 ```nim
+import algorithm
+
 const flushBlockBytes = 1 shl 17
 const countPrompt = "How many element of numeric array:"
 const valuePromptPrefix = "The value of a["
 const valuePromptSuffix = "] is:"
+const orderLabel = "DESC:"
 const listHeadingSuffix = " element of numeric array:"
 
 var inputData = ""
@@ -133,7 +139,7 @@ proc appendOutput(text: string) =
 
 Large blocks keep write calls rare. The final write empties any leftover text.
 
-**Prompt pass, sort and listing.** The driver reads values, sorts them, then reuses the stored list.
+**Prompt pass, sort and reverse listing.** The driver reads values, sorts them upward, then walks the row backwards.
 
 ```nim
 let elementCount = nextInt(inputData, scanPos)
@@ -146,48 +152,46 @@ for elementIndex in 0 .. elementCount - 1:
   arrayValues[elementIndex] = nextInt(inputData, scanPos)
 outputBuffer.add '\n'
 outputBuffer.add '\n'
+appendOutput(orderLabel)
+outputBuffer.add '\n'
 appendOutput($elementCount)
 appendOutput(listHeadingSuffix)
 outputBuffer.add '\n'
-for sortIndex in 1 .. elementCount - 1:
-  var holdValue = arrayValues[sortIndex]
-  var priorIndex = sortIndex - 1
-  while priorIndex >= 0 and arrayValues[priorIndex] < holdValue:
-    arrayValues[priorIndex + 1] = arrayValues[priorIndex]
-    priorIndex -= 1
-  arrayValues[priorIndex + 1] = holdValue
-for elementIndex in 0 .. elementCount - 1:
+sort(arrayValues, cmp)
+var displayIndex = 1
+for elementIndex in countdown(elementCount - 1, 0):
   appendOutput(valuePromptPrefix)
-  appendOutput($(elementIndex + 1))
+  appendOutput($(displayIndex))
   appendOutput(valuePromptSuffix)
   appendOutput($arrayValues[elementIndex])
   outputBuffer.add '\n'
+  displayIndex += 1
 stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The first loop prints prompts and saves values. The insertion sort orders the saved list. The second loop prints the sorted values.
+The first loop prints prompts and saves values. One library call orders the saved list. The second loop prints the sorted values from the far end.
 
 ## Complexity
 
-Parsing and listing grow with N, and insertion sorting dominates the work.
+Parsing and listing grow with N, and the library sort dominates the work.
 
 | phase | time | space |
 | --- | --- | --- |
 | input read | one pass over N integers | one input string |
 | prompt pass | N prompt emissions | array of N integers |
-| insertion sort | up to N shifts per value | array of N integers |
+| library sort | comparisons and swaps | array of N integers |
 | listing pass | N value lines | output buffer |
 
 The phase table shows where the work goes.
 
 | measure | Big O |
 | --- | --- |
-| time | O(N^2) |
+| time | O(N log N) |
 | space | O(N) |
 
 The measure table gives the growth rates.
 
-Reparsing the input once per output line would also cost O(N^2) and duplicate digit work.
+Reparsing the input once per output line would add quadratic text work on top of the sort.
 
-Storing the values once and sorting them gives one clean quadratic pass.
+Storing the values once and sorting them gives one clean O(N log N) pass.

@@ -10,6 +10,7 @@ SAMPLE_OUT = (
     "The value of a[1] is:The value of a[2] is:The value of a[3] is:"
     "The value of a[4] is:The value of a[5] is:\n"
     "\n"
+    "DESC:\n"
     "5 element of numeric array:\n"
     "The value of a[1] is:8\n"
     "The value of a[2] is:3\n"
@@ -19,28 +20,51 @@ SAMPLE_OUT = (
 )
 
 
+def merge_sort_descending(values):
+    if len(values) < 2:
+        return list(values)
+    middle = len(values) // 2
+    left = merge_sort_descending(values[:middle])
+    right = merge_sort_descending(values[middle:])
+    merged = []
+    left_index = 0
+    right_index = 0
+    while left_index < len(left) and right_index < len(right):
+        if left[left_index] >= right[right_index]:
+            merged.append(left[left_index])
+            left_index += 1
+        else:
+            merged.append(right[right_index])
+            right_index += 1
+    merged.extend(left[left_index:])
+    merged.extend(right[right_index:])
+    return merged
+
+
 def oracle(text):
     tokens = [int(value) for value in text.split()]
     count = tokens[0]
-    values = sorted(tokens[1:1 + count], reverse=True)
+    values = merge_sort_descending(tokens[1:1 + count])
     prompts = "How many element of numeric array:"
     for index in range(1, count + 1):
         prompts += f"The value of a[{index}] is:"
     listing = f"{count} element of numeric array:\n"
     for index, value in enumerate(values, 1):
         listing += f"The value of a[{index}] is:{value}\n"
-    return prompts + "\n\n" + listing
+    return prompts + "\n\n" + "DESC:\n" + listing
 
 
 assert oracle(SAMPLE) == SAMPLE_OUT
 assert oracle("3\n2\n1\n3\n") == (
     "How many element of numeric array:The value of a[1] is:"
     "The value of a[2] is:The value of a[3] is:\n\n"
+    "DESC:\n"
     "3 element of numeric array:\nThe value of a[1] is:3\n"
     "The value of a[2] is:2\nThe value of a[3] is:1\n"
 )
 assert oracle("1\n-7\n") == (
     "How many element of numeric array:The value of a[1] is:\n\n"
+    "DESC:\n"
     "1 element of numeric array:\nThe value of a[1] is:-7\n"
 )
 assert oracle("4\n5\n5\n-2\n0\n").endswith(
