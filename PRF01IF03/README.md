@@ -108,6 +108,7 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+
 ```
 
 The scanner skips whitespace and honors a leading minus.
