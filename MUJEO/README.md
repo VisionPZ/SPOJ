@@ -87,6 +87,7 @@ proc nextInt(data: string, pos: var int): int =
     value = value * 10 + int(data[pos]) - 48
     pos += 1
   return value
+
 ```
 
 All numbers are parsed before any output is produced.
