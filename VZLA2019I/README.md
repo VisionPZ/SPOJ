@@ -1,20 +1,15 @@
 # VZLA2019I — Italian Dinner (SPOJ)
+
 <https://www.spoj.com/problems/VZLA2019I/>
 
 ## Problem
 
-Pick exactly one option from each of six courses. The number of different dinners equals the product of the six option counts.
-
-Input is one line with six integers `C1` to `C6`, each between 1 and 50, separated by single spaces. Output is one line holding the product of those six integers.
+An Italian dinner has five courses (antipasto, primo, secondo, contorno, dolce) plus a drink course. Exactly one option is chosen from each of the six courses. Given the number of options for each course on one line, print how many different dinners can be ordered.
 
 | item | bound |
 |---|---|
-| each option count Ci | 1 to 50 |
-| number of courses | 6 |
-| maximum product | 50^6 = 15625000000 |
+| options per course `Ci` | 1 to 50 |
 | judge limit | 1000 ms, 1536 MB |
-
-Signed 32-bit integers stop at 2147483647, so the product needs 64-bit storage.
 
 Sample input:
 
@@ -28,31 +23,28 @@ Sample output:
 2
 ```
 
+More examples from the statement: `2 3 1 2 4 1` gives `48`, and `5 10 2 8 7 4` gives `22400`.
+
 ## Idea
 
-Choosing one item from each course multiplies the options, like assembling outfits from shirts, trousers and shoes. The algorithm reads six integers and multiplies them in one pass. Each course costs one multiplication and one 64-bit update. Listing every dinner would create over 15 billion entries, so multiplication wins. Takeaway: multiply the counts, never enumerate the dinners.
+A dinner is one pick from each of six bowls of dishes. Counting them is just multiplying: for every antipasto there are that many primos, and so on down the line. The program keeps a running product and prints it.
 
 ## Why It Works
 
-1. Every course choice is independent of the other five courses.
-2. The product of the six counts counts all combined choices.
-3. The largest possible product is 50^6, which is 15625000000.
-4. A 64-bit accumulator holds that product without overflow.
-5. The scanner reads all input once and ignores line breaks.
+1. Two dinners differ if any course differs, and choices in different courses never interfere, so the multiplication principle applies: the total is the product of the six counts.
+2. The sample `1 1 1 2 1 1` has exactly two dinners because only the contorno offers two options: `1 * 1 * 1 * 2 * 1 * 1 = 2`.
+3. The largest possible product is `50^6 = 15625000000000`, about 1.56 x 10^13, which is far past 2^31 but well inside a 64-bit integer, so the running product is kept as `int64`.
+4. The independent oracle multiplies the same six numbers by a different route: it factorizes each count into primes, adds the exponents per prime, and rebuilds the product from the primes. Prime factorization is unique, so both routes must land on the same integer.
 
 | term | meaning |
 |---|---|
-| `courseCount` | fixed number of courses, which is 6 |
-| `optionCount` | options offered for the current course |
-| `dinnerCount` | running product of all option counts |
-
-The accumulator starts at one, so multiplying six values needs no special first case.
-
-For the sample counts 1, 1, 1, 2, 1, 1 the running products are 1, 1, 1, 2, 2, 2. The final product is 2, matching the sample output.
+| `courseCount` | 6, the five courses plus the drink |
+| `optionCount` | options offered for one course |
+| `dinnerCount` | running product, starts at 1 |
 
 ## Code
 
-**Input and scanning.** The hand reader loads the single input line and parses digits.
+**Input, scanner and output buffer.** This block loads stdin and prepares the writer.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -74,14 +66,7 @@ proc nextInt(data: string, pos: var int): int =
     value = value * 10 + int(data[pos]) - 48
     pos += 1
   return value
-```
 
-`inputData` holds the whole line, and `scanPos` walks it once.
-`nextInt` skips spaces and builds each value from digits.
-
-**Product and output.** Six multiplications build the answer in 64-bit math.
-
-```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -89,7 +74,13 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+The whole input is read once into a string. The scanner skips spaces and picks up the next run of digits.
+
+**The product and the print.** This block multiplies the six counts and writes the answer.
+
+```nim
 var dinnerCount: int64 = 1
 for courseIndex in 0 .. courseCount - 1:
   let optionCount = nextInt(inputData, scanPos)
@@ -100,23 +91,19 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-`dinnerCount` uses `int64` to hold the maximum product.
-`appendOutput` buffers the single answer line.
-One final write flushes the buffer after the loop.
+The cast to `int64` happens before the multiply, so the running product never overflows.
 
 ## Complexity
 
-The program reads six numbers and writes one result.
-
 | phase | time | space |
 |---|---|---|
-| input read | one pass over six integers | one input string |
-| multiplication | six 64-bit products | one accumulator |
-| output | one line | block buffer |
+| input read | one pass over at most 30 bytes | O(1) |
+| product | 6 multiplications | O(1) |
+| output | one line | O(1) |
 
-| measure | Big O |
+| measure | big O |
 |---|---|
 | time | O(1) |
 | space | O(1) |
 
-Enumerating every dinner would take O(50^6) time instead of constant time. Takeaway: constant-time multiplication solves the whole problem.
+Six numbers in, one number out: there is nothing to loop over at scale.
