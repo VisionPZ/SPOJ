@@ -1,6 +1,7 @@
 #!/bin/sh
 set -u
-NIM=${NIM:-nim}
+JAVAC=${JAVAC:-javac}
+JAVA=${JAVA:-java}
 cd "$(dirname "$0")"
 LIMIT=1000
 # Hard wall-clock kill on every program run, like the judge does.
@@ -8,14 +9,14 @@ LIMIT=1000
 TL=$(( (LIMIT + 999) / 1000 + 1 ))
 command -v timeout >/dev/null || { echo 'timeout command missing, refusing to run unbounded'; exit 1; }
 guard() { timeout -k 1 "${TL}s" "$@"; }
-rm -rf build .nimcache got_*.txt
-"$NIM" c --version 2>&1 | head -1
-timeout 600s "$NIM" c -d:release --nimcache:.nimcache --out:build/solution solution.nim || exit 1
+rm -rf build got_*.txt
+"$JAVAC" --version 2>&1 | head -1
+timeout 600s "$JAVAC" -d build solution.java || exit 1
 [ -f gen.py ] || { echo 'gen.py missing'; exit 1; }
 timeout 300s python3 gen.py >/dev/null || { echo 'gen.py failed or ran over 300 s'; exit 1; }
 fail=0
 run() {
-  guard build/solution < "in/$1.txt" > "got_$1.txt" 2>/dev/null
+  guard "$JAVA" -cp build Main < "in/$1.txt" > "got_$1.txt" 2>/dev/null
   code=$?
   if [ "$code" -ge 124 ]; then
     echo "TIMEOUT $1 killed at ${TL}s wall (judge ${LIMIT} ms)"
@@ -31,7 +32,7 @@ best() {
   w=99999999; b=0; k=1; to=0
   while [ $k -le 3 ]; do
     t0=$(date +%s%N)
-    guard build/solution < "$1" > "$2"; code=$?
+    guard "$JAVA" -cp build Main < "$1" > "$2"; code=$?
     t1=$(date +%s%N)
     ms=$(( (t1 - t0) / 1000000 )); [ "$ms" -lt "$w" ] && w=$ms
     b=$(wc -c < "$2"); [ "$code" -ge 124 ] && to=1
