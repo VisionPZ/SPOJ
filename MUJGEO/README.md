@@ -115,6 +115,7 @@ proc nextDouble(data: string, pos: var int): float =
       pos += 1
     wholeValue = wholeValue * pow(10.0, exponentSign * exponentValue)
   return signValue * wholeValue
+
 ```
 
 `nextDouble` reads a sign, a whole part, a decimal part, and an exponent. It uses `int(data[pos]) - 48` for each digit. One input string keeps the parser independent of line breaks.
