@@ -83,6 +83,7 @@ proc nextInt(data: string, pos: var int): int =
     value = value * 10 + int(data[pos]) - 48
     pos += 1
   return value
+
 ```
 
 The scanner skips spaces and line breaks. It folds digits into one value per call.
