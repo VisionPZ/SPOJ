@@ -4,18 +4,18 @@
 
 ## Problem
 
-An array is beautiful when every out-of-order pair occupies neighboring spots. Report `YES` or `NO` for each test case.
+An array is beautiful when its total inversions equal its local inversions. A total inversion is a pair (i, j) with i < j and A[i] > A[j]. A local inversion is an adjacent drop A[i] > A[i+1]. Print `YES` or `NO` per test.
 
-The first input line holds the number of test cases, `T`. Each case starts with `N`, the array length, followed by `N` values `A[i]`. Print one verdict per case.
+The first line holds T with 1 ≤ T ≤ 10. Each test gives N (1 ≤ N ≤ 100) and then N values with 1 ≤ A[i] ≤ 100.
 
 | item | bound |
 |---|---|
-| test cases `T` | 1 to 10 |
-| array length `N` | 1 to 100 |
-| value `A[i]` | 1 to 100 |
+| tests T | 1 ≤ T ≤ 10 |
+| array length N | 1 ≤ N ≤ 100 |
+| values A[i] | 1 ≤ A[i] ≤ 100 |
 | judge limit | 1000 ms, 1536 MB |
 
-An inversion is a pair `i < j` with `A[i] > A[j]`. A local inversion is a spot `i` with `A[i] > A[i+1]`.
+Every local inversion is a total inversion, so beauty fails only when a far pair inverts.
 
 Sample input:
 
@@ -40,39 +40,29 @@ NO
 YES
 ```
 
-The third array has two inversions at distance one and one at distance two.
-
 ## Idea
 
-A distant inversion always hides a neighboring inversion on the walk between the two spots, like a long detour that still crosses a nearby turn. Store the smallest value to the right of each spot and compare it with the current value. This suffix minimum replaces a full pair count with one backward pass. Counting every pair costs O(N^2) per case, while the pass costs O(N). A case is beautiful exactly when no value beats any spot two or more places to its right.
+A staircase with a hidden step behind a corner is the only way to trip. A local inversion is a step between neighbours. Beauty asks that no inversion hides two places apart.
+
+The program checks, for each position i, whether A[i] beats the smallest value at or after i+2. If it does, a far inversion exists and the array is not beautiful. A suffix-minimum table makes each check one lookup.
+
+Takeaway: equal counts mean no far pair, so only far pairs need checking.
 
 ## Why It Works
 
-1. Each local inversion is also an inversion, so the two counts match only when all inversions are local.
-2. If `A[i] > A[j]` with `j >= i+2`, the array is not beautiful.
-3. The smallest value at positions `i+2` onward is the suffix minimum at `i+2`.
-4. Comparing `A[i]` with that minimum tests every distant partner at once.
-5. Checking all `i` up to `N-3` therefore decides the case.
+1. Every adjacent drop is also an inversion, so local count ≤ total count always.
+2. The counts are equal exactly when no non-adjacent pair inverts.
+3. A non-adjacent inversion (i, j) has j ≥ i+2, so A[i] > A[j] ≥ suffix minimum from i+2.
+4. Conversely, if A[i] exceeds the suffix minimum from i+2, some j ≥ i+2 inverts with i.
+5. Scanning all i therefore decides beauty in one pass.
 
-| term | meaning |
-|---|---|
-| `values` | the array for one case |
-| `suffixMinimum` | smallest value from a spot onward |
-| `beautiful` | true when no distant inversion exists |
-| `leftIndex` | spot being compared with its suffix |
+For the sample, [3, 2, 1] has 3 total inversions but only 2 local ones, so the answer is `NO`. The array [1, 3, 2, 4] has one of each, so it is `YES`.
 
-The comparison table for the last sample case uses the array `1 3 2 4`.
-
-| leftIndex | A[leftIndex] | suffixMinimum[leftIndex + 2] | result |
-|---|---|---|---|
-| 0 | 1 | 2 | keep |
-| 1 | 3 | 4 | keep |
-
-No value beats a spot two or more places away, so the verdict is `YES`.
+Arrays of length 1 or 2 have no far pairs, so they are always beautiful.
 
 ## Code
 
-**Input and scanning.** The hand reader loads every test value into one buffer.
+**Input and scanning.** The hand reader loads the file and parses integers.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -95,11 +85,10 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-The scanner skips whitespace between numbers.
-It builds each value one digit at a time.
-The buffer grows once for the whole input.
+The scanner skips spaces and newlines.
+Every value is positive, so no minus branch is needed.
 
-**Suffix test and verdict.** One backward pass builds the minima, then one forward pass decides.
+**Buffered output.** One string collects the answer lines.
 
 ```nim
 var outputBuffer = ""
@@ -109,13 +98,14 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
-let caseCount = nextInt(inputData, scanPos)
-for caseIndex in 0 .. caseCount - 1:
-  let elementCount = nextInt(inputData, scanPos)
-  var values = newSeq[int](elementCount)
-  for elementIndex in 0 .. elementCount - 1:
-    values[elementIndex] = nextInt(inputData, scanPos)
+Large outputs flush in blocks.
+One final write closes the remaining text.
+
+**Suffix minimum.** The table stores the smallest value from each index onward.
+
+```nim
   var suffixMinimum = newSeq[int](elementCount + 1)
   suffixMinimum[elementCount] = 2147483647
   var reverseIndex = elementCount - 1
@@ -125,6 +115,14 @@ for caseIndex in 0 .. caseCount - 1:
     else:
       suffixMinimum[reverseIndex] = suffixMinimum[reverseIndex + 1]
     reverseIndex -= 1
+```
+
+The sentinel at the end keeps the walk simple.
+Each cell takes the min of its value and the cell after it.
+
+**Far-pair check.** One lookup per position decides the test.
+
+```nim
   var beautiful = true
   for leftIndex in 0 .. elementCount - 3:
     if values[leftIndex] > suffixMinimum[leftIndex + 2]:
@@ -133,30 +131,28 @@ for caseIndex in 0 .. caseCount - 1:
     appendOutput("YES\n")
   else:
     appendOutput("NO\n")
-stdout.write outputBuffer
-outputBuffer.setLen 0
 ```
 
-The sentinel at index `N` is larger than every allowed value.
-Arrays shorter than three spots skip the forward loop.
-Verdicts collect in the output buffer and flush once.
+The loop stops two places before the end because far pairs need room.
+The first hit sets the answer, so the scan is short-circuit in spirit.
+Every test contributes exactly one line.
 
 ## Complexity
 
-Each case reads its array, builds one suffix table, and scans it.
+Each test builds one suffix table and scans once.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over all values | one input string |
-| suffix table | one backward pass over `N` | array of `N` integers |
-| verdict | one forward pass over `N` | constant |
-| output | one line per case | block buffer |
+| read input | one pass over the file | one string |
+| suffix table | one pass per test | N cells |
+| check | one lookup per position | none |
+| output | one line per test | one block buffer |
 
 | measure | Big O |
 |---|---|
-| time per case | O(N) |
-| space per case | O(N) |
+| time | O(total N) |
+| space | O(N) |
 
-Counting every pair would spend O(N^2) time on the same decision.
+Counting all inversions with double loops costs O(N^2) per test.
 
-The suffix pass makes each case linear in the array length.
+Takeaway: compare against the suffix minimum to skip the double loop.

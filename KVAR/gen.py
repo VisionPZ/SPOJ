@@ -75,3 +75,11 @@ def build():
 (ROOT / "in" / "1_sample.txt").write_text(SAMPLE)
 (ROOT / "out" / "1_sample.out").write_text(SAMPLE_OUT)
 build()
+
+if __name__ == "__main__":
+    rng2 = random.Random(7)
+    lines = ["20"]
+    for _ in range(20):
+        lines.append("3000")
+        lines.append(" ".join(str(rng2.randint(1, 100)) for _ in range(3000)))
+    Path("/tmp/KVAR_big.txt").write_text("\n".join(lines) + "\n")
