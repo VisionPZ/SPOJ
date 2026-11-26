@@ -1,25 +1,22 @@
 # HASANSM — Spending Money (SPOJ)
+
 <https://www.spoj.com/problems/HASANSM/>
 
 ## Problem
 
-Spend as much as possible from a budget on two chocolate types and report the smallest leftover money.
+Hasan has P taka. Dairy Milk costs M each and must be bought in packs of 1, 2, 4, or 8, so any whole number of them can be bought. KitKat costs N each and must be bought in packs of 7, 14, or 28, so the total KitKat count is always a multiple of 7. Hasan wants to spend as much as possible. Print the smallest leftover money.
 
-Dairy milk costs M taka per bar and is bought in packs of 1, 2, 4 or 8 bars.
-Kitkat costs N taka per bar and is bought in packs of 7, 14 or 28 bars.
-Any number of packs may be bought.
-The input starts with T, followed by T lines with P, M and N.
-Output one line per case with the minimum remaining money.
+The first line holds T. Each test gives P, M, N.
 
 | item | bound |
 |---|---|
-| test cases T | 1 to 25 |
-| budget P | 1 to 30000000000 |
-| prices M and N | 30 to 10000000000 |
-| sum of all P | at most 120000000000 |
+| tests T | 1 ≤ T ≤ 25 |
+| P | 1 ≤ P ≤ 3×10^10 |
+| M, N | 30 ≤ M, N ≤ 10^10 |
+| sum of P | ≤ 1.2×10^11 |
 | judge limit | 5000 ms, 1536 MB |
 
-The budget can be far larger than a machine word, so arithmetic uses 64-bit values.
+The leftover is the smallest residue of one arithmetic progression, found without looping over every pack count.
 
 Sample input:
 
@@ -40,41 +37,30 @@ Sample output:
 
 ## Idea
 
-Both pack lists act like coins you may spend repeatedly, like paying with stacks of two coin sizes.
+Buying 1, 2, 4, or 8 bars at a time still lets Hasan reach any total count, because packs of 1 exist. KitKat packs are all multiples of 7, so his KitKat total is 7y for some y. The spend is therefore M·x + 7N·y for free choices of x and y.
 
-Packs of 1, 2, 4 and 8 combine into any dairy count, so dairy spend is any multiple of M.
-Packs of 7, 14 and 28 combine into any multiple of seven kitkats, so kitkat spend is any multiple of 7N.
-For each kitkat pack count, the best dairy count is the largest one that still fits.
-That leaves a remainder of P minus 7N times the pack count, taken modulo M.
-Scanning every pack count can take billions of steps when N is small.
+For a fixed y, the best x spends everything below P − 7N·y, so the leftover is (P − 7N·y) mod M. The task becomes: find the smallest value of an arithmetic progression taken modulo M, with y running from 0 to floor(P / 7N).
 
-A Euclidean reduction finds the smallest remainder in logarithmic time.
+A Euclidean descent answers that in logarithmic steps, like gcd but tracking the minimum residue.
+
+Takeaway: reduce spending to one progression, then use a gcd-like descent.
 
 ## Why It Works
 
-1. A pack of one dairy bar means every dairy count is reachable, so dairy spend is M times any integer.
-2. A pack of seven kitkats means every multiple of seven bars is reachable, so kitkat spend is 7N times any integer.
-3. For a fixed kitkat pack count b, the leftover is (P - 7N*b) mod M.
-4. The pack count runs from 0 to P divided by 7N, so the problem is a modular arithmetic progression minimum.
-5. The Euclidean reduction replaces modulus and step with smaller values until the step becomes zero.
+1. Any count x of Dairy Milk is reachable, so only the total matters.
+2. KitKat totals are exactly the multiples of 7N in price.
+3. For fixed y, the leftover is (P − 7N·y) mod M, an arithmetic progression in y with step −7N.
+4. The loop keeps the best residue seen. If no term wraps past M, the terms strictly increase and the start is already minimal.
+5. When terms do wrap, the Euclidean step replaces (M, step) by (step, M mod step), the same reduction that makes gcd fast, and carries the wrapped minima into the smaller problem.
+6. The number of rounds is logarithmic, so 10^10-sized inputs finish instantly.
 
-| term | meaning |
-|---|---|
-| `budget` | the available money P |
-| `milkPrice` | the price M of one dairy bar |
-| `kitkatCost` | the price 7N of seven kitkats |
-| `minModStep` | the smallest value of a modular progression |
-| `leftover` | the minimum remaining money |
+For the sample, 150 with M = 30 and 7N = 245: no KitKat fits, so the leftover is 150 mod 30 = 0. For 167, 40, 35 the leftover is 167 mod 40 = 7. For 99999989, 31, 31 the step 217 is a multiple of 31, so every leftover equals 99999989 mod 31 = 3.
 
-For the second sample case P is 167, M is 40 and kitkatCost is 245.
-No kitkat pack fits, so the remainder is 167 modulo 40, which is 7.
-
-For the third case M and N are both 31, so kitkatCost is 217 and M divides it.
-The step is zero, so the answer is 99999989 modulo 31, which is 3.
+When the step is 0 modulo M, every y gives the same residue and the start value is returned unchanged.
 
 ## Code
 
-**Input, remainder reduction and output helper.** The reader loads all cases and the reducer shrinks the modulus.
+**Input and scanning.** The hand reader loads the file and parses 64-bit values.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -96,7 +82,29 @@ proc nextInt(data: string, pos: var int): int64 =
     value = value * 10 + int64(int(data[pos]) - 48)
     pos += 1
   return value
+```
 
+The scanner skips spaces and newlines.
+`int64` holds P up to 3×10^10 exactly.
+
+**Buffered output.** One string collects the answer lines.
+
+```nim
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+```
+
+Large outputs flush in blocks.
+One final write closes the remaining text.
+
+**Progression minimum.** The descent mirrors Euclid's algorithm.
+
+```nim
 proc minModStep(modulusValue, stepValue, startValue, stepLimit: int64): int64 =
   var currentModulus = modulusValue
   var currentStep = stepValue mod currentModulus
@@ -117,20 +125,13 @@ proc minModStep(modulusValue, stepValue, startValue, stepLimit: int64): int64 =
     currentStart = nextStart
     currentLimit = blockCount - 1
   return bestValue
-
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
 ```
 
-Each pass replaces the pair of modulus and step with the remainder pair from Euclid's algorithm.
-The block count keeps the bound on the number of steps exact.
+`blockCount` counts how many multiples of the modulus the progression crosses.
+No crossing means the start is the minimum.
+Each round swaps modulus and step, shrinking like gcd.
 
-**Case loop and flush.** Every case produces one leftover line.
+**Per-test setup.** The progression terms come straight from the prices.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -152,24 +153,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The step is the kitkat cost negated modulo M.
-Numbers use int64 so the largest prices and budgets stay exact.
+`stepValue` is −7N modulo M, so y steps move the residue correctly.
+`stepLimit` is the largest affordable pack count.
+The minimum residue is the smallest leftover.
 
 ## Complexity
 
-The reducer follows the Euclidean algorithm once per case.
+Each test runs one short descent.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over all cases | one input string |
-| remainder reduction | logarithmic division steps | a few integers |
-| output | one line per case | block buffer |
+| read input | one pass over the file | one string |
+| descent | logarithmic rounds per test | none |
+| output | one line per test | one block buffer |
 
 | measure | Big O |
 |---|---|
-| time per case | O(log M) |
+| time | O(T log M) |
 | space | O(1) |
 
-Scanning every kitkat pack count would cost P divided by 7N steps per case.
+Trying every pack count would loop up to 10^10 times per test.
 
-The reduction gives the exact minimum for the full constraint range.
+Takeaway: a gcd-shaped descent finds the minimum residue.

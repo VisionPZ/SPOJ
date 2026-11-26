@@ -61,3 +61,9 @@ def build():
 (ROOT / "out").mkdir(exist_ok=True)
 write("1_sample", [(150, 30, 35), (167, 40, 35), (99999989, 31, 31)])
 build()
+
+if __name__ == "__main__":
+    lines = ["1000"]
+    for _ in range(1000):
+        lines.append("29998000000 173203 24743")
+    Path("/tmp/HASANSM_big.txt").write_text("\n".join(lines) + "\n")
