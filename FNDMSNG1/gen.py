@@ -50,3 +50,10 @@ def build():
 (ROOT / "in" / "1_sample.txt").write_text(SAMPLE)
 (ROOT / "out" / "1_sample.out").write_text(SAMPLE_OUT)
 build()
+
+if __name__ == "__main__":
+    big_n = 100000
+    order = list(range(1, big_n + 1))
+    order.pop(big_n // 2)
+    Path("/tmp/FNDMSNG1_big.txt").write_text(
+        "%d\n%s\n" % (big_n, " ".join(map(str, order))))

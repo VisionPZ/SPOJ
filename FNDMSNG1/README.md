@@ -1,20 +1,20 @@
-# FNDMSNG1 — Find the Missing Number (SPOJ)
+# FNDMSNG1 — Find the missing number (SPOJ)
 
 <https://www.spoj.com/problems/FNDMSNG1/>
 
 ## Problem
 
-A list should hold every number from 1 to N, but one value is absent. Find that absent value from the N-1 numbers you are given.
+The numbers 1 through N are written down, but one of them is skipped. Given the remaining N-1 numbers, name the missing one.
 
-The first line holds N, with 2 ≤ N ≤ 100. The second line holds N-1 distinct integers, each between 1 and N. Print the one integer from 1 to N that does not appear in the second line.
+The first line holds N with 2 ≤ N ≤ 100. The second line holds N-1 distinct values from 1 to N in any order. The output is the single missing number.
 
 | item | bound |
 |---|---|
-| N | 2 to 100 |
-| given values | N-1 distinct values in 1 to N |
+| N | 2 ≤ N ≤ 100 |
+| given values | N-1 distinct values from 1..N |
 | judge limit | 1000 ms, 1536 MB |
 
-The whole input fits in one short line, so one pass is enough.
+One subtraction chain recovers the missing value.
 
 Sample input:
 
@@ -31,35 +31,26 @@ Sample output:
 
 ## Idea
 
-The missing value is the gap between the sum you expect and the sum you see, like counting the empty chair in a row of numbered seats.
+A full deck has a known total. Pull one card and the missing rank is the gap between the full total and what remains.
 
-The method uses the arithmetic series sum and one pass over the given values. Each given number costs one addition. A search over every candidate would compare each candidate against the whole list.
+The program starts with the sum 1 + 2 + ... + N, computed by the closed formula, then subtracts every number that was actually given. What is left is the missing number.
 
-Takeaway: one sum replaces a full search.
+Takeaway: the total minus the seen sum is the unseen value.
 
 ## Why It Works
 
-1. The numbers 1 through N add up to N times (N + 1), divided by 2.
-2. The input lists N-1 distinct values taken from that same set.
-3. Their sum equals the full total minus the one absent value.
-4. Subtracting the observed sum from the expected sum recovers that value.
+1. The formula N(N+1)/2 equals the sum of 1 through N.
+2. The input lists exactly the other N-1 numbers, each once.
+3. Subtracting them all removes every present value from the total.
+4. The only untouched term is the missing number.
 
-| term | meaning |
-|---|---|
-| `permutationSize` | the largest value N in the range |
-| `observedSum` | sum of the N-1 given values |
-| `expectedSum` | sum of every value from 1 to N |
-| `observedCount` | how many given values were read |
+For the sample, the full sum is 55 and the given values add to 50, so 5 is missing.
 
-Every term maps to one value in the range.
-
-For the sample, N = 10 gives an expected sum of 10 × 11 / 2 = 55. The given values 10 2 3 1 9 7 8 6 4 add to 50. The difference 55 − 50 = 5 is the answer.
-
-The product uses `int64`, so the sum stays exact even if the bound grows.
+N is at most 100, so the running total stays small and fits in one machine word.
 
 ## Code
 
-**Input and scanning.** The hand reader loads the size and every given value.
+**Input and scanning.** The hand reader loads the file and parses integers.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -82,11 +73,10 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-Whitespace and line breaks do not affect parsing.
-The scanner advances one index per number.
-No minus branch is needed because every value is positive.
+The scanner skips spaces and newlines.
+Every value is positive, so no minus branch is needed.
 
-**Buffered output.** One string collects the answer before a single write.
+**Buffered output.** One string collects the answer line.
 
 ```nim
 var outputBuffer = ""
@@ -98,10 +88,10 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The buffer flushes only after it grows past the block size.
-The final write happens after the computation.
+Large outputs flush in blocks.
+One final write closes the remaining text.
 
-**Sum and answer.** The full total minus the observed total is printed.
+**Total and subtraction.** The formula sets the target, the loop removes the seen values.
 
 ```nim
 let permutationSize = nextInt(inputData, scanPos)
@@ -117,25 +107,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The loop reads exactly N-1 values.
-The division by 2 is exact because one factor is even.
-The answer is written once with a trailing newline.
+The loop runs exactly N-1 times.
+The leftover total is written as the answer.
 
 ## Complexity
 
-Each given value is read once and added once.
+The program reads N numbers and does one subtraction each.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over N-1 values | one input string |
-| sum | N-1 additions | constant |
-| output | one integer | one block buffer |
+| read input | one pass over the file | one string |
+| scan | N-1 subtractions | none |
+| output | one line | none |
 
 | measure | Big O |
 |---|---|
 | time | O(N) |
-| space | O(N) for the input string |
+| space | O(1) |
 
-A candidate-by-candidate search would cost O(N^2) comparisons.
+A visited-flag array would also work but needs extra memory.
 
-Takeaway: the sum formula solves the task in a single pass.
+Takeaway: sums find missing items without storage.
