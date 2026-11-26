@@ -84,3 +84,10 @@ write("1_sample", [
     record(0, "", "", "nice"),
 ])
 build()
+
+if __name__ == "__main__":
+    lines = ["200000"]
+    for i in range(200000):
+        lines.append("TYPE 1: %d, TYPE 2: %d, TYPE 3: %s, TYPE details: text %d"
+                     % (i % 101, i % 97, "" if i % 3 == 0 else str(i % 89), i))
+    Path("/tmp/MANIP001_big.txt").write_text("\n".join(lines) + "\n")

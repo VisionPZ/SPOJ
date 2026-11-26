@@ -4,33 +4,27 @@
 
 ## Problem
 
-Extract four parameters from each badly formatted record and print them in a compact form. Every missing numeric field becomes `NULL`.
+Each test line has the fixed shape `TYPE 1: A, TYPE 2: B, TYPE 3: C, TYPE details: D`. Fields B and C may be empty. Print the record as `(A,B,C,'D')`, writing `NULL` for an empty field.
 
-Input starts with an integer t, followed by t records. Each record carries the markers `TYPE 1:`, `TYPE 2:`, `TYPE 3:`, and `TYPE details:`. The numbers range from 0 to 100. The second number is empty when the first is 0, and the third is empty when the second is 0 or empty. The detail text has 1 to 20 readable characters.
-
-Output has t lines with the shape (A,B,C,'TEXT'). The detail text sits inside single quotes.
-
-The bounds from the statement:
+The first line holds t with 1 ≤ t ≤ 20. A, B, C are integers from 0 to 100, and D is free text to the end of the line.
 
 | item | bound |
 |---|---|
-| test cases t | 1 to 20 |
-| each number | 0 to 100 or empty |
-| detail text | 1 to 20 characters |
+| tests t | 1 ≤ t ≤ 20 |
+| A, B, C | 0 to 100, B and C may be empty |
+| D | any text, no newlines |
 | judge limit | 1000 ms, 1536 MB |
 
-The small case count keeps parsing simple and exact.
+Marker-based scanning walks each record in a few passes.
 
 Sample input:
 
 ```
 3
 TYPE 1: 2, TYPE 2: 0, TYPE 3: , TYPE details: n/a
-TYPE 1: 2, TYPE 2: 1, TYPE 3:0 , TYPE details: nothing
+TYPE 1: 2, TYPE 2: 1, TYPE 3: 0, TYPE details: nothing
 TYPE 1: 0, TYPE 2: , TYPE 3: , TYPE details: nice
 ```
-
-The sample mixes a missing third field with two complete records.
 
 Sample output:
 
@@ -40,51 +34,29 @@ Sample output:
 (0,NULL,NULL,'nice')
 ```
 
-Each output line mirrors one input record.
-
 ## Idea
 
-Treat each marker as a signpost, like stops on a bus route. The algorithm jumps from signpost to signpost, reads a number when one is present, and takes the remaining text as the detail field.
+A form with labelled boxes can be filled by jumping from label to label. The program finds the literal markers `TYPE 1:`, `TYPE 2:`, `TYPE 3:`, `TYPE details:` in order and reads whatever sits after each one.
 
-A naive character-by-character state machine must track every marker letter and comma. Jumping to the next marker costs one search and keeps the code short.
+An empty field is simply a field where the next character is a comma or the line ends, so the reader writes NULL instead of a number.
 
-Marker jumps plus optional reads solve all t records.
+Takeaway: fixed labels make parsing a sequence of label jumps.
 
 ## Why It Works
 
-1. The markers appear in a fixed order, so a forward search never skips a field.
-2. An empty field has no digit at its start, so the optional read returns a missing value.
-3. The detail text ends at the line break or at the next record marker.
-4. A missing value is written as the literal `NULL`.
+1. The four markers appear in a fixed order, so jumping past each one lands at the next field.
+2. A number field that starts with a digit is parsed; one that starts with a comma or newline is empty and prints NULL.
+3. The details field runs to the line end, trimmed of trailing spaces.
+4. The next record starts with `TYPE 1:`, so the text stop is also bounded by the next record when lines are joined.
+5. The output template is fixed, so only the field values vary.
 
-The main terms:
+For the sample, the first line has an empty TYPE 3, so the tuple shows NULL in the third slot while keeping 0 for TYPE 2.
 
-| term | meaning |
-|---|---|
-| `findFrom` | searches for a marker from the current position |
-| `movePastMarker` | skips a marker and lands on its value |
-| `readOptionalNumber` | reads a number or reports a missing field |
-| `readDetailText` | takes the text after the last marker |
-| `caseCount` | number of records to process |
-
-The table maps each helper to one parsing step.
-
-A trace from the generator with visible numbers:
-
-```
-cases: 3
-first number: 2
-second number: 0
-third absent: True
-detail length: 3
-first output bytes: 17
-```
-
-The trace shows that the empty third field becomes `NULL` in the first answer.
+A record whose TYPE 1 is 0 still prints its number, because only B and C may be empty.
 
 ## Code
 
-**Input and helpers.** The driver reads all input and defines the marker and field helpers.
+**Input and scanning.** The hand reader loads the file and parses integers.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -105,15 +77,14 @@ proc nextInt(data: string, pos: var int): int =
     value = value * 10 + int(data[pos]) - 48
     pos += 1
   return value
+```
 
-var outputBuffer = ""
+The scanner skips spaces and newlines.
+Every number is non-negative, so no minus branch is needed.
 
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
+**Marker search.** Literal text locates each field.
 
+```nim
 proc findFrom(data: string, marker: string, startPos: int): int =
   if marker.len == 0:
     return startPos
@@ -137,23 +108,28 @@ proc movePastMarker(data: string, pos: var int, marker: string) =
     pos = foundAt + marker.len
   else:
     pos = data.len
+```
 
+The search compares character by character.
+A miss moves the cursor to the end, keeping later reads safe.
+
+**Optional fields.** A field is NULL when no digit follows the label.
+
+```nim
 proc readOptionalNumber(data: string, pos: var int): int =
   while pos < data.len and data[pos] == ' ':
     pos += 1
   if pos < data.len and data[pos] >= '0' and data[pos] <= '9':
     return nextInt(data, pos)
   return -1
+```
 
-proc readDetailText(data: string, pos: var int): string =
-  while pos < data.len and data[pos] == ' ':
-    pos += 1
-  var textEnd = pos
-  while textEnd < data.len and data[textEnd] != '\n' and data[textEnd] != '\r':
-    textEnd += 1
-  let nextRecord = findFrom(data, "TYPE 1:", pos)
-  if nextRecord >= 0 and nextRecord < textEnd:
-    textEnd = nextRecord
+The -1 return marks an empty field.
+The caller turns it into the word NULL.
+
+**Details text.** The tail of the record is copied with trailing spaces removed.
+
+```nim
   var detail = ""
   if textEnd > pos:
     detail = data.substr(pos, textEnd - 1)
@@ -163,11 +139,10 @@ proc readDetailText(data: string, pos: var int): string =
   return detail
 ```
 
-The read loop stores each record with a trailing newline.
-The marker search scans forward and needs no extra table.
-The detail reader stops at a line end or at the next record.
+The stop point is the line end or the next record, whichever comes first.
+Trimming keeps the quoted text exact.
 
-**Record assembly.** The main loop reads each record and writes one answer line.
+**Record loop.** The four fields are read and printed as a tuple.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -192,32 +167,27 @@ for caseIndex in 0 .. caseCount - 1:
     appendOutput($thirdNumber)
   appendOutput(",'" & detailText & "')")
   outputBuffer.add '\n'
-
-stdout.write outputBuffer
-outputBuffer.setLen 0
 ```
 
-Four marker jumps keep the field order fixed.
-The negative sentinel marks an empty numeric field.
-The buffer flushes once after the loop, not once per record.
+Each marker jump positions the reader for one field.
+Empty slots print NULL.
+Every record produces exactly one line.
 
 ## Complexity
 
-Each marker search advances over the input once per record.
+Each record is scanned a constant number of times.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over input bytes | one input string |
-| parsing | four forward searches per record | a few field values |
-| output | one block write | block buffer |
-
-The three phases stay linear in the input size.
+| read input | one pass over the file | one string |
+| parse | marker jumps per record | one detail string |
+| output | one line per record | one block buffer |
 
 | measure | Big O |
 |---|---|
-| time | O(L) |
-| space | O(L) |
+| time | O(input size) |
+| space | O(input size) |
 
-L is the input length; rescanning from the start for every marker would repeat work.
+Splitting on commas would break when the details text contains commas.
 
-Marker jumps and buffered writes handle every record in one pass.
+Takeaway: jump between fixed labels instead of tokenizing.
