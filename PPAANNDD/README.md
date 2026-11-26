@@ -75,6 +75,7 @@ for charIndex in 0 .. inputData.len - 1:
     letterData.add currentChar
 
 let stringLength = letterData.len
+
 ```
 
 Only PANDA letters enter the working string.
