@@ -9,8 +9,8 @@ Read one number and print its square root with six digits after the decimal poin
 | item | contract |
 |---|---|
 | input | one number n |
-| output for n at least zero | Square root of n is root, both with six decimals |
-| output for negative n | Accept positive number only! |
+| output for n at least zero | prompt, then Square root of n is root, both with six decimals |
+| output for negative n | prompt, then Accept positive number only! |
 | judge limit | 1000 ms, 1536 MB |
 
 The number and its root share one output line.
@@ -25,7 +25,7 @@ Sample input:
 Sample output:
 
 ```
-Square root of 6.000000 is 2.449490
+Please enter any number: Square root of 6.000000 is 2.449490
 ```
 
 ## Idea
@@ -88,6 +88,7 @@ proc nextNumber(data: string, pos: var int): float =
   if pos == tokenStart:
     return 0.0
   return parseFloat(data[tokenStart .. pos - 1])
+
 ```
 
 The math module supplies the square-root function.
@@ -106,6 +107,7 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 
 let enteredNumber = nextNumber(inputData, scanPos)
+appendOutput("Please enter any number: ")
 if enteredNumber < 0:
   appendOutput("Accept positive number only!")
 else:

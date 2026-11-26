@@ -14,22 +14,25 @@ def newton_root(value):
     return estimate
 
 
+PROMPT = "Please enter any number: "
+
+
 def oracle(text):
     value = float(text.split()[0])
     if value < 0:
-        return "Accept positive number only!\n"
-    return "Square root of %.6f is %.6f\n" % (value, newton_root(value))
+        return PROMPT + "Accept positive number only!\n"
+    return PROMPT + "Square root of %.6f is %.6f\n" % (value, newton_root(value))
 
 
 SAMPLE = """6
 """
-SAMPLE_OUT = """Square root of 6.000000 is 2.449490
+SAMPLE_OUT = """Please enter any number: Square root of 6.000000 is 2.449490
 """
 assert oracle(SAMPLE) == SAMPLE_OUT
-assert oracle("15\n") == "Square root of 15.000000 is 3.872983\n"
-assert oracle("0\n") == "Square root of 0.000000 is 0.000000\n"
-assert oracle("-2\n") == "Accept positive number only!\n"
-assert oracle("1\n") == "Square root of 1.000000 is 1.000000\n"
+assert oracle("15\n") == "Please enter any number: Square root of 15.000000 is 3.872983\n"
+assert oracle("0\n") == "Please enter any number: Square root of 0.000000 is 0.000000\n"
+assert oracle("-2\n") == "Please enter any number: Accept positive number only!\n"
+assert oracle("1\n") == "Please enter any number: Square root of 1.000000 is 1.000000\n"
 assert abs(newton_root(100) - 10.0) < 1e-12
 
 

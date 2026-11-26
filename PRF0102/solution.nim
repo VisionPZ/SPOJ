@@ -31,6 +31,7 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 
 let enteredNumber = nextNumber(inputData, scanPos)
+appendOutput("Please enter any number: ")
 if enteredNumber < 0:
   appendOutput("Accept positive number only!")
 else:
