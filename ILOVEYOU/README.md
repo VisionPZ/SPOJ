@@ -4,16 +4,17 @@
 
 ## Problem
 
-Read one integer and place it inside a fixed sentence. The program echoes the value; it performs no arithmetic on it.
+Read one integer x and print the sentence `I Love you x times`, with x replaced by the number itself.
 
-| item | contract |
+The input is a single line holding one integer. The output is one line with the number written in decimal, no extra punctuation.
+
+| item | bound |
 |---|---|
-| input | one line with a single integer x |
-| output | one line: I Love you x times |
+| x | one integer, fits in 64 bits |
+| output | one line |
 | judge limit | 1000 ms, 1536 MB |
 
-The phrase uses an uppercase L and a lowercase y.
-A trailing newline ends the output line.
+One parse and one formatted write do the job.
 
 Sample input:
 
@@ -29,36 +30,26 @@ I Love you 3000 times
 
 ## Idea
 
-Filling a blank on a form works the same way: copy the entered number into one fixed sentence. The real work is reading digits and joining them with two text pieces. Scanning builds the number digit by digit in one pass. Any other route still reads the same digits. One value means one line of output.
+A fill-in-the-blank card only needs the blank filled. The scanner pulls the integer out of the text, and the answer is built by gluing fixed strings around its decimal form.
+
+The scanner also accepts a leading minus sign, so negative input still prints correctly.
+
+Takeaway: echo the number, wrap it in the fixed words.
 
 ## Why It Works
 
-1. The scanner skips bytes that are not digits or a minus sign.
-2. Each digit enters the total after the total shifts by ten.
-3. A leading minus sign negates the accumulated value.
-4. Concatenation places the number between the two literal pieces.
-5. The newline terminates the single output line.
+1. The digits of x are the only number in the input, so the first parsed value is x.
+2. Skipping non-digit characters handles spaces and newlines around it.
+3. A minus sign is read before the digits and applied to the value.
+4. String concatenation places the number between the exact words from the statement.
 
-| term | meaning |
-|---|---|
-| `inputData` | all input text, read in one pass |
-| `scanPos` | current index inside `inputData` |
-| `desiredCount` | integer parsed from the input |
-| `outputBuffer` | pending output bytes |
+For the sample, the scanner reads 3000 and the line becomes `I Love you 3000 times`.
 
-A short script traces the sample digits and the joined phrase:
-
-| step | visible result |
-|---|---|
-| scanned digits | 3, 0, 0, 0 |
-| accumulated number | 3000 |
-| joined pieces | "I Love you " + "3000" + " times" |
-
-The sample number survives the scan unchanged.
+A negative x prints with its sign, matching the integer's decimal form.
 
 ## Code
 
-**Input and scanning.** One read loop loads the whole input before parsing.
+**Input and scanning.** The hand reader loads the file and parses one signed integer.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -87,11 +78,10 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-Non-digit bytes never enter the value.
-The minus branch handles signed input.
-The scanner stops after the first number.
+The scanner skips spaces and newlines.
+The sign branch keeps negative values exact.
 
-**Output assembly.** The parsed value joins the two fixed text pieces.
+**Buffered output.** One string collects the answer line.
 
 ```nim
 var outputBuffer = ""
@@ -101,7 +91,14 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+Large outputs flush in blocks.
+One final write closes the remaining text.
+
+**Answer line.** The number is glued between the fixed words.
+
+```nim
 let desiredCount = nextInt(inputData, scanPos)
 appendOutput("I Love you " & $desiredCount & " times")
 outputBuffer.add '\n'
@@ -109,24 +106,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The buffer collects the whole short line.
-One write sends the result to stdout.
+`$desiredCount` gives the decimal form of the integer.
+The sentence spacing follows the statement exactly.
 
 ## Complexity
 
-One scan reads the entire input once.
+The program scans the input once and writes one line.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over input bytes | one input string |
-| parse | one pass over the number digits | constant |
-| output | one line | one buffer string |
+| read input | one pass over the file | one string |
+| parse | one number | none |
+| output | one line | one block buffer |
 
 | measure | Big O |
 |---|---|
-| time | O(L), where L is input length |
-| space | O(L) |
+| time | O(input size) |
+| space | O(input size) |
 
-Parsing twice would add a second pass over the same digits.
+Storing the sentence in a table would waste space for one line.
 
-For one integer, reading the input costs the whole run.
+Takeaway: parse once, print once.

@@ -39,3 +39,6 @@ def build():
 (ROOT / "out").mkdir(exist_ok=True)
 write("1_sample", 3000)
 build()
+
+if __name__ == "__main__":
+    Path("/tmp/ILOVEYOU_big.txt").write_text("999999999999999999\n")
