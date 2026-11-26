@@ -42,3 +42,6 @@ def build():
 (ROOT / "out").mkdir(exist_ok=True)
 write("1_sample", 6, 3)
 build()
+
+if __name__ == "__main__":
+    Path("/tmp/MLLOVE_big.txt").write_text("3000000000 2\n")
