@@ -36,3 +36,7 @@ def build():
 (ROOT / "out").mkdir(exist_ok=True)
 write("1_sample", [3, 3, 2, 1, 1, 7, 6, 7, 1, 7])
 build()
+
+if __name__ == "__main__":
+    Path("/tmp/MAX10_big.txt").write_text(
+        " ".join(["999999999999999999"] * 9 + ["999999999999999998"]) + "\n")

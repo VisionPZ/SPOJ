@@ -1,20 +1,20 @@
 # MAX10 — Maximum of Ten (SPOJ)
+
 <https://www.spoj.com/problems/MAX10/>
 
 ## Problem
 
-Read ten non-negative integers from one line and report the largest one with a fixed Indonesian label.
+Ten integers arrive on one line. Print the largest of them in the Indonesian sentence `Bilangan terbesar: X`.
 
-The input has one line with ten space-separated integers.
-The output is one line: the text "Bilangan terbesar: " followed by the largest integer.
+Each value is below 10^10, so 64-bit integers are needed. The output is one line.
 
 | item | bound |
 |---|---|
-| integer count | exactly 10 |
-| each integer | 0 to 9999999999 |
+| values | exactly 10 |
+| each value | below 10^10 |
 | judge limit | 1000 ms, 1536 MB |
 
-The label and the trailing space are part of the required output.
+A single running maximum answers the question.
 
 Sample input:
 
@@ -30,35 +30,26 @@ Bilangan terbesar: 7
 
 ## Idea
 
-Keep a running champion, like a scoreboard that only changes for a new high score.
+A referee does not need to remember every score, only the best one so far. The scanner hands over the ten numbers one by one, and one variable keeps the largest seen.
 
-Start the champion at zero.
-Read each value and replace the champion only when the value is larger.
-After ten values the champion is the maximum.
-Sorting all ten values would also work but needs more work.
-The running champion uses one comparison per value.
+Storing the numbers in an array and sorting them would cost more work than a single comparison per value.
 
-This trick is the whole solution.
+Takeaway: a running maximum needs one variable.
 
 ## Why It Works
 
-1. All values are non-negative, so zero is a safe starting champion.
-2. Each comparison keeps the largest value seen so far.
-3. After the last value the champion equals the maximum of all ten.
+1. The scanner skips spaces and newlines, so the ten values are read in order.
+2. Each candidate is compared with the current maximum and replaces it when larger.
+3. After ten reads the variable holds the largest value.
+4. The fixed prefix and the number form the required line.
 
-| term | meaning |
-|---|---|
-| `largestValue` | the largest value seen so far |
-| `candidate` | the value read in one pass |
-| `expectedCount` | the fixed count of ten |
+For the sample, the candidates 3, 3, 2, 1, 1, 7, 6, 7, 1, 7 raise the maximum to 7, which stays.
 
-For the sample the running champion changes at values 3, 7.
-It stays 7 through 6, 7, 1, 7.
-The final line is "Bilangan terbesar: " followed by 7.
+Ties are harmless because the comparison keeps the first equal value.
 
 ## Code
 
-**Input and scanning.** The reader loads the single line into one string.
+**Input and scanning.** The hand reader loads the file and parses 64-bit values.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -82,10 +73,11 @@ proc nextInt(data: string, pos: var int): int64 =
   return value
 ```
 
-The scanner skips spaces and builds digits into an integer.
-Values stay in int64 so the largest bound is safe.
+The scanner skips spaces and newlines.
+Every value is positive, so no minus branch is needed.
+`int64` holds values up to 10^10 exactly.
 
-**Champion scan and output.** Each value updates the champion when needed.
+**Buffered output.** One string collects the answer line.
 
 ```nim
 var outputBuffer = ""
@@ -95,7 +87,14 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+Large outputs flush in blocks.
+One final write closes the remaining text.
+
+**Running maximum.** Ten candidates are compared as they arrive.
+
+```nim
 var largestValue: int64 = 0
 var valueIndex = 0
 while valueIndex < expectedCount:
@@ -111,24 +110,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The label is written before the number.
-One final flush writes the short line.
+The count 10 is a named constant.
+The loop stops after exactly ten reads.
+The sentence prefix matches the statement.
 
 ## Complexity
 
-Reading and comparing both scale with the fixed count of ten values.
+The program reads ten numbers and compares each once.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over the line | one input string |
-| champion scan | ten comparisons | one integer |
-| output | one line | block buffer |
+| read input | one pass over the file | one string |
+| scan | ten comparisons | none |
+| output | one line | one block buffer |
 
 | measure | Big O |
 |---|---|
-| time | O(1) |
+| time | O(1), ten values |
 | space | O(1) |
 
-Sorting ten values would cost more comparisons than one linear scan.
+Sorting the ten values would add needless work.
 
-The champion scan is the smallest method that gives the exact answer.
+Takeaway: a max scan is the shortest correct path.
