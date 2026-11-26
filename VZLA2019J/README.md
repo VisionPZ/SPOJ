@@ -1,21 +1,17 @@
 # VZLA2019J — Jump! (SPOJ)
+
 <https://www.spoj.com/problems/VZLA2019J/>
 
 ## Problem
 
-Cacti stand at distinct positions on a line. You may jump each cactus alone, but two cacti one unit apart make you crash. Decide for every case whether all cacti can be jumped safely.
-
-Input starts with T, the number of cases. Each case has a line holding K, followed by a line holding K ascending positions Ci. Output one line per case: Case #X: Survival! when all jumps are safe, otherwise Case #X: Oh no!
+A dinosaur must jump over cacti standing in a row. It cannot jump two cacti that sit one step apart (positions differing by 1), because it would crash into the second. For each test case, print `Case #X: Survival!` if no two cacti are one step apart, otherwise `Case #X: Oh no!`.
 
 | item | bound |
 |---|---|
-| test cases T | 1 to 1000 |
-| cacti K per case | 1 to 1000 |
-| position Ci | 0 to 1000 |
-| positions | ascending and distinct |
+| test cases `T` | 1 to 1000 |
+| cacti per case `K` | 1 to 1000 |
+| positions `Ci` | 0 to 1000, ascending, distinct |
 | judge limit | 1000 ms, 1536 MB |
-
-Only neighbours in the sorted list can be one unit apart.
 
 Sample input:
 
@@ -36,28 +32,26 @@ Case #2: Oh no!
 
 ## Idea
 
-Two cacti one unit apart sit next to each other in sorted order, like two adjacent seats in a row. Compare each cactus with the one before it. One adjacent pair at distance one means failure. Checking all pairs repeats work, and neighbouring pairs are the only possible conflicts. Stop at the first conflict and keep the verdict.
+The cacti arrive already sorted. A pair one step apart can only be neighbours in that sorted list, so one left-to-right scan per case is enough: compare each cactus with the one before it and shout `Oh no!` the moment the gap is 1.
 
 ## Why It Works
 
-1. Positions ascend and stay distinct, so each neighbour gap is at least one.
-2. Two cacti at distance one leave no integer position between them, so they are neighbours.
-3. A gap of exactly one triggers the crash rule.
-4. Every other gap is safe.
-5. One ordered scan therefore decides the whole case.
+1. Positions are distinct and ascending, so if two cacti differ by 1, nothing else can sit between them and they appear next to each other in the list.
+2. Therefore a bad pair exists exactly when some consecutive pair has difference 1, which the scan tests for every neighbour.
+3. Once a bad pair is seen the answer cannot change, but the scan keeps reading the remaining numbers so the next case starts at the right token.
+4. The independent oracle uses a different route: it puts all positions in a set and asks whether `x + 1` is in the set for any cactus `x`. Set membership finds the same pairs as the neighbour scan.
+5. In the sample, case 1 has gaps 3, 3, 3 and 5, all safe, while case 2 has cacti at 5 and 6, a gap of 1, so the verdicts are `Survival!` and `Oh no!`.
 
 | term | meaning |
 |---|---|
-| `cactusCount` | number of cacti in the current case |
-| `previousCactus` | last position read |
-| `currentCactus` | position being checked |
-| `canSurvive` | stays true while no bad gap is seen |
-
-The first case has gaps 3, 3, 3 and 5, so it survives.
+| `cactusCount` | number of cacti in one case |
+| `previousCactus` | position of the cactus just read |
+| `currentCactus` | position of the cactus being read |
+| `canSurvive` | stays true while no gap of 1 is seen |
 
 ## Code
 
-**Input and scanning.** The hand reader loads the case count and each position in order.
+**Input, scanner and output buffer.** This block loads stdin and prepares the writer.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -78,14 +72,7 @@ proc nextInt(data: string, pos: var int): int =
     value = value * 10 + int(data[pos]) - 48
     pos += 1
   return value
-```
 
-Numbers may share a line or sit on separate lines.
-The scanner skips whitespace and advances one index per number.
-
-**Verdict scan and output.** Each case keeps one previous position and writes one line.
-
-```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -93,7 +80,13 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+The whole input is read once into a string, and the scanner skips any non-digit, so line breaks never matter.
+
+**The scan and the verdicts.** This block walks each case and prints its line.
+
+```nim
 let caseCount = nextInt(inputData, scanPos)
 for caseNumber in 1 .. caseCount:
   let cactusCount = nextInt(inputData, scanPos)
@@ -113,27 +106,19 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-A gap of one clears the survival flag.
-The line prefix carries the one-based case number.
-The buffer flushes once after all cases.
+The first cactus is read outside the inner loop so every later cactus has a left neighbour to compare against. A case with one cactus runs the inner loop zero times and survives, which is right because there is nothing to crash into.
 
 ## Complexity
 
-Each cactus is read once and compared once.
-
 | phase | time | space |
 |---|---|---|
-| input read | one pass over all positions | one input string |
-| gap scan | one comparison per cactus | constant |
-| output | one line per case | block buffer |
+| input read | one pass over input bytes | input bytes |
+| scans | O(sum of K) comparisons | O(1) |
+| output | one line per case, buffered | block buffer |
 
-These costs grow with the total number of cacti.
-
-| measure | Big O |
+| measure | big O |
 |---|---|
-| time | O(total cacti) |
-| space | O(total cacti) for input |
+| time | O(T x K) |
+| space | O(1) beyond the input |
 
-Checking every pair would cost O(K^2) per case instead of O(K).
-
-Adjacent gaps carry all the information the judge needs.
+At the limits that is about 10^6 comparisons, done in a blink.
