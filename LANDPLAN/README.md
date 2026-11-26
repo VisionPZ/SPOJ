@@ -4,17 +4,16 @@
 
 ## Problem
 
-Draw a square frame of side `N` with `#` on the border and `.` inside. Print one frame per test case, followed by a blank line.
+For each test, draw a square plot of side N made of `#` border rows and columns with `.` filling the interior. A blank line separates the plots.
 
-The first input line holds the number of test cases, `T`. Each following line holds one side length `N`. For `N = 1`, the frame is a single `#`. For `N = 2`, all four cells are `#`.
+The first line holds T, the number of cases. Each of the next T lines holds one side length N with 1 ≤ N ≤ 100.
 
 | item | bound |
 |---|---|
-| test cases `T` | not stated; small |
-| side length `N` | 1 to 100 |
+| side length N | 1 ≤ N ≤ 100 |
 | judge limit | 1000 ms, 1536 MB |
 
-Rows are printed top to bottom. Columns are printed left to right.
+Output size grows with N^2, so the drawing itself is the work.
 
 Sample input:
 
@@ -41,32 +40,29 @@ Sample output:
 
 ```
 
-Each frame ends with its own blank line, including the last one.
-
 ## Idea
 
-The frame has only two row types, like a picture made from two reusable stamps. Build the top row and the middle row once, then print them the right number of times. A fresh scan of every cell would repeat the same border check thousands of times. Two prepared rows turn each case into one print loop. Print the bottom row only when `N` is at least two.
+A picture frame needs two full rows and, between them, rows that are just two nails with empty space. The program builds one border row and one inner row per case, then prints them in the right order.
+
+Reusing the same two row strings avoids rebuilding text for every line. A blank line after each plot keeps the cases apart.
+
+Takeaway: build two row templates, then repeat them.
 
 ## Why It Works
 
-1. The top and bottom rows are `N` copies of `#`.
-2. A middle row is `#`, then `N-2` copies of `.`, then `#`.
-3. There are `N-2` middle rows, so they vanish when `N` is one or two.
-4. Printing the prepared rows in order reproduces every cell.
-5. A blank line closes the case, as the sample shows.
+1. The top and bottom rows are N copies of `#`.
+2. An inner row is `#`, then N-2 dots, then `#`, so only the border columns are filled.
+3. For N = 1 the single character `#` is both border and row, and the code prints it alone.
+4. For N = 2 there is no interior, so two full rows appear.
+5. A trailing blank line after each case matches the sample spacing.
 
-| term | meaning |
-|---|---|
-| `sideLength` | `N`, the square side length |
-| `borderRow` | the prepared top row |
-| `innerRow` | the prepared middle row |
-| `rowIndex` | row counter for the middle rows |
+For the sample, the 5 case prints a full row, three inner rows, a full row, then a blank line.
 
-The generator draws the case `N = 5` cell by cell. It gets `#####`, then three copies of `#...#`, then `#####`. The prepared rows reproduce that same picture.
+The N = 1 case has no inner row and no bottom row, which the guards handle.
 
 ## Code
 
-**Input and scanning.** The hand reader collects all lines into one buffer.
+**Input and scanning.** The hand reader loads the file and parses integers.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -89,11 +85,10 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-The scanner ignores line breaks and spaces.
-It reads one side length for each case.
-The whole input is in memory before drawing starts.
+The scanner skips spaces and newlines.
+Every value is positive, so no minus branch is needed.
 
-**Row templates and printing.** Two prepared strings supply every row.
+**Buffered output.** One string collects all the drawing lines.
 
 ```nim
 var outputBuffer = ""
@@ -103,7 +98,14 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+Large outputs flush in blocks.
+One final write closes the remaining text.
+
+**Row templates.** Two strings describe every line of a plot.
+
+```nim
 let caseCount = nextInt(inputData, scanPos)
 for caseIndex in 0 .. caseCount - 1:
   let sideLength = nextInt(inputData, scanPos)
@@ -115,6 +117,14 @@ for caseIndex in 0 .. caseCount - 1:
     innerRow.add '.'
   if sideLength >= 2:
     innerRow.add '#'
+```
+
+The border row is N hashes.
+The inner row keeps hashes only at its ends.
+
+**Drawing.** The templates are written in order.
+
+```nim
   appendOutput(borderRow)
   outputBuffer.add '\n'
   for rowIndex in 2 .. sideLength - 1:
@@ -128,26 +138,26 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The middle loop is empty for the two smallest sizes.
-The bottom row is skipped for a single cell.
-Every case appends exactly one closing blank line.
+The top row always prints.
+Inner rows print only when N ≥ 3.
+The bottom row prints only when N ≥ 2.
+The final newline of each case is the separating blank line.
 
 ## Complexity
 
-Each case builds two rows and prints all `N` rows.
+Each case writes N rows of N characters.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over `T` sizes | one input string |
-| row build | O(N) work for two rows | two strings of length `N` |
-| printing | N row writes | block buffer |
-| output | one flush at the end | block buffer |
+| read input | one pass over the file | one string |
+| draw | N rows per case | two row strings |
+| output | one block buffer | block buffer |
 
 | measure | Big O |
 |---|---|
-| time per case | O(N^2) characters |
-| space per case | O(N) |
+| time | O(total N^2) |
+| space | O(N) |
 
-Testing every cell separately gives the same O(N^2) characters but repeats border decisions.
+Rebuilding each row from scratch per line would multiply string work.
 
-Preparing two rows keeps the decisions to a constant count.
+Takeaway: two templates draw the whole square.

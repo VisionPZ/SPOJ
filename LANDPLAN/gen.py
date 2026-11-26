@@ -65,3 +65,6 @@ def build():
 (ROOT / "in" / "1_sample.txt").write_text(SAMPLE)
 (ROOT / "out" / "1_sample.out").write_text(SAMPLE_OUT)
 build()
+
+if __name__ == "__main__":
+    Path("/tmp/LANDPLAN_big.txt").write_text("1000\n" + "250\n" * 1000)
