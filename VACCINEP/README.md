@@ -1,23 +1,21 @@
 # VACCINEP — Vaccine Priority (SPOJ)
+
 <https://www.spoj.com/problems/VACCINEP/>
 
 ## Problem
 
-Each town's priority is the number of outbreak towns within box distance 10. Towns are then ordered by decreasing priority and increasing town number.
+`n` towns have coordinates, and `k` of them have a COVID outbreak. The priority `p_i` of town `i` is the number of outbreak towns within 10 km in box distance, that is `max(|dx|, |dy|) ≤ 10`. An outbreak town counts itself. The program prints all town numbers ordered by decreasing priority, and by increasing town number inside a tie.
 
-Input starts with two integers n and k. The next n lines give integer x and y coordinates for towns 1 to n. The final line lists the k town numbers that had an outbreak. Output is a single line with all n town numbers in vaccination order.
+Input starts with `n` and `k`, then `n` lines with the coordinates of town `i`, then one line with the `k` outbreak town numbers. Output holds one line with `n` space-separated town numbers.
 
-| item | bound |
+| Item | Bound |
 |---|---|
-| town count n | 1 to 100000 |
-| outbreak count k | 1 to n |
-| coordinate x, y | 0 to 1000000000 |
-| box distance threshold | 10 |
-| judge limit | 1000 ms, 1536 MB |
+| Towns `n`, outbreaks `k` | 1 ≤ k ≤ n ≤ 100000 |
+| Coordinates | 0 ≤ x, y ≤ 10^9 |
+| Meeting radius | 10 km |
+| Judge limit | 1000 ms, 1536 MB |
 
-Box distance between two towns is max of the absolute coordinate differences. An outbreak town counts itself.
-
-Sample input:
+The sample case:
 
 ```
 3 1
@@ -27,43 +25,46 @@ Sample input:
 3
 ```
 
-Sample output:
-
 ```
 2 3 1
 ```
 
-A second sample has 4 towns and 2 outbreaks. Its coordinates are 0 11, 9 0, 0 1 and 11 11; outbreaks are towns 1 and 2, and the output is 3 1 2 4.
-
 ## Idea
 
-Sweep a detector across the map, adding a beacon when it enters range and removing it when it leaves, like scanning a crowd with a metal detector. The algorithm sorts events and town queries by x coordinate. A Fenwick tree over compressed outbreak y values counts active outbreaks in the y window. Each town costs two binary searches and two prefix sums. Comparing every town with every outbreak costs n times k checks. Takeaway: sweep in x, count in y, then place towns into priority buckets.
+A town is within 10 km in box distance exactly when its x and y both differ by at most 10, so each outbreak town covers a square. Sweep a vertical line from left to right: an outbreak town enters the active set at `x - 10` and leaves just after `x + 10`. While the line passes a town, the outbreak towns in the active set that also fall in its y window are its priority. A Fenwick tree over the compressed outbreak y-values counts those in logarithmic time, and a counting sort by priority puts the towns in the required order. This replaces the naive scan of every town against every outbreak town.
 
 ## Why It Works
 
-1. Box distance at most 10 means both coordinate differences are at most 10.
-2. One outbreak adds one priority point to every town in a 21 by 21 square.
-3. An add event at x minus 10 and a remove event at x plus 11 delimit that square in x.
-4. Sorting events and queries by x makes each event applied once.
-5. Compressing outbreak y values keeps the Fenwick tree small.
-6. A prefix difference over compressed y counts outbreaks inside the y window.
-7. Counting sort visits priorities from high to low and town numbers from low to high.
+1. Box distance at most 10 means `|dx| ≤ 10` and `|dy| ≤ 10` at once, which is a square region.
+2. An outbreak town is inside that square for a query town of x-coordinate `X` exactly when `ox - 10 ≤ X ≤ ox + 10`, so the event at `ox - 10` adds it and the event at `ox + 10 + 1` removes it before any query with `X ≥ ox + 11`.
+3. Queries and events are both processed in increasing x, so when a town is queried the tree holds precisely the outbreak towns whose x window contains it.
+4. The tree stores counts at compressed y positions, and the y window `[y - 10, y + 10]` maps to a range of compressed values found by binary search, so the range sum is the priority.
+5. Priorities are integers between 0 and `k`, so bucketing by priority is linear, and towns are placed into their bucket in increasing index order, which gives the required tie-break.
+6. In the sample the only outbreak is town 3 at (0,0): town 2 sits at box distance `max(0, 10) = 10`, which is inside the limit, town 1 sits at `max(0, 11) = 11`, which is not, and town 3 counts itself, so the priorities are 0, 1, 1 and the order is 2 3 1.
 
-| term | meaning |
+| Term | Meaning |
 |---|---|
-| `meetingRadius` | box distance threshold, which is 10 |
-| `eventXs` | x coordinate of each add or remove event |
-| `eventDeltas` | plus one for add events, minus one for remove events |
-| `compressedYs` | sorted distinct outbreak y coordinates |
-| `fenwickTree` | active outbreak counts indexed by compressed y |
-| `priorities` | outbreak count for each town |
-| `bucketStarts` | first ordered position for each priority |
+| `meetingRadius` | the 10 km reach of one outbreak |
+| `compressedYs` | sorted unique outbreak y-values |
+| `eventXs`, `eventYIndexes`, `eventDeltas` | add and remove events for each outbreak |
+| `fenwickTree` | counts of active outbreak towns by y index |
+| `priorities` | priority of each town |
+| `bucketStarts`, `orderedTowns` | counting sort by priority |
 
-In the first sample, town 1 at (0, 11) has priority 0, town 2 at (0, 10) has priority 1, and town 3 at (0, 0) has priority 1. The order is town 2, then town 3, then town 1, matching the sample output.
+A traced run of the sample:
+
+```
+outbreak town 3 at (0,0): add at x=-10, remove at x=11
+query town 1 at x=0 : active y {0}, window [1,21] -> 0
+query town 2 at x=0 : window [0,20] -> 1
+query town 3 at x=0 : window [-10,10] -> 1
+buckets: priority 1 -> 2 3, priority 0 -> 1
+output 2 3 1
+```
 
 ## Code
 
-**Input and helpers.** The reader loads the input and provides bounds, binary searches and index sorting.
+**Input, scanner and output buffer.** This block loads stdin and prepares the writer.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -93,7 +94,15 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+One readLine loop collects all input bytes.
+The scanner skips whitespace between digits.
+The buffer flushes after reaching 128 KiB.
+
+**Range searches.** These two procedures find where a y-value starts and ends in a sorted array.
+
+```nim
 proc lowerBound(values: seq[int], target: int): int =
   var lowIndex = 0
   var highIndex = values.len
@@ -115,7 +124,13 @@ proc upperBound(values: seq[int], target: int): int =
     else:
       highIndex = middleIndex
   return lowIndex
+```
 
+Both searches return positions in a sorted array, so the difference of two prefix sums gives a range count.
+
+**Stable index sort.** These procedures sort town indices by a key array without touching the keys.
+
+```nim
 proc mergeRanges(keys: seq[int], indexes: var seq[int], buffer: var seq[int], lowIndex, highIndex: int) =
   if lowIndex >= highIndex:
     return
@@ -153,11 +168,10 @@ proc sortIndicesByKey(keys: seq[int]): seq[int] =
     mergeRanges(keys, result, buffer, 0, keys.len - 1)
 ```
 
-`lowerBound` counts values below a target.
-`upperBound` counts values at or below a target.
-`sortIndicesByKey` returns indices ordered by a key array.
+The merge takes the left item on equal keys, so equal x-values keep their original order.
+Sorting only the index list leaves the key arrays untouched, so events and queries stay paired with their towns.
 
-**Events and queries.** Each outbreak creates an add and a remove event, and towns are ordered by x.
+**Reading towns and building the sweep data.** This block stores coordinates, compresses outbreak y-values and creates the two events per outbreak.
 
 ```nim
 let townCount = nextInt(inputData, scanPos)
@@ -206,11 +220,10 @@ for townIndex in 1 .. townCount:
 let sortedQueryIndices = sortIndicesByKey(queryKeys)
 ```
 
-`compressedYs` holds each outbreak y coordinate once.
-`eventXs` marks where an outbreak enters and leaves the x window.
-`sortedQueryIndices` visits towns from left to right.
+Duplicate y-values collapse into one slot, which keeps the tree small.
+The `+ 1` on the removal x makes the interval half-open, so a query at `ox + 11` sees the town gone.
 
-**Sweep and priorities.** Active outbreaks are counted per town with Fenwick prefix sums.
+**Fenwick tree.** This block maintains the active outbreak counts.
 
 ```nim
 var fenwickTree = newSeq[int](compressedCount + 1)
@@ -228,7 +241,14 @@ proc bitPrefix(position: int): int =
     total += fenwickTree[current]
     current -= current and (-current)
   return total
+```
 
+Fenwick trees use 1-based positions, hence the `+ 1` when an outbreak y is indexed.
+Each update and each prefix sum walks at most log steps.
+
+**The sweep.** This block answers every town query in increasing x.
+
+```nim
 var priorities = newSeq[int](townCount + 1)
 var eventPosition = 0
 for queryPosition in 0 .. townCount - 1:
@@ -247,11 +267,10 @@ for queryPosition in 0 .. townCount - 1:
   priorities[townIndex] = bitPrefix(rightCount) - bitPrefix(leftCount)
 ```
 
-`bitAdd` updates one compressed y position.
-`bitPrefix` sums all positions up to a bound.
-The difference of two prefixes counts outbreaks inside the y window.
+Events with the same x as a query are applied first, which is correct because the removal x is one past the last covered column.
+The two binary searches bound the y window, and the tree difference counts the outbreaks inside it.
 
-**Ordering and output.** Counting sort places towns into descending priority buckets.
+**Bucketing and output.** This block sorts towns by priority and writes the line.
 
 ```nim
 var priorityCounts = newSeq[int](outbreakCount + 2)
@@ -287,24 +306,25 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-`bucketStarts` gives each priority a contiguous slice of the output.
-Town numbers enter a slice in increasing order.
-`appendOutput` collects the whole result line and flushes it once.
+Towns enter a bucket in increasing index order, so ties come out smallest first.
+Walking buckets from `k` down to 0 prints the highest priority first.
+The flag keeps a single space between numbers and no trailing space.
 
 ## Complexity
 
-The sweep processes n towns and 2k events.
+The cost splits into input, sorting, the sweep, bucketing and output.
 
-| phase | time | space |
+| Phase | Time | Space |
 |---|---|---|
-| input read | one pass over n coordinates | one input string |
-| sorting | n plus 2k keys sorted by merge sort | index arrays |
-| sweep | n plus 2k Fenwick updates and queries | compressed y array |
-| ordering | n placements into priority buckets | n town slots |
+| Input read | one pass over input bytes | input bytes |
+| Index sorts | O((n + k) log(n + k)) | O(n + k) |
+| Sweep | O((n + k) log k) | O(n + k) |
+| Bucketing | O(n + k) | O(n + k) |
+| Output | one write per 128 KiB block | block buffer |
 
-| measure | Big O |
+| Measure | Big O |
 |---|---|
-| time | O((n + k) log n) |
-| space | O(n + k) |
+| Time | O(n log n) |
+| Space | O(n + k) |
 
-Checking all town and outbreak pairs would take O(n times k) time. Takeaway: the sweep and Fenwick tree compute every priority in logarithmic time per item.
+The direct scan of every town against every outbreak town costs O(n·k), which is 10^10 checks at the limits.
