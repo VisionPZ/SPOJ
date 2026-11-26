@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_EVEN
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -7,9 +7,10 @@ ROOT = Path(__file__).resolve().parent
 
 def oracle(text):
     diameter, height = (int(value) for value in text.split()[:2])
-    exact = Decimal(314) * diameter * diameter * height / Decimal(400)
-    volume = exact.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    return f"{volume:.2f} cm^3\n"
+    radius = diameter / 2.0
+    volume = 3.14 * radius * radius * height
+    cents = Decimal(volume).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN)
+    return f"{cents} cm^3\n"
 
 
 SAMPLE = "3 10\n"
