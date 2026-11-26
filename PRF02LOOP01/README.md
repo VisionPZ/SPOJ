@@ -71,6 +71,7 @@ var inputLine = ""
 while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
+
 ```
 
 The constants hold the code bounds and the literal text. The read loop fills one input string even though no value is used.
