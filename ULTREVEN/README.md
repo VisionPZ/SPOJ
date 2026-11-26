@@ -4,61 +4,65 @@
 
 ## Problem
 
-An array is ultra even when every consecutive block has an even sum. Decide whether the given array has that property.
+An array is called ultra even when the sum of every consecutive subarray is even. The program reads the array and prints `YES` or `NO`.
 
-The input starts with the array length. The array values follow, separated by spaces or line breaks. Print YES or NO.
+Input starts with `n`, the array length, followed by `n` space-separated integers. Output holds one line with the verdict.
 
-| item | bound |
+| Item | Bound |
 |---|---|
-| array length n | 1 to 100000 |
-| array value | not stated beyond integer |
-| judge limit | 1000 ms, 1536 MB |
+| Length `n` | 1 ≤ n ≤ 100000 |
+| Array values | no stated bound; tests use up to 10^9 |
+| Judge limit | 1000 ms, 1536 MB |
 
-A single odd value already breaks the property.
-
-Sample input:
+The sample cases:
 
 ```
 4
 1 4 5 2
 ```
 
-Sample output:
-
 ```
 NO
 ```
 
+```
+3
+2 4 6
+```
+
+```
+YES
+```
+
 ## Idea
 
-Look at blocks of length one, like checking every single card before checking any pile. Such a block has the value itself as its sum. An ultra even array therefore needs every value even, and that condition also suffices. One pass over the array replaces checking all blocks, which would be quadratic.
+A subarray of size one is just a single element, so an ultra even array must have every element even. The reverse also holds: adding even numbers always gives an even sum. So the whole test collapses to one question — is every number even? Think of a bouncer checking IDs at the door: one odd number is enough to turn the array away, and the check costs a single parity test per element instead of testing all n(n+1)/2 subarrays.
 
 ## Why It Works
 
-1. A block of one element is a consecutive block.
-2. Its sum is that element, so every element must be even.
-3. A sum of even values is always even.
-4. Hence all-even values are both necessary and sufficient.
+1. Every single element is a subarray, so an odd element alone makes some subarray sum odd.
+2. If all elements are even, each is `2k`, and any subarray sum is `2` times an integer, hence even.
+3. The two facts together make "all elements even" exactly the same property as "all subarray sums even".
+4. `allEven` starts true and is cleared by the first odd value, so the answer is `NO` whenever one exists.
+5. Reading stops at the last digit of the last number, so no end-of-array handling is needed.
 
-| term | meaning |
+| Term | Meaning |
 |---|---|
-| `allEven` | flag that stays true while every value read is even |
-| `currentNumber` | one value taken from the input buffer |
+| `numberCount` | `n`, the array length |
+| `currentNumber` | the array value just scanned |
+| `allEven` | stays true only while every value read is even |
 
-One parity test per value settles the whole array.
-
-Script-generated trace for the two sample arrays:
+A traced run of the first sample:
 
 ```
-values 1 4 5 2 -> odd value found -> NO
-values 2 4 6   -> all values even -> YES
+read 4 numbers: 1 4 5 2
+1 is odd -> allEven = false
+answer NO
 ```
-
-The first sample contains 1 and 5, so it prints NO.
 
 ## Code
 
-**Bulk input and scanner.** The whole stream is read once and parsed by a digit scanner.
+**Input and hand scanner.** This block loads stdin and reads the integers.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -81,11 +85,11 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-All values are parsed before any output is written.
-The scanner skips spaces and line breaks.
-Parsing costs one pass over the input bytes.
+One readLine loop collects all input bytes.
+The scanner skips whitespace between digits.
+Scanning costs one pass over the consumed characters.
 
-**Parity pass and output.** One flag records the whole array's verdict.
+**Buffered output.** This block holds the verdict line.
 
 ```nim
 var outputBuffer = ""
@@ -95,7 +99,14 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+The buffer flushes after reaching 128 KiB.
+One final write emits any remaining bytes.
+
+**Parity scan.** This block reads the array and tracks one flag.
+
+```nim
 let numberCount = nextInt(inputData, scanPos)
 var allEven = true
 for numberIndex in 0 .. numberCount - 1:
@@ -112,25 +123,23 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The loop visits each value exactly once.
-One odd value clears the flag for good.
-The verdict is written once from the block buffer.
+The loop keeps scanning after the flag is cleared, which keeps the code short and the branch predictable.
+Only the last bit of each number matters, and `mod 2` reads it.
+No array is stored: values are checked as they arrive.
 
 ## Complexity
 
-One linear pass replaces a quadratic scan over all blocks.
+The cost splits into input, one parity test per value, and output.
 
-| phase | time | space |
+| Phase | Time | Space |
 |---|---|---|
-| input read | one pass over n values | one input string |
-| parity pass | one test per value | one flag |
-| output | one line | block buffer |
+| Input read | one pass over input bytes | input bytes |
+| Parity scan | O(n) | constant |
+| Output | one small write | buffer |
 
-No block table is built and no array of values is stored.
-
-| measure | Big O |
+| Measure | Big O |
 |---|---|
-| time | O(n) |
-| space | O(1) apart from input bytes |
+| Time | O(n) |
+| Space | O(input size) |
 
-Testing every block would cost O(n squared) and still reach the same verdict.
+Testing every subarray sum would take O(n²), which is 10^10 operations at n = 100000.
