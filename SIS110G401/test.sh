@@ -1,6 +1,6 @@
 #!/bin/sh
 set -u
-NIM=${NIM:-nim}
+CXX=${CXX:-g++}
 cd "$(dirname "$0")"
 LIMIT=1000
 # Hard wall-clock kill on every program run, like the judge does.
@@ -8,9 +8,10 @@ LIMIT=1000
 TL=$(( (LIMIT + 999) / 1000 + 1 ))
 command -v timeout >/dev/null || { echo 'timeout command missing, refusing to run unbounded'; exit 1; }
 guard() { timeout -k 1 "${TL}s" "$@"; }
-rm -rf build .nimcache got_*.txt
-"$NIM" c --version 2>&1 | head -1
-timeout 600s "$NIM" c -d:release --nimcache:.nimcache --out:build/solution solution.nim || exit 1
+rm -rf build got_*.txt
+"$CXX" --version 2>&1 | head -1
+mkdir -p build
+timeout 600s "$CXX" -O2 -o build/solution solution.cpp || exit 1
 [ -f gen.py ] || { echo 'gen.py missing'; exit 1; }
 timeout 300s python3 gen.py >/dev/null || { echo 'gen.py failed or ran over 300 s'; exit 1; }
 fail=0
