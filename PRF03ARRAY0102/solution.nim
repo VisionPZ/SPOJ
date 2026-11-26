@@ -1,7 +1,10 @@
+import algorithm
+
 const flushBlockBytes = 1 shl 17
 const countPrompt = "How many element of numeric array:"
 const valuePromptPrefix = "The value of a["
 const valuePromptSuffix = "] is:"
+const orderLabel = "ASC:"
 const listHeadingSuffix = " element of numeric array:"
 
 var inputData = ""
@@ -43,16 +46,12 @@ for elementIndex in 0 .. elementCount - 1:
   arrayValues[elementIndex] = nextInt(inputData, scanPos)
 outputBuffer.add '\n'
 outputBuffer.add '\n'
+appendOutput(orderLabel)
+outputBuffer.add '\n'
 appendOutput($elementCount)
 appendOutput(listHeadingSuffix)
 outputBuffer.add '\n'
-for sortIndex in 1 .. elementCount - 1:
-  var holdValue = arrayValues[sortIndex]
-  var priorIndex = sortIndex - 1
-  while priorIndex >= 0 and arrayValues[priorIndex] > holdValue:
-    arrayValues[priorIndex + 1] = arrayValues[priorIndex]
-    priorIndex -= 1
-  arrayValues[priorIndex + 1] = holdValue
+sort(arrayValues, cmp)
 for elementIndex in 0 .. elementCount - 1:
   appendOutput(valuePromptPrefix)
   appendOutput($(elementIndex + 1))
