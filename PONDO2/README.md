@@ -99,6 +99,7 @@ proc nextLandString(data: string, pos: var int): string =
     land.add data[pos]
     pos += 1
   return land
+
 ```
 
 The string reader skips the newline after n. It stops at the first character outside the alphabet.
