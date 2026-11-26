@@ -1,21 +1,20 @@
-# THR18B — Chaarshanbegaan at Cafebazaar (SPOJ)
+# THR18B — Dart Scoring (SPOJ)
+
 <https://www.spoj.com/problems/THR18B/>
 
 ## Problem
 
-Each dart is scored by its distance from the origin, then the shot scores are added. Ten concentric rings give 10 points at the center down to 1 point at radius 190, and 0 outside.
+A dartboard has ten scoring rings centered at the origin: a hit at distance `d` millimeters scores 10 for `d ≤ 10`, then 9, 8, and so on down to 1 for `d ≤ 190`, and 0 beyond that. The program sums the scores of all shots.
 
-Input starts with one integer N from 1 to 100. The next N lines each hold two integers x and y, with absolute values at most 300. Output is one line with the total score.
+Input starts with the number of shots `N`, then `N` lines each hold two integers, the coordinates `(x, y)` of one dart in millimeters. Output holds one line with the total score.
 
-| item | bound |
+| Item | Bound |
 |---|---|
-| dart count N | 1 to 100 |
-| coordinate x, y | -300 to 300 |
-| scoring radii | 10, 30, 50, 70, 90, 110, 130, 150, 170, 190 |
-| maximum total | 1000 |
-| judge limit | 1000 ms, 1536 MB |
+| Shots `N` | 1 ≤ N ≤ 100 |
+| Coordinates | \|x\|, \|y\| ≤ 300 |
+| Judge limit | 1000 ms, 1536 MB |
 
-Sample input:
+The sample case:
 
 ```
 2
@@ -23,38 +22,40 @@ Sample input:
 -31 -5
 ```
 
-Sample output:
-
 ```
 18
 ```
 
 ## Idea
 
-Compare a dart's squared distance with squared ring radii, like checking which box a parcel fits into before paying postage. The algorithm loops over the darts and then over the ten radii. Each dart costs ten integer comparisons and no square root. Taking a square root would add floating-point work and rounding risk. Takeaway: compare squared distances, and add the first matching ring score.
+Score every dart by comparing its squared distance from the origin against the squared ring radii 100, 900, 2500, ..., 36100 and stop at the first radius that covers the point. Think of sliding a ruler marked with squared radii: the first mark past the point names the ring. This avoids square roots and floating point entirely, and each shot costs at most ten integer comparisons instead of a distance computation plus a table lookup with rounding risk.
 
 ## Why It Works
 
-1. Distance d from the origin satisfies d squared = x squared + y squared.
-2. Comparing squared distances with squared radii gives the same ring as comparing distances.
-3. Radii 10, 30, ..., 190 have squares 100, 900, ..., 36100.
-4. The first radius whose square is at least the shot's square decides the score.
-5. Score equals 10 minus the zero-based ring position, or 0 past the last ring.
+1. A point lies inside a ring of radius 10, 30, 50, ..., 190 exactly when `x*x + y*y` is at most the square of that radius, so no square root is needed.
+2. The squared ring radii 10, 30, 50, ..., 190 are exactly `ringSquaredLimits`.
+3. Scanning the limits in increasing order finds the innermost ring that contains the point, which is the scored ring.
+4. Points past the last limit fall through the loop and keep `shotScore = 0`.
+5. Sums of squares up to 300² + 300² = 180000 fit in a 32-bit integer.
 
-| term | meaning |
+| Term | Meaning |
 |---|---|
-| `squaredDistance` | x squared plus y squared for one shot |
-| `ringSquaredLimits` | the ten squared radii in increasing order |
-| `shotScore` | points earned by the current dart |
-| `totalScore` | sum of all shot scores |
+| `ringSquaredLimits` | squared radii 100, 900, ..., 36100 |
+| `squaredDistance` | `xCoord * xCoord + yCoord * yCoord` |
+| `shotScore` | 10 minus the ring index, or 0 |
+| `totalScore` | running sum of shot scores |
 
-The sample shot (4, 7) has squared distance 65, which is at most 100, so it scores 10.
-The sample shot (-31, -5) has squared distance 986, which is at most 2500 and above 900, so it scores 8.
-The total is 10 + 8 = 18, matching the sample output. Floating-point roots never enter the computation.
+The sample runs through the ladder as:
+
+```
+(4,7):   squared distance 16+49=65  <= 100  -> ring 0 -> 10
+(-31,-5): squared distance 961+25=986 > 900, <= 2500 -> ring 2 -> 8
+total 10 + 8 = 18
+```
 
 ## Code
 
-**Input and scanning.** The reader accepts signed coordinates and stores the whole input once.
+**Input and signed scanner.** This block loads stdin and reads integers that may be negative.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -84,20 +85,13 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-`ringSquaredLimits` lists the ten squared radii.
-`nextInt` handles the minus sign on negative coordinates.
+One readLine loop collects all input bytes.
+The minus branch handles coordinates left of or below the center.
+Scanning costs one pass over the consumed characters.
 
-**Scoring and output.** One pass assigns each score and accumulates the total.
+**Ring lookup per shot.** This block scores each dart with integer squares.
 
 ```nim
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
-
 let dartCount = nextInt(inputData, scanPos)
 var totalScore = 0
 for dartIndex in 0 .. dartCount - 1:
@@ -110,29 +104,40 @@ for dartIndex in 0 .. dartCount - 1:
       shotScore = 10 - ringIndex
       break
   totalScore += shotScore
-appendOutput($totalScore)
-outputBuffer.add '\n'
-stdout.write outputBuffer
-outputBuffer.setLen 0
 ```
 
-`squaredDistance` stays below 180000, so plain integers suffice.
-The loop breaks at the first matching ring.
-`appendOutput` writes the single total line.
+The break keeps the first, innermost matching ring.
+`10 - ringIndex` turns the ring position into its score.
+No square root is ever computed.
+
+**Buffered output.** This block writes the total once.
+
+```nim
+var outputBuffer = ""
+
+proc appendOutput(text: string) =
+  outputBuffer.add text
+  if outputBuffer.len >= flushBlockBytes:
+    stdout.write outputBuffer
+    outputBuffer.setLen 0
+```
+
+The buffer flushes after reaching 128 KiB.
+One final write emits any remaining bytes.
 
 ## Complexity
 
-The program scores at most 100 darts against ten rings.
+The cost splits into input, ten comparisons per shot, and output.
 
-| phase | time | space |
+| Phase | Time | Space |
 |---|---|---|
-| input read | one pass over 2N coordinates | one input string |
-| scoring | N times ten comparisons | ten squared radii |
-| output | one line | block buffer |
+| Input read | one pass over input bytes | input bytes |
+| Scoring | O(10) per shot | constant |
+| Output | one small write | buffer |
 
-| measure | Big O |
+| Measure | Big O |
 |---|---|
-| time | O(N) |
-| space | O(1) |
+| Time | O(N) |
+| Space | O(N) for the input buffer |
 
-A floating-point square root per dart would add cost and rounding risk. Takeaway: squared comparisons score every dart in linear time.
+A floating-point distance plus a rounding check would also work, but integer squares remove every rounding question.
