@@ -21,7 +21,7 @@ The bounds from the statement:
 | Recurrence values q, p, m | at most 10 000 |
 | Judge limit | 40 s, 1 536 MB |
 
-The million-location bound paired with up to 7 000 cases drives the design. Because `m <= 10 000`, the recurrence values repeat quickly and induce very few distinct starting points inside each residue class.
+The million-location bound paired with up to 7 000 cases drives the design. Because `m <= 10 000`, the recurrence values repeat quickly and induce few distinct starting points inside each residue class.
 
 Write `d_eff = d mod N` (replacing `0` by `1` for `N > 1`, since `d = 0` and `d = 1` visit slots in identical order `c_i, c_i + 1, ... mod N`), `g = gcd(d_eff, N)`, `n' = N / g`, and `d' = d_eff / g`. Because `1 <= d_eff < N`, we always have `n' >= 2`.
 
@@ -42,7 +42,7 @@ The sample answer is six moves.
 
 Instead of maintaining a million-bit bitmap and an 8 MB column lookup table, exploit the fact that every box starts at one of at most `m <= 10 000` values `c_i`.
 
-Inside any residue class `row mod g`, the starting columns are `(c_i div g + carry) mod n'`. Sorting the distinct starting units splits the cyclic row into contiguous free intervals ("runs"). Each run stores just two 32-bit integers: its next free location `slot` and its remaining capacity `cap`. Assigning a box simply reads `runs[r].slot`, advances `slot` by `+d mod N` in registers, and decrements `cap`. Only when a run exhausts (`cap == 0`) does a small DSU merge it into the next run.
+Inside any residue class `row mod g`, the starting columns are `(c_i div g + carry) mod n'`. Sorting the distinct starting units splits the cyclic row into contiguous free intervals ("runs"). Each run stores two 32-bit integers: its next free location `slot` and its remaining capacity `cap`. Assigning a box simply reads `runs[r].slot`, advances `slot` by `+d mod N` in registers, and decrements `cap`. Only when a run exhausts (`cap == 0`) does a small DSU merge it into the next run.
 
 Across all three regimes of `g` vs `maxC = max(c_i)`:
 
