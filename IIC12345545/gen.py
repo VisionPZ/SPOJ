@@ -37,3 +37,6 @@ def build():
 (ROOT / "out").mkdir(exist_ok=True)
 write("1_sample", SAMPLE)
 build()
+
+if __name__ == "__main__":
+    Path("/tmp/IIC12345545_big.txt").write_text("7" * 1000000 + "\n")
