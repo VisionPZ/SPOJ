@@ -1,24 +1,21 @@
 # MOMOS — FEASTOFPIGS (SPOJ)
+
 <https://www.spoj.com/problems/MOMOS/>
 
 ## Problem
 
-Count the momos left after pigs eat every indexed momo divisible by their hunger value.
+N momos numbered 0 to N-1 sit in a row. K pigs attend, and the j-th pig has hunger a[j]. A pig eats every momo whose number is divisible by its hunger, so a pig with hunger 3 eats momos 0, 3, 6, and so on. A momo once eaten stays eaten. Count the momos left on the table.
 
-Momos are numbered 0 through N-1.
-A pig with hunger a eats momo i when i divided by a leaves remainder zero.
-A momo eaten once is gone, so overlaps count only once.
-The input gives N and K on the first line, then K hunger values on separate lines.
-Output one integer: the number of momos still on the table.
+The input guarantees one of two regimes: (N ≤ 10^6 and K ≤ 100) or (N ≤ 10^14 and K ≤ 20). Every hunger lies between 1 and N.
 
 | item | bound |
 |---|---|
-| momos N, small case | 1 to 1000000, with K at most 100 |
-| momos N, large case | 1 to 100000000000000, with K at most 20 |
-| hunger of each pig | 1 to N |
+| momos N | 10^6 with K ≤ 100, or 10^14 with K ≤ 20 |
+| pigs K | 1 ≤ K ≤ 100 |
+| hungers a[j] | 1 ≤ a[j] ≤ N |
 | judge limit | 2000 ms, 1536 MB |
 
-The two regimes need different methods because N can reach a large value.
+The two regimes need two different tools: a marking table for small N, a subset formula for small K.
 
 Sample input:
 
@@ -37,38 +34,29 @@ Sample output:
 
 ## Idea
 
-Use a marking sheet when the row is short, and count marks with inclusion-exclusion when the row is huge.
+A pig eats exactly the multiples of its hunger, so the feast leaves the numbers that are not multiples of any hunger.
 
-When K exceeds twenty, N is at most a million, so a boolean array can mark each eaten momo directly.
-When K is at most twenty, only two to the K subsets exist.
-Each subset contributes the count of multiples of its least common multiple, with a sign from the subset size.
-Hunger values that divide another hunger value are dropped first because their momos are already covered.
+When K is large, N is at most 10^6, so the program can simply knock out every multiple of every hunger in a boolean table, like a sieve. When K is at most 20, N can be 10^14 and no table fits, so the program counts the union of the multiples by inclusion-exclusion over the 2^K subsets. A hunger that is a multiple of a smaller hunger is dropped first: its multiples were already eaten.
 
-The input regime decides which exact method runs.
+Takeaway: small N means a table, small K means subsets.
 
 ## Why It Works
 
-1. A pig eats exactly the multiples of its hunger, including momo zero.
-2. The number of multiples of L in the range 0 through N-1 is (N-1) divided by L, plus one.
-3. Inclusion-exclusion adds odd subsets and subtracts even subsets to count each momo once.
-4. If hunger a divides hunger b, every multiple of b is also a multiple of a, so b is redundant.
-5. A least common multiple above N is capped at N to avoid overflow; it still covers momo zero.
+1. A pig with hunger a eats exactly the multiples of a in 0..N-1.
+2. If hunger h is a multiple of a kept hunger g, every multiple of h is a multiple of g, so h adds no new eaten momos and can be removed.
+3. Inclusion-exclusion over the kept hungers counts each momo in the union exactly once: add odd-sized subsets, subtract even-sized ones.
+4. The multiples of L in 0..N-1 are 0, L, 2L, ..., so their count is (N-1) div L + 1.
+5. Each subset LCM is built from the subset with its lowest bit removed, one table entry per mask.
+6. If a true LCM exceeds N it is clamped to N; both give count 1 because only momo 0 is divisible by a number larger than N-1.
+7. The answer is N minus the union size.
 
-| term | meaning |
-|---|---|
-| `momoCount` | the number of momos N |
-| `hungerValues` | the hunger of each pig |
-| `subsetLcms` | the capped least common multiple for each subset |
-| `leftover` | the number of uneaten momos |
+For the sample, hunger 6 is a multiple of 3, so it is dropped. The kept hungers are 3 and 5. Multiples of 3: 7 momos. Multiples of 5: 4 momos. Multiples of 15: 2 momos. Eaten = 7 + 4 - 2 = 9, so 20 - 9 = 11 remain.
 
-For the sample, the counts for hungers 3, 6 and 5 are 7, 4 and 4.
-The pair intersections give 4, 2 and 1, and the triple intersection gives 1.
-The union is 7 plus 4 plus 4 minus 4 minus 2 minus 1 plus 1, which is 9.
-Twenty minus nine leaves 11 momos.
+Momo 0 is divisible by everything, so with at least one pig it is always eaten, which the +1 in the count formula captures.
 
 ## Code
 
-**Input, gcd and output helper.** The reader loads N, K and all hunger values, then sorts them.
+**Input and scanning.** The hand reader loads the file, parses 64-bit values, and provides the gcd used by the LCM table.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -99,7 +87,14 @@ proc gcdValues(firstValue, secondValue: int64): int64 =
     larger = smaller
     smaller = remainder
   return larger
+```
 
+The scanner skips spaces and newlines.
+`int64` holds N up to 10^14 exactly.
+
+**Buffered output.** One string collects the answer line.
+
+```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -107,7 +102,14 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+Large outputs flush in blocks.
+One final write closes the remaining text.
+
+**Reading and sorting.** The hungers are sorted so redundancy checks see the smallest first.
+
+```nim
 let momoCount = nextInt(inputData, scanPos)
 let pigCount = int(nextInt(inputData, scanPos))
 var hungerValues = newSeq[int64](pigCount)
@@ -125,10 +127,9 @@ while insertionIndex < hungerValues.len:
   insertionIndex += 1
 ```
 
-Sorting puts small divisors first, which makes the redundancy test simple.
-The insertion sort avoids relying on a library comparator.
+Insertion sort is fine for at most 100 values.
 
-**Sieve or subsets.** Short rows are marked directly; large rows use capped least common multiples.
+**Dense marking.** When K exceeds 20, N is at most 10^6 and a table is used.
 
 ```nim
 var leftover: int64 = 0
@@ -144,7 +145,13 @@ if pigCount > subsetSwitch:
         eatenCount += 1
       position += hunger
   leftover = momoCount - eatenCount
-else:
+```
+
+Each pig walks its own multiples and counts only fresh momos.
+
+**Dropping redundant hungers.** A hunger divisible by a kept one is skipped.
+
+```nim
   var keptHungers = newSeq[int64]()
   for hunger in hungerValues:
     var redundant = false
@@ -154,7 +161,11 @@ else:
         break
     if not redundant:
       keptHungers.add hunger
+```
 
+**LCM table.** One entry per subset mask, built from the mask minus its lowest bit.
+
+```nim
   let subsetCount = 1 shl keptHungers.len
   var subsetLcms = newSeq[int64](subsetCount)
   subsetLcms[0] = 1
@@ -175,7 +186,14 @@ else:
     else:
       subsetLcms[subsetMask] = previousLcm div common * divisor
     subsetMask += 1
+```
 
+The overflow test compares the quotient with N before multiplying.
+A clamped LCM of N still counts exactly momo 0.
+
+**Inclusion-exclusion.** Odd masks add, even masks subtract.
+
+```nim
   var eatenCount: int64 = 0
   subsetMask = 1
   while subsetMask < subsetCount:
@@ -192,32 +210,35 @@ else:
       eatenCount -= multipleCount
     subsetMask += 1
   leftover = momoCount - eatenCount
+```
 
+The loop skips mask 0, the empty subset.
+
+**Answer line.** The leftover count is written once.
+
+```nim
 appendOutput($leftover)
 outputBuffer.add '\n'
 stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The cap keeps products below the 64-bit limit and leaves the count for momo zero exact.
-One final flush writes the answer line.
-
 ## Complexity
 
-The two regimes have different costs.
+The dense path touches each eaten momo a few times; the subset path runs once per mask.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over hungers | one input string |
-| marking regime | N steps summed over pigs | one boolean per momo |
-| subset regime | one pass over two to the K subsets | one integer per subset |
+| read input | one pass over the file | one string |
+| dense marking | sum of N / a[j] | N booleans |
+| subset path | one step per mask | 2^K LCMs |
+| output | one line | one block buffer |
 
 | measure | Big O |
 |---|---|
-| marking time | O(N times K) worst case |
-| subset time | O(K times 2 to the K) |
-| space | O(N) or O(2 to the K) |
+| time | O(N · K) or O(2^K), by regime |
+| space | O(N) or O(2^K), by regime |
 
-Trying inclusion-exclusion with a hundred pigs would need far too many subsets.
+A table for N = 10^14 would need 100 TB, and 2^K subsets for K = 100 would be 2^100.
 
-Each regime uses the method that fits its stated bound.
+Takeaway: pick the tool that matches the guaranteed bound.
