@@ -99,6 +99,7 @@ proc nextWorldString(data: string, pos: var int): string =
     world.add data[pos]
     pos += 1
   return world
+
 ```
 
 The string reader starts at the first R or dot. It stops at the following whitespace.
