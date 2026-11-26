@@ -72,3 +72,12 @@ def build():
 (ROOT / "out").mkdir(exist_ok=True)
 write("1_sample", 6, 3, 1, 10, [(1, 2), (1, 3), (4, 3), (5, 6)])
 build()
+
+if __name__ == "__main__":
+    rng3 = random.Random(11)
+    n_big = 1000000
+    m_big = 1000000
+    lines = ["%d 100000 1 1000000000" % n_big, str(m_big)]
+    for _ in range(m_big):
+        lines.append("%d %d" % (rng3.randint(1, n_big), rng3.randint(1, n_big)))
+    Path("/tmp/MATHEXAM_big.txt").write_text("\n".join(lines) + "\n")

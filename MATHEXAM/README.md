@@ -1,25 +1,22 @@
 # MATHEXAM — Finishing Your Math Exam (SPOJ)
+
 <https://www.spoj.com/problems/MATHEXAM/>
 
 ## Problem
 
-Decide whether all exam questions can be solved within the time limit after grouping similar questions by type.
+N exam questions fall into types. Similar questions share a type, and the listed pairs are exactly the similar pairs. The first question of a type costs x seconds, every later one of that type costs y seconds. With T seconds left, can you finish all N questions?
 
-Each similarity pair means the two questions share one type.
-The first question of a type costs x seconds, and each later question of that type costs y seconds.
-The input gives N, x, y and T on the first line, M on the second line, then M pairs.
-Output YES when the total time is at most T, otherwise NO.
+The first line holds N, x, y, T. The second line holds M, the number of pairs, followed by M lines of two question labels.
 
 | item | bound |
 |---|---|
-| questions N | 1 to 10000 |
-| first cost x | 1 to 100000 |
-| copy cost y | 1 to 100000 |
-| time limit T | 1 to 1000000000 |
-| pairs M | 1 to 100000 |
+| questions N | 1 ≤ N ≤ 10,000 |
+| costs x, y | 1 ≤ x, y ≤ 100,000 |
+| time left T | 1 ≤ T ≤ 10^9 |
+| pairs M | 1 ≤ M ≤ 100,000 |
 | judge limit | 1000 ms, 1536 MB |
 
-Questions with no listed pair still form a type of their own.
+The answer depends only on the number of types, so the pairs just group questions.
 
 Sample input:
 
@@ -40,37 +37,27 @@ YES
 
 ## Idea
 
-Similar questions form circles of friends, like circles that merge when any two members know each other.
+Friends of friends form one club. Union-Find merges questions into type-clubs as pairs arrive, and one extra question of an existing club costs only the copy time.
 
-Every similarity pair joins two circles into one type.
-When all pairs are read, each circle is one type.
-A circle of size s costs x plus s minus one times y.
-Adding those costs gives the total time.
-Checking every pair against every other pair would waste work, so union-find joins circles directly.
+If there are c clubs, the cheapest plan pays x once per club and y for each of the N-c copied questions. Compare that total with T.
 
-The circle count is the only quantity needed.
+Takeaway: only the club count matters, not who is in which club.
 
 ## Why It Works
 
-1. Similarity is transitive, so a connected component of the pair graph is exactly one question type.
-2. Union-find keeps one root per component and merges two roots for each pair.
-3. A component of size s contributes x once and y for the other s minus one questions.
-4. The sum over all components is the component count times x plus N minus that count times y.
+1. Similarity is transitive, so types are exactly the connected components of the pair graph.
+2. Union-Find merges components as each pair is read.
+3. Each component needs one paid method, costing x.
+4. Every other question copies that method, costing y.
+5. The minimum total is c·x + (N-c)·y, and finishing is possible exactly when it is at most T.
 
-| term | meaning |
-|---|---|
-| `parentNodes` | the parent of each question in union-find |
-| `componentSizes` | the size stored at each root |
-| `joinNodes` | the merge step for one similarity pair |
-| `componentCount` | the number of distinct question types |
+For the sample, the pairs join questions 1-2-3-4 into one club and 5-6 into another, so c = 2. The total is 2·3 + 4·1 = 10, which fits in T = 10, so the answer is `YES`.
 
-For the sample the pairs form two components of sizes 4 and 2.
-The cost is 3 plus 3 times 1, then 3 plus 1 times 1, giving 10.
-That meets the limit of 10 seconds, so the answer is YES.
+When y ≥ x the formula still holds: paying x per club is never worse than the alternative reading of the rules, because each club must pay its first-time cost once.
 
 ## Code
 
-**Input, union-find structures and merge operations.** The reader loads the header and prepares one root per question.
+**Input and scanning.** The hand reader loads the file and parses 64-bit values.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -97,7 +84,14 @@ let firstCost = nextInt(inputData, scanPos)
 let copyCost = nextInt(inputData, scanPos)
 let timeLimit = nextInt(inputData, scanPos)
 let pairCount = int(nextInt(inputData, scanPos))
+```
 
+The scanner skips spaces and newlines.
+Costs are read as 64-bit to keep the total exact.
+
+**Union-Find.** Parent links and sizes merge components.
+
+```nim
 var parentNodes = newSeq[int](questionCount + 1)
 var componentSizes = newSeq[int](questionCount + 1)
 for nodeIndex in 0 .. questionCount:
@@ -122,27 +116,13 @@ proc joinNodes(firstNode, secondNode: int) =
   componentSizes[firstRoot] = componentSizes[firstRoot] + componentSizes[secondRoot]
 ```
 
-Path halving flattens parent chains during each find.
-The smaller tree is attached to the larger tree to keep chains short.
+Each node starts as its own club.
+Path halving keeps finds short.
+The bigger root absorbs the smaller one.
 
-**Pair processing and decision.** After all merges, the roots give the number of types.
+**Counting clubs and deciding.** Roots are counted once each.
 
 ```nim
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
-
-var pairIndex = 0
-while pairIndex < pairCount:
-  let leftQuestion = int(nextInt(inputData, scanPos))
-  let rightQuestion = int(nextInt(inputData, scanPos))
-  joinNodes(leftQuestion, rightQuestion)
-  pairIndex += 1
-
 var componentCount = 0
 for nodeIndex in 1 .. questionCount:
   if findRoot(nodeIndex) == nodeIndex:
@@ -154,28 +134,28 @@ if totalTime <= timeLimit:
   appendOutput("YES\n")
 else:
   appendOutput("NO\n")
-stdout.write outputBuffer
-outputBuffer.setLen 0
 ```
 
-The total is computed in int64 before it is compared with the limit.
-One buffered line carries the decision.
+A node that is its own root heads one club.
+The total uses the cheapest legal plan.
+The comparison with T gives the answer.
 
 ## Complexity
 
-Union-find keeps each merge almost constant in cost.
+All pairs are merged, then one pass counts roots.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over pairs | one input string |
-| merges and finds | almost constant per pair | two arrays of N entries |
-| decision | one pass over questions | a few integers |
+| read input | one pass over the file | one string |
+| unions | near-constant per pair | parent and size arrays |
+| count | one pass over questions | none |
+| output | one line | one block buffer |
 
 | measure | Big O |
 |---|---|
-| time | O((N + M) alpha(N)) |
+| time | O((N + M) α(N)) |
 | space | O(N) |
 
-Rebuilding component lists for every pair would cost far more than union-find.
+Building the full graph and running search would use more memory for the same answer.
 
-The merge rule gives the exact type count for the stated limits.
+Takeaway: components decide the cost, so union and count.
