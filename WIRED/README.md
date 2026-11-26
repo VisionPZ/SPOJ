@@ -4,18 +4,13 @@
 
 ## Problem
 
-Four colors sit on each side of a box. Connect every left color to the right position showing the same color. Report the four target positions in left-to-right order.
-
-The input starts with the test count. Each case has one line of four left colors and one line of four right colors. Print four positions per case.
+An electrical box has four sockets on the left and four on the right, each labelled with a colour number from 1 to 4. A wire from left socket `i` must go to a right socket with the same number. For each test case, print four numbers: the right-side position each left socket connects to.
 
 | item | bound |
 |---|---|
-| tests T | not stated |
-| colors | integers 1 to 4 |
-| positions per side | 4 |
+| colours | 1 to 4 |
+| sockets per side | 4 |
 | judge limit | 1000 ms, 1536 MB |
-
-Each case is tiny, so the work per case is constant.
 
 Sample input:
 
@@ -36,38 +31,24 @@ Sample output:
 
 ## Idea
 
-Match labels like pairing socks by color: look at each left sock, then find the matching right sock. A fixed grid of four by four pairs does the job without building any map. One scan per left color finds its partner position, and four positions form the answer line.
+Read the four right-side colours and remember, for each colour, where it sits on the right. Then walk the left side and print the remembered position of each colour. That is the whole job: a tiny table of four entries, built once per case, then four lookups.
 
 ## Why It Works
 
-1. A wire is valid exactly when both ends show the same color.
-2. The right side has four positions, numbered one through four.
-3. Scanning all right positions finds the partner for a left position.
-4. Repeating for all four left positions yields the required sequence.
+1. The required output line is, position by position, "where is this left colour on the right", so a colour-to-position table answers every socket directly.
+2. The program fills the table by comparing every left colour with every right colour and writing `rightIndex + 1` (positions are 1-based). Positions are visited in order, so if a colour appears several times on the right, the last one wins. The independent oracle builds the same table with a dictionary comprehension, which also keeps the last occurrence, so both agree even on repeated colours.
+3. A left colour that never appears on the right has no wire. Its table entry stays 0, and the oracle's `get(color, 0)` also gives 0, so missing colours match too.
+4. In the sample first case, left colour 1 sits on the right at position 4, colour 3 at position 3, colour 4 at position 2 and colour 2 at position 1, which prints `4 3 2 1` exactly as the statement explains.
 
 | term | meaning |
 |---|---|
-| `leftColors` | the four colors on the left side |
-| `rightColors` | the four colors on the right side |
-| `answerPositions` | partner position for each left color |
-
-The comparison is equality of color numbers, not of positions.
-
-Script-generated trace for the first sample case:
-
-```
-left position | color | right position | printed
-1 | 1 | 4 | 4
-2 | 3 | 3 | 3
-3 | 4 | 2 | 2
-4 | 2 | 1 | 1
-```
-
-The printed row is 4 3 2 1, matching the sample.
+| `leftColors` | colours on the left, in socket order |
+| `rightColors` | colours on the right, in socket order |
+| `answerPositions` | for each left socket, the right position of its colour |
 
 ## Code
 
-**Bulk input and scanner.** The whole stream is read once and parsed by a digit scanner.
+**Input, scanner and output buffer.** This block loads stdin and prepares the writer.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -88,15 +69,7 @@ proc nextInt(data: string, pos: var int): int =
     value = value * 10 + int(data[pos]) - 48
     pos += 1
   return value
-```
 
-All cases are parsed before any output is written.
-The scanner skips spaces and line breaks.
-Parsing costs one pass over the input bytes.
-
-**Color matching and output.** Four by four comparisons fill the answer row.
-
-```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -104,7 +77,13 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+The scanner skips spaces and newlines alike, so the two-line-per-case layout never has to be tracked.
+
+**Cases and answers.** This block builds the table per case and prints the four positions.
+
+```nim
 let caseCount = nextInt(inputData, scanPos)
 for caseIndex in 0 .. caseCount - 1:
   var leftColors: array[4, int]
@@ -128,25 +107,19 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Fixed arrays avoid per-case allocation.
-Positions are stored one-based for the output.
-Spaces are written only between positions.
+`answerPositions` starts all zero, which is the answer for a colour with no wire. The later match overwrites earlier ones, fixing the repeated-colour convention described above.
 
 ## Complexity
 
-Each case does a fixed amount of work.
-
 | phase | time | space |
 |---|---|---|
-| input read | one pass over 8t numbers | one input string |
-| color matching | sixteen comparisons per case | four small arrays |
-| output | four positions per case | block buffer |
+| input read | one pass over input bytes | input bytes |
+| per case | 16 comparisons, 4 prints | O(1) |
+| output | one line per case, buffered | block buffer |
 
-Cost grows with the case count, not with any color value.
-
-| measure | Big O |
+| measure | big O |
 |---|---|
-| time | O(t) |
-| space | O(1) apart from buffers |
+| time | O(T) |
+| space | O(1) |
 
-Building a map for each case would add overhead without reducing the constant work.
+Each case is a fixed 4x4 grid, so the cost per case is a constant and the program scales only with the number of cases.
