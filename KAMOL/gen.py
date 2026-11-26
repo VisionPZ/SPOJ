@@ -36,3 +36,6 @@ def build():
 (ROOT / "out").mkdir(exist_ok=True)
 write("1_sample", "")
 build()
+
+if __name__ == "__main__":
+    Path("/tmp/KAMOL_big.txt").write_text(("3141592653589793" * 100000) + "\n")

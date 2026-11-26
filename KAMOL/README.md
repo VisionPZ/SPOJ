@@ -4,17 +4,22 @@
 
 ## Problem
 
-The judge expects one fixed farewell line. Nothing is read from stdin, and the output bytes never change.
+Print one fixed line of text and collect the point. The statement gives the exact sentence to echo, and nothing else.
 
-The contract holds a single required line and no input fields.
+There is no input at all. The output is the single line `GoodBye Kam0L Bhai`.
 
 | item | bound |
 |---|---|
 | input | none |
-| output | `GoodBye Kam0L Bhai` followed by a newline |
+| output | one fixed line |
 | judge limit | 1000 ms, 1536 MB |
 
-The name contains a zero, not the letter O, and the final word starts with a capital B.
+The whole job is one write to standard output.
+
+Sample input:
+
+```
+```
 
 Sample output:
 
@@ -22,99 +27,58 @@ Sample output:
 GoodBye Kam0L Bhai
 ```
 
-This is the exact line the statement lists as output.
-
 ## Idea
 
-A farewell card carries the same words every time, no matter who opens it. The program writes its fixed card and ignores stdin.
+A sign that already says the answer needs no reading. The program drains standard input, then writes the farewell string.
 
-The real algorithm is a constant string write. Each run does one append and one flush, with no parsing at all. Reading and formatting numbers would add work that this task never needs.
+Draining input keeps the run clean on judges that pipe a file into the program. No parsing, no math, no formatting choices.
 
-One literal line is the whole solution.
+Takeaway: when the answer is a constant, just print it.
 
 ## Why It Works
 
-1. The statement defines one output string, so no computation can change it.
-2. The string mixes capital letters, lowercase letters, a zero, and spaces.
-3. Writing the literal preserves every one of those bytes.
-4. A trailing newline matches the statement's output line.
+1. The statement fixes the output text, so a string literal is the exact answer.
+2. Reading every line first means the program never leaves unread input behind.
+3. One `stdout.write` call emits the line with its final newline.
+4. Nothing else is printed, so the output matches byte for byte.
 
-Each name below serves one part of the write path.
+For the sample, the empty input still produces the one required line.
 
-| term | meaning |
-|---|---|
-| `inputData` | the stdin text, always unused here |
-| `outputBuffer` | the single buffer that holds the line |
-| `appendOutput` | the procedure that adds text and flushes blocks |
-
-These names keep the write path easy to follow.
-
-Script-generated example:
-
-```
-empty input -> GoodBye Kam0L Bhai
-123 456 -> GoodBye Kam0L Bhai
-```
-
-The output stays the same for every input.
-
-No rounding or bounds apply because no number is read. The block flush leaves the buffer empty after the single write.
+Extra trailing spaces or a missing newline would break the match, so the literal ends with `\n` and nothing follows it.
 
 ## Code
 
-**Input and buffered output.** The reader still consumes stdin, and the writer keeps one buffer.
+**Input draining.** All lines are read and thrown away.
 
 ```nim
-const flushBlockBytes = 1 shl 17
-
 var inputData = ""
 var inputLine = ""
 while readLine(stdin, inputLine):
   inputData.add inputLine
   inputData.add '\n'
 
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
+discard inputData.len
+stdout.write "GoodBye Kam0L Bhai\n"
 ```
 
-All stdin lines are collected once. The buffer flushes only after reaching its block size. No scanner is needed for a task without numbers.
-
-**Fixed line and final write.** The program appends the literal once, then flushes.
-
-```nim
-if inputData.len > 0:
-  discard
-
-appendOutput("GoodBye Kam0L Bhai")
-outputBuffer.add '\n'
-stdout.write outputBuffer
-outputBuffer.setLen 0
-```
-
-Any incoming text has no effect on the answer. The newline is added as its own append. The final write clears the buffer.
+The loop ends when standard input closes.
+The `discard` line marks the collected text as unused on purpose.
+The write contains the sentence and its newline.
 
 ## Complexity
 
-Reading stdin is the only work that depends on input size.
+The program touches each input character once and writes 19 bytes.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over stdin bytes | one input string |
-| line write | one append | constant |
-| output | one line | block buffer |
-
-The answer itself takes constant time.
+| read input | one pass over the file | one string |
+| output | one write | none |
 
 | measure | Big O |
 |---|---|
-| time | O(I) for I input bytes |
-| space | O(I) for the input string |
+| time | O(input size) |
+| space | O(input size) |
 
-I counts the bytes read from stdin.
+With no input the work is constant.
 
-Parsing tokens would add work that a fixed line never needs. Writing the literal once gives the answer.
+Takeaway: a constant answer runs in constant time.
