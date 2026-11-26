@@ -1,22 +1,18 @@
 # VIP — VIP (SPOJ)
+
 <https://www.spoj.com/problems/VIP/>
 
 ## Problem
 
-Find the celebrity in each crowd: the person known by everyone else who knows nobody else. The answer prints that person's number for every data set.
-
-Input starts with d from 1 to 100. Each data set gives n from 1 to 500, then n rows of n zeros and ones, where entry i j is 1 when person i knows person j. Every person knows themselves, and a VIP always exists. Output prints one person number per data set, each on its own line.
+At a party of `n` people, everyone knows themselves. A VIP is a person known by everybody who knows nobody except themselves. The matrix of who knows whom is given: entry `i j` is 1 when person `i` knows person `j`. A VIP is guaranteed to exist. Print that person's number (1-based) for each data set.
 
 | item | bound |
 |---|---|
-| data sets d | 1 to 100 |
-| people per set n | 1 to 500 |
-| matrix entries | 0 or 1 |
+| data sets `d` | 1 to 100 |
+| people `n` | 1 to 500 |
 | judge limit | 1000 ms, 1536 MB |
 
-The VIP row holds a single 1 on the diagonal, and the VIP column is all ones.
-
-Sample input:
+Sample input (first data set):
 
 ```
 2
@@ -41,28 +37,27 @@ Sample output:
 
 ## Idea
 
-Eliminate candidates with one comparison at a time, like finding a team captain by asking who knows whom. If the current candidate knows someone, the candidate cannot be the VIP. If the candidate does not know someone, that someone cannot be the VIP. Each comparison removes one person, so finding a candidate costs n checks. Verifying it costs another n checks. Scanning every pair twice would cost n squared checks. Takeaway: eliminate first, then verify once.
+Walk the people once, keeping one suspect. Whenever the current suspect is shown to know somebody, throw the suspect away and keep that somebody instead. One pass leaves a single suspect, and a second pass just checks the two VIP rules against everyone. If the check ever fails, a plain scan of all people finishes the job.
 
 ## Why It Works
 
-1. A VIP knows no one except themselves, so a candidate who knows someone else fails.
-2. A VIP is known by everyone, so a person the candidate does not know fails.
-3. Each comparison removes exactly one of the two people from consideration.
-4. After n minus one comparisons, at most one candidate remains.
-5. Checking the candidate's row and column confirms the VIP, which the input guarantees exists.
+1. A VIP's column is all 1s (everyone knows them) and their row is all 0s except the diagonal 1 (they know nobody but themselves). These two rules are exactly what the program tests.
+2. If the suspect `c` knows person `p`, then `c` cannot be the VIP, because a VIP knows nobody other than themselves and `p` is not `c`. So discarding `c` for `p` never throws away the real VIP.
+3. The real VIP `v` is never skipped either: everyone knows `v`, so when the scan reaches `v` the current suspect knows `v` and the suspect becomes `v`. And `v` can never be discarded later, because `v` knows nobody. The one pass therefore always ends on the VIP.
+4. There can be at most one VIP: two such people would have to know each other, yet a VIP knows nobody but themselves. So the fallback scan that stops at the first match cannot pick a wrong one.
+5. In the first sample data set, person 1 (index 0) knows person 3, so the suspect moves to 3; nobody else displaces 3. Person 3's column is `1 1 1` and their row is `0 0 1`, so the answer is 3. The second data set ends with suspect 4, whose column is all 1s and whose row is `0 0 0 1 0`, giving 4.
 
 | term | meaning |
 |---|---|
-| `knowsMatrix` | flattened n by n knowledge table |
-| `candidate` | surviving person index, zero based |
-| `isVip` | true when the candidate passes the final row and column check |
-| `peopleCount` | number of people in the current data set |
-
-In the first sample set, person 1 knows person 3, so person 3 replaces person 1. Person 3 then has row 0 0 1 and column 1 1 1, so the answer is 3. The second sample set gives person 4.
+| `knowsMatrix` | flattened n-by-n 0/1 grid |
+| `candidate` | index of the current suspect |
+| `isVip` | candidate passes both VIP rules |
+| `knowsOnlySelf` | fallback test for one person's row |
+| `knownByAll` | fallback test for one person's column |
 
 ## Code
 
-**Input and scanning.** The reader loads all data sets and parses the matrix entries.
+**Input, scanner and output buffer.** This block loads stdin and prepares the writer.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -83,14 +78,7 @@ proc nextInt(data: string, pos: var int): int =
     value = value * 10 + int(data[pos]) - 48
     pos += 1
   return value
-```
 
-`inputData` holds every data set before parsing.
-`nextInt` reads zeros, ones and the size values directly.
-
-**Elimination and output.** Each set yields one candidate and one verified answer line.
-
-```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -98,7 +86,13 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+The scanner skips every non-digit, so the grid's spaces and newlines need no special handling.
+
+**Reading the grid and picking the suspect.** This block stores the matrix, runs the one-pass elimination and verifies the survivor.
+
+```nim
 let dataSetCount = nextInt(inputData, scanPos)
 for dataSetIndex in 0 .. dataSetCount - 1:
   let peopleCount = nextInt(inputData, scanPos)
@@ -117,6 +111,13 @@ for dataSetIndex in 0 .. dataSetCount - 1:
         isVip = false
       if knowsMatrix[candidate * peopleCount + personIndex] != 0:
         isVip = false
+```
+
+The matrix is kept in one flat list, indexed by `row * n + column`, which is faster than a list of lists. The elimination loop only reads from the current suspect's row, so it is a single pass of at most `n` lookups.
+
+**Answering.** This block prints the suspect, or scans everyone if the check failed.
+
+```nim
   if isVip:
     appendOutput($(candidate + 1))
   else:
@@ -137,24 +138,21 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-`candidate` changes only when it knows the compared person.
-`isVip` checks the candidate row and column in one pass.
-The fallback scan handles any unexpected input where verification fails.
+The fallback is the textbook double loop over rows and columns. It runs only when the suspect check fails, which the guarantee says never happens, but it keeps the program correct even on shaky input.
 
 ## Complexity
 
-Each data set reads a matrix and finds one person.
-
 | phase | time | space |
 |---|---|---|
-| input read | n squared entries per set | one input string |
-| elimination | n comparisons | one candidate |
-| verification | n comparisons | one matrix |
-| output | one line per set | block buffer |
+| grid read | O(n^2) per data set | O(n^2) |
+| elimination | O(n) | O(1) |
+| suspect check | O(n) | O(1) |
+| fallback scan | O(n^2), normally unused | O(1) |
+| output | one line per data set | block buffer |
 
-| measure | Big O |
+| measure | big O |
 |---|---|
-| time | O(n^2) per data set, dominated by input |
-| space | O(n^2) per data set |
+| time | O(d x n^2) |
+| space | O(n^2) |
 
-Checking every candidate against every person would double the comparison work. Takeaway: elimination finds the only possible VIP in linear comparisons.
+The grid itself is n^2 numbers, so reading it already costs O(n^2); the smart part adds only two linear passes on top.
