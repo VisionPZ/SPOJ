@@ -4,20 +4,17 @@
 
 ## Problem
 
-Factor each even number into prime powers and print every prime with its exponent. Then print the sum of all positive divisors of that number. Results for consecutive test cases are separated by a blank line.
+For each test case, take an even number n and write it as a product of primes, one prime per line as `p e` meaning p^e, from the smallest prime upward. Then print the sum of all divisors of n on a line reading `Sum Of Divisiors: X`. A blank line separates the answers of consecutive cases.
 
-Input starts with the test count `t`. Each following line holds one even integer `n` with `n <= 10^14`.
-
-Output for each case lists lines of `prime exponent`, ordered from the smallest prime upward. A final line reads `Sum Of Divisiors: X`, where `X` is the divisor sum.
+The first line holds t with 1 ≤ t ≤ 100. Each case gives one even n with n ≤ 10^14.
 
 | item | bound |
 |---|---|
-| test cases | 1 to 100 |
-| number n | even, at most 10^14 |
-| divisor sum | fits in a signed 64-bit integer |
+| test cases t | 1 ≤ t ≤ 100 |
+| value n | even, n ≤ 10^14 |
 | judge limit | 1000 ms, 1536 MB |
 
-The largest n sets the trial-division limit at 10^7.
+A prime table up to 10^7 covers every possible small factor of n.
 
 Sample input:
 
@@ -44,37 +41,28 @@ Sum Of Divisiors: 120
 
 ## Idea
 
-List the primes first, like a singer warming up a scale before a song. Then divide the number by each prime and count the repeats. The divisor sum follows from the prime powers with a short geometric-series formula.
+Factoring a number by trial division only needs primes up to its square root. Since n ≤ 10^14, that root is at most 10^7, so one sieve of Eratosthenes up to 10^7 supplies every prime a case could ever need.
 
-A sieve builds the prime list once, so each test case skips composite trial divisors. Trial division costs about pi(sqrt(n)) steps per case instead of sqrt(n) steps. Taking the geometric sum avoids listing every divisor.
+Each case divides n by the primes in order, counting how many times each divides, until the square of the next prime exceeds what is left. Whatever remains above 1 is a single large prime. The divisor sum then comes from the factorization: for p^e the divisors contribute 1 + p + p^2 + ... + p^e, and the whole sum is the product of these pieces.
 
-Sieve once, factor by primes, then sum geometric series per prime power.
+Takeaway: sieve once to the square root, then divide and multiply.
 
 ## Why It Works
 
-1. A sieve marks composite numbers up to the square root of the largest input.
-2. Dividing by primes in order yields each distinct prime with its exact exponent.
-3. A leftover value above one is itself a prime with exponent one.
-4. Divisors of a prime power are its powers from zero up to the exponent.
-5. The divisor-sum function is multiplicative across coprime prime powers.
+1. Every composite factor of n has a prime factor at most sqrt(n) ≤ 10^7, which the sieve list contains.
+2. Dividing out a prime completely leaves a cofactor with no smaller prime factors.
+3. If the cofactor were composite, it would have a prime factor at most its own square root, which is at most sqrt(n) and already tried, so the cofactor is prime.
+4. Every divisor of n is a product of the prime powers, so the divisor sum factors into the geometric sums (1 + p + ... + p^e) over the distinct primes.
+5. For n ≤ 10^14 these sums stay below 10^15, which `int64` holds exactly.
+6. Primes are tried in ascending order, so the printed pairs are already sorted.
 
-| term | meaning |
-|---|---|
-| `primeList` | primes up to 10^7 used as trial divisors |
-| `factorBases` | distinct prime factors of the current number |
-| `factorPowers` | exponent paired with each prime factor |
-| `geometricSum` | sum of powers of one prime factor |
-| `divisorSum` | product of the geometric sums |
+For the sample, 8 = 2^3 gives the pairs `2 3` and the sum 1+2+4+8 = 15. For 56 = 2^3 · 7 the pairs are `2 3` and `7 1`, and the sum is 15 · 8 = 120.
 
-Each prime power contributes exactly one geometric series to the answer.
-
-A worked trace for `n = 56` gives factors `2 3` and `7 1`. The first series is `1+2+4+8 = 15`. The second series is `1+7 = 8`. Their product is `120`, matching the sample.
-
-Print a blank line between cases and stop after the last case.
+The break test `p * p > remaining` uses the shrinking cofactor, which is the standard shortcut: once p^2 exceeds the cofactor, no further prime can divide it.
 
 ## Code
 
-**Input and prime sieve.** The reader loads all tokens, then the sieve builds the trial-division list.
+**Input and scanning.** The hand reader loads the file and parses integers.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -96,7 +84,14 @@ proc nextInt(data: string, pos: var int): int =
     value = value * 10 + int(data[pos]) - 48
     pos += 1
   return value
+```
 
+The scanner skips spaces and newlines.
+On a 64-bit build `int` holds values up to 10^14.
+
+**Buffered output.** One string collects all the answer lines.
+
+```nim
 var outputBuffer = ""
 
 proc appendOutput(text: string) =
@@ -104,7 +99,14 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+Large outputs flush in blocks.
+One final write closes the remaining text.
+
+**Prime table.** The sieve marks composites up to 10^7 and collects the survivors.
+
+```nim
 var isPrime = newSeq[bool](sieveLimit + 1)
 var primeCursor = 2
 while primeCursor <= sieveLimit:
@@ -128,11 +130,9 @@ while collectCursor <= sieveLimit:
   collectCursor += 1
 ```
 
-The sieve stops at the square root of ten million.
-The prime list is reused for every test case.
-The parser skips whitespace and reads one integer at a time.
+Marking starts at the square of each prime because smaller multiples already have a smaller factor.
 
-**Factorization and divisor sum.** Each case records prime powers and multiplies their geometric sums.
+**Factoring and summing.** One case is factored, then printed with its divisor sum.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -154,6 +154,14 @@ for caseIndex in 0 .. caseCount - 1:
   if remainingValue > 1:
     factorBases.add remainingValue
     factorPowers.add 1
+```
+
+The loop stops as soon as p^2 passes the cofactor.
+A leftover cofactor above 1 is one prime with exponent 1.
+
+**Divisor sum.** Each factor multiplies in its geometric series.
+
+```nim
   var divisorSum: int64 = 1
   for factorIndex in 0 .. factorBases.len - 1:
     var geometricSum: int64 = 1
@@ -164,6 +172,13 @@ for caseIndex in 0 .. caseCount - 1:
       geometricSum = geometricSum + currentPower
       exponentCursor += 1
     divisorSum = divisorSum * geometricSum
+```
+
+Powers are built by repeated multiplication, no division or overflow guard needed.
+
+**Answer lines.** Pairs first, then the sum, then the case separator.
+
+```nim
   for factorIndex in 0 .. factorBases.len - 1:
     appendOutput($factorBases[factorIndex] & " " & $factorPowers[factorIndex] & "\n")
   appendOutput("Sum Of Divisiors: " & $divisorSum & "\n")
@@ -174,28 +189,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Trial division stops once the square of the prime exceeds the remainder.
-A leftover prime is appended with exponent one.
-All output passes through one buffered string.
+The blank line is written between cases, not after the last one.
+The label spelling matches the statement.
 
 ## Complexity
 
-Sieve work dominates the setup, and each case tests primes up to its own square root.
+The sieve runs once; each case walks primes only up to its cofactor's square root.
 
 | phase | time | space |
 |---|---|---|
-| prime sieve | one pass up to 10^7 | boolean array of 10^7 entries |
-| factorization | up to pi(sqrt(n)) divisions per case | list of prime powers |
-| divisor sum | one series per distinct prime | two small arrays |
-| output | one buffered stream | block buffer |
-
-The sieve runs once for all cases.
+| sieve | cross-out multiples to 10^7 | 10^7 flags |
+| factor | primes up to sqrt(n) per case | factor lists |
+| output | one line per factor | one block buffer |
 
 | measure | Big O |
 |---|---|
-| time | O(L log log L + t pi(sqrt(n))) with L = 10^7 |
-| space | O(L) |
+| time | O(S log log S + t · S / log S) with S = 10^7 |
+| space | O(S) |
 
-A plain trial division over every integer would need about sqrt(n) tests per case.
+Trial division by every odd number up to 10^7 would cost about 5×10^6 steps per case instead of about 6.6×10^5.
 
-Sieve first, divide by primes, and finish each case with a multiplicative divisor sum.
+Takeaway: one shared sieve makes 100 large factorizations cheap.
