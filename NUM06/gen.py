@@ -64,3 +64,8 @@ def build():
 (ROOT / "out").mkdir(exist_ok=True)
 write("1_sample", [(5, 6), (3, 9), (10, 2)])
 build()
+
+if __name__ == "__main__":
+    lines = ["1000000000000000000 999999999999999999"] * 500000
+    lines.append("0 0")
+    Path("/tmp/NUM06_big.txt").write_text("\n".join(lines) + "\n")

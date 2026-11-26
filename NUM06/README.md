@@ -4,17 +4,15 @@
 
 ## Problem
 
-For each pair of numbers, report their greatest common divisor. Reading stops when both numbers are zero.
-
-The input is a stream of pairs, one pair per line. Print one divisor per pair until the stopping pair.
+Each line holds two positive integers m and n, up to 10^18. Print their greatest common divisor, one answer per line. A line `0 0` ends the input.
 
 | item | bound |
 |---|---|
-| number pair | 1 to 1000000000000000000 |
-| stopping pair | 0 0 |
+| m, n | 1 ≤ m, n ≤ 10^18 |
+| end marker | `0 0` |
 | judge limit | 1000 ms, 1536 MB |
 
-Library gcd functions are not allowed, so the division steps are written by hand.
+Euclid's algorithm needs only a few dozen steps per pair.
 
 Sample input:
 
@@ -35,38 +33,26 @@ Sample output:
 
 ## Idea
 
-Shrink the pair by division, like trimming a rope to the shorter piece and the leftover cut. Replacing the larger number by the remainder keeps every common divisor and loses nothing else. Repeat until one number is zero. That survivor is the greatest common divisor.
+Shrinking two numbers by trading the bigger for its remainder keeps the common divisor fixed. Euclid's algorithm repeats this trade until the remainder is zero; the last number standing is the gcd.
+
+For 10^18 the chain of remainders is short, so each line is answered almost instantly.
+
+Takeaway: the remainder trade is the fastest known way to a gcd.
 
 ## Why It Works
 
-1. Any common divisor of two numbers also divides their remainder.
-2. Replacing a number by the remainder preserves the set of common divisors.
-3. The numbers never grow, so the loop must end.
-4. When the second number is zero, the first holds the greatest common divisor.
+1. Any common divisor of a and b also divides a mod b, and vice versa, so the gcd never changes.
+2. The second number strictly shrinks each turn, so the loop ends.
+3. When the second number is 0, the first is the gcd.
+4. The `0 0` line is checked before any output, so it produces no answer.
 
-| term | meaning |
-|---|---|
-| `leftValue` | current first number in the shrinking pair |
-| `rightValue` | current second number in the shrinking pair |
-| `remainder` | leftover after dividing the first by the second |
+For the sample, gcd(5, 6) = 1, gcd(3, 9) = 3, gcd(10, 2) = 2.
 
-The values are int64 because they reach one quintillion.
-
-Script-generated trace for the first sample pair:
-
-```
-left | right | remainder
-5 | 6 | 5
-6 | 5 | 1
-5 | 1 | 0
-1 | 0 | stop
-```
-
-The survivor is 1, matching the first sample answer.
+A pair where one value is 0 but the other is not still prints the nonzero value, which is the correct gcd.
 
 ## Code
 
-**Bulk input and scanner.** The whole stream is read once and parsed by a digit scanner.
+**Input and scanning.** The hand reader loads the file and parses integers.
 
 ```nim
 const flushBlockBytes = 1 shl 17
@@ -89,11 +75,10 @@ proc nextInt(data: string, pos: var int): int =
   return value
 ```
 
-All pairs are parsed from one buffer.
-The scanner skips spaces and line breaks.
-Parsing costs one pass over the input bytes.
+The scanner skips spaces and newlines.
+On a 64-bit build `int` holds values up to 10^18.
 
-**Euclid loop and output.** Repeated remainders shrink the pair.
+**Buffered output.** One string collects the answer lines.
 
 ```nim
 var outputBuffer = ""
@@ -103,7 +88,14 @@ proc appendOutput(text: string) =
   if outputBuffer.len >= flushBlockBytes:
     stdout.write outputBuffer
     outputBuffer.setLen 0
+```
 
+Large outputs flush in blocks.
+One final write closes the remaining text.
+
+**Euclid loop.** Remainders replace the larger value.
+
+```nim
 proc greatestCommonDivisor(firstValue: int64, secondValue: int64): int64 =
   var leftValue = firstValue
   var rightValue = secondValue
@@ -112,7 +104,14 @@ proc greatestCommonDivisor(firstValue: int64, secondValue: int64): int64 =
     leftValue = rightValue
     rightValue = remainder
   return leftValue
+```
 
+Each turn swaps in the smaller, smaller pair.
+The loop returns when the right side hits zero.
+
+**Line driver.** Pairs are read until the stop marker.
+
+```nim
 while true:
   let firstValue = int64(nextInt(inputData, scanPos))
   let secondValue = int64(nextInt(inputData, scanPos))
@@ -125,25 +124,24 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The stopping pair ends the loop.
-Each step costs one division.
-Every answer is one buffered line.
+The break happens before any output for `0 0`.
+Every other pair writes exactly one line.
 
 ## Complexity
 
-Each division removes at least one binary digit of work.
+Each pair runs a short Euclid chain.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over all pairs | one input string |
-| gcd loop | O(log min value) divisions | two variables |
-| output | one line per pair | block buffer |
-
-No table of divisors is built.
+| read input | one pass over the file | one string |
+| gcd | remainder steps per pair | none |
+| output | one line per pair | one block buffer |
 
 | measure | Big O |
 |---|---|
-| time | O(number of pairs times log value) |
-| space | O(1) apart from buffers |
+| time | O(P log min(m, n)) for P pairs |
+| space | O(P) output, O(1) work |
 
-Testing every candidate divisor up to the smaller value would cost O(min value) per pair.
+Trial division up to sqrt would be far too slow for 10^18.
+
+Takeaway: Euclid answers each query in logarithmic steps.
