@@ -1,7 +1,19 @@
 const flushBlockBytes = 1 shl 18
 const firstDigitValue = 48
 
-var inputData = readAll(stdin)
+proc readStreamBytes(): string =
+  var res = ""
+  var chunk = newString(1 shl 16)
+  while true:
+    let got = readBuffer(stdin, addr chunk[0], chunk.len)
+    if got <= 0:
+      break
+    let oldLen = res.len
+    res.setLen(oldLen + got)
+    copyMem(addr res[oldLen], addr chunk[0], got)
+  return res
+
+var inputData = readStreamBytes()
 var i = 0
 
 proc moreInput(): bool =
