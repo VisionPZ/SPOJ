@@ -53,7 +53,7 @@ Takeaway: only the club count matters, not who is in which club.
 
 For the sample, the pairs join questions 1-2-3-4 into one club and 5-6 into another, so c = 2. The total is 2·3 + 4·1 = 10, which fits in T = 10, so the answer is `YES`.
 
-When y ≥ x the formula still holds: paying x per club is never worse than the alternative reading of the rules, because each club must pay its first-time cost once.
+When y ≥ x the formula still holds. Paying x per club is never worse than the alternative rule, because each club pays its first-time cost once.
 
 ## Code
 
