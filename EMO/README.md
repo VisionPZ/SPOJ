@@ -63,12 +63,15 @@ line 5  Even ... :/ :) .#        -> Even ... :/ .
 const flushBlockBytes = 1 shl 17
 
 proc run() =
-  var inputData = stdin.readAll()
+  var inputData = readStreamBytes()
   if inputData.len == 0:
     return
   let source = cast[ptr UncheckedArray[char]](addr inputData[0])
   let dataLength = inputData.len
-  var outputData = newString(dataLength + 8)
+  var outputCap = dataLength + 16
+  if outputCap < flushBlockBytes + 65536:
+    outputCap = flushBlockBytes + 65536
+  var outputData = newString(outputCap)
   let target = cast[ptr UncheckedArray[char]](addr outputData[0])
   var outputLength = 0
   var scanPos = 0
