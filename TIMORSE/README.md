@@ -36,7 +36,7 @@ Walk the message character by character and add up durations, exactly like a tel
 1. A letter of `k` symbols has `k` symbol durations and `k - 1` one-unit gaps, which `letterDuration` adds up directly from the code table.
 2. Two letters in the same word are separated by 3 units, which the `previousWasLetter` branch adds before the next letter.
 3. Words are separated by 7 units. A space turns off `previousWasLetter`, so the next letter takes the 7-unit branch instead of the 3-unit one.
-4. Leading spaces, repeated spaces and trailing spaces never start a letter, so they add nothing: the 7-unit gap is charged only when a letter follows a gap and the message already contains a letter.
+4. Leading, repeated, and trailing spaces never start a letter, so they add zero ticks. The 7-unit gap applies only when a letter follows spaces after an earlier letter.
 5. Characters outside `a` to `z` and space are skipped by both branches, matching "any other characters can be ignored".
 6. The message is echoed before the number, so the output line keeps the exact spacing of the input line.
 
