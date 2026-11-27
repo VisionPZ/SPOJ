@@ -90,7 +90,7 @@ import strutils, math
 
 const flushBlockBytes = 1 shl 16
 
-proc readAllInput(): string =
+proc readInputStream(): string =
   var currentLine = ""
   while readLine(stdin, currentLine):
     result.add currentLine
@@ -160,7 +160,7 @@ The reader loop ends at the stream boundary, so blank lines cannot break the sca
 
 ```nim
 proc main() =
-  let inputData = readAllInput()
+  let inputData = readInputStream()
   var i = 0
   let caseCount = nextInteger(inputData, i)
   var outputBuffer = ""

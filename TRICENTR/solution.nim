@@ -2,7 +2,7 @@ import strutils, math
 
 const flushBlockBytes = 1 shl 16
 
-proc readAllInput(): string =
+proc readInputStream(): string =
   var currentLine = ""
   while readLine(stdin, currentLine):
     result.add currentLine
@@ -66,7 +66,7 @@ proc nextDecimal(inputData: string, i: var int): float =
       result = result / exponentScale
 
 proc main() =
-  let inputData = readAllInput()
+  let inputData = readInputStream()
   var i = 0
   let caseCount = nextInteger(inputData, i)
   var outputBuffer = ""
