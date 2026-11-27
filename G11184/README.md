@@ -4,20 +4,22 @@
 
 ## Problem
 
-A sequence of n integers is a jolly jumper when the absolute differences between neighbors cover every value from 1 to n−1. Decide each sequence in the input and print its verdict.
+A sequence of `n` integers is a jolly jumper when the absolute differences between consecutive elements cover every integer from `1` through `n - 1`. Decide each sequence until `n = 0` ends input.
 
-Input holds one case per line: n, then n integers. A line with n = 0 ends the input. Output one line per case: `Jolly` when the differences cover the full range, otherwise `Not jolly`.
+Input holds one sequence per line starting with `n`, followed by `n` signed integers, ending at `0`. Print `Jolly` or `Not jolly` per sequence.
+
+Constraints and limits for the task:
 
 | item | bound |
 |---|---|
-| sequence length n | 1 to 2999 |
-| sequence elements | signed integers |
-| terminating value | n = 0 ends input |
+| sequence length `n` | 1 to 2999 |
+| sequence elements | signed 64-bit integers |
+| judge languages | C, C++, Java, Python 3 (no Nim) |
 | judge limit | 1000 ms, 1536 MB |
 
-The length bound fixes the size of the marking table used by the program.
+Sorting neighbor differences costs `O(n log n)`, whereas direct boolean marking runs in linear time.
 
-Sample input:
+Sample input and output:
 
 ```
 4 1 4 2 3
@@ -25,156 +27,75 @@ Sample input:
 0
 ```
 
-Sample output:
-
 ```
 Jolly
 Not jolly
 ```
 
+The first sequence produces differences `3, 2, 1`, while the second repeats `3` and misses `1`.
+
 ## Idea
 
-Treat the differences as stepping stones that must include every distance from 1 to n−1, like checking names off a guest list. The difference-marking algorithm visits each neighbor pair once and ticks off the distance it finds. A naive approach would sort all differences and compare the sorted list with 1 through n−1, costing O(n log n) per case. Marking keeps the work linear and resets the table between cases.
+Check off each adjacent gap in a flat marker array `seenDifferences`, like ticking attendance numbers on a checklist from `1` to `n - 1`. Any gap outside `[1, caseLength - 1]` or seen twice disqualifies the sequence immediately.
+
+Marking adjacent differences and clearing only `1 .. caseLength - 1` runs in `O(n)` time per sequence. Implementing the parser in C++14 compiles natively on SPOJ and computes unsigned 64-bit differences without signed subtraction overflow.
+
+Reusing one resizable vector across all cases keeps memory flat and fast.
 
 ## Why It Works
 
-1. A sequence of one element has no neighbor pairs, so it passes by default.
-2. Each neighbor pair contributes one absolute difference.
-3. A valid jolly jumper needs every difference from 1 to n−1 exactly once.
-4. A difference outside that range or a repeated difference makes the answer negative.
-5. The marking table records which distances have appeared; a final count confirms full coverage.
-6. Clearing the table after each case prevents marks from leaking into the next case.
+1. A sequence of length `1` has zero adjacent pairs, leaving `distinctCount == 0 == caseLength - 1`, so `Jolly` is returned automatically.
+2. Unsigned difference `static_cast<uint64_t>(cur) - static_cast<uint64_t>(prev)` avoids signed overflow even at extreme 64-bit values.
+3. Because there are `caseLength - 1` adjacent pairs, `distinctCount == caseLength - 1` holds if and only if every value `1 .. caseLength - 1` appeared once.
+4. Clearing only `seenDifferences[1 .. caseLength - 1]` leaves every slot ready for the next sequence without reallocating.
+
+Key identifiers in the program:
 
 | term | meaning |
 |---|---|
-| `caseLength` | n, the number of integers in the current case |
-| `sequenceValues` | the stored integers of the current case |
-| `seenDifferences` | table marking each distance already found |
-| `distinctCount` | number of distinct valid distances found |
-| `isJolly` | verdict for the current case |
+| `caseLength` | element count `n` for the current test case |
+| `sequenceValues` | buffer holding the current sequence values |
+| `seenDifferences` | marker table tracking seen step distances |
+| `distinctCount` | number of distinct valid step distances found |
+| `isJolly` | boolean verdict for the current case |
 
-The verdict depends only on the difference set, never on the order of the integers.
-
-A script-generated trace from the generator:
-
-```
-seq [1, 4, 2, 3]
-abs diffs [3, 2, 1]
-want [1, 2, 3]
-bad diffs [3, 2, 3, 7] missing [1, 4]
-```
-
-The good sequence marks 3, 2 and 1 with no gaps; the bad sequence misses 1 and 4.
+Worked trace on sample `5 1 4 2 -1 6`: step distances are `3, 2, 3, 7`; repeated `3` and out-of-range `7` keep `distinctCount` at `2 != 4`, yielding `Not jolly`.
 
 ## Code
 
-**Input and scanning.** One buffer holds all input; the hand scanner accepts negatives.
+**Linear difference checker.** `main` computes unsigned neighbor distances and resets only the entries needed by the current length.
 
-```nim
-const flushBlockBytes = 1 shl 17
-const maxSequenceLength = 3000
-
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
-
-var scanPos = 0
-
-proc nextInt(data: string, pos: var int, value: var int64): bool =
-  while pos < data.len and data[pos] != '-' and (data[pos] < '0' or data[pos] > '9'):
-    pos += 1
-  if pos >= data.len:
-    return false
-  var negative = false
-  if data[pos] == '-':
-    negative = true
-    pos += 1
-  var magnitude: int64 = 0
-  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    magnitude = magnitude * 10 + int64(int(data[pos]) - 48)
-    pos += 1
-  if negative:
-    value = -magnitude
-  else:
-    value = magnitude
-  return true
+```cpp
+    bool isJolly = true;
+    int distinctCount = 0;
+    for (int idx = 0; idx + 1 < caseLength; idx++) {
+      long long cur = sequenceValues[idx + 1];
+      long long prev = sequenceValues[idx];
+      unsigned long long diff = cur >= prev
+          ? static_cast<unsigned long long>(cur) - static_cast<unsigned long long>(prev)
+          : static_cast<unsigned long long>(prev) - static_cast<unsigned long long>(cur);
+      if (diff == 0 || diff >= static_cast<unsigned long long>(caseLength) ||
+          seenDifferences[static_cast<size_t>(diff)]) {
+        isJolly = false;
+      } else {
+        seenDifferences[static_cast<size_t>(diff)] = 1;
+        distinctCount++;
+      }
+    }
+    if (distinctCount != caseLength - 1) {
+      isJolly = false;
+    }
+    appendLiteral(outputBuffer, isJolly ? "Jolly\n" : "Not jolly\n");
+    for (int diffIdx = 1; diffIdx < caseLength; diffIdx++) {
+      seenDifferences[diffIdx] = 0;
+    }
 ```
-
-The scanner stops when no token remains, which handles the trailing zero case.
-The minus branch covers the signed integers allowed by the statement.
-Magnitude accumulation stays in `int64` before the sign is applied.
-
-**Difference marking.** Each case is read, checked and written before the next one starts.
-
-```nim
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
-
-var seenDifferences = newSeq[bool](maxSequenceLength)
-var sequenceValues = newSeq[int64](maxSequenceLength)
-
-while true:
-  var caseLengthValue: int64 = 0
-  if not nextInt(inputData, scanPos, caseLengthValue):
-    break
-  if caseLengthValue == 0:
-    break
-  let caseLength = int(caseLengthValue)
-  var allValuesRead = true
-  for valueIndex in 0 .. caseLength - 1:
-    if not nextInt(inputData, scanPos, sequenceValues[valueIndex]):
-      allValuesRead = false
-      break
-  var isJolly = allValuesRead
-  var distinctCount = 0
-  for valueIndex in 0 .. caseLength - 2:
-    var difference = sequenceValues[valueIndex + 1] - sequenceValues[valueIndex]
-    if difference < 0:
-      difference = -difference
-    if difference < 1 or difference > int64(caseLength - 1) or seenDifferences[int(difference)]:
-      isJolly = false
-    else:
-      seenDifferences[int(difference)] = true
-      distinctCount += 1
-  if distinctCount != caseLength - 1:
-    isJolly = false
-  if isJolly:
-    appendOutput("Jolly\n")
-  else:
-    appendOutput("Not jolly\n")
-  for differenceIndex in 1 .. caseLength - 1:
-    seenDifferences[differenceIndex] = false
-
-stdout.write outputBuffer
-outputBuffer.setLen 0
-```
-
-The loop visits exactly `caseLength - 1` neighbor pairs per case.
-Out-of-range and repeated distances are rejected at the moment they appear.
-The marking table is cleared for indices 1 through `caseLength - 1` after output.
 
 ## Complexity
 
-Each case scans its neighbor pairs once and writes one line.
-
-| phase | time | space |
-|---|---|---|
-| input read | one pass over all tokens | input string |
-| difference marking | one visit per neighbor pair | two arrays of 3000 slots |
-| output | one line per case | block buffer |
-
-Total running time grows with the input size, not with the number of cases alone.
-
-| measure | Big O |
+| metric | cost |
 |---|---|
-| time | O(N) over all input integers |
-| space | O(3000) fixed working arrays |
+| time | O(N) |
+| space | O(max n) |
 
-Sorting every difference list would cost O(n log n) per case; marking keeps each case linear.
+Summing over `N` total sequence integers across all cases runs linearly with memory bounded by the longest sequence.
