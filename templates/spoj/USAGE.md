@@ -13,10 +13,9 @@ CODE/
   test.sh        compile, byte diffs, hard timeouts, time and output gates
   README.md      five fixed explanation sections
   in/  out/      generated test data, ignored by git
-  .gitignore     local build artifacts
 ```
 
-Create a new problem with `bin/new.sh CODE LIMIT_MS`, then copy `solution.nim`, `gen.py`, `README.md` and `.gitignore` from this template. The scaffold supplies `test.sh` with the judge limit substituted. Use the limit from `.spoj/limits.tsv` and from the problem page.
+Create a new problem with `bin/new.sh CODE LIMIT_MS`, then copy `solution.nim`, `gen.py` and `README.md` from this template. The scaffold supplies `test.sh` with the judge limit substituted. Use the limit from `.spoj/limits.tsv` and from the problem page.
 
 ## Program shape
 

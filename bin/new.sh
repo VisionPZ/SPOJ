@@ -7,5 +7,4 @@ root=$(dirname "$0")/..
 mkdir -p "$root/$code/in" "$root/$code/out" "$root/$code/build"
 sed "s/__LIMIT_MS__/$limit/" "$root/bin/test_template.sh" > "$root/$code/test.sh"
 chmod +x "$root/$code/test.sh"
-printf 'build/\nin/\nout/\ngot_*.txt\n.nimcache/\n__pycache__/\n' > "$root/$code/.gitignore"
 echo "$code scaffold ready (limit ${limit} ms)"

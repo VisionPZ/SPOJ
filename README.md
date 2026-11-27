@@ -1,10 +1,10 @@
-# SPOJ — 1328 problems, one method
+# SPOJ — 1350 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1328 problems](https://img.shields.io/badge/problems-1328-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1350 problems](https://img.shields.io/badge/problems-1350-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1328 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1350 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
   Judge-restricted problems use `solution.cpp` (`NUMTH02`, `PLATON`, `QTREE`, `RAHIA`, `SIS110G401`), `solution.c`, `solution.bf`, or `solution.java` where Nim is not accepted. Algebra-heavy problems such as `PERIOD5` also use `solution.cpp`.
@@ -14,7 +14,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed.
 
-## The 1328 problems
+## The 1350 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -140,7 +140,7 @@ KMP, borders, tries and rolling hashes keep matching linear. Expression parsing 
 | [STRMATCH](STRMATCH/README.md) | Build a suffix automaton once, like a compressed map of every substring, and walk each query through it in linear time. Each state stores the number of end positions of its substrings, which is exactly the occurrence count. | O(N alphabet + total query length) |
 | [EDIT](EDIT/README.md) | Checking a word against an alternating pattern is like laying two checkerboard strips over a row of tiles and counting mismatches. Count uppercase-first mismatches in one pass; the other pattern disagrees at the remaining positions. | O(N) |
 
-### Geometry & grids (106)
+### Geometry & grids (110)
 
 Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans. Grid fills and pixel sweeps cost O(area). Exact area and convexity formulas stay O(n) per shape.
 
@@ -252,8 +252,12 @@ Sorting plus a sweep gives O(n log n) for most hulls, bands and hull-based scans
 | [ZEBRA](ZEBRA/README.md) | Only people with your crossing time can collide. Think of picking a lane on a crosswalk and counting paths that cross your own. | O(n) |
 | [ADAKOHL](ADAKOHL/README.md) | Every line passes through at least one kohlrabi, so pick that one as an anchor, like choosing a hub before grouping spokes. From the hub, reduce each direction to a primitive integer vector; all points with the same vector lie on the same line. | O(1) |
 | [G11182](G11182/README.md) | Picture each vertical word as a ribbon hanging from a hook, with the shared letter at hook height. Two hooks share one horizontal baseline. The leading cross is the earliest horizontal letter found in the vertical word, paired with its earliest position there. | O(L) per line for L input characters |
+| [AFS3](AFS3/README.md) | Rewrite `S(N)` using all divisors instead of proper divisors. Adding all `i` from `1` to `N` adds `N * (N + 1) / 2`. That total sum equals `sum d * floor(N / d)` over `d = 1..N`. | O(M log M + T_large * N^(1/3) log N) |
+| [SAMER08F](SAMER08F/README.md) | Group squares by side length like stacking smaller tiles over larger ones: a grid of side `N` holds `(N - k + 1)^2` squares of side `k`, summing to `1^2 + 2^2 + ... | O(T) |
+| [AE00](AE00/README.md) | Fix the shorter side `height` and count all valid widths directly in one division, like counting shelves up to length `N / height`. Requiring `height <= width` prevents counting rotated duplicates, bounding `height` at `sqrt(N)`. | O(sqrt(N)) |
+| [NSTEPS](NSTEPS/README.md) | Check whether `(xCoord, yCoord)` lands on either diagonal track, like checking mileposts along two parallel rails. Numbers sit exclusively on `xCoord == yCoord` or `xCoord == yCoord + 2`, with value `xCoord + yCoord` at even columns and `xCoord + yCoord - 1` at odd columns. | O(N) |
 
-### Graphs & trees (95)
+### Graphs & trees (98)
 
 BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong components and flow add one linear pass. The cost tracks edges, not vertices alone.
 
@@ -354,8 +358,11 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [CATER](CATER/README.md) | Count connected groups at their highest station, like counting family reunions by the eldest relative present. Root the tree, then combine child polynomials at each station with a knapsack convolution. | O(N times K squared) |
 | [LISTREE](LISTREE/README.md) | Think of each starting vertex as the first card in a hand, then walk every route and lay down more cards, like dealing along a branching path. Patience sorting reads each route in order and keeps the smallest useful tail for every subsequence length. | O(N^2 log N) in the worst case |
 | [OMWG](OMWG/README.md) | Think of every shared side as a ticket that gets cashed when its second cell is colored, like a turnstile that charges only on the way out. Count side-adjacent pairs directly; no ordering search is needed. | O(1) |
+| [BUGLIFE](BUGLIFE/README.md) | Track relative gender parity inside a disjoint-set union (`parent`, `parity`), like linking magnets pole-to-pole and flagging any contradiction around a loop. Every edge forces its endpoints to hold opposite parity (`xor 1`), so a conflict happens only when two endpoints already share a component with identical root parity. | O(M * alpha(N)) |
+| [PT07Y](PT07Y/README.md) | Merge connected vertices using a disjoint-set union (`parent`), like tying beads together and checking that no tie forms a loop. A graph with `N` vertices and `N - 1` edges is a tree if and only if every merge joins two separate components, leaving `components == 1`. | O(N + M * alpha(N)) |
+| [PT07Z](PT07Z/README.md) | Run two breadth-first sweeps (`bfsFarthest`), like finding one corner of a sprawling maze from the entrance and then walking from that corner to the farthest dead end. The first sweep from node `1` finds one endpoint of a longest path, and the second sweep from that endpoint measures the true diameter. | O(N) |
 
-### Dynamic programming (88)
+### Dynamic programming (90)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -449,8 +456,10 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [MOWGLI](MOWGLI/README.md) | Treat the far bank as one extra stone, like counting stair climbs with strides of at most K + 1 steps. A crossing becomes a composition of A + 1 whose parts are legal jump lengths. | O(D times maxA + R) |
 | [SHUB1307](SHUB1307/README.md) | Track which totals are possible at each tile, like crossing a bridge and marking every weight the bridge can still carry. Store all totals from zero to `K` as bits in one row of machine words. | O(1) |
 | [FARIDA](FARIDA/README.md) | Walking past the monsters is like picking houses along a street where you cannot visit two neighbors in a row. Rolling dynamic programming keeps only the best totals from one and two steps back. | O(N) |
+| [ACODE](ACODE/README.md) | Walk the digit string left to right while holding only the previous two decoding counts, like climbing stairs with one-step and two-step strides. At index `idx`, a nonzero single digit extends `prevOne`, while a two-digit number from `10` to `26` extends `prevTwo`. | O(L) |
+| [EDIST](EDIST/README.md) | Slide a two-row edit table down string `A` against string `B`, like comparing two spelled lines while keeping only last row's tally on scratch paper. Each cell takes the minimum of replacing (`prevRow[col - 1]`), deleting (`prevRow[col] + 1`), or inserting (`currRow[col - 1] + 1`). | O(T * lenA * lenB) |
 
-### Number theory & big integers (121)
+### Number theory & big integers (125)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -577,8 +586,12 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NKDIV](NKDIV/README.md) | Treat each prime exponent as a pile of stones. One move takes stones from at most `k` piles. This is like a shopper grabbing items from a few shelves at once. | O(R times sqrt(n) over log n) |
 | [POWFIB](POWFIB/README.md) | Skipping Fibonacci numbers is like counting seats in a row while reserving a few labeled seats. Only about forty-five Fibonacci values fit below the modulus, so binary search finds the Nth gap in a few steps. | O(T log N) |
 | [VECTAR9](VECTAR9/README.md) | The divisibility pattern repeats every product of the primes, like a wallpaper tile that restarts after one full width. One period contains a fixed number of mangu values, so the period index and a local rank replace a huge k. | O(1) |
+| [ACPC10A](ACPC10A/README.md) | Compare the two consecutive gaps like checking steps on a staircase: equal steps mean an arithmetic progression, while unequal gaps mean a geometric progression. Because both ratios stay rational integers here, `thirdTerm * secondTerm div firstTerm` avoids losing fractional ratios such as `8 / 16`. | O(T) |
+| [ETF](ETF/README.md) | Fill an entire totient sieve (`phi`) once like stamping discount rates onto a price catalog, then answer every query by array lookup. Whenever an untouched prime `prime` satisfies `phi[prime] == prime`, multiply every multiple `mult` by `(prime - 1) / prime` via `phi[mult] -= phi[mult] div int32(prime)`. | O(M log log M + T) |
+| [LASTDIG](LASTDIG/README.md) | Use the repeating four-step cycle of units digits under multiplication, like reading hours off a clock after skipping full revolutions. Because every digit `base` repeats its power pattern with period dividing `4` for positive exponents, raising `base` to `((expVal - 1) mod 4) + 1` matches `a^b mod 10` exactly. | O(t) |
+| [WILLITST](WILLITST/README.md) | Test whether `startValue` is a pure power of two via `(startValue and (startValue - 1)) == 0`, like checking a single halving path down to `1`. Any odd number `>= 3` jumps to `3 * (n + 1)`, locking the value inside multiples of `3` forever. | O(1) |
 
-### Greedy, search & enumeration (746)
+### Greedy, search & enumeration (753)
 
 Binary search, greedy scans and bounded BFS keep work near-linear. Some problems enumerate a fixed state space; the bound comes from the spec, not from input size.
 
@@ -1330,8 +1343,15 @@ Binary search, greedy scans and bounded BFS keep work near-linear. Some problems
 | [VECTAR7](VECTAR7/README.md) | A winning point closes the game, so all earlier points form an ordinary arrangement, like shuffling a row of win and loss tokens. If the loser has at most 23 points, the winner's 24 earlier points and the loser's points can appear in any order before the last point. | O(1) |
 | [VECTAR8](VECTAR8/README.md) | Build scary primes by adding one digit at a time on the left, like growing a chain where every link must already be prime. Start from the one-digit primes 2, 3, 5, and 7. | O(1) |
 | [XORRAY](XORRAY/README.md) | Sort numbers into pigeonholes by their XOR coordinate, like dealing one card into each labeled box, then shuffle freely inside each box. A group of f cells contributes f! | O(1) |
+| [BYU15W_4](BYU15W_4/README.md) | Track the scaled army gap on a random-walk grid while both armies are huge, like watching two shrinking sandpiles from a distance before counting individual grains at the end. | O(1) |
+| [CRYPTO](CRYPTO/README.md) | Read the entire input stream in large byte chunks and scan whitespace-delimited tokens without creating per-token string copies. Normalize each token in place as `(neg, lo, hi)` by stripping signs and leading zeros (`-0` normalizes to positive zero). | O(N) |
+| [TPORT](TPORT/README.md) | Every pair `(n, k)` visits all `n` planets using all `n - 1` teleports. If `k > (n + 1) / 2`, flip the line around its center and negate every step (`base`, `step = -1`). | O(n) |
+| [SDF4G](SDF4G/README.md) | Generate only valid numbers directly from shorter prefixes using breadth-first search (`queue`), like growing branches of a digit tree one level at a time. Because every pop yields the smallest unexpanded prefix, appending `lastDigit - 1` before `lastDigit + 1` emits answers already sorted. | O(K) |
+| [TROLLS](TROLLS/README.md) | Translate each troll program into an exact mathematical quantity or fast state-machine walk, like measuring the track length instead of walking a maze twice. Use `BigDigits` base-`10^9` arrays (`bigBase`) for exact huge integers and Floyd's tortoise-and-hare walk for the sliding ring. | O(L + mu + lambda) |
+| [GUESSING](GUESSING/README.md) | Split unknown positions in half with binary search after counting digits, like weighing half a tray of coins against empty slots. Querying six identical digits reports that digit's exact multiplicity via `scoreGuess`. | O(N) |
+| [FASHION](FASHION/README.md) | Sort both arrays ascending and pair positions `0 .. N - 1` straight across. This puts top multipliers together like matching strongest performers. | O(t * N log N) |
 
-### Data structures, bits & simulation (57)
+### Data structures, bits & simulation (56)
 
 Segment trees and Fenwick trees answer each update in O(log n). Bit packing divides a boolean sweep by 64. The rest is fixed-size simulation with constant cost per step.
 
@@ -1391,6 +1411,8 @@ Segment trees and Fenwick trees answer each update in O(log n). Bit packing divi
 | [SQRBR](SQRBR/README.md) | Walk the row left to right and keep one tally per current balance. Think of a tightrope walker who steps up or down but never goes below the ground. | O(n) |
 | [TAUT](TAUT/README.md) | Check every assignment at once by flipping whole rows of a truth table, like stamping an entire page instead of writing each word. One bit per assignment packs 64 rows into a single machine word. | O(L × 2^v) |
 | [NDS](NDS/README.md) | Keep the smallest possible ending value for each subsequence length, like a row of markers that slides left whenever a smaller tail appears. For each array value, find the longest length whose stored tail is strictly smaller. | O(1) |
+| [DQUERY](DQUERY/README.md) | Group queries by their right endpoint using bucket lists (`bucketHead`, `queryNext`), like shelving receipts by checkout date before tallying active items. As `rightPos` sweeps left to right, mark each value only at its rightmost occurrence (`lastSeenPos`) inside a Fenwick tree (`bitTree`). | O((n + q) log n) |
+| [GSS1](GSS1/README.md) | Store four summary numbers (`total`, `pref`, `suff`, `best`) for each segment-tree block (`SegNode`), like recording total profit, best opening streak, best closing streak, and best overall streak per quarter. | O(N + M log N) |
 
 ## License
 

@@ -19,9 +19,10 @@ def fetch(code):
         out = subprocess.run(["curl", "-s", "-m", "25", api],
                              capture_output=True, text=True).stdout
         try:
-            snap = json.loads(out).get(subprocess.run(["curl", "-s", "-m", "25", api],
-                                         capture_output=True, text=True).stdout).get(
-            "archived_snapshots", {}).get("closest", {}).get("url", "")
+            snap = (json.loads(out)
+                    .get("archived_snapshots", {})
+                    .get("closest", {})
+                    .get("url", ""))
         except Exception:
             snap = ""
         if snap:
