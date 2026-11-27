@@ -9,22 +9,21 @@ product, with no leading zeros.
 
 ## Idea
 
-Numbers are stored as lists of base 1 000 000 000 limbs, least significant limb first,
-so a 10 000 digit string becomes 1112 machine integers. Multiplication uses Karatsuba:
-split each number in half, compute the two half products and the product of the two
-half sums, then combine them. Below 24 limbs the schoolbook loop is cheaper. The cost
-is about O(n^1.585) limb operations instead of O(n^2).
+Numbers are stored as lists of base 1 000 000 000 limbs, least significant limb first.
+A 10 000-digit string fits in 1112 machine integers.
+Karatsuba splits each operand in half, computes two half products and one sum product, and combines them.
+Below 24 limbs, the schoolbook loop is faster.
+The cost is about O(n^1.585) limb operations instead of O(n^2).
 
 ## Why It Works
 
-A limb holds nine decimal digits. Splitting at limb `cut` gives `first = low1 + high1 * B^cut`
-and the same for the second number. Three products then rebuild the answer:
-`low1 * low2` at offset 0, `high1 * high2` at offset `2 * cut`, and
-`(low1 + high1) * (low2 + high2)` at offset `cut` minus the other two. Karatsuba replaces
-four half size products with three, so the exponent drops from 2 to log 3 = 1.585.
-The middle term needs `low1 + high1` normalised first: an unnormalised limb can reach
-2 x 10^9, and multiplying two of those overflows the 64 bit accumulator, which is why
-`normalizeLimbs` runs before `combineLimbs`. For the sample, 12345 x 6789 = 83806215
+A limb holds nine decimal digits.
+Splitting at limb `cut` writes `first = low1 + high1 * B^cut` and similarly for the second operand.
+Compute `low1 * low2` at offset 0 and `high1 * high2` at offset `2 * cut`.
+Add `(low1 + high1) * (low2 + high2)` minus both of those terms at offset `cut`.
+Karatsuba trades four half-size products for three, lowering the exponent from 2 to log 3 = 1.585.
+An unnormalized sum limb can reach 2 x 10^9, overflowing a 64-bit product.
+Running `normalizeLimbs` before `combineLimbs` keeps limbs bounded. For the sample, 12345 x 6789 = 83806215
 is produced by the naive path because both numbers fit in one limb.
 
 ## Code
