@@ -24,10 +24,8 @@ once per search, so the cost is linear in the grid size.
 ## Why It Works
 
 In a tree the farthest cell from any start is always an endpoint of a diameter, so a
-second search from it must trace the whole diameter. The grid is stored as one flat
-array of bytes, cell `row * columns + column`; a neighbor is that index plus or minus
-1 (same row, guarded by the column number) or plus or minus `columns` (row above or
-below). Marking is done with a distance array filled with `-1`, which doubles as the
+second search from it must trace the whole diameter. The grid sits in a flat byte array at `row * columns + column`.
+Horizontal neighbors shift by 1 (guarded by column), and vertical neighbors shift by `columns`. Marking is done with a distance array filled with `-1`, which doubles as the
 visited set and the rope length.
 
 ## Code
@@ -157,7 +155,7 @@ for _ in 0 ..< caseCount:
 
 ## Complexity
 
-Each search touches every free cell once and its four neighbors, so one test case
-costs O(C R) time and O(C R) memory for the grid, the distance array and the queue.
+Each search visits every free cell once and checks four neighbors.
+One test case costs O(C R) time and O(C R) space for the grid, distances, and queue.
 Two searches per case: O(2 C R) work, linear. The naive alternative, a search from
 every free cell, costs O((C R)^2) and dies on a 1000 by 1000 grid.
