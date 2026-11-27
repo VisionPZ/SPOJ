@@ -40,8 +40,10 @@ Copy the fixed greeting around the name, like filling a blank on a printed form.
 
 | term | meaning |
 |---|---|
-| `visitorName` | text taken from the first input line |
-| `outputBuffer` | single buffer holding the finished line |
+| `raw` | byte accumulator holding the full input stream |
+| `pos` | start byte index of the visitor name |
+| `end` | end byte index before the line break |
+| `out` | buffered output stream writing the greeting |
 
 One line in, one line out.
 
@@ -57,50 +59,51 @@ Joining the three parts gives the sample output byte for byte.
 
 ## Code
 
-**Bulk input and output.** The stream is read once, then the first line is located by index.
+**Bulk input and name bounds.** The stream is read in chunks once, then two walks isolate the name between line breaks.
 
-```nim
-const flushBlockBytes = 1 shl 17
+```java
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
-
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
+class Main {
+    public static void main(String[] args) throws Exception {
+        InputStream in = System.in;
+        ByteArrayOutputStream raw = new ByteArrayOutputStream();
+        byte[] chunk = new byte[1 << 16];
+        int got;
+        while ((got = in.read(chunk)) > 0) {
+            raw.write(chunk, 0, got);
+        }
+        byte[] data = raw.toByteArray();
+        int pos = 0;
+        while (pos < data.length && (data[pos] == '\n' || data[pos] == '\r' || data[pos] == ' ')) {
+            pos++;
+        }
+        int end = pos;
+        while (end < data.length && data[end] != '\n' && data[end] != '\r') {
+            end++;
+        }
 ```
 
-All input lines are gathered first.
-The buffer flushes only when it grows large.
-Reading once avoids a syscall per line.
+The first walk skips leading whitespace, and the second stops at the first line break.
+Reading in 64 KiB chunks preserves raw UTF-8 bytes without per-line calls.
 
-**Name extraction.** Two index walks isolate the name between the line breaks.
+**Greeting output.** Fixed UTF-8 slices wrap the scanned name slice cleanly.
 
-```nim
-var nameStart = 0
-while nameStart < inputData.len and (inputData[nameStart] == '\n' or inputData[nameStart] == '\r' or inputData[nameStart] == ' '):
-  nameStart += 1
-var nameEnd = nameStart
-while nameEnd < inputData.len and inputData[nameEnd] != '\n' and inputData[nameEnd] != '\r':
-  nameEnd += 1
-let visitorName = inputData[nameStart ..< nameEnd]
-appendOutput("Olá " & visitorName & ", este é seu primeiro programa!")
-outputBuffer.add '\n'
-
-stdout.write outputBuffer
-outputBuffer.setLen 0
+```java
+        OutputStream out = System.out;
+        out.write("Ol\u00e1 ".getBytes(StandardCharsets.UTF_8));
+        out.write(data, pos, end - pos);
+        out.write(", este \u00e9 seu primeiro programa!\n".getBytes(StandardCharsets.UTF_8));
+        out.flush();
+    }
+}
 ```
 
-The first walk skips leading whitespace.
-The second walk stops at the first line break.
-The greeting is written once from the block buffer.
+Writing byte slices directly avoids intermediate string concatenation.
+One flush ends the run.
 
 ## Complexity
 
