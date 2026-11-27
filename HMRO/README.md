@@ -8,27 +8,23 @@ The input lists people by PESEL code with a recruitment office, then closed
 offices each redirected to another office. For every PESEL in the final query
 list, print that PESEL and the office reached by following the redirections.
 
-Each test case lists up to 100 000 boys with their PESEL code and their old
-recruitment office code, then up to 100 000 redirections `old office new office`,
-then up to 100 000 PESEL codes of the boys who are recruited. For every
+Each test case lists up to 100 000 boys with a PESEL code and old office code.
+It then gives up to 100 000 redirections `old office new office` and 100 000 queried PESEL codes. For every
 recruited boy print the PESEL and the office code it reaches after following the
 redirections. Test cases are separated by an empty line in the output.
 
 ## Idea
 
 Every office code is given a slot in a table of all office codes of the test case,
-and each redirection `old new` writes `parent[old] = new`. Following a chain of
-closures then becomes a `find` on that parent array, with path compression, so a
-long chain is walked once and later queries jump straight to the final office.
+and each redirection `old new` writes `parent[old] = new`. Following closures becomes a `find` on that parent array with path compression.
+Each long chain is walked once so later queries jump straight to the final office.
 Boys are found by sorting the PESEL records and binary searching them.
 
 ## Why It Works
 
 PESEL codes are 11 digits, so they overflow a 32 bit integer; keeping them as text
-avoids that and still supports exact lookup, which is all the queries need. Sorting
-the records gives a binary search per query, and the parent array is exactly the
-"office is replaced by at most one other office" relation, so walking parents with
-path compression gives the office the army uses. The step cap in `findTerminal`
+avoids that and still supports exact lookup, which is all the queries need. Sorting records supports binary search per query.
+Since each closed office maps to at most one replacement, path-compressed parent walks find the final office. The step cap in `findTerminal`
 keeps a cyclic list from looping forever.
 
 ## Code
