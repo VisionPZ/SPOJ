@@ -40,7 +40,7 @@ The cacti arrive already sorted. A pair one step apart must be neighbors in that
 2. Therefore a bad pair exists exactly when some consecutive pair has difference 1, which the scan tests for every neighbor.
 3. Once a bad pair is seen the answer cannot change, but the scan keeps reading the remaining numbers so the next case starts at the right token.
 4. The independent oracle uses a different route: it puts all positions in a set and asks whether `x + 1` is in the set for any cactus `x`. Set membership finds the same pairs as the neighbor scan.
-5. In the sample, case 1 has gaps 3, 3, 3 and 5, all safe, while case 2 has cacti at 5 and 6, a gap of 1, so the verdicts are `Survival!` and `Oh no!`.
+5. In case 1, gaps are 3, 3, 3, and 5, which are all safe (`Survival!`). Case 2 has cacti at 5 and 6, leaving gap 1 (`Oh no!`).
 
 | term | meaning |
 |---|---|
