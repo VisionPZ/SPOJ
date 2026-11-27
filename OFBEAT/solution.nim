@@ -12,7 +12,7 @@ const
 
 var inputData = ""
 
-proc readAllInput() =
+proc readInputStream() =
   var chunk = newString(flushBlockBytes)
   var totalBytes = 0
   while true:
@@ -336,7 +336,7 @@ proc solveChordalSetCover(rowCount, colCount: int, rowAdj: seq[seq[int32]]): int
 
   return coverCount
 
-readAllInput()
+readInputStream()
 let caseCount = nextSigned()
 for _ in 0..<caseCount:
   let sectionCount = nextSigned()

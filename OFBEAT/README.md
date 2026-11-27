@@ -98,7 +98,7 @@ Optimization pragmas and checks-off guards speed up the bit work. The word count
 **Bulk input and output.**
 
 ```nim
-proc readAllInput() =
+proc readInputStream() =
   var chunk = newString(flushBlockBytes)
   var totalBytes = 0
   while true:
@@ -446,7 +446,7 @@ Bitsets hold the rows each street crosses. A dominant column covers a whole row 
 **Case driver.**
 
 ```nim
-readAllInput()
+readInputStream()
 let caseCount = nextSigned()
 for _ in 0..<caseCount:
   let sectionCount = nextSigned()
