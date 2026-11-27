@@ -5,6 +5,7 @@ __pycache__/
 build/
 in/
 out/
+stmts/
 got_*.txt
 *.log
 *.tmp

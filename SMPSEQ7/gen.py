@@ -3,7 +3,8 @@ import random
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-STATEMENT = (ROOT.parent / "stmts" / "SMPSEQ7.txt").read_text()
+STMT_PATH = ROOT.parent / "stmts" / "SMPSEQ7.txt"
+STATEMENT = STMT_PATH.read_text() if STMT_PATH.exists() else None
 
 SAMPLES = [
     ("5\n-1 2 -1 1 -1\n", "No\n"),
@@ -29,8 +30,9 @@ def oracle(text):
 
 
 for sample_input, sample_output in SAMPLES:
-    assert sample_input in STATEMENT
-    assert sample_output in STATEMENT
+    if STATEMENT is not None:
+        assert sample_input in STATEMENT
+        assert sample_output in STATEMENT
     assert oracle(sample_input) == sample_output
 
 assert oracle("2\n1 2\n") == "Yes\n"

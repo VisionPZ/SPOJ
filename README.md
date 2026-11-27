@@ -12,7 +12,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 - **`test.sh`** — byte diff, hard kill, time gate, output gate.
 - **`README.md`** — Problem, Idea, Why It Works, Code, Complexity.
 
-Cases are generated, not committed. Statements live in `stmts/`.
+Cases are generated, not committed.
 
 ## The 1321 problems
 
