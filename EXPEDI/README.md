@@ -6,7 +6,7 @@
 
 A truck starts `L` units from a town with `P` units of fuel and burns one unit per unit traveled. Given `N` fuel stops at distances `d` from the town, each with a fuel amount, find the fewest stops needed to reach the town.
 
-Input: an integer `t`, then `t` cases. Each case gives `N`, then `N` lines of `d` and fuel, then one line with `L` and `P`. Output: one integer per case, the minimum stop count, or -1 when the town is unreachable. The distance from the truck to a stop is `L − d`.
+Input: an integer `t`, then `t` cases. Each case gives `N`, then `N` lines of `d` and fuel, then one line with `L` and `P`. Output: one integer per case, the minimum stop count, or -1 when the town is unreachable. The distance from the truck to a stop is `L - d`.
 
 The bounds from the statement and judge:
 
@@ -59,7 +59,7 @@ The program tracks these values:
 
 | Term | Meaning |
 |---|---|
-| `L − d` | distance from the truck to a stop |
+| `L - d` | distance from the truck to a stop |
 | `travelDistance` | target stop distance minus the last stop distance |
 | `currentFuel` | fuel left after the last paid stop |
 | `largestFuel` | largest fuel among passed stops, from `popMaxFuel` |
