@@ -1,6 +1,6 @@
 const firstDigitValue = 48
 
-proc readAllInput(): string =
+proc readInputStream(): string =
   var inputBuffer = ""
   var inputLine = ""
   while readLine(stdin, inputLine):
@@ -38,7 +38,7 @@ proc appendDecrypted(outputBuffer: var string, encryptedValue: int) =
     outputBuffer.add $decryptedValue
   outputBuffer.add '\n'
 
-var inputData = readAllInput()
+var inputData = readInputStream()
 var i = 0
 var outputBuffer = ""
 while true:

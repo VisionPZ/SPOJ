@@ -78,7 +78,7 @@ The extra digit prints as part of the number.
 ```nim
 const firstDigitValue = 48
 
-proc readAllInput(): string =
+proc readInputStream(): string =
   var inputBuffer = ""
   var inputLine = ""
   while readLine(stdin, inputLine):
@@ -134,7 +134,7 @@ The branch handles the four-digit result first. Each append costs constant work 
 **Driver.** The loop ends when the scanner finds no more digits.
 
 ```nim
-var inputData = readAllInput()
+var inputData = readInputStream()
 var i = 0
 var outputBuffer = ""
 while true:
