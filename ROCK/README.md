@@ -37,7 +37,7 @@ The sample input and output:
 
 Score sweet as +1 and sour as −1, then a piece sells when its score is positive. Imagine walking along the stick with a running tally; any stretch ending above where it started can be sold.
 
-The program computes prefix scores. A piece from `j + 1` to `i` sells when `P[i] > P[j]`, and its length is `i − j`. For each score it keeps the best value of `dp[j] − j`. A Fenwick tree (an array that answers prefix maximum queries) finds the best `j` with a smaller score in log time.
+The program computes prefix scores. A piece from `j + 1` to `i` sells when `P[i] > P[j]`, and its length is `i - j`. For each score it keeps the best value of `dp[j] - j`. A Fenwick tree (an array that answers prefix maximum queries) finds the best `j` with a smaller score in log time.
 
 Each step costs O(log N), so a case costs O(N log N). Trying every pair of cut points costs O(N²). Both are small at `N = 200`, but the indexed form scales.
 
@@ -48,7 +48,7 @@ Prefix scores turn each candidate piece into one prefix-maximum query.
 Four facts carry the DP.
 
 1. Each sweet segment adds +1 and each sour segment adds −1. A piece from `j + 1` to `i` is sellable exactly when `P[i] − P[j] > 0`.
-2. The piece length is `i − j`. The DP uses `dp[j] − j` at every earlier score below `P[i]`.
+2. The piece length is `i - j`. The DP uses `dp[j] - j` at every earlier score below `P[i]`.
 3. The Fenwick tree stores `dp[j] − j` at index `P[j] + N + 1`. A prefix maximum up to the current score minus one returns the best eligible `j`.
 4. The offset `N + 1` keeps negative scores at positive indices. A sentinel with score 0 and value 0 seeds the tree.
 
