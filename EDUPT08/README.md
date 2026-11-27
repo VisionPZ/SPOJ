@@ -41,7 +41,7 @@ The real algorithm is a two-pointer merge. Equal values go to the intersection a
 
 ## Why It Works
 
-1. Both `firstSet` and `secondSet` arrive in ascending order.
+1. Both `first` and `second` arrive in ascending order.
 2. When the two cursor values match, the value belongs to both sets.
 3. When they differ, the smaller value belongs only to the union.
 4. Advancing the smaller cursor keeps both lists aligned.
@@ -49,10 +49,10 @@ The real algorithm is a two-pointer merge. Equal values go to the intersection a
 
 | term | meaning |
 |---|---|
-| `firstCursor` | position in the first set |
-| `secondCursor` | position in the second set |
-| `intersectionText` | common values with a trailing space each |
-| `unionText` | all distinct values with a trailing space each |
+| `i` | cursor in the first set `first` |
+| `j` | cursor in the second set `second` |
+| `intersection_empty` | flag checking whether the intersection line is empty |
+| `outbuf` | output buffer writing both result lines |
 
 Each cursor moves forward only, so no value is compared twice.
 
@@ -64,26 +64,48 @@ An empty result line is written as a single space before the newline. This match
 
 **Input and scanner.** One read loop collects the stream, and a digit scanner yields each value.
 
-```nim
-const firstDigitValue = 48
-const flushBlockBytes = 1 shl 17
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
+#define FLUSH_BYTES (1 << 17)
 
-var scanPos = 0
+static unsigned char *indata;
+static size_t inlen;
+static size_t inpos;
 
-proc nextInt(data: string, pos: var int): int =
-  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
-    pos += 1
-  var value = 0
-  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    value = value * 10 + int(data[pos]) - firstDigitValue
-    pos += 1
-  return value
+static void read_all(void) {
+    size_t cap = (size_t)1 << 24;
+    unsigned char *buf = (unsigned char *)malloc(cap + 1);
+    size_t len = 0;
+    for (;;) {
+        ssize_t got = read(0, buf + len, cap - len);
+        if (got <= 0) {
+            break;
+        }
+        len += (size_t)got;
+        if (len == cap) {
+            cap *= 2;
+            buf = (unsigned char *)realloc(buf, cap + 1);
+        }
+    }
+    buf[len] = 0;
+    indata = buf;
+    inlen = len;
+}
+
+static long long next_int(void) {
+    while (inpos < inlen && (indata[inpos] < '0' || indata[inpos] > '9')) {
+        inpos++;
+    }
+    long long value = 0;
+    while (inpos < inlen && indata[inpos] >= '0' && indata[inpos] <= '9') {
+        value = value * 10 + (indata[inpos] - '0');
+        inpos++;
+    }
+    return value;
+}
 ```
 
 The scanner skips spaces and blank lines.
@@ -92,37 +114,72 @@ Values are sorted, so no sorting step appears.
 
 **Input and first pass.** The reader loads both sets and computes the intersection with matched cursors.
 
-```nim
-var outputBuffer = ""
+```c
+static char outbuf[FLUSH_BYTES];
+static size_t outlen;
 
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
+static void flush_out(void) {
+    if (outlen > 0) {
+        fwrite(outbuf, 1, outlen, stdout);
+        outlen = 0;
+    }
+}
 
-let firstSetSize = nextInt(inputData, scanPos)
-let secondSetSize = nextInt(inputData, scanPos)
-var firstSet = newSeq[int](firstSetSize)
-for elementIndex in 0 .. firstSetSize - 1:
-  firstSet[elementIndex] = nextInt(inputData, scanPos)
-var secondSet = newSeq[int](secondSetSize)
-for elementIndex in 0 .. secondSetSize - 1:
-  secondSet[elementIndex] = nextInt(inputData, scanPos)
+static void put_byte(int c) {
+    if (outlen == FLUSH_BYTES) {
+        flush_out();
+    }
+    outbuf[outlen++] = (char)c;
+}
 
-var intersectionText = ""
-var firstCursor = 0
-var secondCursor = 0
-while firstCursor < firstSetSize and secondCursor < secondSetSize:
-  if firstSet[firstCursor] == secondSet[secondCursor]:
-    intersectionText.add $(firstSet[firstCursor])
-    intersectionText.add ' '
-    firstCursor += 1
-    secondCursor += 1
-  elif firstSet[firstCursor] < secondSet[secondCursor]:
-    firstCursor += 1
-  else:
-    secondCursor += 1
+static void put_int(long long value) {
+    char digits[24];
+    int count = 0;
+    if (value < 0) {
+        put_byte('-');
+        value = -value;
+    }
+    do {
+        digits[count++] = (char)('0' + value % 10);
+        value /= 10;
+    } while (value > 0);
+    while (count > 0) {
+        put_byte(digits[--count]);
+    }
+}
+
+int main(void) {
+    read_all();
+    int n = (int)next_int();
+    int m = (int)next_int();
+    static int first[64];
+    static int second[64];
+    for (int i = 0; i < n; i++) {
+        first[i] = (int)next_int();
+    }
+    for (int i = 0; i < m; i++) {
+        second[i] = (int)next_int();
+    }
+    int i = 0;
+    int j = 0;
+    int intersection_empty = 1;
+    while (i < n && j < m) {
+        if (first[i] == second[j]) {
+            put_int(first[i]);
+            put_byte(' ');
+            intersection_empty = 0;
+            i++;
+            j++;
+        } else if (first[i] < second[j]) {
+            i++;
+        } else {
+            j++;
+        }
+    }
+    if (intersection_empty) {
+        put_byte(' ');
+    }
+    put_byte('\n');
 ```
 
 Equal values advance both cursors together.
@@ -131,35 +188,32 @@ Every emitted value carries a trailing space.
 
 **Second pass and output.** A fresh merge builds the union, then both lines are buffered.
 
-```nim
-var unionText = ""
-firstCursor = 0
-secondCursor = 0
-while firstCursor < firstSetSize or secondCursor < secondSetSize:
-  if secondCursor >= secondSetSize or (firstCursor < firstSetSize and firstSet[firstCursor] < secondSet[secondCursor]):
-    unionText.add $(firstSet[firstCursor])
-    unionText.add ' '
-    firstCursor += 1
-  elif firstCursor >= firstSetSize or secondSet[secondCursor] < firstSet[firstCursor]:
-    unionText.add $(secondSet[secondCursor])
-    unionText.add ' '
-    secondCursor += 1
-  else:
-    unionText.add $(firstSet[firstCursor])
-    unionText.add ' '
-    firstCursor += 1
-    secondCursor += 1
-
-if intersectionText.len == 0:
-  appendOutput(" ")
-appendOutput(intersectionText)
-outputBuffer.add '\n'
-if unionText.len == 0:
-  appendOutput(" ")
-appendOutput(unionText)
-outputBuffer.add '\n'
-stdout.write outputBuffer
-outputBuffer.setLen 0
+```c
+    i = 0;
+    j = 0;
+    while (i < n || j < m) {
+        if (j >= m || (i < n && first[i] < second[j])) {
+            put_int(first[i]);
+            put_byte(' ');
+            i++;
+        } else if (i >= n || second[j] < first[i]) {
+            put_int(second[j]);
+            put_byte(' ');
+            j++;
+        } else {
+            put_int(first[i]);
+            put_byte(' ');
+            i++;
+            j++;
+        }
+    }
+    if (n == 0 && m == 0) {
+        put_byte(' ');
+    }
+    put_byte('\n');
+    flush_out();
+    return 0;
+}
 ```
 
 Exhausted sets fall through to the other side.
