@@ -21,9 +21,8 @@ that length reaches the needle length a match ends at the current character.
 ## Why It Works
 
 The failure table stores, for every prefix, the longest shorter prefix that is
-also its suffix. On a mismatch the matched length jumps to that value, which never
-skips a possible match because every candidate start between the old and the new
-length has already been ruled out. Each haystack character is compared a bounded
+also its suffix. On a mismatch, the matched length jumps to that border value.
+Every start position between the old and new lengths is already ruled out, so no match is skipped. Each haystack character is compared a bounded
 number of times: the matched length grows by at most one per character, so the
 total work is linear in the haystack length.
 
