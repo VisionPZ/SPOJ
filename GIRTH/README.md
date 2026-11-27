@@ -41,14 +41,14 @@ Case #2: 3 1 2 4 1
 
 ## Idea
 
-Try each point as the smallest point of a cycle. Run a breadth-first search that only visits larger points, and use an edge joining two different search branches to close a cycle. Keep the shortest length seen so far. A cycle of length L never needs a search deeper than L/2, so once the best length is g, every later search can stop at depth (g - 1) / 2. When a triangle is found, stop entirely: no shorter cycle exists. Then build the smallest tour greedily, always taking the lowest next point that still allows a shortest return.
+Try each point as the smallest point of a cycle. Run a breadth-first search that only visits larger points, and use an edge joining two different search branches to close a cycle. Keep the shortest length seen so far. A cycle of length L needs search depth at most L/2. Once the best length is g, later searches stop at depth (g - 1) / 2. When a triangle is found, stop entirely: no shorter cycle exists. Then build the smallest tour greedily, always taking the lowest next point that still allows a shortest return.
 
 ## Why It Works
 
 1. A breadth-first tree assigns each visited point a depth and one parent.
 2. An edge joining two tree branches closes a cycle through the root; a parent check excludes tree edges.
 3. On any cycle of length L, every point is at breadth-first depth at most L / 2 from the root. Therefore a search limited to depth (g - 1) / 2 still finds every cycle shorter than the current best g.
-4. Roots are visited in increasing order and the best length changes only on a strict improvement, so the root that sets the final length is the smallest root with that length.
+4. Roots are visited in increasing order and the best length updates only on strict improvement. Thus the root setting the final length is the smallest root achieving it.
 5. Three is the smallest possible cycle length, so the whole scan can stop at a triangle.
 6. A generation stamp marks visited points, so no array needs clearing between searches.
 7. Greedy choice is safe: the lowest feasible next point gives the smallest prefix.
