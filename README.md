@@ -1,10 +1,10 @@
-# SPOJ — 1327 problems, one method
+# SPOJ — 1328 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1327 problems](https://img.shields.io/badge/problems-1327-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1328 problems](https://img.shields.io/badge/problems-1328-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1327 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1328 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
   Judge-restricted problems use `solution.cpp` (`NUMTH02`, `PLATON`, `QTREE`, `RAHIA`, `SIS110G401`), `solution.c`, `solution.bf`, or `solution.java` where Nim is not accepted. Algebra-heavy problems such as `PERIOD5` also use `solution.cpp`.
@@ -14,7 +14,7 @@ SPOJ is an online judge: it feeds a program input and checks its output against 
 
 Cases are generated, not committed.
 
-## The 1327 problems
+## The 1328 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -450,7 +450,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [SHUB1307](SHUB1307/README.md) | Track which totals are possible at each tile, like crossing a bridge and marking every weight the bridge can still carry. Store all totals from zero to `K` as bits in one row of machine words. | O(1) |
 | [FARIDA](FARIDA/README.md) | Walking past the monsters is like picking houses along a street where you cannot visit two neighbors in a row. Rolling dynamic programming keeps only the best totals from one and two steps back. | O(N) |
 
-### Number theory & big integers (120)
+### Number theory & big integers (121)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -488,6 +488,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [EASYFACT](EASYFACT/README.md) | Removing every factor of two from n! is like unwrapping a parcel to count the distinct boxes inside; only odd factors set the number of consecutive sums. The count equals the number of odd divisors of n! | O(1) |
 | [ENGCD](ENGCD/README.md) | Imagine trimming a rope: keep the shorter piece and the leftover cut. | O(input bytes + log min(x, y)) |
 | [ENPRIME](ENPRIME/README.md) | Build the product in columns, like doing long multiplication on paper with a fresh carry for each column. The algorithm is grade-school multiplication in base one billion, using int64 arithmetic per step. | O(1) |
+| [FACTMODP](FACTMODP/README.md) | Group the factorial into blocks of size just above the square root of P, like stacking identical crates before counting a warehouse. A product tree and remainder tree evaluate the block polynomial at every block start; transforms over friendly primes reconstruct each coefficient. | O(sqrt(P) log^2 P) |
 | [FAMILY](FAMILY/README.md) | Store each relationship as a big integer (a number held in binary limbs), like keeping a fraction exact instead of rounding it. | O(n² * L) |
 | [FCTORISE](FCTORISE/README.md) | Finding the closest factor pair is like choosing the two nearest whole-number sides of a rectangle with a fixed area. The method takes the largest divisor not above the square root, then derives x and y from that pair. | O(1) |
 | [FCTRL](FCTRL/README.md) | Count the fives hidden in the factorial, like tallying the fives that each multiple contributes to a product. A trailing zero needs one factor 2 and one factor 5, and every factorial holds more twos than fives. The program adds N div 5, N div 25, and each higher power of five that still fits. This divisor-count trick costs a handful of divisions per query. Building N! would cost O(N) work and overflow immediately. Each query uses at most 13 terms, so input and output dominate the run. Takeaway: count factors of five, never the factorial itself. | O(N) |
