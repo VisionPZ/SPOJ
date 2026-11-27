@@ -47,7 +47,7 @@ Exact integer triples make similarity a simple equality test.
 
 Four facts justify the reduction.
 
-1. Apollonius' theorem gives the median on the longest side. With squared sides `x ≤ y ≤ z`, four times the median squared is `median4 = 2x + 2y - z`.
+1. Apollonius' theorem gives the median on the longest side. With squared sides `x <= y <= z`, four times the median squared is `median4 = 2x + 2y - z`.
 2. Scaling by four keeps the two children integral: their squared sides are `(4x, z, median4)` and `(4y, z, median4)`.
 3. Two triangles are similar when their side ratios match. Their squared sides then share one ratio, so dividing by the gcd of all three yields the same primitive triple.
 4. The queue adds a child only when `addShape` returns true. That test marks the child seen, so each style enters the queue once and the process terminates.
