@@ -30,7 +30,7 @@ The sample case:
 
 ## Idea
 
-Two rows are solid bars of n stars. Every row between them has exactly two stars, one on each edge. The left edge walks inward by two columns per row until the middle, then walks back out; the right edge stays the same distance to the right of it, so the gap never changes. Write one row from three pieces: leading spaces, a star, a fixed gap, a star.
+Two rows are solid bars of n stars. Every row between them has exactly two stars, one on each edge. The left edge walks inward by two columns per row until the middle, then walks back out. The right edge keeps a fixed distance to its right, so the gap stays constant. Write one row from three pieces: leading spaces, a star, a fixed gap, a star.
 
 ## Why It Works
 
