@@ -37,7 +37,7 @@ Cutting a wire into `k` equal pieces needs exactly `k - 1` cuts, so `m * (k - 1)
 ## Why It Works
 
 1. Placing `k` pieces end to end in a row needs `k - 1` boundaries between them, and each boundary is one cut that removes `m` meters.
-2. After those losses, `k` pieces of length `L` need `k * L + (k - 1) * m` meters, so the largest feasible `L` is the floor of the leftover length divided by `k`.
+2. With splice losses included, `k` pieces of length `L` need `k * L + (k - 1) * m` meters. Dividing the remaining length by `k` gives the largest feasible `L`.
 3. Trimming the ends means leftover wire is allowed, which floor division models exactly.
 4. When the losses alone exceed `n`, no positive piece fits; clamping the leftover at 0 gives length 0, which the statement guarantees is always possible.
 5. The product `(k - 1) * m` reaches about 10^18, so the arithmetic is done in 64-bit integers to avoid overflow.
