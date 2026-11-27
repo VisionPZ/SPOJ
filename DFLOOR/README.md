@@ -114,7 +114,7 @@ The last floor is all ones, so the three commands are valid.
 **Bulk input and scanner.**
 
 ```nim
-var inputData = stdin.readAll()
+var inputData = readStreamBytes()
 var i = 0
 
 proc skipWhitespace(data: string, i: var int) =
