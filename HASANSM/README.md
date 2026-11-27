@@ -51,7 +51,7 @@ Takeaway: reduce spending to one progression, then use a gcd-like descent.
 2. KitKat totals are exactly the multiples of 7N in price.
 3. For fixed y, the leftover is (P − 7N·y) mod M, an arithmetic progression in y with step −7N.
 4. The loop keeps the best residue seen. If no term wraps past M, the terms strictly increase and the start is already minimal.
-5. When terms do wrap, the Euclidean step replaces (M, step) by (step, M mod step), the same reduction that makes gcd fast, and carries the wrapped minima into the smaller problem.
+5. When terms wrap, the Euclidean step replaces (M, step) with (step, M mod step). This matches the gcd reduction and carries wrapped minima into the smaller problem.
 6. The number of rounds is logarithmic, so 10^10-sized inputs finish instantly.
 
 For the sample, 150 with M = 30 and 7N = 245: no KitKat fits, so the leftover is 150 mod 30 = 0. For 167, 40, 35 the leftover is 167 mod 40 = 7. For 99999989, 31, 31 the step 217 is a multiple of 31, so every leftover equals 99999989 mod 31 = 3.
