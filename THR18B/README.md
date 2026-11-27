@@ -28,11 +28,11 @@ The sample case:
 
 ## Idea
 
-Score every dart by comparing its squared distance from the origin against the squared ring radii 100, 900, 2500, ..., 36100 and stop at the first radius that covers the point. Think of sliding a ruler marked with squared radii: the first mark past the point names the ring. This avoids square roots and floating point entirely, and each shot costs at most ten integer comparisons instead of a distance computation plus a table lookup with rounding risk.
+Score each dart by comparing its squared distance against squared ring radii 100, 900, 2500, ..., 36100. Stop at the first matching ring. Think of sliding a ruler marked with squared radii: the first mark past the point names the ring. This avoids square roots and floating point entirely, and each shot costs at most ten integer comparisons instead of a distance computation plus a table lookup with rounding risk.
 
 ## Why It Works
 
-1. A point lies inside a ring of radius 10, 30, 50, ..., 190 exactly when `x*x + y*y` is at most the square of that radius, so no square root is needed.
+1. A point lies inside ring radius 10, 30, ..., 190 when `x*x + y*y` does not exceed radius squared. That check needs no square root.
 2. The squared ring radii 10, 30, 50, ..., 190 are exactly `ringSquaredLimits`.
 3. Scanning the limits in increasing order finds the innermost ring that contains the point, which is the scored ring.
 4. Points past the last limit fall through the loop and keep `shotScore = 0`.
