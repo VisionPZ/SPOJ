@@ -70,7 +70,7 @@ The program picks the outsider plus one member of the pair. The reported diversi
 
 **Bulk input scanner.**
 ```nim
-proc readAllInput() =
+proc readInputStream() =
   var chunk = newString(flushBlockBytes)
   var totalBytes = 0
   while true:

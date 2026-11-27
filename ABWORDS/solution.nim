@@ -24,7 +24,7 @@ const
 
 var inputData = ""
 
-proc readAllInput() =
+proc readInputStream() =
   var chunk = newString(flushBlockBytes)
   var totalBytes = 0
   while true:
@@ -1250,7 +1250,7 @@ proc solveGroup(uniqueExacts: seq[int32]): int =
   return solveIndependentSet(fullMask, 0)
 
 initWeights()
-readAllInput()
+readInputStream()
 
 let caseCount = nextInt()
 for _ in 0..<caseCount:
