@@ -67,8 +67,7 @@ Exact powers are snapped upward only when their raised value matches the input e
 
 ## Code
 
-**Constants.**
-
+**Constants**.
 ```nim
 import math
 
@@ -83,8 +82,7 @@ type BigNumber = seq[int32]
 ```
 
 
-**Limb arithmetic.**
-
+**Limb arithmetic**.
 ```nim
 proc trimBig(value: var BigNumber) =
   while value.len > 0 and value[value.len - 1] == 0:
@@ -195,8 +193,7 @@ proc divideSmall(value: BigNumber, divisor: int32): BigNumber =
 ```
 
 
-**Scaling.**
-
+**Scaling**.
 ```nim
 proc powerOfTen(digitCount: int): BigNumber =
   var value: BigNumber = @[int32(1)]
@@ -234,8 +231,7 @@ proc divideByPowerOfTen(value: BigNumber, digitCount: int): BigNumber =
 ```
 
 
-**Parsing and normalization.**
-
+**Parsing and normalization**.
 ```nim
 proc decimalLength(value: BigNumber): int =
   if value.len == 0: return 1
@@ -364,8 +360,7 @@ proc normalizedValue(digits: string, exponent: int, degree: int): BigNumber =
 ```
 
 
-**Integer powers and fixed division.**
-
+**Integer powers and fixed division**.
 ```nim
 proc powerInteger(base: BigNumber, exponent: int): BigNumber =
   var answer: BigNumber = @[int32(1)]
@@ -450,8 +445,7 @@ proc divideFixed(numerator: BigNumber, denominator: BigNumber): BigNumber =
 ```
 
 
-**Formatting and input helpers.**
-
+**Formatting and input helpers**.
 ```nim
 proc formatSignificant(value: BigNumber): string =
   if value.len == 0: return "0"
@@ -487,8 +481,7 @@ proc nextToken(inputData: string, position: var int): string =
 ```
 
 
-**Root computation.**
-
+**Root computation**.
 ```nim
 proc initialRootGuess(value: BigNumber, degree: int): BigNumber =
   if value.len == 0: return @[]
@@ -616,8 +609,7 @@ proc nthRootFixed(value: BigNumber, degree: int): BigNumber =
 ```
 
 
-**Bulk input and block output.**
-
+**Bulk input and block output**.
 ```nim
 var inputData: string
 var line: string
