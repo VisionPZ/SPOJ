@@ -23,7 +23,7 @@ The statement's own example:
 
 ## Idea
 
-Write the sequence, then write its differences underneath, then the differences of those, like a pyramid of subtraction. For the triangular numbers the pyramid looks like this:
+Write the sequence, then write its differences underneath, then the differences of those, like a pyramid of subtraction. For the triangular numbers the pyramid works like this.
 
 ```
 1 3 6 10 15
@@ -32,7 +32,7 @@ Write the sequence, then write its differences underneath, then the differences 
    0 0
 ```
 
-Once a row is all zeros, every number below it stays put, so the next number of the row above is its last number plus the last number of the row below. To extend the sequence, append one number to each row from bottom to top, three times, and read the three new tops.
+Once a row is all zeros, every number below it stays put. So the next number of the row above equals its last number plus the last number below. To extend the sequence, append one number to each row from bottom to top, three times, and read the three new tops.
 
 ## Why It Works
 
