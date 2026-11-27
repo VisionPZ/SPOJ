@@ -111,7 +111,7 @@ The scanner skips every non-digit byte, so spaces and line breaks need no specia
 **Tree setup.** A power-of-two base gives every leaf a slot.
 
 ```nim
-let inputData = readAll(stdin)
+let inputData = readStreamBytes()
 var i = 0
 let caseCount = nextInt(inputData, i)
 var outputBuffer = ""
