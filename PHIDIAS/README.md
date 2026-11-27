@@ -56,9 +56,9 @@ Takeaway: two views of one table turn every cut pair into a neighboring read.
 1. A straight cut splits a rectangle into two smaller rectangles, so each subproblem shrinks in one dimension.
 2. A size matching a desired plate needs no cuts, so its waste is zero.
 3. Any other size wastes its whole area, or the sum of the two children's wastes at some cut.
-4. A cut at `x` and a cut at `w − x` use the same pair of children, so testing `x ≤ w div 2` covers every vertical cut. The same holds for height cuts.
-5. `wasteByHeight` stores width `w` in height row `h`. `reversedByHeight` stores that value at `W − w`, so the second child of a vertical cut sits next to the first in a forward scan.
-6. For one width, `reversedColumn` holds height `h` at `H − h`. The two children of a horizontal cut then sit next to each other as well.
+4. A cut at `x` and a cut at `w - x` use the same pair of children, so testing `x <= w div 2` covers every vertical cut. The same holds for height cuts.
+5. `wasteByHeight` stores width `w` in height row `h`. `reversedByHeight` stores that value at `W - w`, so the second child of a vertical cut sits next to the first in a forward scan.
+6. For one width, `reversedColumn` holds height `h` at `H - h`. The two children of a horizontal cut then sit next to each other as well.
 
 The terms in each candidate value:
 
@@ -66,8 +66,8 @@ The terms in each candidate value:
 |---|---|
 | whole waste | area `w × h` when no cut helps |
 | plate size | zero waste when the rectangle matches a desired plate |
-| vertical cut at `x` | `wasteByHeight[x] + reversedByHeight[W − w + x]` in height row `h` |
-| horizontal cut at `y` | `wasteByWidth[y] + reversedColumn[H − h + y]` in width row `w` |
+| vertical cut at `x` | `wasteByHeight[x] + reversedByHeight[W - w + x]` in height row `h` |
+| horizontal cut at `y` | `wasteByWidth[y] + reversedColumn[H - h + y]` in width row `w` |
 | cut bound | `currentWidth div 2` or `currentHeight div 2`, one copy of each pair |
 
 Every candidate adds two earlier table entries, so one sweep settles every case.
