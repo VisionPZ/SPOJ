@@ -56,7 +56,7 @@ Sample output:
 
 Following the circuit is like walking a scavenger hunt where every clue hands you a new number and tells you which box to open next. Direct simulation runs `I` multiply-add steps in `O(I)` time using 64-bit arithmetic.
 
-Converting the password string into a big integer or using arbitrary-precision math adds needless overhead because `54 * 100^8` is under `6 * 10^17`, well below `int64` max (`9.22 * 10^18`).
+Arbitrary-precision math adds needless overhead here. Since `54 * 100^8` stays under `6 * 10^17`, the value fits cleanly in `int64` (`9.22 * 10^18`).
 
 ## Why It Works
 
