@@ -1,27 +1,25 @@
 # G10186 — Cumpleaños Grado 10 (SPOJ)
+
 <https://www.spoj.com/problems/G10186/>
 
 ## Problem
 
-A family holds a raffle with fewer than ten participants in a line.
-Each participant says a number from 0 to 100, and a winning number is written down.
-A participant with a prime number adds the next person's number; otherwise they subtract it.
-The last person uses the previous person's number instead.
-Use absolute values of the results, then print the name and original number of the winner.
+A family holds a raffle with fewer than ten participants standing in a line. Each participant picks a number from `0` to `100`, and one winning target number is chosen.
 
-The input has four lines: the count, the names, the numbers, and the winning number.
+A participant whose own number is prime adds the next neighbor's number, while a non-prime subtracts it. The last participant uses the previous neighbor instead (or `0` when alone). Compare absolute values of these results and print the name and original number of the participant whose result has the smallest absolute distance to the target.
 
-| Item | Bound |
+Constraints and limits for the task:
+
+| item | bound |
 |---|---|
-| Participants | fewer than 10 |
-| Numbers | 0 to 100 |
-| Time limit | 1000 ms |
-| Memory | not stated |
+| participants | `< 10` |
+| numbers and target | `0` to `100` |
+| judge languages | C++ 4.3.2, C, C#, Python 3 (no Nim) |
+| judge limit | 1000 ms, 1536 MB |
 
-The winner is the result closest from above to the winning number.
-When no result reaches it, the largest result wins.
+Scanning the four token groups cleanly in one pass finds the winner directly.
 
-The sample from the statement:
+Sample input and output:
 
 ```
 3
@@ -34,224 +32,70 @@ Juan Pedro Maria
 Pedro 31
 ```
 
+Pedro (`31`, prime) computes `|31 + 76| = 107`, whose distance `19` from `88` beats Juan (`|27 - 88| = 61`) and Maria (`|45 - 88| = 43`).
+
 ## Idea
 
-Choosing the winner is like picking the shortest jump that still clears a bar.
-Results below the bar do not qualify, and the smallest qualifying result wins.
-The program reads four lines, then gives each participant one result.
-A prime number adds its neighbor, and any other number subtracts its neighbor.
-The neighbor is the next person, except for the last person who uses the previous one.
-Each result becomes an absolute value before comparison.
-The program keeps the smallest result at or above the target.
-If none qualifies, it keeps the largest result instead.
-Every step scans at most nine people, so the work is tiny.
+Simulate each participant's arithmetic rule directly, like measuring who lands closest to a target mark on a number line. Because SPOJ compares absolute distance `|resultValue - targetValue|` rather than filtering strictly above the target, track the minimum `diff` and break ties by earliest index.
 
-The rule needs only one pass over the participants.
+Parsing tokens across the whole input buffer handles arbitrary blank lines and compiles cleanly under C++98 (`-std=c++98`).
 
 ## Why It Works
 
-1. A prime number adds the neighbor, and every other number subtracts it.
-2. The last participant has no next neighbor, so they use the previous one.
-3. Taking the absolute value removes the sign from a subtraction result.
-4. A result at or above the target qualifies, and the smallest one wins.
-5. If nothing qualifies, the largest result is the nearest one below.
+1. `isPrimeValue` checks divisors up to `sqrt(value)`, classifying each integer in `0 .. 100`.
+2. Neighbor lookup selects `enteredValues[idx + 1]` for everyone except the last participant, who uses `enteredValues[idx - 1]` (or `0` when `participantCount == 1`).
+3. Taking `raw < 0 ? -raw : raw` keeps only non-negative magnitudes as required.
+4. Selecting strictly smaller `diff = |resultValue - targetValue|` picks the nearest result and preserves earlier participants on ties.
 
-The main terms follow.
+Key identifiers in the program:
 
-| Term | Meaning |
+| term | meaning |
 |---|---|
-| `enteredValues` | the original number of each participant |
-| `neighborValue` | number used for the addition or subtraction |
-| `result` | absolute value after adding or subtracting |
-| `bestAbove` | smallest qualifying result found so far |
-| `largestBelow` | largest result below the target |
+| `participantCount` | number of raffle entrants |
+| `enteredValues` | numbers picked by each participant |
+| `targetValue` | winning target value on the paper |
+| `isPrimeValue` | trial-division primality test |
+| `bestIndex` | index of the winning participant |
 
-The first participant wins a tie, because comparisons are strict.
-
-A trace from `gen.py --trace` for the sample:
-
-```
-Juan 58 minus 31 -> 27
-Pedro 31 plus 76 -> 107
-Maria 76 minus 31 -> 45
-```
-
-Only 107 reaches the target 88, so Pedro wins.
+Worked trace on the sample: Juan (`58`, composite) gives `27` (distance `61`), Pedro (`31`, prime) gives `107` (distance `19`), and Maria (`76`, composite) gives `45` (distance `43`), so Pedro wins with `31`.
 
 ## Code
 
-**Bulk input and line scanners.** This block reads stdin once and finds lines by index.
+**Neighbor evaluation and winner selection.** `main` computes each participant's absolute result and selects the smallest absolute gap to `targetValue`.
 
-```nim
-const firstDigitValue = 48
-const flushBlockBytes = 1 shl 17
-
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
-
-var scanPos = 0
-
-proc readLineBounds(data: string, pos: var int): tuple[first, last: int] =
-  var lineStart = pos
-  while lineStart < data.len and (data[lineStart] == '\n' or data[lineStart] == '\r'):
-    inc lineStart
-  var lineEnd = lineStart
-  while lineEnd < data.len and data[lineEnd] != '\n' and data[lineEnd] != '\r':
-    inc lineEnd
-  pos = lineEnd
-  while pos < data.len and (data[pos] == '\n' or data[pos] == '\r'):
-    inc pos
-  result = (lineStart, lineEnd)
-
-proc nextNameToken(data: string, pos: var int, lineEnd: int): string =
-  while pos < lineEnd and data[pos] <= ' ':
-    inc pos
-  if pos >= lineEnd:
-    return ""
-  let tokenStart = pos
-  while pos < lineEnd and data[pos] > ' ':
-    inc pos
-  return data[tokenStart .. pos - 1]
-
-proc nextNumberInLine(data: string, pos: var int, lineEnd: int): int =
-  while pos < lineEnd and (data[pos] < '0' or data[pos] > '9'):
-    inc pos
-  var value = 0
-  while pos < lineEnd and data[pos] >= '0' and data[pos] <= '9':
-    value = value * 10 + int(data[pos]) - firstDigitValue
-    inc pos
-  return value
+```cpp
+    int bestDiff = -1;
+    int bestIndex = 0;
+    for (int idx = 0; idx < participantCount; idx++) {
+      int currentValue = enteredValues[idx];
+      int neighborValue = 0;
+      if (participantCount == 1) {
+        neighborValue = 0;
+      } else if (idx == participantCount - 1) {
+        neighborValue = enteredValues[idx - 1];
+      } else {
+        neighborValue = enteredValues[idx + 1];
+      }
+      int raw = isPrimeValue(currentValue)
+          ? (currentValue + neighborValue)
+          : (currentValue - neighborValue);
+      int resultValue = raw < 0 ? -raw : raw;
+      int diff = resultValue - targetValue;
+      if (diff < 0) {
+        diff = -diff;
+      }
+      if (bestDiff < 0 || diff < bestDiff) {
+        bestDiff = diff;
+        bestIndex = idx;
+      }
+    }
 ```
-
-Carriage returns and line feeds both end a line.
-Names are cut at whitespace, and numbers are read digit by digit.
-The cursor advances only by index, with no token objects.
-
-**Primality test and output buffer.** This block tests divisors and buffers answer text.
-
-```nim
-proc isPrimeValue(value: int): bool =
-  if value < 2:
-    return false
-  var divisor = 2
-  while divisor * divisor <= value:
-    if value mod divisor == 0:
-      return false
-    inc divisor
-  return true
-
-var outputBuffer = ""
-
-proc flushIfReady() =
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  flushIfReady()
-```
-
-Trial division stops at the square root of the value.
-Values below two are not prime.
-The buffer leaves after reaching 131072 bytes.
-
-**Four-line parse.** This block reads the count, names, numbers, and target.
-
-```nim
-var lineBounds = readLineBounds(inputData, scanPos)
-var countCursor = lineBounds.first
-let participantCount = nextNumberInLine(inputData, countCursor, lineBounds.last)
-
-lineBounds = readLineBounds(inputData, scanPos)
-var nameCursor = lineBounds.first
-var names = newSeq[string](participantCount)
-for index in 0..<participantCount:
-  names[index] = nextNameToken(inputData, nameCursor, lineBounds.last)
-
-lineBounds = readLineBounds(inputData, scanPos)
-var valueCursor = lineBounds.first
-var enteredValues = newSeq[int](participantCount)
-for index in 0..<participantCount:
-  enteredValues[index] = nextNumberInLine(inputData, valueCursor, lineBounds.last)
-
-lineBounds = readLineBounds(inputData, scanPos)
-var targetCursor = lineBounds.first
-let targetValue = nextNumberInLine(inputData, targetCursor, lineBounds.last)
-```
-
-Each call takes the next non-empty line.
-`names` and `enteredValues` keep the same participant order.
-The target is the number on the fourth line.
-
-**Winner scan.** This block computes every result and prints the winner.
-
-```nim
-var haveAbove = false
-var bestAbove = 0
-var bestIndex = 0
-var largestBelow = -1
-var largestBelowIndex = 0
-for index in 0..<participantCount:
-  let currentValue = enteredValues[index]
-  var neighborValue: int
-  if participantCount == 1:
-    neighborValue = currentValue
-  elif index == participantCount - 1:
-    neighborValue = enteredValues[index - 1]
-  else:
-    neighborValue = enteredValues[index + 1]
-  var result: int
-  if isPrimeValue(currentValue):
-    result = currentValue + neighborValue
-  else:
-    result = currentValue - neighborValue
-  if result < 0:
-    result = -result
-  if result >= targetValue:
-    if not haveAbove or result < bestAbove:
-      haveAbove = true
-      bestAbove = result
-      bestIndex = index
-  elif result > largestBelow:
-    largestBelow = result
-    largestBelowIndex = index
-
-if not haveAbove:
-  bestIndex = largestBelowIndex
-
-appendOutput(names[bestIndex])
-appendOutput(" ")
-appendOutput($(enteredValues[bestIndex]))
-appendOutput("\n")
-
-stdout.write outputBuffer
-outputBuffer.setLen 0
-```
-
-A single participant uses their own number as the neighbor.
-The flag records whether any result reaches the target.
-The final write flushes the buffered answer.
 
 ## Complexity
 
-Cost follows the small participant count.
-
-| Phase | Time | Space |
-|---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Primality and scan | at most nine values | two small arrays |
-| Output | one write per 128 KiB block | block buffer |
-
-The count never reaches ten, so the scan stays tiny.
-
-| Measure | Big O |
+| metric | cost |
 |---|---|
-| Time | O(n √v) for n participants and value v |
-| Space | O(n) |
+| time | O(P * sqrt(M)) |
+| space | O(P) |
 
-Testing every possible winner order would be needless work.
-One pass with direct primality tests gives the answer.
+For `P < 10` participants and values bounded by `M = 100`, both runtime and memory are tiny constants.
