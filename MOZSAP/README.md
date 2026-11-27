@@ -4,7 +4,7 @@
 
 ## Problem
 
-This problem has no input. The program must print one fixed line: `Print \C Programming`.
+This problem has no input. The program must print one fixed line: Print \C Programming.
 
 The input section is empty, so the program reads stdin but uses no values. Output holds exactly that line, including the backslash before the letter C.
 
