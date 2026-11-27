@@ -4,7 +4,7 @@
 
 ## Problem
 
-For each test case, take an even number n and write it as a product of primes, one prime per line as `p e` meaning p^e, from the smallest prime upward. Then print the sum of all divisors of n on a line reading `Sum Of Divisiors: X`. A blank line separates the answers of consecutive cases.
+For each test case, take an even number n and factor it into primes. Print one prime per line as `p e` (for p^e) in increasing order. Then print the sum of all divisors of n on a line reading `Sum Of Divisiors: X`. A blank line separates the answers of consecutive cases.
 
 The first line holds t with 1 ≤ t ≤ 100. Each case gives one even n with n ≤ 10^14.
 
