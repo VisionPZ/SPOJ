@@ -1,20 +1,20 @@
-# SPOJ — 1325 problems, one method
+# SPOJ — 1327 problems, one method
 
-![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1325 problems](https://img.shields.io/badge/problems-1325-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
+![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1327 problems](https://img.shields.io/badge/problems-1327-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 ## What it is
 
-SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1325 SPOJ problems. Each folder holds four files:
+SPOJ is an online judge: it feeds a program input and checks its output against a time limit. This repo answers 1327 SPOJ problems. Each folder holds four files:
 
 - **`solution.nim`** — one file, no comments, bulk input, block output.
-  Judge-restricted problems use `solution.cpp` (`NUMTH02`, `PLATON`, `QTREE`, `RAHIA`, `SIS110G401`), `solution.c`, `solution.bf`, or `solution.java` where Nim is not accepted.
+  Judge-restricted problems use `solution.cpp` (`NUMTH02`, `PLATON`, `QTREE`, `RAHIA`, `SIS110G401`), `solution.c`, `solution.bf`, or `solution.java` where Nim is not accepted. Algebra-heavy problems such as `PERIOD5` also use `solution.cpp`.
 - **`gen.py`** — independent oracle that generates sample, edge, wide, random and max-output cases.
 - **`test.sh`** — byte diff, hard kill, time gate, output gate.
 - **`README.md`** — Problem, Idea, Why It Works, Code, Complexity.
 
 Cases are generated, not committed.
 
-## The 1325 problems
+## The 1327 problems
 
 Every row links to a full write-up. Cost is the dominant step for one case; `N` means the whole input.
 
@@ -355,7 +355,7 @@ BFS, Dijkstra, Kruskal and union-find run in O(V + E) or O(E log E). Strong comp
 | [LISTREE](LISTREE/README.md) | Think of each starting vertex as the first card in a hand, then walk every route and lay down more cards, like dealing along a branching path. Patience sorting reads each route in order and keeps the smallest useful tail for every subsequence length. | O(N^2 log N) in the worst case |
 | [OMWG](OMWG/README.md) | Think of every shared side as a ticket that gets cashed when its second cell is colored, like a turnstile that charges only on the way out. Count side-adjacent pairs directly; no ordering search is needed. | O(1) |
 
-### Dynamic programming (87)
+### Dynamic programming (88)
 
 Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interval and digit DP trade memory for a single sweep. Meet-in-the-middle halves the exponent.
 
@@ -369,6 +369,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [BAT2](BAT2/README.md) | Picture two shelves: books rise on the left shelf and fall on the right shelf, and each book goes to at most one shelf. The algorithm is a two-track subsequence DP. | O(1) |
 | [BAT3](BAT3/README.md) | Think of a slide with one elevator: you descend freely, and the elevator lifts you once at a marked stop. The algorithm runs two longest decreasing subsequence passes. | O(1) |
 | [BAT4](BAT4/README.md) | Picture a hiker choosing the gentlest steepest step, like picking the easiest rung on a ladder. A minimax DP finds the smallest possible worst climb to every cell. | O(1) |
+| [BEANGAME](BEANGAME/README.md) | Keep only the best energy on each of three tracks after every hurdle, like a runner who remembers the best time in each lane. Five possible moves per state beat trying every full path. | O(levels) |
 | [BIPCSMR16](BIPCSMR16/README.md) | Like seating guests at tables of three, avoid placing three people from one year at the same table. Spend the most crowded year two at a time and use the other years to fill the seats. For `k` teams, a year with count `c` supplies at most `2k` students, and all three years together supply `3k`. | O(input bytes) |
 | [BISHOPS](BISHOPS/README.md) | Give each sloping lane at most one bishop, like parking one car per marked lane. A bishop never leaves its diagonal, so one bishop per lane already fills the board's capacity. | O(total input digits) |
 | [BLOCKS](BLOCKS/README.md) | Treat one minute as one orientation: permute rows or permute columns. Three rounds of row, column, row always suffice, so the program only tests whether 0, 1, or 2 rounds work. A middle matrix captures the two-round case, and a 2-SAT solver (a satisfiability test for paired choices) decides whether that matrix exists. | O(n^2) |
@@ -449,7 +450,7 @@ Most tables are O(n²) or O(n·budget), filled once and reused. Knapsack, interv
 | [SHUB1307](SHUB1307/README.md) | Track which totals are possible at each tile, like crossing a bridge and marking every weight the bridge can still carry. Store all totals from zero to `K` as bits in one row of machine words. | O(1) |
 | [FARIDA](FARIDA/README.md) | Walking past the monsters is like picking houses along a street where you cannot visit two neighbors in a row. Rolling dynamic programming keeps only the best totals from one and two steps back. | O(N) |
 
-### Number theory & big integers (119)
+### Number theory & big integers (120)
 
 Modular exponentiation costs O(log p) per query. Big-integer limbs make multiplication O(n^1.585) with Karatsuba and most other arithmetic linear in digit count.
 
@@ -535,6 +536,7 @@ Modular exponentiation costs O(log p) per query. Big-integer limbs make multipli
 | [NUMPDROM](NUMPDROM/README.md) | Build the reversed number by peeling digits off the right, like moving beads from one side of an abacus to the other. Each peeled digit is appended to a new number. | O(number of digits) |
 | [NUMTHEO01](NUMTHEO01/README.md) | Keep the running product small by reducing it after each factor, like paying down a balance after every purchase. Split the next factor into two small pieces so both partial products stay inside 64 bits. | O(t*n) worst case |
 | [OVISOD](OVISOD/README.md) | Replace the list with its greatest common divisor, then sum that number's divisors. Think of shrinking a group to the largest shared building block. The program factors the gcd by trial division and uses the prime-power sum formula. Testing every candidate up to the gcd costs far more. One factorization and one product give the answer. | O(g) |
+| [PERIOD5](PERIOD5/README.md) | Split the mixed periodic signal into pure periods, like separating a chord into single notes. Cyclotomic polynomials and partial fractions recover each period; a number-theoretic transform does the polynomial work. | O(N^3) |
 | [PITPAIR](PITPAIR/README.md) | Split the odd number 2N + 1 into factors, then turn each factor into an exponent. Think of packing boxes: the largest item goes into the smallest box, because small bases grow slowest. | O(2000 * d) to build, then O(N log N) per case |
 | [PON](PON/README.md) | Probe a number with a few clever arithmetic questions instead of dividing by every smaller number. Think of a few quick checks that rule out most composite numbers at once. | O(1) |
 | [POUR1](POUR1/README.md) | Act out the pouring with one fixed routine, like measuring flour with two cups by always filling the left cup first. The program checks reachability, then plays out two pouring orders and keeps the shorter one. | O(1) |
