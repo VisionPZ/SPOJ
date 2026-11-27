@@ -53,7 +53,7 @@ A single boundary walk determines all three tile counts.
 Four facts carry the counting.
 
 1. Each direction changes the lattice coordinates by a fixed vector. The code names them `directionNorthWest` through `directionWest`.
-2. A side of length `k` passing coordinate `X` adds `k·X` plus the triangular number `k(k − 1)/2` rhombs of type `C`. The paired direction subtracts the same form, and `Y` plays the same role for type `A`.
+2. A side of length `k` passing coordinate `X` adds `k * X` plus the triangular number `k(k - 1)/2` rhombs of type `C`. The paired direction subtracts the same form, and `Y` plays the same role for type `A`.
 3. The update `doubleArea += X·nextY − nextX·Y` sums signed cross-products around the boundary. Its absolute value gives twice the area in unit triangles.
 4. Each rhomb covers two unit triangles, so `doubleArea / 2` is the total number of rhombs. Subtracting `A` and `C` gives `B`.
 
