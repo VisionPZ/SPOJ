@@ -23,7 +23,7 @@ The bounds from the statement:
 
 The million-location bound paired with up to 7 000 cases drives the design. Because `m <= 10 000`, the recurrence values repeat quickly and induce few distinct starting points inside each residue class.
 
-Write `d_eff = d mod N` (replacing `0` by `1` for `N > 1`, since `d = 0` and `d = 1` visit slots in identical order `c_i, c_i + 1, ... mod N`), `g = gcd(d_eff, N)`, `n' = N / g`, and `d' = d_eff / g`. Because `1 <= d_eff < N`, we always have `n' >= 2`.
+Write `d_eff = d mod N`, replacing `0` by `1` for `N > 1`, because `d = 0` and `d = 1` visit slots in identical order. Define `g = gcd(d_eff, N)`, `n' = N / g`, and `d' = d_eff / g`. Because `1 <= d_eff < N`, we always have `n' >= 2`.
 
 The sample case:
 
@@ -40,14 +40,14 @@ The sample answer is six moves.
 
 ## Idea
 
-Instead of maintaining a million-bit bitmap and an 8 MB column lookup table, exploit the fact that every box starts at one of at most `m <= 10 000` values `c_i`.
+Maintaining a million-bit bitmap and an 8 MB table wastes space. Instead, every box starts at one of at most `m <= 10 000` values `c_i`.
 
 Inside any residue class `row mod g`, the starting columns are `(c_i div g + carry) mod n'`. Sorting the distinct starting units splits the cyclic row into contiguous free intervals ("runs"). Each run stores two 32-bit integers: its next free location `slot` and its remaining capacity `cap`. Assigning a box simply reads `runs[r].slot`, advances `slot` by `+d mod N` in registers, and decrements `cap`. Only when a run exhausts (`cap == 0`) does a small DSU merge it into the next run.
 
 Across all three regimes of `g` vs `maxC = max(c_i)`:
 
 - **`g == 1`**: At most `streamLen <= m` runs in the single row (plus one split for `M mod N`). Once `activeRuns == 1`, all remaining boxes fill sequentially in a tight register loop.
-- **`1 < g <= maxC + 1`**: At most `g * ((maxC div g) + 2) <= 30 000` runs total across all `g` rows, fitting inside L2 cache (~240 KB). Tracking `rowActiveRuns` eliminates per-box row fullness checks on the fast path.
+- **`1 < g <= maxC + 1`**: All `g` rows hold at most `g * ((maxC div g) + 2) <= 30 000` runs total. That table fits inside L2 cache (~240 KB). Tracking `rowActiveRuns` eliminates per-box row fullness checks on the fast path.
 - **`g > maxC + 1`**: Only rows `0 .. maxC` receive direct probes (with 2 runs each: carry 0 and carry 1). All remaining rows `maxC + 1 .. g - 1` collapse into a single virtual overflow row filled sequentially row by row.
 
 For the second pass, a single-walker cycle trace stalls on L2/L3 cache latency (one dependent load in flight at a time). Running 24 independent walkers concurrently with work-stealing and write prefetching (`__builtin_prefetch`) keeps ~24 memory loads in flight in parallel. Every vertex in a permutation has in-degree 1, so a walker hitting a visited vertex can only meet one of the 24 active walker origins. Therefore 24 recycled tags detect cycles and merge paths in O(1) space.
@@ -992,10 +992,10 @@ Regime 3 (`classCount > maxC + 1`), bulk overflow fast path, cycle count call, a
     memoCount += 1
 ```
 
-Driver. Single `readAll(stdin)` read and block-flushed output.
+Driver. Single `readStreamBytes()` read and block-flushed output.
 
 ```nim
-let inputData = readAll(stdin)
+let inputData = readStreamBytes()
 var scanPos = 0
 let caseCount = nextInt(inputData, scanPos)
 var outputBuffer = newStringOfCap(flushBlockBytes + 64)
