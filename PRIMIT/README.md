@@ -234,6 +234,6 @@ With `V ≤ 1000`, every pass stays tiny.
 | Time | O(n α(V)) per case, V ≤ 1000 |
 | Space | O(V) for degree and union-find arrays |
 
-`α` is the near-constant inverse Ackermann function from union-find.
+alpha is the near-constant inverse Ackermann function from union-find.
 
 Sorting the pairs into every possible order would take factorial time. Degree imbalance gives the same answer with one linear pass.
