@@ -1,7 +1,7 @@
 import strutils
 const flushBlockBytes = 1 shl 17
 
-proc readAllInput(): string =
+proc readInputStream(): string =
   var inputData = ""
   var line: string
   while readLine(stdin, line):
@@ -82,7 +82,7 @@ proc halveDecimal(digits: string): string =
     i = i + 1
   return dropLeadingZeros(quotient)
 
-var inputData = readAllInput()
+var inputData = readInputStream()
 var i = 0
 var outputBuffer: string
 while true:

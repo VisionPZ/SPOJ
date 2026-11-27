@@ -78,7 +78,7 @@ The carry turns every trailing 9 into 0 and adds a new leading 1. The borrow tur
 import strutils
 const flushBlockBytes = 1 shl 17
 
-proc readAllInput(): string =
+proc readInputStream(): string =
   var inputData = ""
   var line: string
   while readLine(stdin, line):
@@ -189,7 +189,7 @@ The direction flips here because division walks left-to-right. `remainder` can o
 **Driver.** One case produces two lines, and output goes out in 128 KiB blocks.
 
 ```nim
-var inputData = readAllInput()
+var inputData = readInputStream()
 var i = 0
 var outputBuffer: string
 while true:
