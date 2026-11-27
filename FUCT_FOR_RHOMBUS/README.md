@@ -28,7 +28,7 @@ The sample case:
 
 ## Idea
 
-Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. That distance grows by one each row down to the middle, then shrinks back. The left star moves two columns left per step and the right star moves two columns right, so a row is written from three pieces: spaces, a star, a gap, a star.
+Each row has at most two stars, one on the left edge and one on the right edge. Measure how far a row is from the nearest pointy end. That distance grows by one each row down to the middle, then shrinks back. The left star moves two columns left per step while the right star moves two columns right. Each row is built from spaces, a star, a gap, and a star.
 
 ## Why It Works
 
