@@ -7,8 +7,8 @@
 Coins of known weights and prices fill a piggy bank of known empty and full
 weights. Find the minimum cash that the coins inside must be worth.
 
-For each test case you get the empty and filled pig weights (`1 <= E <= F <= 10000`
-grams), then `N <= 500` coin types with a price `P` and a weight `W`. Coins may be
+Each test case gives empty and filled pig weights (`1 <= E <= F <= 10000` grams).
+It then lists `N <= 500` coin types, each with price `P` and weight `W`. Coins may be
 used any number of times. Find the cheapest way to reach the weight difference
 exactly; print `The minimum amount of money in the piggy-bank is X.` or
 `This is impossible.`.
@@ -26,9 +26,8 @@ pass over the target weight, so O(N F) work per test case.
 Processing `t` from the coin weight upward means `best[t - weight]` may already
 contain this same coin, so copies are free. Every combination of coins is generated
 in at least one pass: after all coins are processed, `best[t]` holds the cheapest
-total among all multisets of coins weighing `t`. An unreachable weight keeps the
-sentinel `impossiblePrice = 1 shl 29`, which is larger than any real answer
-(10 000 grams of the cheapest coin costs at most 50 000 x 10 000 = 5 x 10^8).
+total among all multisets of coins weighing `t`. Unreachable weights keep the sentinel `impossiblePrice = 1 shl 29`.
+That bound exceeds any valid cost, since 10 000 coins of price 50 000 total 5 x 10^8.
 For the sample, target 100 with coins (price 1, weight 1) and (price 30, weight 50)
 gives 60, since two 50 gram coins beat one hundred 1 gram coins.
 
@@ -139,6 +138,6 @@ stdout.write(output)
 
 ## Complexity
 
-Time per test case is O(N (F - E)) plus the token parsing, at most 500 x 10 000 =
-5 x 10^6 steps; space is O(F - E), at most 10 001 integers. The naive form, trying
+Each test case takes O(N (F - E)) time plus parsing, at most 5 x 10^6 steps.
+Space is O(F - E), storing at most 10 001 integers. The naive form, trying
 every multiset of coins, is exponential.
