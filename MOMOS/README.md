@@ -43,7 +43,7 @@ Takeaway: small N means a table, small K means subsets.
 ## Why It Works
 
 1. A pig with hunger a eats exactly the multiples of a in 0..N-1.
-2. If hunger h is a multiple of a kept hunger g, every multiple of h is a multiple of g, so h adds no new eaten momos and can be removed.
+2. Suppose hunger h is a multiple of a kept hunger g. Every multiple of h is already a multiple of g, so h adds nothing and can be dropped.
 3. Inclusion-exclusion over the kept hungers counts each momo in the union exactly once: add odd-sized subsets, subtract even-sized ones.
 4. The multiples of L in 0..N-1 are 0, L, 2L, ..., so their count is (N-1) div L + 1.
 5. Each subset LCM is built from the subset with its lowest bit removed, one table entry per mask.
