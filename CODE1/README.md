@@ -66,7 +66,7 @@ The uniqueness argument uses a common factor g:
 | --- | --- |
 | `N` | `Br² + Bi²`, the squared modulus |
 | `largestDigit` | largest square strictly below N |
-| `g` | gcd (greatest common divisor) of `|Br|` and `|Bi|` |
+| `g` | gcd (greatest common divisor) of `abs(Br)` and `abs(Bi)` |
 | smallest divisible real integer | `g × (b² + c²)`, at least the modulus |
 | `maxDigitCount` | cap of 101 digits |
 
