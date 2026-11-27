@@ -4,171 +4,98 @@
 
 ## Problem
 
-Pispirito has a list of non-negative integers. He picks one integer step, then adds that step to some entries, subtracts it from others, or leaves entries alone. Each entry changes at most once. All entries must end equal. Decide whether some step exists.
+Given a list of `n` non-negative integers, choose one integer step `x` and either add `x`, subtract `x`, or leave each entry unchanged so every entry reaches the same value. Print `Si` if such an `x` exists, otherwise `No`.
 
-Input: one line with the entry count, then one line with the entries.
-Output: `Si` when a step exists, otherwise `No`. The sample uses Spanish words.
+Input starts with `n`, followed by `n` integers on the next line. Output prints `Si` or `No` matching the sample output format.
 
-| Item | Bound |
+Constraints and limits for the task:
+
+| item | bound |
 |---|---|
-| Entries | 1 to 100000 |
-| Entry value | 0 to 10^9 |
-| Judge limit | 1000 ms |
+| entries `n` | `1 <= n <= 100000` |
+| entry value | `0 <= a_i <= 10^9` |
+| judge languages | C, C++, C++14, Java, Python 3 (no Nim) |
+| judge limit | 1000 ms, 1536 MB |
 
-Only the count and spacing of distinct values matter.
+Checking distinct value spacing solves the array in `O(n)` without sorting all entries.
 
-Sample input:
+Sample input and output:
 
 ```
 5
 1 3 3 2 1
 ```
 
-Sample output:
-
 ```
 Si
 ```
 
+Choosing `x = 1` adjusts every `1`, `2`, and `3` to `2`.
+
 ## Idea
 
-Think of sliding marks on a ruler by one fixed gap until all marks stack at one point. Call the shared endpoint V. An entry starting at V - step moves up, one at V + step moves down, and one at V stays. No other starting value can reach V.
+Slide distinct numbers along a ruler by one shared step `x`, like lining up three shelves around a middle mark. Any valid list has at most three distinct values forming an arithmetic progression.
 
-So the distinct starting values form at most three equally spaced points. Keep up to four distinct values while scanning. Sort three stored values, then test whether the outer values sum to twice the middle. Each entry costs four comparisons at most, which is constant time.
+Collect up to four distinct numbers during a single scan of the input array. If two or fewer distinct values exist, any gap works; if three exist, sort the three and check equal spacing (`min + max == 2 * mid`).
+
+C++14 runs cleanly on SPOJ in `O(n)` time and `O(1)` extra space.
 
 ## Why It Works
 
-1. Every entry ends at one shared value V.
-2. An entry moves by at most one step, so it starts at V - step, V, or V + step.
-3. Distinct starting values therefore fit a three-point arithmetic progression.
-4. Two or fewer distinct values always admit a step; three need equal spacing.
+1. If all elements end at value `V`, every starting number must equal `V - x`, `V`, or `V + x`.
+2. Four or more distinct numbers require more than three levels, which is impossible with one step `x`.
+3. With one or two distinct numbers, choosing `x = 0` or `x = max - min` aligns all entries at once.
+4. With three sorted values `v0 < v1 < v2`, `v0 + v2 == 2 * v1` ensures `V = v1` and `x = v1 - v0` balance both ends.
 
-| Term | Meaning |
+Key identifiers in the program:
+
+| term | meaning |
 |---|---|
-| `step` | the chosen integer x |
-| `V` | the final common value |
-| `levels` | distinct starting values |
-| `middle` | median of three levels |
+| `elementCount` | total entries `n` in the array |
+| `distinctValues` | fixed array capturing up to four distinct numbers |
+| `distinctCount` | count of distinct numbers seen so far (`0 .. 4`) |
+| `canEqualize` | boolean decision emitted as `Si` or `No` |
 
-Equal spacing makes the step an integer, since the outer difference is even.
-
-Script-generated example from `gen.py`:
-
-```
-values: 1 3 3 2 1
-distinct levels seen: 1 3 2
-sorted levels: 1 2 3
-outer plus inner: 1 + 3 = 4
-twice middle: 2 * 2 = 4
-verdict: Si
-```
-
-The traced sample matches the sample answer `Si`.
+Worked trace on `1 3 3 2 1`: `distinctValues` collects `{1, 3, 2}`, sorting yields `{1, 2, 3}`, and `1 + 3 == 2 * 2` confirms `Si`.
 
 ## Code
 
-**Input scanner and output buffer.** This block reads every line into one string and provides index-based scanning.
+**Distinct-level filter.** `main` scans `elementCount` numbers while storing at most four distinct values.
 
-```nim
-const firstDigitValue = 48
-const flushBlockBytes = 1 shl 17
-
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
-
-var scanPos = 0
-
-proc nextInt(data: string, pos: var int): int =
-  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
-    pos += 1
-  var value = 0
-  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    value = value * 10 + int(data[pos]) - firstDigitValue
-    pos += 1
-  return value
-
-proc nextToken(data: string, pos: var int): string =
-  while pos < data.len and data[pos] <= ' ':
-    pos += 1
-  var token = ""
-  while pos < data.len and data[pos] > ' ':
-    token.add data[pos]
-    pos += 1
-  return token
-
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
+```cpp
+  for (int64_t idx = 0; idx < elementCount; idx++) {
+    int64_t currentValue = nextInt64(inputData, scanPos);
+    bool alreadySeen = false;
+    for (int slot = 0; slot < distinctCount; slot++) {
+      if (distinctValues[slot] == currentValue) {
+        alreadySeen = true;
+        break;
+      }
+    }
+    if (!alreadySeen && distinctCount < 4) {
+      distinctValues[distinctCount] = currentValue;
+      distinctCount++;
+    }
+  }
 ```
 
-The scanner skips separators and consumes decimal digits by index. `nextToken` handles string tokens. The buffer flushes at 128 KiB.
+**Spacing decision.** Only two or fewer distinct levels or three equally spaced levels pass.
 
-**Distinct-level decision.** This block collects distinct values and decides the answer.
-
-```nim
-let elementCount = nextInt(inputData, scanPos)
-var distinctValues: array[4, int]
-var distinctCount = 0
-for elementIndex in 0..<elementCount:
-  let currentValue = nextInt(inputData, scanPos)
-  var alreadySeen = false
-  for slotIndex in 0..<distinctCount:
-    if distinctValues[slotIndex] == currentValue:
-      alreadySeen = true
-      break
-  if not alreadySeen and distinctCount < 4:
-    distinctValues[distinctCount] = currentValue
-    distinctCount += 1
-
-var canEqualize = false
-if distinctCount <= 2:
-  canEqualize = true
-elif distinctCount == 3:
-  var firstValue = distinctValues[0]
-  var secondValue = distinctValues[1]
-  var thirdValue = distinctValues[2]
-  if firstValue > secondValue:
-    swap firstValue, secondValue
-  if secondValue > thirdValue:
-    swap secondValue, thirdValue
-  if firstValue > secondValue:
-    swap firstValue, secondValue
-  canEqualize = firstValue + thirdValue == 2 * secondValue
-
-if canEqualize:
-  appendOutput("Si\n")
-else:
-  appendOutput("No\n")
-
-stdout.write outputBuffer
-outputBuffer.setLen 0
+```cpp
+  bool canEqualize = false;
+  if (distinctCount <= 2) {
+    canEqualize = true;
+  } else if (distinctCount == 3) {
+    std::sort(distinctValues, distinctValues + 3);
+    canEqualize = (distinctValues[0] + distinctValues[2] == 2 * distinctValues[1]);
+  }
 ```
-
-The loop stops storing after four distinct values. Three comparisons sort the stored levels. The final write clears any remaining bytes.
 
 ## Complexity
 
-Input is read once, and each entry costs a bounded number of comparisons.
-
-| Phase | Time | Space |
-|---|---|---|
-| Input read | one pass over input bytes | input bytes |
-| Distinct scan | one pass, four comparisons per entry | four slots |
-| Decision | constant time | constant |
-| Output | one write per 128 KiB block | block buffer |
-
-The scan dominates, and the stored levels use fixed space.
-
-| Measure | Big O |
+| metric | cost |
 |---|---|
-| Time | O(n) |
-| Space | O(n) for input, O(1) auxiliary |
+| time | O(n) |
+| space | O(1) |
 
-A naive search tries each candidate step and rebuilds the list; our single scan avoids that cost.
+Scanning all `n` integers performs at most four equality checks per entry using fixed `O(1)` state.
