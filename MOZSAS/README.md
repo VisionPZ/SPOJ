@@ -37,7 +37,7 @@ Odd
 
 ## Idea
 
-Throw away the numbers and count positions. Every `2 × x` term is even, so it cannot change the parity of a sum; only the `2 × x + 1` terms, which sit at even positions, flip it. So a query is Odd exactly when the window `[l, r]` holds an odd number of even positions. Think of a row of light switches where only some flips matter: you only need to know how many of those special switches were touched. The count of even positions up to r is `r div 2`, so the window count is `r div 2 - (l - 1) div 2`, done in two divisions. Adding the window term by term costs up to 100000 additions per query.
+Throw away the numbers and count positions. Every `2 × x` term is even and keeps sum parity unchanged. Only `2 × x + 1` terms at even positions flip the parity. So a query is Odd exactly when the window `[l, r]` holds an odd number of even positions. Think of a row of light switches where only some flips matter: you only need to know how many of those special switches were touched. The count of even positions up to r is `r div 2`, so the window count is `r div 2 - (l - 1) div 2`, done in two divisions. Adding the window term by term costs up to 100000 additions per query.
 
 ## Why It Works
 
