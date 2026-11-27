@@ -101,7 +101,19 @@ proc appendResultLine(outBuf: var string, sampleId: int, areaValue: float64) =
   outBuf.add char(48 + int(fracPart mod 10))
   outBuf.add '\n'
 
-var inputData = readAll(stdin)
+proc readStreamBytes(): string =
+  var res = ""
+  var chunk = newString(1 shl 16)
+  while true:
+    let got = readBuffer(stdin, addr chunk[0], chunk.len)
+    if got <= 0:
+      break
+    let oldLen = res.len
+    res.setLen(oldLen + got)
+    copyMem(addr res[oldLen], addr chunk[0], got)
+  return res
+
+var inputData = readStreamBytes()
 var i = 0
 var outputBuffer = ""
 var siteXs: array[maxSamples, float64]
