@@ -30,7 +30,7 @@ Sample output:
 
 ## Idea
 
-A can with diameter 3 and height 10 holds about 70.65 millilitres of water. Radius is half the diameter. Volume is pi times radius squared times height, and the problem fixes pi at 3.14. The only real choice is how to round to two decimals, so the program lets the C library do it with `%.2f`, the same formatter the judge's own reference output uses.
+A can with diameter 3 and height 10 holds about 70.65 millilitres of water. Radius is half the diameter. Volume is pi times radius squared times height, and the problem fixes pi at 3.14. Rounding to two decimals must match reference precision. The program formats output with C `%.2f`, matching the reference output.
 
 ## Why It Works
 
