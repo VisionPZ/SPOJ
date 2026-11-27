@@ -4,7 +4,7 @@
 
 ## Problem
 
-A coin showing the integer n can be sold for n dollars or split into three coins showing `n div 2`, `n div 3`, and `n div 4`, each rounded down. Find the most dollars obtainable from one coin.
+A coin showing the integer n can be sold for n dollars. It can also split into three coins showing `n div 2`, `n div 3`, and `n div 4`, each rounded down. Find the most dollars obtainable from one coin.
 
 Write best(n) for that answer. Then best(n) equals `max(n, best(n div 2) + best(n div 3) + best(n div 4))`. The bases are `best(0) = 0` and `best(1) = 1`, and for `n >= 2` all three parts are smaller than n.
 
