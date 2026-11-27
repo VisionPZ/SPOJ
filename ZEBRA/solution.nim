@@ -18,7 +18,7 @@ const
 
 var inputData = ""
 
-proc readAllInput() =
+proc readInputStream() =
   var chunk = newString(flushBlockBytes)
   var totalBytes = 0
   while true:
@@ -248,7 +248,7 @@ proc solveGroup(streetWidth, maxSpeed, crossingTime: int,
       addTree(1, 0, treeSize - 1, rank * 2 + 2, atomCount - 1, -1)
   return bestCollisions
 
-readAllInput()
+readInputStream()
 let caseCount = nextInt()
 for _ in 0..<caseCount:
   let peopleCount = nextInt()

@@ -114,7 +114,7 @@ Tangent uses radians per minute. The stamp array marks occupied start coordinate
 **Bulk input and output.**
 
 ```nim
-proc readAllInput() =
+proc readInputStream() =
   var chunk = newString(flushBlockBytes)
   var totalBytes = 0
   while true:
@@ -369,7 +369,7 @@ Distinct far values become tree atoms. Each gap updates two ranges, then queries
 **Case driver.**
 
 ```nim
-readAllInput()
+readInputStream()
 let caseCount = nextInt()
 for _ in 0..<caseCount:
   let peopleCount = nextInt()
