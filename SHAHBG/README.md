@@ -37,7 +37,7 @@ Justice
 
 ## Idea
 
-A new person acts like a bridge between two neighbouring clumps of people, like joining two puzzle pieces with a single snap. Count the occupied neighbours: zero neighbours creates a group, one neighbour extends a group, and two neighbours merge two groups.
+A new person acts like a bridge between two neighboring clumps of people, like joining two puzzle pieces with a single snap. Count the occupied neighbors: zero neighbors creates a group, one neighbor extends a group, and two neighbors merge two groups.
 
 Track occupancy in a boolean array and update one integer per arrival. Each insertion reads two array cells, so the cost per person is constant. Rebuilding all groups after each arrival would cost quadratic time.
 
@@ -46,21 +46,21 @@ One counter and one occupancy array answer every arrival in constant time.
 ## Why It Works
 
 1. A group is a maximal run of consecutive occupied positions.
-2. With no occupied neighbour, the new position starts its own run, so the count rises by one.
-3. With one occupied neighbour, the new position extends that run, so the count stays the same.
-4. With two occupied neighbours, two runs join through the new position, so the count drops by one.
+2. With no occupied neighbor, the new position starts its own run, so the count rises by one.
+3. With one occupied neighbor, the new position extends that run, so the count stays the same.
+4. With two occupied neighbors, two runs join through the new position, so the count drops by one.
 5. Positions are distinct, so an arrival never re-counts an occupied cell.
 
 | term | meaning |
 |---|---|
 | `isOccupied` | array telling whether a position is taken |
-| `occupiedNeighbors` | number of taken neighbours of the new position |
+| `occupiedNeighbors` | number of taken neighbors of the new position |
 | `groupCount` | number of groups after the latest arrival |
 | `positionCapacity` | array size, larger than the largest legal position |
 
 A worked trace from the sample:
 
-| position | neighbours | action | groups |
+| position | neighbors | action | groups |
 |---|---|---|---|
 | 2 | 0 | start | 1 |
 | 4 | 0 | start | 2 |
@@ -109,7 +109,7 @@ The array capacity exceeds the largest stated position.
 The scanner skips spaces and line breaks between positions.
 The output buffer holds complete lines until it reaches the flush size.
 
-**Arrival loop.** Each arrival checks both neighbours and updates the counter.
+**Arrival loop.** Each arrival checks both neighbors and updates the counter.
 
 ```nim
 let peopleCount = nextInt(inputData, scanPos)
@@ -135,13 +135,13 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The left neighbour is checked only above position 1.
-A two-neighbour arrival reduces the counter by one.
+The left neighbor is checked only above position 1.
+A two-neighbor arrival reduces the counter by one.
 `Justice` is written once after all arrivals.
 
 ## Complexity
 
-Each arrival reads two neighbours and writes one line.
+Each arrival reads two neighbors and writes one line.
 
 | phase | time | space |
 |---|---|---|
@@ -157,4 +157,4 @@ The arrival loop dominates both time and output size.
 | space | O(position capacity) |
 
 Recounting every run after each arrival would cost O(Q squared) instead of O(Q).
-The neighbour rule keeps long arrival lists fast.
+The neighbor rule keeps long arrival lists fast.

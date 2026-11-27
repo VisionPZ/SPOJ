@@ -6,7 +6,7 @@
 
 Rain falls vertically onto sloping roof segments, some of which shelter others. Compute the water draining from each segment in one second.
 
-Input: `t` cases. Each starts with `n`, then `n` lines `x1 y1 x2 y2`, the endpoints of one sloping segment. Output: `n` lines, one per segment, giving the litres that drain from that segment.
+Input: `t` cases. Each starts with `n`, then `n` lines `x1 y1 x2 y2`, the endpoints of one sloping segment. Output: `n` lines, one per segment, giving the liters that drain from that segment.
 
 The bounds from the statement:
 
@@ -17,7 +17,7 @@ The bounds from the statement:
 | Overlap | at most 25 segments above any ground point |
 | Judge limit | 2742 ms, 1536 MB |
 
-Rain delivers one litre per metre of horizontal plane per second.
+Rain delivers one liter per meter of horizontal plane per second.
 
 The sample input and output:
 

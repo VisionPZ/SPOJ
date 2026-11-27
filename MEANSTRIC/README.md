@@ -40,7 +40,7 @@ Sample output:
 
 ## Idea
 
-Treat the three means as three ways to summarise one list, like averaging prices, growth rates and speeds. The three-accumulator algorithm sums values, sums logarithms and sums reciprocals in one pass. The geometric mean comes from exponentiating the average log, which avoids multiplying up to a huge product. The arithmetic mean is rebuilt from decimal digits as an exact integer quotient, so half-even rounding at the ninth digit matches the reference. The takeaway is to choose a representation that keeps each mean exact where it matters.
+Treat the three means as three ways to summarize one list, like averaging prices, growth rates and speeds. The three-accumulator algorithm sums values, sums logarithms and sums reciprocals in one pass. The geometric mean comes from exponentiating the average log, which avoids multiplying up to a huge product. The arithmetic mean is rebuilt from decimal digits as an exact integer quotient, so half-even rounding at the ninth digit matches the reference. The takeaway is to choose a representation that keeps each mean exact where it matters.
 
 ## Why It Works
 

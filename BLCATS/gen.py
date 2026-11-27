@@ -17,13 +17,24 @@ def third_color(first, second):
 
 def simulate(colors, steps):
     current = list(colors)
-    for _ in range(steps):
-        size = len(current)
+    size = len(current)
+    if size <= 1:
+        return current
+    seen = {}
+    step = 0
+    while step < steps:
+        state = tuple(current)
+        if state in seen:
+            cycle = step - seen[state]
+            remaining = (steps - step) % cycle
+            return simulate(current, remaining)
+        seen[state] = step
         for index in range(size):
             following = (index + 1) % size
             changed = third_color(current[index], current[following])
             current[index] = changed
             current[following] = changed
+        step += 1
     return current
 
 

@@ -146,7 +146,7 @@ outputBuffer.setLen 0
 
 Sums use 64 bits to hold thousands of values up to 10000.
 Row swapping keeps memory at two rows of N entries.
-One final flush writes every labelled answer line.
+One final flush writes every labeled answer line.
 
 ## Complexity
 
@@ -156,7 +156,7 @@ Each cell does a constant number of comparisons.
 |---|---|---|
 | input read | one pass over both lists | two case arrays |
 | table fill | K times N cell updates | four rows of N entries |
-| output | one labelled line per case | block buffer |
+| output | one labeled line per case | block buffer |
 
 | measure | Big O |
 |---|---|

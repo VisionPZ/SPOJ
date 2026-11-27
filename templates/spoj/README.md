@@ -4,7 +4,7 @@
 
 ## Problem
 
-Open with a 1-2 sentence story hook in everyday language explaining what the world looks like and why the answer matters. State the exact input and output contract in plain terms.
+Open with a 1-2 sentence compact equivalent re-interpretation of the original statement: say what the input describes and what must be computed, in plain words, with no invented setting or story. Then state the exact input and output contract.
 
 The bounds from the statement:
 

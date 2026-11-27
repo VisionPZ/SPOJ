@@ -4,9 +4,11 @@
 
 ## Problem
 
-Write each prime in binary, concatenate the strings, and count the ones in the first N bits. Answer T such prefix queries.
+Write each prime in binary without leading zeros, concatenate the bit strings, and count the 1-bits in the first N bits. Answer T such prefix queries.
 
-The first input line gives T. Each following line gives one N. Print one count per line.
+The first input line gives T. Each following line gives one prefix length N. Print one count per line.
+
+The constraints and judge limits:
 
 | item | bound |
 |---|---|
@@ -15,9 +17,9 @@ The first input line gives T. Each following line gives one N. Print one count p
 | sieve ceiling used | 110000000 |
 | judge limit | 1000 ms, 1536 MB |
 
-The binary forms have no leading zeros. The first few terms are 10, 11, 101, 111, so the stream starts 101110111.
+Primes up to 110 million produce about 161.9 million bits, covering the maximum query.
 
-Sample input:
+Sample input and output:
 
 ```
 3
@@ -26,37 +28,43 @@ Sample input:
 50
 ```
 
-Sample output:
-
 ```
 2
 8
 36
 ```
 
+The stream starts `10` (2), `11` (3), `101` (5), `111` (7), giving 2 ones in the first 3 bits and 8 ones in the first 10 bits.
+
 ## Idea
 
-Treat the stream as a long tape and mark the running one counts at every prime boundary, like page numbers in a book. A binary search finds the last prime that fits wholly inside N, then a short prefix of the next prime finishes the count.
+Treat the stream as a long tape and mark the running one counts at every prime boundary, like page numbers in a book. A binary search finds the last prime that fits inside N, then a short bit scan of the next prime finishes the count.
 
-The sieve covers primes up to 110 million, which yields about 161.9 million bits and exceeds the largest query. Each prime contributes its bit length and its popcount to two prefix arrays. A query costs O(log π(L)); a fresh sieve per query would cost far more.
+A bit-packed odd sieve (one bit per odd integer inside 64-bit words) finds all primes up to 110 million in under 7 MB of memory. Each prime adds its bit width and popcount to two 32-bit prefix arrays. Each query costs O(log π(L)); rescanning primes per query would cost O(T · L).
+
+One shared bit-packed sieve and two prefix arrays answer all 50,000 queries in milliseconds.
 
 ## Why It Works
 
-1. Concatenation is ordered by prime value, so bit offsets are monotone.
-2. `cumulativeBits[k]` stores the bits used by the first k primes.
-3. `cumulativeOnes[k]` stores the ones used by the first k primes.
+1. Primes appear in increasing order, so cumulative bit offsets are strictly increasing.
+2. `cumulativeBits[k]` stores the total bits emitted by the first k primes.
+3. `cumulativeOnes[k]` stores the total 1-bits emitted by the first k primes.
 4. The largest k with `cumulativeBits[k] ≤ N` identifies the last complete prime.
-5. The remaining N − `cumulativeBits[k]` bits come from the next prime, read from its most significant bit.
+5. The remaining `N - cumulativeBits[k]` bits come from the most significant bits of `primeValues[k]`.
+
+The main terms used in the program:
 
 | term | meaning |
 |---|---|
-| `compositeFlags` | odd sieve flags; index i stands for 2i + 1 |
-| `popcountTable` | one-byte lookup for counting bits |
-| `cumulativeBits` | stream offset after each prime |
-| `cumulativeOnes` | one count after each prime |
-| `remainingBits` | partial length taken from the next prime |
+| `compositeBits` | bit-packed odd sieve; bit `index` stands for `2 * index + 1` |
+| `popcountTable` | 16-bit lookup table of bit counts |
+| `cumulativeBits` | stream bit offset after each prime |
+| `cumulativeOnes` | cumulative 1-bit count after each prime |
+| `remainingBits` | partial bit count taken from the next prime |
 
-For N = 10, the table shows the prefixes after the first few primes.
+Packing 64 odd numbers per `uint64` word shrinks the sieve array by 8x so it stays cache-friendly.
+
+Worked prefix table for N = 10:
 
 | prime | binary | cumulative bits | cumulative ones |
 |---|---|---|---|
@@ -65,11 +73,11 @@ For N = 10, the table shows the prefixes after the first few primes.
 | 5 | 101 | 7 | 5 |
 | 7 | 111 | 10 | 8 |
 
-`cumulativeBits` and `cumulativeOnes` use `int32` because their largest values fit in 32 bits. `popcountTable` avoids a second inner loop for each prime.
+At N = 10, binary search lands on prime 7 with `remainingBits = 0` and returns 8.
 
 ## Code
 
-**Input and buffer.** The reader stores all queries before the sieve starts, so the sieve runs once.
+**Input and buffer.** The reader loads all queries once so the sieve runs only once.
 
 ```nim
 import math
@@ -109,22 +117,29 @@ for caseIndex in 0 .. caseCount - 1:
   queryValues[caseIndex] = nextInt(inputData, scanPos)
 ```
 
-All queries are nonnegative, so the scanner needs no minus branch.
-`appendOutput` flushes after `flushBlockBytes` bytes.
-Reading first keeps the sieve work independent of query order.
+All queries are non-negative, so `nextInt` needs no sign branch.
+`appendOutput` flushes in 128 KiB blocks.
+Storing queries first keeps input parsing separate from the sieve.
 
-**Sieve and prefix arrays.** An odd-only sieve produces the primes and their running totals.
+**Bit-packed odd sieve and prefix arrays.** One bit per odd number marks composites up to `sieveLimit`, then one pass builds the prefix arrays.
 
 ```nim
-var popcountTable = newSeq[int](1 shl tableBits)
+var popcountTable = newSeq[uint8](1 shl tableBits)
 for tableIndex in 1 .. (1 shl tableBits) - 1:
-  popcountTable[tableIndex] = popcountTable[tableIndex div 2] + (tableIndex and 1)
+  popcountTable[tableIndex] = popcountTable[tableIndex shr 1] + uint8(tableIndex and 1)
 
-var compositeFlags = newSeq[bool](sieveLimit div 2 + 1)
+let halfLimit = sieveLimit div 2
+var compositeBits = newSeq[uint64]((halfLimit shr 6) + 1)
 let rootValue = int(sqrt(float(sieveLimit))) + 1
-var rootIndex = 1
-while 2 * rootIndex + 1 <= rootValue:
-  rootIndex += 1
+let rootHalf = rootValue div 2
+
+for index in 1 .. rootHalf:
+  if (compositeBits[index shr 6] and (1'u64 shl (index and 63))) == 0'u64:
+    let primeValue = 2 * index + 1
+    var multipleIndex = (primeValue * primeValue) shr 1
+    while multipleIndex <= halfLimit:
+      compositeBits[multipleIndex shr 6] = compositeBits[multipleIndex shr 6] or (1'u64 shl (multipleIndex and 63))
+      multipleIndex += primeValue
 
 var primeValues = newSeq[int32](1)
 primeValues[0] = 2'i32
@@ -139,19 +154,15 @@ var nextBitBoundary = 4
 var bitsSoFar: int32 = 2
 var onesSoFar: int32 = 1
 
-for index in 1 .. sieveLimit div 2:
-  if compositeFlags[index]:
+for index in 1 .. halfLimit:
+  if (compositeBits[index shr 6] and (1'u64 shl (index and 63))) != 0'u64:
     continue
   let primeValue = 2 * index + 1
-  var multipleIndex = (primeValue * primeValue) div 2
-  while multipleIndex <= sieveLimit div 2:
-    compositeFlags[multipleIndex] = true
-    multipleIndex += primeValue
   if primeValue >= nextBitBoundary:
     currentBitLength += 1
     nextBitBoundary = 1 shl currentBitLength
-  let onesInPrime = popcountTable[primeValue and ((1 shl tableBits) - 1)] +
-                    popcountTable[primeValue shr tableBits]
+  let onesInPrime = int(popcountTable[primeValue and ((1 shl tableBits) - 1)]) +
+                    int(popcountTable[primeValue shr tableBits])
   bitsSoFar += int32(currentBitLength)
   onesSoFar += int32(onesInPrime)
   primeValues.add int32(primeValue)
@@ -159,11 +170,11 @@ for index in 1 .. sieveLimit div 2:
   cumulativeOnes.add onesSoFar
 ```
 
-Index i of `compositeFlags` stands for the odd number 2i + 1.
-`currentBitLength` tracks binary width without a logarithm per prime.
-The two prefix arrays hold one entry per prime plus a zero entry.
+Bit `index` in `compositeBits` represents the odd number `2 * index + 1`, using 6.8 MB instead of 55 MB.
+Only primes up to `sqrt(sieveLimit)` mark multiples, and `currentBitLength` tracks binary width without logarithms.
+Two lookups in `popcountTable` count all set bits of each 27-bit prime in O(1).
 
-**Query loop.** Each query finds its last full prime, then reads a partial prefix.
+**Query loop.** Binary search locates the last full prime, and a short shift loop handles any leftover bits.
 
 ```nim
 let primeCount = cumulativeBits.len - 1
@@ -198,25 +209,27 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Binary search uses the upper midpoint to keep progress.
-`remainingBits` is zero when N ends on a prime boundary.
-The final shift loop reads bits from the most significant side.
+Upper midpoint `(lowIndex + highIndex + 1) div 2` avoids an infinite loop when `lowIndex + 1 == highIndex`.
+When `remainingBits` is zero, the answer comes straight from `cumulativeOnes`.
+The final write flushes all remaining output lines.
 
 ## Complexity
 
-The sieve and prefix build run once; queries only search the prefix table.
+The bit-packed sieve and prefix arrays run once; each query does one binary search.
 
 | phase | time | space |
 |---|---|---|
-| input read | one pass over T values | one input string |
-| odd sieve | O(L log log L) for L = 110000000 | L/2 flags |
-| prefix build | O(π(L)) | three arrays of π(L) entries |
-| each query | O(log π(L)) plus a short bit walk | none extra |
-| output | T lines | block buffer |
+| input read | one pass over T queries | one input string |
+| bit-packed odd sieve | O(L log log L) for L = 110000000 | L / 16 bytes (~6.8 MB) |
+| prefix build | O(π(L)) | three `int32` arrays of π(L) entries |
+| each query | O(log π(L)) plus at most 27 bit checks | O(1) |
+| output write | T lines | one 128 KiB buffer |
+
+Packing the sieve into bits reduces sieve memory by 8x while keeping prefix arrays compact.
 
 | measure | Big O |
 |---|---|
 | time | O(L log log L + T log π(L)) |
-| space | O(L) for sieve flags |
+| space | O(L / 16 + π(L)) |
 
-Rebuilding the stream for each query would cost O(T · N) and repeat the same primes. One shared prefix table removes that work.
+Rebuilding the prime bit stream per query would cost O(T · N), whereas one shared prefix table answers every query in logarithmic time.

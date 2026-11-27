@@ -15,7 +15,7 @@ Each input line contains two nonprime integers `x` and `y`, both from 1 to 10000
 | cells precomputed | 141 by 141 |
 | judge limit | 1000 ms, 1536 MB |
 
-Numbers at most 10000 lie within 50 steps of the centre; the extra radius leaves room to detour around prime walls.
+Numbers at most 10000 lie within 50 steps of the center; the extra radius leaves room to detour around prime walls.
 
 Sample input:
 
@@ -43,7 +43,7 @@ For the rest, group queries by their start cell and run one breadth-first search
 
 ## Why It Works
 
-1. The spiral puts consecutive numbers on adjacent cells, so consecutive integers are always neighbours.
+1. The spiral puts consecutive numbers on adjacent cells, so consecutive integers are always neighbors.
 2. Two turns share each run length, giving the sequence 1, 1, 2, 2, 3, 3, and so on.
 3. A sieve marks exactly the prime numbers, which are the blocked cells.
 4. A flood fill labels connected components, so different labels prove no path exists.
@@ -177,7 +177,7 @@ The sieve crosses out multiples starting at each factor's square.
 Two turns share a run length, as the spiral requires.
 The passable flag excludes primes and keeps 1 open.
 
-**Components and query grouping.** Regions are labelled once, and queries share a start list.
+**Components and query grouping.** Regions are labeled once, and queries share a start list.
 
 ```nim
 var componentId = newSeq[int](cellCount)

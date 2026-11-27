@@ -40,7 +40,7 @@ The sample input and output:
 
 ## Idea
 
-Group rectangles like overlapping rubber stamps, then count the distinct ink islands. Sort by left edge so neighbours sit next to each other in the scan.
+Group rectangles like overlapping rubber stamps, then count the distinct ink islands. Sort by left edge so neighbors sit next to each other in the scan.
 
 For rectangle `i`, walk later rectangles `j` while `rects[j].x1 ≤ rects[i].x2`. Unite `i` and `j` when their y-intervals overlap with positive length, or their x-intervals overlap with positive length. A union-find table (a structure that merges groups and finds their representative) tracks the groups.
 

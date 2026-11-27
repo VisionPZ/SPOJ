@@ -31,16 +31,16 @@ The sample case:
 
 ## Idea
 
-A town is within 10 km in box distance exactly when its x and y both differ by at most 10, so each outbreak town covers a square. Sweep a vertical line from left to right: an outbreak town enters the active set at `x - 10` and leaves just after `x + 10`. While the line passes a town, the outbreak towns in the active set that also fall in its y window are its priority. A Fenwick tree over the compressed outbreak y-values counts those in logarithmic time, and a counting sort by priority puts the towns in the required order. This replaces the naive scan of every town against every outbreak town.
+A town is within 10 km in box distance when both x and y differ by at most 10, so each outbreak town covers a square. Sweep a vertical line from left to right: an outbreak town enters the active set at `x - 10` and leaves at `x + 11`. While the line passes a town, active outbreak towns in its y window determine its priority. A Fenwick tree over compressed outbreak y-values counts those in logarithmic time, and counting sort orders the towns by priority. This replaces the naive all-pairs scan.
 
 ## Why It Works
 
 1. Box distance at most 10 means `|dx| ≤ 10` and `|dy| ≤ 10` at once, which is a square region.
-2. An outbreak town is inside that square for a query town of x-coordinate `X` exactly when `ox - 10 ≤ X ≤ ox + 10`, so the event at `ox - 10` adds it and the event at `ox + 10 + 1` removes it before any query with `X ≥ ox + 11`.
+2. An outbreak town covers a query town at `X` when `ox - 10 ≤ X ≤ ox + 10`. The event at `ox - 10` adds it, and the event at `ox + 11` removes it before any query with `X ≥ ox + 11`.
 3. Queries and events are both processed in increasing x, so when a town is queried the tree holds precisely the outbreak towns whose x window contains it.
-4. The tree stores counts at compressed y positions, and the y window `[y - 10, y + 10]` maps to a range of compressed values found by binary search, so the range sum is the priority.
+4. The tree stores counts at compressed y positions. Binary search maps the y window `[y - 10, y + 10]` to a compressed range, and its prefix sum is the priority.
 5. Priorities are integers between 0 and `k`, so bucketing by priority is linear, and towns are placed into their bucket in increasing index order, which gives the required tie-break.
-6. In the sample the only outbreak is town 3 at (0,0): town 2 sits at box distance `max(0, 10) = 10`, which is inside the limit, town 1 sits at `max(0, 11) = 11`, which is not, and town 3 counts itself, so the priorities are 0, 1, 1 and the order is 2 3 1.
+6. In the sample, the only outbreak is town 3 at (0,0). Town 2 sits at box distance `max(0, 10) = 10` (inside), town 1 sits at `max(0, 11) = 11` (outside), and town 3 counts itself. The priorities are 0, 1, 1, so the output order is `2 3 1`.
 
 | Term | Meaning |
 |---|---|

@@ -39,7 +39,7 @@ The sample case:
 
 ## Idea
 
-Walk the zero across the board like a traveller who tracks the distance to every destination. A running score adds the remaining distance of all other tiles.
+Walk the zero across the board like a traveler who tracks the distance to every destination. A running score adds the remaining distance of all other tiles.
 
 Those rules form a graph with twelve vertices and twenty undirected edges. A move slides the zero along one edge and swaps it with the tile there.
 

@@ -40,7 +40,7 @@ Sample output:
 NO CONTEST
 ```
 
-The centre antenna in the second case sits on both diagonals and blocks them.
+The center antenna in the second case sits on both diagonals and blocks them.
 
 ## Idea
 

@@ -44,19 +44,19 @@ Case 2: 18
 
 ## Idea
 
-self-propagation is a fixed linear map, like repeatedly multiplying a vector by one matrix. Fast exponentiation applies that map `log L` times instead of `L` times. Each colony keeps its own viruses and sends one copy to each neighbour, so the matrix has a one on the diagonal and ones at neighbour positions. Take matrix exponentiation as the engine.
+self-propagation is a fixed linear map, like repeatedly multiplying a vector by one matrix. Fast exponentiation applies that map `log L` times instead of `L` times. Each colony keeps its own viruses and sends one copy to each neighbor, so the matrix has a one on the diagonal and ones at neighbor positions. Take matrix exponentiation as the engine.
 
 ## Why It Works
 
-1. A colony with `v` viruses keeps `v` and sends `v` to each neighbour.
-2. The new count at a colony is its old count plus the old counts of its neighbours.
+1. A colony with `v` viruses keeps `v` and sends `v` to each neighbor.
+2. The new count at a colony is its old count plus the old counts of its neighbors.
 3. Reduction modulo `M` commutes with this linear map, so each step may reduce.
 4. The total is the sum of vector entries after `L` applications, without a final reduction.
 5. Binary exponentiation applies powers `A`, `A^2`, `A^4`, and so on.
 
 | term | meaning |
 |---|---|
-| `transition` | matrix with self and neighbour contributions |
+| `transition` | matrix with self and neighbor contributions |
 | `stateVector` | virus count in each colony |
 | `cellCount` | number of colonies, at most 91 |
 | `rowLength` | colony count in one grid row |
@@ -202,7 +202,7 @@ proc totalViruses(gridSize: int, modulus: int64, periods: int64, initialValues: 
   return answerValue
 ```
 
-Neighbour lists follow the row-width changes.
+Neighbor lists follow the row-width changes.
 The diagonal records viruses that stay at home.
 The final sum is not reduced, since it asks for a total.
 
@@ -242,7 +242,7 @@ Each case builds one matrix and squares it once per exponent bit.
 | phase | time | space |
 |---|---|---|
 | input read | one pass over all counts | one input string |
-| matrix build | one pass over colonies and neighbours | two 91-by-91 matrices |
+| matrix build | one pass over colonies and neighbors | two 91-by-91 matrices |
 | exponentiation | about 30 matrix squarings | one vector per set bit |
 | output | one buffered line per case | block buffer |
 

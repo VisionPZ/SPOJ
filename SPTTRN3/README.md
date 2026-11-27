@@ -157,7 +157,7 @@ The program draws five arms per group. Even groups turn clockwise, odd groups tu
 1. Group `k` starts at cell `(2k, 2k)`, so every group begins on the main diagonal.
 2. Group `k` spans from row `2k` to row `s-1-2k`, leaving a one-dot gap to the next group.
 3. Alternating the handedness makes the arms meet the next group at its diagonal start.
-4. Short arms are skipped when the span is too small, which keeps the centre open.
+4. Short arms are skipped when the span is too small, which keeps the center open.
 
 | Term | Meaning |
 |---|---|

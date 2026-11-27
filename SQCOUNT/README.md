@@ -3,7 +3,7 @@
 
 ## Problem
 
-Several non-overlapping rectangular rooms form a museum. Count every axis-aligned square that fits inside one room or crosses a door into a neighbouring room.
+Several non-overlapping rectangular rooms form a museum. Count every axis-aligned square that fits inside one room or crosses a door into a neighboring room.
 
 | item | bound |
 |---|---|
@@ -44,7 +44,7 @@ Counting squares on a tiled floor is like stacking boxes: a wide room holds a pr
 2. Summing that formula over s gives two polynomial terms, so no per-size loop is needed.
 3. Two rooms share a door only along a common side longer than two units.
 4. A crossing square spends a columns in one room and s - a in the other.
-5. Its span along the wall must fit inside the centred door.
+5. Its span along the wall must fit inside the centered door.
 6. The split count is piecewise linear in s, so three arithmetic ranges cover it.
 
 | term | meaning |
@@ -164,7 +164,7 @@ while true:
 ```
 
 Opposing corners are normalised before any width is taken.
-Vertical and horizontal neighbours use the same crossing formula.
+Vertical and horizontal neighbors use the same crossing formula.
 The answer is written once per case.
 
 ## Complexity

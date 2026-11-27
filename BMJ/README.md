@@ -4,7 +4,7 @@
 
 ## Problem
 
-Honeycomb cells form an infinite hexagonal spiral. Willi numbers them clockwise from 1 at the centre, while Maja uses two-dimensional coordinates. Convert each Willi number to Maja coordinates.
+Honeycomb cells form an infinite hexagonal spiral. Willi numbers them clockwise from 1 at the center, while Maja uses two-dimensional coordinates. Convert each Willi number to Maja coordinates.
 
 The input contains one or more integers, each on its own line, all below 100000. Read until end of input. Print one coordinate pair per line, with x and y separated by one space.
 
@@ -38,7 +38,7 @@ Sample output:
 
 ## Idea
 
-Peel the spiral into rings, like counting the turns of a coiled rope. Each ring starts at a known cell, then moves through six straight sides. The method is a direct ring walk with six fixed direction vectors. Scanning outward from the centre for every number costs work proportional to the ring number, while the walk costs constant work per cell. Takeaway: jump straight to the ring, then walk at most six sides.
+Peel the spiral into rings, like counting the turns of a coiled rope. Each ring starts at a known cell, then moves through six straight sides. The method is a direct ring walk with six fixed direction vectors. Scanning outward from the center for every number costs work proportional to the ring number, while the walk costs constant work per cell. Takeaway: jump straight to the ring, then walk at most six sides.
 
 ## Why It Works
 
@@ -134,7 +134,7 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The centre is handled before any ring search.
+The center is handled before any ring search.
 The side loop caps each step count at the remaining distance.
 One buffered write emits all coordinate pairs.
 
@@ -154,4 +154,4 @@ Each number is located by a short ring search and a six-step walk.
 | time | O(K sqrt M) for K numbers up to M |
 | space | O(1) besides input |
 
-Walking from the centre for each number would cost O(M) per query, while the ring jump keeps each conversion short.
+Walking from the center for each number would cost O(M) per query, while the ring jump keeps each conversion short.

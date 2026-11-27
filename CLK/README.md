@@ -54,7 +54,7 @@ Treat every legal position as a node in a game graph, like marking winning squar
 | `winFlags` | true when the player to move can force a win |
 | `hashKeys` | open-addressed table keys for packed states |
 
-The piece-count order guarantees that every successor is already labelled.
+The piece-count order guarantees that every successor is already labeled.
 
 The generator traces the first two sample positions:
 

@@ -40,7 +40,7 @@ A direct product replaces picture counting.
 
 ## Why It Works
 
-1. A level N hexagram is the union of two equilateral triangles of side 3N with a common centre.
+1. A level N hexagram is the union of two equilateral triangles of side 3N with a common center.
 2. Their overlap is a regular hexagon of side N, so the union contains 12 level N triangles.
 3. Enumeration for levels 1 to 6 gives 20, 118, 354, 788, 1480, 2490.
 4. Those values fit N(10 N squared plus 9 N plus 1) exactly.

@@ -274,7 +274,7 @@ proc decompose(startNode, parentNode: int) =
 decompose(1, 0)
 ```
 
-Each centroid owns one branch per living neighbour.
+Each centroid owns one branch per living neighbor.
 Ancestor lists hold at most O(log N) entries per node.
 Stack walks avoid deep recursion on path-shaped trees.
 

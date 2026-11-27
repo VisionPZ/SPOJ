@@ -3,7 +3,7 @@
 
 ## Problem
 
-Two racers start at the same line on a track of length L. The Pondo advances x metres, then the Pundu jumps by whole steps of y until it is at least as far along. Report WIN when the Pondo reaches the finish first, and LOSS otherwise.
+Two racers start at the same line on a track of length L. The Pondo advances x meters, then the Pundu jumps by whole steps of y until it is at least as far along. Report WIN when the Pondo reaches the finish first, and LOSS otherwise.
 
 The only input line holds x, y and L. Print one word, WIN or LOSS.
 
@@ -37,7 +37,7 @@ Picture the finish as a fence and the Pundu's steps as fixed strides: the race i
 2. Its last position before the finish is (ceil(L / x) - 1) times x.
 3. The Pundu always stands on a multiple of y.
 4. Its first multiple at or past L is ceil(L / y) times y.
-5. That multiple is reachable from the previous multiple, which sits y metres lower.
+5. That multiple is reachable from the previous multiple, which sits y meters lower.
 6. The Pundu wins exactly when the Pondo has passed that previous multiple.
 
 The table names the four values used in the comparison.

@@ -3,7 +3,7 @@
 
 ## Problem
 
-Working computers sit in one row of seats. A student uses a working computer at their own seat or at either neighbour. Count how many students can use a working computer.
+Working computers sit in one row of seats. A student uses a working computer at their own seat or at either neighbor. Count how many students can use a working computer.
 
 Input starts with the case count `T`. Each case gives `n` students and `m` working computer positions on one line. The next line holds the `m` positions, not necessarily sorted. Output one line per case as `Case k: answer`.
 
@@ -36,7 +36,7 @@ Case 2: 5
 
 ## Idea
 
-Each working computer lights three seats, like a lamp that reaches its own seat and both neighbours. Mark every lit seat, then count the marks.
+Each working computer lights three seats, like a lamp that reaches its own seat and both neighbors. Mark every lit seat, then count the marks.
 
 The program uses a boolean array of seats. It marks the three seats around each working computer and clips the marks to the row. Marking one computer costs O(1), and counting the row costs O(n).
 

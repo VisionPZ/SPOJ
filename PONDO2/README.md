@@ -3,7 +3,7 @@
 
 ## Problem
 
-A strip of n metres holds either bumbuu (`u`) or bomboo (`o`). Give away a suffix of the strip, chosen from the right end. The number of `u` metres given must not exceed the number of `o` metres given. Report the longest allowed suffix length.
+A strip of n meters holds either bumbuu (`u`) or bomboo (`o`). Give away a suffix of the strip, chosen from the right end. The number of `u` meters given must not exceed the number of `o` meters given. Report the longest allowed suffix length.
 
 The first line gives n. The second line gives the n-character string. Print one integer, the maximum length.
 
@@ -27,22 +27,22 @@ uuouou
 4
 ```
 
-The suffix `ouou` gives two `u` metres and two `o` metres.
+The suffix `ouou` gives two `u` meters and two `o` meters.
 
 ## Idea
 
-Treat the giveaway like paying with credit: each `o` adds one credit, each `u` spends one, like coins dropped into a till from the right end. The program walks the strip from right to left and keeps this running balance. Every time the balance is non-negative, the current suffix length is recorded. A fresh count for every suffix would cost O(n^2), but one pass costs O(1) per metre. Record the best suffix during a single right-to-left walk.
+Treat the giveaway like paying with credit: each `o` adds one credit, each `u` spends one, like coins dropped into a till from the right end. The program walks the strip from right to left and keeps this running balance. Every time the balance is non-negative, the current suffix length is recorded. A fresh count for every suffix would cost O(n^2), but one pass costs O(1) per meter. Record the best suffix during a single right-to-left walk.
 
 ## Why It Works
 
 1. Give away a suffix of length k, which covers the last k characters.
 2. The condition for that suffix is count of `u` at most count of `o`.
 3. Define balance as count of `o` minus count of `u`.
-4. Extending a suffix by one metre changes the balance by exactly one.
+4. Extending a suffix by one meter changes the balance by exactly one.
 5. A suffix is allowed exactly when its balance is at least zero.
 6. Scanning from the right visits suffixes in increasing length order.
 
-The named values below are updated once per metre.
+The named values below are updated once per meter.
 
 | Term | Meaning |
 | --- | --- |
@@ -65,7 +65,7 @@ A script check of the first sample lists every suffix of `uuouou`.
 | 5 | uouou | -1 | no |
 | 6 | uuouou | -2 | no |
 
-The largest allowed length is 4. If every metre is `o`, the balance never drops and the whole strip qualifies.
+The largest allowed length is 4. If every meter is `o`, the balance never drops and the whole strip qualifies.
 
 ## Code
 
@@ -118,7 +118,7 @@ proc appendOutput(text: string) =
 
 The buffer avoids one write per suffix. A single final flush emits the integer.
 
-**Right-to-left scan.** The loop grows the suffix one metre at a time.
+**Right-to-left scan.** The loop grows the suffix one meter at a time.
 
 ```nim
 let landLength = nextInt(inputData, scanPos)
@@ -146,7 +146,7 @@ Each `o` raises the balance and each `u` lowers it. The best length updates only
 
 ## Complexity
 
-The scan reads each metre once and stores only the strip and a few counters.
+The scan reads each meter once and stores only the strip and a few counters.
 
 | Phase | Time | Space |
 | --- | --- | --- |
@@ -154,7 +154,7 @@ The scan reads each metre once and stores only the strip and a few counters.
 | suffix scan | one pass from right to left | three integers |
 | output | one line | block buffer |
 
-Work per metre is constant, so the total follows the strip length.
+Work per meter is constant, so the total follows the strip length.
 
 | Measure | Big O |
 | --- | --- |

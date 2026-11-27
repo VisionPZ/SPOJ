@@ -4,7 +4,7 @@
 
 ## Problem
 
-Count words of length N over the digits 0, 1, 2 where each neighbouring pair differs by at most one. The input holds one positive integer N, and the output holds one count.
+Count words of length N over the digits 0, 1, 2 where each neighboring pair differs by at most one. The input holds one positive integer N, and the output holds one count.
 
 | item | bound |
 |---|---|

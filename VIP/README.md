@@ -37,7 +37,7 @@ Sample output:
 
 ## Idea
 
-Walk the people once, keeping one suspect. Whenever the current suspect is shown to know somebody, throw the suspect away and keep that somebody instead. One pass leaves a single suspect, and a second pass just checks the two VIP rules against everyone. If the check ever fails, a plain scan of all people finishes the job.
+Walk the people once, keeping one suspect. Whenever the current suspect knows somebody, replace the suspect with that person. One pass leaves a single suspect, and a second pass checks the two VIP rules against everyone. If the check fails, a plain scan of all people finishes the job.
 
 ## Why It Works
 

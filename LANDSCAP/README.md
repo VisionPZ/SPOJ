@@ -4,7 +4,7 @@
 
 ## Problem
 
-Given a row of elevations, lower chosen columns so that at most K flat-topped hills remain, and spend the least total earth removed. A hill is a maximal run of equal height whose neighbours sit lower or outside the row.
+Given a row of elevations, lower chosen columns so that at most K flat-topped hills remain, and spend the least total earth removed. A hill is a maximal run of equal height whose neighbors sit lower or outside the row.
 
 Input starts with t. Each case gives N and K, then N lines holding one elevation each. Output one integer per case: the minimum total reduction. In the explanation, h names a candidate height level and p names the count of hills already closed.
 
@@ -53,8 +53,8 @@ Trying every lowered landscape costs exponential time. Comparing every predecess
 
 ## Why It Works
 
-1. An optimal lowering never needs a height absent from the input. Raising such a column to the next input height changes no comparison with its neighbours and lowers the cost.
-2. A hill ends when the height drops after a run. The run counts only if its left neighbour was lower or outside the row.
+1. An optimal lowering never needs a height absent from the input. Raising such a column to the next input height changes no comparison with its neighbors and lowers the cost.
+2. A hill ends when the height drops after a run. The run counts only if its left neighbor was lower or outside the row.
 3. A rise makes the old run fail as a hill and starts a new possible hill. A drop closes the old run when it was still possible. A drop starts a run that cannot be a hill. Equality preserves the run's status.
 4. `prefixBest` holds the best cost over heights up to the current one. `suffixPeak` and `suffixValley` hold the best cost over higher heights. Each state reads its best predecessor in constant time.
 
@@ -63,7 +63,7 @@ The tables carry these meanings.
 | term | meaning |
 |---|---|
 | `peakRun` | best cost for a run that can still become a hill |
-| `valleyRun` | best cost for a run with a higher left neighbour |
+| `valleyRun` | best cost for a run with a higher left neighbor |
 | `prefixBest` | best cost over heights at most the current height, either run state |
 | `suffixPeak` | best cost over higher heights when the run can still become a hill |
 | `suffixValley` | best cost over higher heights when the run cannot become a hill |

@@ -47,7 +47,7 @@ Each input number then costs one table lookup per group, with no exponentiation 
 3. The modulus M is prime, so Fermat's theorem gives 2ᴹ⁻¹ = 1 modulo M.
 4. Therefore 2ⁿ depends only on n modulo M − 1, and 2ⁿ⁻² equals 2ⁿ times the inverse of 4 modulo M.
 5. That inverse is 250000002, so the answer is n(n − 1) · 2ⁿ · 250000002 modulo M.
-6. Writing n as five-digit groups gives n = Σ cⱼ · 10⁵ʲ, so n modulo M is the sum of cⱼ · 10⁵ʲ modulo M and 2ⁿ is the product of 2^(cⱼ · 10⁵ʲ) modulo M.
+6. Writing n in five-digit blocks gives n = Σ cⱼ · 10⁵ʲ. Thus n modulo M is the sum of cⱼ · 10⁵ʲ modulo M, and 2ⁿ is the product of 2^(cⱼ · 10⁵ʲ) modulo M.
 7. The tables store both contributions for every group value at every position, so each group needs only two lookups.
 8. Table rows are built by repeated addition and multiplication; the only modular power call builds the eight row steps once.
 9. Input arrives in one bulk read, digits are consumed in place from right to left, and answer digits go straight into a fixed output buffer.

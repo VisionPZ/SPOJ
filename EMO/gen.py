@@ -41,12 +41,10 @@ def is_emoji(word):
 
 
 def single_space(separator):
-    # Between adjacent words the statement asks for one ordinary space.
     return " "
 
 
 def leading_space(separator):
-    # The sample's third line keeps its non-breaking space before the emo.
     return "\u00a0" if "\u00a0" in separator else " "
 
 
@@ -90,8 +88,6 @@ def oracle(text):
             stop = True
         else:
             stop = False
-        # Keep the leading separator: correct_line needs it to decide whether
-        # the first emo has a space before it.
         leading = line[:len(line) - len(line.lstrip(" \u00a0"))]
         corrected_lines.append(correct_line(leading + stripped))
         if stop:

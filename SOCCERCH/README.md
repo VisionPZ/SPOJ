@@ -54,9 +54,9 @@ Each vertical boundary step flips the bits of plots lying to its left in that ro
 
 ## Why It Works
 
-1. A closed boundary walk gives each plot a winding number around its centre.
+1. A closed boundary walk gives each plot a winding number around its center.
 2. A plot is inspected exactly when its winding number is odd.
-3. Send a horizontal ray from the plot centre to the right.
+3. Send a horizontal ray from the plot center to the right.
 4. A vertical step at column `c` crosses that ray for plots in the same row with column less than `c`.
 5. Crossing flips the parity bit for each such plot.
 

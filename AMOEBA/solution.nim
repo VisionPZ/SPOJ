@@ -1,15 +1,7 @@
 const flushBlockBytes = 1 shl 17
 const digitBase = 10
-const growthFactor = 7
-const tableKinds = 10
-
-type
-  AnswerTable = object
-    modulus: int64
-    period: int
-    tableSize: int
-    keys: seq[int64]
-    days: seq[int]
+const growthFactor = 7'i64
+const maxDigitCount = 9
 
 var inputData = ""
 var inputLine = ""
@@ -36,61 +28,67 @@ proc appendOutput(text: string) =
     stdout.write outputBuffer
     outputBuffer.setLen 0
 
-proc buildTable(table: var AnswerTable, digitCount: int) =
-  table.modulus = 1
-  for digitIndex in 0 .. digitCount - 1:
-    table.modulus = table.modulus * digitBase
-  var powerValues = newSeq[int64]()
-  var powerValue: int64 = 1
-  powerValues.add powerValue
-  while true:
-    powerValue = (powerValue * growthFactor) mod table.modulus
-    if powerValue == 1:
+proc powerMod(baseValue, exponentValue, modulus: int64): int64 =
+  var answer: int64 = 1 mod modulus
+  var factor = baseValue mod modulus
+  var remaining = exponentValue
+  while remaining > 0:
+    if (remaining and 1) == 1:
+      answer = (answer * factor) mod modulus
+    factor = (factor * factor) mod modulus
+    remaining = remaining shr 1
+  return answer
+
+proc findEarliestDay(targetValue: int64, digitCount: int): int64 =
+  var modulus: int64 = 10
+  var exponent: int64 = -1
+  var currentPower: int64 = 1
+  for step in 0 .. 3:
+    if currentPower == targetValue mod modulus:
+      exponent = int64(step)
       break
-    powerValues.add powerValue
-  table.period = powerValues.len
-  table.tableSize = 1
-  while table.tableSize <= table.period:
-    table.tableSize = table.tableSize shl 1
-  table.keys = newSeq[int64](table.tableSize)
-  table.days = newSeq[int](table.tableSize)
-  for slotIndex in 0 .. table.tableSize - 1:
-    table.keys[slotIndex] = -1
-  for exponent in 0 .. table.period - 1:
-    let storedValue = powerValues[exponent]
-    var slotIndex = int(storedValue mod int64(table.tableSize))
-    while table.keys[slotIndex] != -1:
-      slotIndex = (slotIndex + 1) mod table.tableSize
-    table.keys[slotIndex] = storedValue
-    table.days[slotIndex] = exponent + 1
-
-proc findDay(table: AnswerTable, target: int64): int =
-  var slotIndex = int(target mod int64(table.tableSize))
-  while table.keys[slotIndex] != -1:
-    if table.keys[slotIndex] == target:
-      return table.days[slotIndex]
-    slotIndex = (slotIndex + 1) mod table.tableSize
-  return -1
-
-var answerTables = newSeq[AnswerTable](tableKinds)
-var tableReady = newSeq[bool](tableKinds)
-for tableIndex in 0 .. tableKinds - 1:
-  tableReady[tableIndex] = false
+    currentPower = (currentPower * growthFactor) mod modulus
+  if exponent < 0:
+    return -1
+  var period: int64 = 4
+  for digitIndex in 2 .. digitCount:
+    modulus = modulus * digitBase
+    let wanted = targetValue mod modulus
+    let stepFactor = powerMod(growthFactor, period, modulus)
+    var candidatePower = powerMod(growthFactor, exponent, modulus)
+    var found = false
+    var shift: int64 = 0
+    var factorPower: int64 = 1
+    while true:
+      if candidatePower == wanted:
+        exponent += shift * period
+        found = true
+        break
+      shift += 1
+      factorPower = (factorPower * stepFactor) mod modulus
+      if factorPower == 1:
+        break
+      candidatePower = (candidatePower * stepFactor) mod modulus
+    if not found:
+      return -1
+    var orderFactor: int64 = 1
+    var checkPower = stepFactor
+    while checkPower != 1:
+      checkPower = (checkPower * stepFactor) mod modulus
+      orderFactor += 1
+    period = period * orderFactor
+  return exponent + 1
 
 while true:
   let queryToken = nextToken(inputData, scanPos)
   if queryToken.len == 0:
     break
-  if queryToken.len < 1 or queryToken.len >= tableKinds:
+  if queryToken.len < 1 or queryToken.len > maxDigitCount:
     continue
-  let digitCount = queryToken.len
-  if not tableReady[digitCount]:
-    buildTable(answerTables[digitCount], digitCount)
-    tableReady[digitCount] = true
   var targetValue: int64 = 0
   for charIndex in 0 .. queryToken.len - 1:
     targetValue = targetValue * digitBase + int64(int(queryToken[charIndex]) - 48)
-  let answerDay = findDay(answerTables[digitCount], targetValue)
+  let answerDay = findEarliestDay(targetValue, queryToken.len)
   appendOutput($answerDay)
   outputBuffer.add '\n'
 

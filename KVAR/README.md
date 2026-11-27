@@ -42,7 +42,7 @@ YES
 
 ## Idea
 
-A staircase with a hidden step behind a corner is the only way to trip. A local inversion is a step between neighbours. Beauty asks that no inversion hides two places apart.
+A staircase with a hidden step behind a corner is the only way to trip. A local inversion is a step between neighbors. Beauty asks that no inversion hides two places apart.
 
 The program checks, for each position i, whether A[i] beats the smallest value at or after i+2. If it does, a far inversion exists and the array is not beautiful. A suffix-minimum table makes each check one lookup.
 

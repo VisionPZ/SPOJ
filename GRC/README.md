@@ -15,7 +15,7 @@ The first input line gives the test count. Each test has nine grid lines showing
 | rotation value | -6 to 6, excluding 0, plus a final 0 |
 | judge limit | 1 s, 1536 MB |
 
-Colours use the letters Y, R, B, G, W and M.
+Colors use the letters Y, R, B, G, W and M.
 
 Sample input:
 

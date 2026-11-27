@@ -218,7 +218,7 @@ The search stops once the complete mask appears.
 
 ## Complexity
 
-Each state enters the queue once, and four neighbours are tested per state.
+Each state enters the queue once, and four neighbors are tested per state.
 
 | phase | time | space |
 |---|---|---|

@@ -1,4 +1,6 @@
-# MUL - Faster Multiplication
+# MUL — Faster Multiplication (SPOJ)
+
+<https://www.spoj.com/problems/MUL/>
 
 ## Problem
 

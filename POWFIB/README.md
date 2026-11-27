@@ -32,7 +32,7 @@ Sample output:
 
 ## Idea
 
-Skipping Fibonacci numbers is like counting seats in a row while reserving a few labelled seats. Only about forty-five Fibonacci values fit below the modulus, so binary search finds the Nth gap in a few steps. Fast doubling finds the Nth Fibonacci value in logarithmic time, and binary exponentiation finishes the power.
+Skipping Fibonacci numbers is like counting seats in a row while reserving a few labeled seats. Only about forty-five Fibonacci values fit below the modulus, so binary search finds the Nth gap in a few steps. Fast doubling finds the Nth Fibonacci value in logarithmic time, and binary exponentiation finishes the power.
 
 ## Why It Works
 

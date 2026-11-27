@@ -2,7 +2,7 @@
 
 ## Problem
 
-Take the chain 1, 1+K+1, 1+K+1+K+2, ... and report its member not above N that has the most divisors; on a tie report the smaller member. Print one labelled line per test case with that member and its divisor count.
+Take the chain 1, 1+K+1, 1+K+1+K+2, ... and report its member not above N that has the most divisors; on a tie report the smaller member. Print one labeled line per test case with that member and its divisor count.
 
 | item | bound |
 |---|---|
@@ -143,7 +143,7 @@ outputBuffer.setLen 0
 ```
 
 A strict comparison resolves ties toward the smaller member.
-The final flush writes all labelled lines at once.
+The final flush writes all labeled lines at once.
 
 ## Complexity
 

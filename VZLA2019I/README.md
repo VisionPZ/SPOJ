@@ -27,7 +27,7 @@ More examples from the statement: `2 3 1 2 4 1` gives `48`, and `5 10 2 8 7 4` g
 
 ## Idea
 
-A dinner is one pick from each of six bowls of dishes. Counting them is just multiplying: for every antipasto there are that many primos, and so on down the line. The program keeps a running product and prints it.
+A dinner picks one item from each of six dish bowls. Counting them multiplies the six bowl sizes together. The program keeps a running product and prints it.
 
 ## Why It Works
 

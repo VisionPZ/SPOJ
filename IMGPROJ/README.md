@@ -8,7 +8,7 @@ Each image has N columns and M rows of pixel intensities. For every diagonal x +
 
 Input starts with the image count. Each image starts with `N M`, followed by M encoded rows. Each row holds pairs `length intensity`, and the lengths in a row sum to N. A blank line may appear before each image.
 
-Output one line per image. Each line holds pairs `length intensity` in diagonal order, with single spaces and no equal neighbouring intensities.
+Output one line per image. Each line holds pairs `length intensity` in diagonal order, with single spaces and no equal neighboring intensities.
 
 | item | bound |
 |---|---|
@@ -55,8 +55,8 @@ A naive pass would fill N columns for every row. The sweep touches only the give
 1. Column x in row y belongs to diagonal x + y - 1, using zero-based indexes.
 2. A run spanning columns c through c + L - 1 adds its intensity to L consecutive diagonals.
 3. A plus event at the first diagonal and a minus event immediately after the last encode that add.
-4. Between two neighbouring event positions, the running sum stays constant.
-5. Merging equal neighbouring sums gives maximal runs.
+4. Between two neighboring event positions, the running sum stays constant.
+5. Merging equal neighboring sums gives maximal runs.
 
 | term | meaning |
 |---|---|
@@ -120,7 +120,7 @@ The event type holds a diagonal index and a signed change.
 Blank lines never reach the integer scanner.
 Output text waits in one buffer until the block limit is reached.
 
-**Run emission.** Equal neighbouring sums are folded into one output run.
+**Run emission.** Equal neighboring sums are folded into one output run.
 
 ```nim
 proc emitRun(length: int64, value: int64, pendingLength: var int64,

@@ -47,7 +47,7 @@ NO
 
 Search states in order of moves, like finding the fewest transfers between jars by walking a map of every possible fill. Breadth-first search visits each state once and keeps its first distance.
 
-The program packs all four amounts into one integer index in base 50. Each legal move changes that index by a fixed product, so generating neighbours costs constant work.
+The program packs all four amounts into one integer index in base 50. Each legal move changes that index by a fixed product, so generating neighbors costs constant work.
 
 Each state expands at most four drains and twelve pours. Searching move sequences without storing visited states repeats work and grows with the move count.
 
@@ -197,7 +197,7 @@ proc minimalMoves(targets: array[4, int], capacities: array[4, int], containerCo
   return answer
 ```
 
-The search loop runs once per reachable state. Each neighbour is one drain or one pour, and both updates stay inside the array. The clear loop restores only the slots this case touched.
+The search loop runs once per reachable state. Each neighbor is one drain or one pour, and both updates stay inside the array. The clear loop restores only the slots this case touched.
 
 **Case driver.** Missing containers keep a capacity of zero, so the same arrays serve every case.
 
@@ -226,14 +226,14 @@ The loop runs once per case, at most 20 times. A negative answer prints `NO`. On
 
 ## Complexity
 
-The search visits each reachable state once and generates a bounded neighbour set.
+The search visits each reachable state once and generates a bounded neighbor set.
 
 | Phase | Time | Space |
 | --- | --- | --- |
 | Input read | one pass over input bytes | input bytes |
 | State encode | O(4) per case | O(1) |
 | Breadth-first search | O(S) per case | O(S) arrays |
-| Neighbour generation | O(1) per neighbour | O(1) |
+| Neighbor generation | O(1) per neighbor | O(1) |
 | Output | one write per 256 KiB block | 256 KiB |
 | Total per case | O(S) | O(6250000) |
 

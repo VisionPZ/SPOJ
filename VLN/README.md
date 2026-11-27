@@ -2,12 +2,12 @@
 
 ## Problem
 
-A farm has n trees in one row, spaced 3 metres apart. Choose one tree as a standing point and collect fruit from every tree within H metres of that point. Report the largest possible harvest.
+A farm has n trees in one row, spaced 3 meters apart. Choose one tree as a standing point and collect fruit from every tree within H meters of that point. Report the largest possible harvest.
 
 | item | bound |
 |---|---|
 | trees n | 1 to 100 |
-| reach H | 1 to 1000000000 metres |
+| reach H | 1 to 1000000000 meters |
 | fruit per tree | 0 to 1000000000 |
 | judge limit | 1000 ms, 1536 MB |
 
@@ -32,7 +32,7 @@ Reach in tree positions is H divided by 3, like counting posts inside a fixed ro
 
 ## Why It Works
 
-1. Trees i and j are 3 times the absolute index difference metres apart.
+1. Trees i and j are 3 times the absolute index difference meters apart.
 2. A tree is reachable when 3 times that difference is at most H.
 3. Equivalent reach in tree positions is H integer-divided by 3.
 4. The reachable trees for one center form a single contiguous window.

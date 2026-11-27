@@ -1,4 +1,4 @@
-# TOURS — Travelling tours (SPOJ)
+# TOURS — Traveling tours (SPOJ)
 
 <https://www.spoj.com/problems/TOURS/>
 

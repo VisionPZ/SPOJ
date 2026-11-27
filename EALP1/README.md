@@ -6,7 +6,7 @@
 
 Count the opening moves that leave a Nim position losing for the next player. A move changes one pile to any smaller size, so the count is the number of piles that can be reduced to make the pile sizes cancel in pairs.
 
-Input starts with T, the number of cases, where T ≤ 1000. Each case gives N, with 1 ≤ N ≤ 1000, then N pile sizes, each below 1000. Print one labelled line per case with its case number and answer, where the answer is the number of winning opening moves.
+Input starts with T, the number of cases, where T ≤ 1000. Each case gives N, with 1 ≤ N ≤ 1000, then N pile sizes, each below 1000. Print one labeled line per case with its case number and answer, where the answer is the number of winning opening moves.
 
 | item | bound |
 |---|---|

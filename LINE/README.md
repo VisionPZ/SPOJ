@@ -40,7 +40,7 @@ Case 2: 16.84508
 
 ## Idea
 
-String the given segments like beads on one cord. Keep the shortest way to join consecutive beads. Each join uses one endpoint from each neighbouring segment. A subset and a free end capture the whole state.
+String the given segments like beads on one cord. Keep the shortest way to join consecutive beads. Each join uses one endpoint from each neighboring segment. A subset and a free end capture the whole state.
 
 The DP stores the least added length for every used subset, last segment, and free endpoint. Adding a segment joins that free end to one of the new segment's ends. The new free end is the other end of the new segment.
 

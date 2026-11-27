@@ -188,7 +188,7 @@ Each comparison increments the indegree of the higher student.
 Kahn's queue removes zero-indegree students in order.
 A short queue means a cycle and a single -1 line.
 
-**Rank walks and answer.** Two walks count forced neighbours, then print one continuous range.
+**Rank walks and answer.** Two walks count forced neighbors, then print one continuous range.
 
 ```nim
   var visited = newSeq[bool](studentCount + 1)

@@ -4,7 +4,7 @@
 
 ## Problem
 
-A digger drops a drill straight down from any surface column. The drill has no brake, so it stops only when it strikes a rock, one metre above that rock, and the bit breaks. The digger can move sideways at no cost after each stop. Find the fewest broken bits needed to collect the treasure and then pass below every rock.
+A digger drops a drill straight down from any surface column. The drill has no brake, so it stops only when it strikes a rock, one meter above that rock, and the bit breaks. The digger can move sideways at no cost after each stop. Find the fewest broken bits needed to collect the treasure and then pass below every rock.
 
 Input gives L and N, then N pairs A and B for rock depth and column, then the treasure depth Y and column X. Print that minimum, or the words “Use dynamite” when no route works.
 
@@ -54,11 +54,11 @@ The path in the statement uses exactly three drill bits.
 
 ## Idea
 
-Treat each stop height as a station, like hopping between ledges on a cliff where a sideways walk is free. From a ledge, choose any column and drill to the first rock below; that costs one bit and lands one metre above that rock. Because sideways movement is free, the column of the last rock no longer matters. Only the stop height and whether the treasure is already held matter. Dynamic programming over sorted stop heights costs O(N L log N) per case. A full grid over depths and columns stores far more states. The free sideways walk is the reason the state collapses.
+Treat each stop height as a station, like hopping between ledges on a cliff where a sideways walk is free. From a ledge, choose any column and drill to the first rock below; that costs one bit and lands one meter above that rock. Because sideways movement is free, the column of the last rock no longer matters. Only the stop height and whether the treasure is already held matter. Dynamic programming over sorted stop heights costs O(N L log N) per case. A full grid over depths and columns stores far more states. The free sideways walk is the reason the state collapses.
 
 ## Why It Works
 
-1. A rock at depth A stops the drill one metre above it, so the new stop height is A - 1.
+1. A rock at depth A stops the drill one meter above it, so the new stop height is A - 1.
 2. At any stop height the digger can walk to every column, so the last column is irrelevant to future choices.
 3. Drilling from depth d in column c reaches the shallowest rock deeper than d in that column, or escapes below all rocks.
 4. The treasure is collected by stopping at depth Y, or by drilling past depth Y in column X - 1 or X + 1.
@@ -67,7 +67,7 @@ Treat each stop height as a station, like hopping between ledges on a cliff wher
 
 | term | meaning |
 |---|---|
-| stopDepths | surface plus one metre above every rock |
+| stopDepths | surface plus one meter above every rock |
 | columnRocks | sorted rock depths in one column |
 | costDirt | fewest bits to reach a height without the treasure |
 | costTreasure | fewest bits to reach a height holding the treasure |
@@ -86,7 +86,7 @@ depth 9 -> column 10: no rock below, finish
 
 No further bit breaks are needed after depth 9, so the answer is 3.
 
-A rock one metre below the current height gives no progress, so that transition is skipped.
+A rock one meter below the current height gives no progress, so that transition is skipped.
 
 ## Code
 

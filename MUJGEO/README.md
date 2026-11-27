@@ -3,7 +3,7 @@
 
 ## Problem
 
-Two triangles sit on a common side AC, and their other sides BC and AD run parallel. Given the angles at A and B of triangle ABC and the lengths BC and AD, find the area of the circle whose diameter is CD. Point E is the centre of that circle, so the required circle passes through C and D.
+Two triangles sit on a common side AC, and their other sides BC and AD run parallel. Given the angles at A and B of triangle ABC and the lengths BC and AD, find the area of the circle whose diameter is CD. Point E is the center of that circle, so the required circle passes through C and D.
 
 The input holds one line with four real numbers: angles BAC and ABC in degrees, then the lengths BC and AD. Print one real number, the circle area. An answer counts as correct when its absolute error stays below 1e-6.
 

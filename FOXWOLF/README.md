@@ -47,7 +47,7 @@ The algorithm is a breadth-first search over joint states. A state records each 
 
 ## Why It Works
 
-1. At each minute an animal stays or moves to a side neighbour, never into a tree or the other home.
+1. At each minute an animal stays or moves to a side neighbor, never into a tree or the other home.
 2. Moving from a burr into a meadow adds burr minutes of standing still for that animal only.
 3. The other animal keeps moving during that pause, so each animal needs its own timer.
 4. A meeting happens on the same cell at the same minute or on a swap of cells.

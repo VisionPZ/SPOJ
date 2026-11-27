@@ -29,12 +29,12 @@ for (int i = 100; i <= 105; i++) cout << i << " ";
 
 ## Idea
 
-Sorting the scattered numbers makes each original loop appear as a contiguous run, like arranging shuffled playing cards into consecutive stacks. The algorithm sorts all integers, then walks the sorted list once and emits a loop whenever the next value is not one larger. Sorting costs `O(N log N)` and the walk costs `O(N)`. Testing every pair of numbers to find neighbours would cost `O(N^2)`. Sorting turns a reconstruction puzzle into one short scan.
+Sorting the scattered numbers makes each original loop appear as a contiguous run, like arranging shuffled playing cards into consecutive stacks. The algorithm sorts all integers, then walks the sorted list once and emits a loop whenever the next value is not one larger. Sorting costs `O(N log N)` and the walk costs `O(N)`. Testing every pair of numbers to find neighbors would cost `O(N^2)`. Sorting turns a reconstruction puzzle into one short scan.
 
 ## Why It Works
 
 1. Each original loop printed consecutive integers, so its members form a run in the sorted list.
-2. Sorting places every member of a run beside its neighbours.
+2. Sorting places every member of a run beside its neighbors.
 3. Distinct integers make a gap of exactly one the reliable run boundary.
 4. A run from its first value to its last value recreates one original loop.
 5. Ascending order of the sorted list matches the required output order.
@@ -153,4 +153,4 @@ The list size drives both time and space.
 | time | `O(N log N)` |
 | space | `O(N)` |
 
-A pairwise neighbour search would take `O(N^2)` instead of one sort and one scan. Sorting keeps reconstruction short even for the largest allowed input.
+A pairwise neighbor search would take `O(N^2)` instead of one sort and one scan. Sorting keeps reconstruction short even for the largest allowed input.

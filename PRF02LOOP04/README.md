@@ -39,7 +39,7 @@ The sample input for the error case is 0. Its output follows.
 
 A rising triangle is like writing a staircase: row r always adds the next step number.
 The program reads N, prints the shared prompt, and splits into the invalid and valid paths.
-On the valid path, row r emits the values 1 through r, with a space between neighbours.
+On the valid path, row r emits the values 1 through r, with a space between neighbors.
 Direct emission writes each token once and keeps no intermediate row strings.
 Building whole rows as separate strings first would add extra allocation for every line.
 The single-pass write keeps both code paths short and the output buffer full.

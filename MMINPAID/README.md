@@ -47,7 +47,7 @@ A search over cities alone forgets which tickets are held, so it can miss the ch
 ## Why It Works
 
 1. Road i leaves a_i, reaches b_i, and can be paid early in c_i for P_i.
-2. An early payment needs the traveller to stand in c_i and sets bit i.
+2. An early payment needs the traveler to stand in c_i and sets bit i.
 3. A prepaid road costs zero to travel; any other road costs R_i on arrival.
 4. A state (city, mask) records the position and every ticket held there.
 5. Queue relaxation reaches the least cost of every reachable state.

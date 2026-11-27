@@ -4,9 +4,9 @@
 
 ## Problem
 
-Some map sections show how many chests lie in their three-by-three neighbourhood, and the rest may hide chests freely. Find the smallest total number of chests that satisfies every printed digit.
+Some map sections show how many chests lie in their three-by-three neighborhood, and the rest may hide chests freely. Find the smallest total number of chests that satisfies every printed digit.
 
-Input holds several maps. Each starts with height `h` and width `w`, followed by `h` rows of characters: `.` for water, `*` for an island section with an unknown count, and a digit for a required neighbourhood count. The line `0 0` ends the input. Output one minimum per map.
+Input holds several maps. Each starts with height `h` and width `w`, followed by `h` rows of characters: `.` for water, `*` for an island section with an unknown count, and a digit for a required neighborhood count. The line `0 0` ends the input. Output one minimum per map.
 
 | item | bound |
 |---|---|
@@ -16,7 +16,7 @@ Input holds several maps. Each starts with height `h` and width `w`, followed by
 | chests per section | 0 or 1 |
 | judge limit | 1743 ms, 1536 MB |
 
-Only island sections next to a printed digit can affect an answer. Math spans `h`, `w`, and the three-by-three neighbourhood use grid coordinates.
+Only island sections next to a printed digit can affect an answer. Math spans `h`, `w`, and the three-by-three neighborhood use grid coordinates.
 
 Sample input:
 
@@ -74,12 +74,12 @@ Sample output:
 
 Pack each digit's remaining count into four bits of one integer, like keeping a row of abacus beads that move only when a nearby chest is placed. Then walk the candidate sections in order and try both choices at each one. Memoization stores the best result for each packed state, and a simple bound discards states whose digits ask for more chests than remain available.
 
-Enumerating every subset of candidate sections grows as two to the number of sections. Packing, pruning, and caching cut that search to the small neighbourhoods that matter.
+Enumerating every subset of candidate sections grows as two to the number of sections. Packing, pruning, and caching cut that search to the small neighborhoods that matter.
 
 ## Why It Works
 
 1. A digit constrains only sections within one row and one column of itself.
-2. A section outside every digit neighbourhood can be left empty in a minimum solution.
+2. A section outside every digit neighborhood can be left empty in a minimum solution.
 3. Four bits hold a remaining count from zero to nine.
 4. The packed integer holds up to fifteen such counts at once.
 5. At a candidate section, a chest may be placed only when every affected digit still has a positive count.
@@ -330,4 +330,4 @@ Each cached state is visited once.
 
 Trying each subset of candidate sections would need two to the power of the candidate count.
 
-Pruning and memoization keep the search inside the small digit neighbourhoods.
+Pruning and memoization keep the search inside the small digit neighborhoods.

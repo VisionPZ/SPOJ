@@ -4,7 +4,7 @@
 
 ## Problem
 
-Count playlists chosen from tracks labelled 1 through n with no two consecutive labels in the same playlist. The empty playlist counts, and the input holds several test cases with one value n each.
+Count playlists chosen from tracks labeled 1 through n with no two consecutive labels in the same playlist. The empty playlist counts, and the input holds several test cases with one value n each.
 
 | item | bound |
 |---|---|
@@ -31,7 +31,7 @@ Sample output:
 
 ## Idea
 
-Decide the fate of the last track, like choosing seats in a row with no neighbours. If the last track is skipped, the earlier tracks form any valid playlist. If it is chosen, the previous track must be skipped, leaving any valid playlist of the earlier tracks.
+Decide the fate of the last track, like choosing seats in a row with no neighbors. If the last track is skipped, the earlier tracks form any valid playlist. If it is chosen, the previous track must be skipped, leaving any valid playlist of the earlier tracks.
 
 This gives the Fibonacci recurrence, with one addition per track. Checking every subset costs exponential work and is far slower.
 

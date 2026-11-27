@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
+import itertools
 import random
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 
 
-def oracle(text):
+def brute_oracle(text):
     tokens = text.split()
     cursor = 0
     case_count = int(tokens[cursor]); cursor += 1
@@ -21,6 +22,23 @@ def oracle(text):
     return "\n".join(answers) + "\n"
 
 
+def oracle(text):
+    tokens = text.split()
+    cursor = 0
+    case_count = int(tokens[cursor]); cursor += 1
+    answers = []
+    for _ in range(case_count):
+        element_count = int(tokens[cursor]); cursor += 1
+        query_count = int(tokens[cursor]); cursor += 1
+        values = [int(tokens[cursor + index]) for index in range(element_count)]
+        cursor += element_count
+        prefix_min = list(itertools.accumulate(values, min))
+        for _ in range(query_count):
+            range_end = int(tokens[cursor]); cursor += 1
+            answers.append(str(prefix_min[range_end - 1]))
+    return "\n".join(answers) + "\n"
+
+
 SAMPLE = """1
 4 2
 2 2 3 1
@@ -29,10 +47,11 @@ SAMPLE = """1
 SAMPLE_OUT = """2
 1
 """
+assert brute_oracle(SAMPLE) == SAMPLE_OUT
 assert oracle(SAMPLE) == SAMPLE_OUT
-assert oracle("1\n1 1\n5\n1\n") == "5\n"
-assert oracle("1\n3 3\n3 2 1\n1 2 3\n") == "3\n2\n1\n"
-assert oracle("2\n2 1\n5 4\n\n2\n3 1\n1 1 2\n\n3\n") == "4\n1\n"
+assert brute_oracle("1\n1 1\n5\n1\n") == oracle("1\n1 1\n5\n1\n") == "5\n"
+assert brute_oracle("1\n3 3\n3 2 1\n1 2 3\n") == oracle("1\n3 3\n3 2 1\n1 2 3\n") == "3\n2\n1\n"
+assert brute_oracle("2\n2 1\n5 4\n\n2\n3 1\n1 1 2\n\n3\n") == oracle("2\n2 1\n5 4\n\n2\n3 1\n1 1 2\n\n3\n") == "4\n1\n"
 
 
 def write(name, cases):

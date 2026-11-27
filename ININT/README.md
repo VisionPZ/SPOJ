@@ -35,7 +35,7 @@ IMPOSSIBLE
 
 ## Idea
 
-Think of each number as a room with doors labelled by its digit values. Breadth-first search walks through these doors layer by layer, so the first arrival at a number is a shortest path.
+Think of each number as a room with doors labeled by its digit values. Breadth-first search walks through these doors layer by layer, so the first arrival at a number is a shortest path.
 
 Each room stores its step count and the number of ways to reach it. When another shortest path arrives, the way counts add. Repeated equal digits open one door, not several.
 

@@ -4,7 +4,7 @@
 
 ## Problem
 
-Petar launches any number of programs from one start cell in a character grid. Each program steps to a neighbouring cell and captures free cells. Nikolaj launches straight-line programs that capture cells along a fixed direction. A tie over a free cell goes to Nikolaj. Find how many cells Petar can capture with the best plan.
+Petar launches any number of programs from one start cell in a character grid. Each program steps to a neighboring cell and captures free cells. Nikolaj launches straight-line programs that capture cells along a fixed direction. A tie over a free cell goes to Nikolaj. Find how many cells Petar can capture with the best plan.
 
 The input gives `rowCount` and `columnCount`, then one string per row using `.`, `#`, and `S`. Next comes `programCount`, then one `X Y DIR` line per program with one-based coordinates. Print a single integer.
 
@@ -171,7 +171,7 @@ proc bfsDistances(cellKinds: seq[uint8], nikolajTimes: seq[int],
   return queueTail
 ```
 
-Four neighbours are checked for every popped cell.
+Four neighbors are checked for every popped cell.
 Each cell enters the queue at most once.
 The queue array is reused by both searches.
 

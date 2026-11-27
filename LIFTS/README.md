@@ -41,7 +41,7 @@ The sample case:
 
 ## Idea
 
-Measure heights in half-metres and time in half-seconds, so every position and meeting stays a whole number.
+Measure heights in half-meters and time in half-seconds, so every position and meeting stays a whole number.
 
 Think of each lift as a clock face that repeats its heights. Instead of watching every tick, compare the two clocks with the Chinese remainder theorem (CRT, a method for solving paired clock congruences). Precompute one period of heights and two residue tables per lift.
 
@@ -54,7 +54,7 @@ Each pair costs O(P) time and O(P) space, with `P <= 800`. A step-by-step scan r
 Five facts prove the meeting times exact.
 
 1. Both chasm edges act as fixed platforms at height zero. Each edge gets period 1 and one residue at height zero.
-2. A lift climbs to its high point and returns, so its half-second period is `2 * (high - low)` in half-metres. The bound of 100 keeps that period at most 800.
+2. A lift climbs to its high point and returns, so its half-second period is `2 * (high - low)` in half-meters. The bound of 100 keeps that period at most 800.
 3. A lift reaches any height at most twice per period. `firstResidue` and `secondResidue` store both times for each height.
 4. CRT solves `t = r1 (mod P1)` and `t = r2 (mod P2)`. A solution exists when `(r1 - r2) mod g` is zero, with `g` the gcd of the two periods. Solutions repeat every `lcm(P1, P2)` half-seconds.
 5. After a meeting the hero walks 4 half-seconds across the next lift. The last step adds 2 half-seconds to reach the far edge. Dividing the final time by 2 gives whole seconds.

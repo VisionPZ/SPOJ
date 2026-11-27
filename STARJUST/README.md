@@ -4,7 +4,7 @@
 
 ## Problem
 
-Pad each string with stars on both sides until it fills a given width. Put the string in the centre; when the two paddings differ, give the larger one to the left.
+Pad each string with stars on both sides until it fills a given width. Put the string in the center; when the two paddings differ, give the larger one to the left.
 
 Input: first line T, the number of cases. Each case uses two lines: first the width, then the string. Output: one padded string per case, on its own line.
 
@@ -50,7 +50,7 @@ Think of hanging a picture on a wall, then filling the empty space with equal st
 | term | meaning |
 |---|---|
 | `fieldWidth` | number of characters in one output line |
-| `textLine` | the raw string to centre |
+| `textLine` | the raw string to center |
 | `totalPadding` | field width minus string length |
 | `leftPadding` | total padding rounded up, written first |
 | `rightPadding` | total padding rounded down, written last |

@@ -1,4 +1,6 @@
-# PALIN — The Next Palindrome
+# PALIN — The Next Palindrome (SPOJ)
+
+<https://www.spoj.com/problems/PALIN/>
 
 ## Problem
 

@@ -58,7 +58,7 @@ The main terms:
 
 | Term | Meaning |
 |---|---|
-| step | n − 1, the gap between neighbours inside an even run |
+| step | n − 1, the gap between neighbors inside an even run |
 | `halfCount` | n div 2, the length of each even run |
 | `tailLength` | (n − 3) div 2, the descending lead length for odd n |
 | peak | 2m² − 2m + 2 for even n, 2m² + 3 for odd n |

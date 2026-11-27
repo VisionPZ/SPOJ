@@ -50,7 +50,7 @@ A grid search over a million by a million cells is impossible here.
 
 ## Why It Works
 
-1. A shortest grid walk can be reshaped into L-shaped hops between farm centers and free neighbour cells.
+1. A shortest grid walk can be reshaped into L-shaped hops between farm centers and free neighbor cells.
 2. Each farm contributes its center and up to four free adjacent cells as nodes.
 3. Two nodes connect when either L-shaped route avoids every farm center except the two endpoints.
 4. For one leg, all farm centers except the start and target become blocked nodes.
@@ -117,7 +117,7 @@ proc appendOutput(text: string) =
     outputBuffer.setLen 0
 ```
 
-The direction arrays build the four free neighbours.
+The direction arrays build the four free neighbors.
 The large sentinel marks nodes that are still unreachable.
 Coordinates arrive as plain integers.
 
@@ -282,7 +282,7 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Free neighbour cells become graph nodes.
+Free neighbor cells become graph nodes.
 Every node pair gets an edge check once.
 One failed leg forces the -1 answer.
 

@@ -35,7 +35,7 @@ The expected output is:
 
 ## Idea
 
-Sort numbers into pigeonholes by their XOR coordinate, like dealing one card into each labelled box, then shuffle freely inside each box. A group of f cells contributes f! arrangements, so multiply those factorials. Recursive decomposition by the largest fitting power of two turns a huge grid into a short list of group sizes. Scanning all N×M cells would be impossible for a billion rows, while this recursion takes a few dozen steps.
+Sort numbers into pigeonholes by their XOR coordinate, like dealing one card into each labeled box, then shuffle freely inside each box. A group of f cells contributes f! arrangements, so multiply those factorials. Recursive decomposition by the largest fitting power of two turns a huge grid into a short list of group sizes. Scanning all N×M cells would be impossible for a billion rows, while this recursion takes a few dozen steps.
 
 ## Why It Works
 

@@ -4,7 +4,7 @@
 
 ## Problem
 
-Six players in three teams farm experience by stunning each other in four-minute rounds. Each round forms two groups of three from the teams, and a group starts when its last member reaches the map centre. Stun rounds grant experience every seven seconds, and poison grants a larger bonus at the end when enough time remains. Report the first player to reach the goal, or the final experience of all six.
+Six players in three teams farm experience by stunning each other in four-minute rounds. Each round forms two groups of three from the teams, and a group starts when its last member reaches the map center. Stun rounds grant experience every seven seconds, and poison grants a larger bonus at the end when enough time remains. Report the first player to reach the goal, or the final experience of all six.
 
 Each test case gives the goal and round count, six starting experience values, then six arrival times per round. A case with goal zero and round count zero ends the input. Print the winner's identifier and round number, or `-1` followed by six experience totals.
 

@@ -39,7 +39,7 @@ Sample output:
 
 ## Idea
 
-Store four numbers at each segment-tree node, like keeping a receipt for each shop segment: total, best prefix, best suffix, and best inside block. Joining two neighbouring segments is one fixed formula, so both updates and range queries follow the tree path. Each operation costs logarithmic time. Rescanning a whole queried range costs linear time per query and disappears at 50000 operations. Takeaway: make the merge rule rich enough that one tree walk answers the whole question.
+Store four numbers at each segment-tree node, like keeping a receipt for each shop segment: total, best prefix, best suffix, and best inside block. Joining two neighboring segments is one fixed formula, so both updates and range queries follow the tree path. Each operation costs logarithmic time. Rescanning a whole queried range costs linear time per query and disappears at 50000 operations. Takeaway: make the merge rule rich enough that one tree walk answers the whole question.
 
 ## Why It Works
 

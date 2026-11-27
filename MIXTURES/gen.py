@@ -1,3 +1,4 @@
+import os
 import random
 
 
@@ -69,6 +70,8 @@ def write(name, cases):
         f.write(answer_text)
 
 
+os.makedirs("in", exist_ok=True)
+os.makedirs("out", exist_ok=True)
 SAMPLE = [[18, 19], [40, 60, 20]]
 write("1_sample", SAMPLE)
 write("2_edges", [

@@ -3,7 +3,7 @@
 
 ## Problem
 
-Each case gives an even number G. A story hides a number N, doubles it, adds G, halves the total, then takes back N. The value left at the end is always G/2. Print one labelled line per case.
+Each case gives an even number G. A story hides a number N, doubles it, adds G, halves the total, then takes back N. The value left at the end is always G/2. Print one labeled line per case.
 
 The first line holds the case count. Each following line holds one even integer G. For case k, print `Case k: R`, where R is the remaining number.
 

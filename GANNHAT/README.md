@@ -228,7 +228,7 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-A single point has no neighbour, so its answer is zero.
+A single point has no neighbor, so its answer is zero.
 Block output keeps the N lines cheap.
 The tree root serves every query.
 

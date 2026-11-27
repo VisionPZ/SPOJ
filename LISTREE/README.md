@@ -4,7 +4,7 @@
 
 ## Problem
 
-A tree has N vertices labelled 1 through N without repeats. Every simple path gives a sequence of labels in path order. Report the largest longest-increasing-subsequence length over all those paths.
+A tree has N vertices labeled 1 through N without repeats. Every simple path gives a sequence of labels in path order. Report the largest longest-increasing-subsequence length over all those paths.
 
 The first line holds the test count. Each case gives N and then N-1 tree edges. Print one answer per case.
 
@@ -71,7 +71,7 @@ The search starts once from each vertex and walks every simple path with backtra
 
 | term | meaning |
 |---|---|
-| `treeAdjacency` | neighbour lists for the tree |
+| `treeAdjacency` | neighbor lists for the tree |
 | `currentPath` | vertices on the walk from the start |
 | `subsequenceLength` | patience-sorting length for one path prefix |
 | `bestLength` | largest length seen over every path |

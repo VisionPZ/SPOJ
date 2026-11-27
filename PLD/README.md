@@ -32,26 +32,26 @@ Sample output:
 
 ## Idea
 
-Think of each palindrome as a fold in paper, where one centre fixes every matching pair. Manacher's algorithm finds the longest palindrome radius at each centre in one pass.
+Think of each palindrome as a fold in paper, where one center fixes every matching pair. Manacher's algorithm finds the longest palindrome radius at each center in one pass.
 
-A length-`k` palindrome exists at a centre exactly when that radius reaches `k/2`. Scanning all centres costs linear time. Rechecking each candidate substring would cost O(nk).
+A length-`k` palindrome exists at a center exactly when that radius reaches `k/2`. Scanning all centers costs linear time. Rechecking each candidate substring would cost O(nk).
 
 One Manacher pass answers the query for any `k`.
 
 ## Why It Works
 
-1. An odd palindrome of length `2t+1` has one character at its centre.
-2. An even palindrome of length `2t` has its centre between two characters.
+1. An odd palindrome of length `2t+1` has one character at its center.
+2. An even palindrome of length `2t` has its center between two characters.
 3. `oddRadius[i]` counts matching character pairs around position `i`.
 4. `evenRadius[i]` counts matching pairs around the gap before position `i`.
-5. A centre supports length `k` when its radius reaches half of `k`.
+5. A center supports length `k` when its radius reaches half of `k`.
 
 | term | meaning |
 |---|---|
 | `patternLength` | required palindrome length `k` |
 | `oddRadius` | odd palindrome radius at each position |
 | `evenRadius` | even palindrome radius at each gap |
-| `palindromeCount` | number of centres long enough |
+| `palindromeCount` | number of centers long enough |
 
 A worked trace follows for the sample word `ababab` with `k = 5`.
 
@@ -101,7 +101,7 @@ The word reader skips newlines.
 Only lowercase letters belong to the string.
 One input buffer holds the whole file.
 
-**Odd radii.** Each centre expands only while characters match.
+**Odd radii.** Each center expands only while characters match.
 
 ```nim
 var oddRadius = newSeq[int](charCount)
@@ -123,11 +123,11 @@ for centerIndex in 0 .. charCount - 1:
     oddRight = centerIndex + radius - 1
 ```
 
-Mirrored centres give a starting radius.
+Mirrored centers give a starting radius.
 The rightmost reach bounds the mirror value.
 Each position expands at most once overall.
 
-**Even radii and counting.** Even centres sit between two letters.
+**Even radii and counting.** Even centers sit between two letters.
 
 ```nim
 var evenRadius = newSeq[int](charCount)
@@ -166,8 +166,8 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Odd lengths use odd centres, even lengths use even centres.
-Each start position maps to one centre, so counting centres counts occurrences.
+Odd lengths use odd centers, even lengths use even centers.
+Each start position maps to one center, so counting centers counts occurrences.
 The single result is flushed after the scan.
 
 ## Complexity

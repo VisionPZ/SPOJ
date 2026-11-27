@@ -1,5 +1,7 @@
 # MOULDS — Moulds (SPOJ)
 
+<https://www.spoj.com/problems/MOULDS/>
+
 ## Problem
 
 A command block of lifts and shifts drives a small blade over a solid cuboid. For each block, print the volume of hollows the blade cuts.

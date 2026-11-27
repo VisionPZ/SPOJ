@@ -43,7 +43,7 @@ The algorithm is a disjoint set with path compression. Each union costs nearly c
 1. Islands in one connected group share the same root in the disjoint set.
 2. An existing bridge makes its two endpoints share a root.
 3. A new bridge can lower the group count by at most one.
-4. Scanning islands in order and joining neighbours gives exactly one merge per extra group.
+4. Scanning islands in order and joining neighbors gives exactly one merge per extra group.
 
 | term | meaning |
 |---|---|

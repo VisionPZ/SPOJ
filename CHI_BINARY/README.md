@@ -1,4 +1,6 @@
-# CHI_BINARY — Binary numbers
+# CHI_BINARY — Binary numbers (SPOJ)
+
+<https://www.spoj.com/problems/CHI_BINARY/>
 
 ## Problem
 

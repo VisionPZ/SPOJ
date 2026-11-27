@@ -4,7 +4,7 @@
 
 ## Problem
 
-Restore an array from comparison signs between neighbours, using positive integers and choosing the lexicographically smallest array. A sign says equal, strictly increasing, or strictly decreasing.
+Restore an array from comparison signs between neighbors, using positive integers and choosing the lexicographically smallest array. A sign says equal, strictly increasing, or strictly decreasing.
 
 Input starts with test count t. Each case gives n, then the n-1 comparison codes: 0 for equal, 1 for less, 2 for greater. Output one line per case with the n restored values.
 
@@ -15,7 +15,7 @@ Input starts with test count t. Each case gives n, then the n-1 comparison codes
 | comparison code | 0, 1, or 2 |
 | judge limit | 1000 ms, 1536 MB |
 
-Neighbouring codes push values from both sides, so both directions matter.
+Neighboring codes push values from both sides, so both directions matter.
 
 Sample input:
 
@@ -41,15 +41,15 @@ Compute left bounds forward and right bounds backward. Write the larger bound pl
 
 ## Why It Works
 
-1. A code of 1 gives a lower bound on the right neighbour from the left neighbour.
-2. A code of 2 gives a lower bound on the left neighbour from the right neighbour.
+1. A code of 1 gives a lower bound on the right neighbor from the left neighbor.
+2. A code of 2 gives a lower bound on the left neighbor from the right neighbor.
 3. A code of 0 carries the same lower bound across the pair.
 4. A falling code resets the forward bound, and a rising code resets the backward bound.
 5. Each value must clear both bounds, so the smallest choice is their maximum plus one.
 
 | term | meaning |
 |---|---|
-| `relations` | comparison codes between neighbours |
+| `relations` | comparison codes between neighbors |
 | `forwardLevels` | lower bound from the left, measured above 1 |
 | `backwardLevels` | lower bound from the right, measured above 1 |
 | `neededLevel` | larger of the two bounds at one position |

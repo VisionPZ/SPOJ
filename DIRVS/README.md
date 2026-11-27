@@ -9,7 +9,7 @@ Find the shortest walk between the stations where, after each step, at least one
 Read `T` towns.
 Each town is a `P` by `Q` grid of terrain heights, followed by two base station cells.
 The technician moves between side-adjacent cells.
-Each step may climb at most 1 metre or descend at most 3 metres.
+Each step may climb at most 1 meter or descend at most 3 meters.
 After every step, at least one station must be visible.
 
 Print the shortest path length, or `Mission impossible!` when no path exists.
@@ -21,7 +21,7 @@ The judge bounds follow.
 | --- | --- |
 | Test cases `T` | about 500 |
 | Grid size `P`, `Q` | 1 to 200 |
-| Cell height | 0 to 5000 metres |
+| Cell height | 0 to 5000 meters |
 | Time limit | 13000 ms |
 | Memory limit | 1536 MB |
 
@@ -80,7 +80,7 @@ March each ray outward once.
 Two running fractions remember the steepest climb and the steepest descent that passed cells require.
 A cell center is tested in constant time against those fractions.
 Breadth-first search (shortest paths on an unweighted grid) then visits cells that see either station.
-It checks four neighbours per cell and the climb and descent limits.
+It checks four neighbors per cell and the climb and descent limits.
 
 Cost per station is one gcd per cell plus one march per ray.
 Checking every cell pair would repeat work on shared rays.
@@ -344,7 +344,7 @@ for j in 1..testCount:
 stdout.write outputBuffer
 ```
 
-The case loop reads the grid and both station cells. Two visibility calls mark the cells that see a station. The queue visits four neighbours and checks the height rule. The first arrival at the second station gives the minimum length.
+The case loop reads the grid and both station cells. Two visibility calls mark the cells that see a station. The queue visits four neighbors and checks the height rule. The first arrival at the second station gives the minimum length.
 
 ## Complexity
 

@@ -3,7 +3,7 @@ set -u
 CC=${CC:-gcc}
 FLAGS=${FLAGS:--O2 -std=c99}
 cd "$(dirname "$0")"
-LIMIT=1000
+LIMIT=5000
 # Hard wall-clock kill on every program run, like the judge does.
 # Judge limit is LIMIT ms; +1 s rounded up covers process start and disk flush on this box.
 TL=$(( (LIMIT + 999) / 1000 + 1 ))

@@ -37,7 +37,7 @@ Sample output:
 
 ## Idea
 
-Slide a frame along the row and track which colours sit inside it, like counting pictures with two or three colours. For a fixed left end, grow the right end until the frame holds too many distinct values.
+Slide a frame along the row and track which colors sit inside it, like counting pictures with two or three colors. For a fixed left end, grow the right end until the frame holds too many distinct values.
 
 The algorithm scans every left end and extends a right end incrementally. A new value adds one to the distinct count only on its first appearance in the current window. Each extension costs a short search over earlier positions in that window.
 

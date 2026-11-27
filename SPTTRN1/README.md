@@ -156,7 +156,7 @@ Each layer draws four arms around a shrinking square. It costs O(s) cells per la
 
 1. The first arm fills the top row, so the pattern starts with stars.
 2. Each new layer sits two rows and two columns inside the previous one, leaving a dot gap.
-3. The bottom arm shortens when the layer is only two rows tall, so the centre stays open.
+3. The bottom arm shortens when the layer is only two rows tall, so the center stays open.
 4. The blank line after every case matches the sample's byte shape.
 
 | Term | Meaning |

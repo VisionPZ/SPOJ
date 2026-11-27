@@ -4,7 +4,7 @@
 
 ## Problem
 
-A specimen starts on one cell of an n by m grid. Each second, every occupied cell may spread to at most two of its four side neighbours, and occupied cells stay occupied. Report the fewest seconds needed to fill the grid.
+A specimen starts on one cell of an n by m grid. Each second, every occupied cell may spread to at most two of its four side neighbors, and occupied cells stay occupied. Report the fewest seconds needed to fill the grid.
 
 Input starts with T, the number of test cases. Each of the next T lines holds four integers: rows n, columns m, starting row x, and starting column y. Output one minimum time per line.
 
@@ -37,7 +37,7 @@ Sample output:
 
 The slowest cell is a farthest corner, like the last house reached when news travels one street per minute in each direction. Each second adds one step of row or column distance, so a cell at Manhattan distance d cannot fill sooner than d seconds.
 
-The two-neighbour rule supplies enough branching to fill every cell within that distance. One formula with four subtractions answers each case in constant time. Simulating every spread step would cost far more work on a large grid.
+The two-neighbor rule supplies enough branching to fill every cell within that distance. One formula with four subtractions answers each case in constant time. Simulating every spread step would cost far more work on a large grid.
 
 The answer is the largest Manhattan distance from the start to any cell.
 
@@ -48,7 +48,7 @@ The answer is the largest Manhattan distance from the start to any cell.
 3. The farthest row distance is the larger of x - 1 and n - x.
 4. The farthest column distance is the larger of y - 1 and m - y.
 5. Adding those two maxima gives the distance to a farthest corner.
-6. Two new neighbours per occupied cell fill every closer cell inside that time.
+6. Two new neighbors per occupied cell fill every closer cell inside that time.
 
 | term | meaning |
 |---|---|

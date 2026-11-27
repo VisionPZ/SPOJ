@@ -4,7 +4,7 @@
 
 ## Problem
 
-A wire is `n` metres long and must be cut into `k` pieces of one equal length, as long as possible. Each cut made in the middle destroys `m` metres, which are thrown away, and the ends may be trimmed by any amount. The program prints the greatest length each piece can have.
+A wire is `n` meters long and must be cut into `k` pieces of one equal length, as long as possible. Each cut made in the middle destroys `m` meters, which are thrown away, and the ends may be trimmed by any amount. The program prints the greatest length each piece can have.
 
 Input starts with `T`, the number of test cases. Each test case is one line with `n`, `k` and `m`. Output holds one integer per test case.
 
@@ -32,21 +32,21 @@ The sample case:
 
 ## Idea
 
-Cutting a wire into `k` equal pieces needs exactly `k - 1` cuts, so `m * (k - 1)` metres are lost before the pieces are measured. What is left, `n - m * (k - 1)`, split evenly over `k` pieces gives the answer, rounded down because the ends can be trimmed. Think of a baker with a long loaf and a thick knife: every slice costs crumbs, so the loaf is divided after subtracting the crumbs. This is one subtraction and one division per case, replacing a binary search over all candidate lengths.
+Cutting a wire into `k` equal pieces needs exactly `k - 1` cuts, so `m * (k - 1)` meters are lost before the pieces are measured. What is left, `n - m * (k - 1)`, split evenly over `k` pieces gives the answer, rounded down because the ends can be trimmed. Think of a baker with a long loaf and a thick knife: every slice costs crumbs, so the loaf is divided after subtracting the crumbs. This is one subtraction and one division per case, replacing a binary search over all candidate lengths.
 
 ## Why It Works
 
-1. Placing `k` pieces end to end in a row needs `k - 1` boundaries between them, and each boundary is one cut that removes `m` metres.
-2. After those losses, `k` pieces of length `L` need `k * L + (k - 1) * m` metres, so the largest feasible `L` is the floor of the leftover length divided by `k`.
+1. Placing `k` pieces end to end in a row needs `k - 1` boundaries between them, and each boundary is one cut that removes `m` meters.
+2. After those losses, `k` pieces of length `L` need `k * L + (k - 1) * m` meters, so the largest feasible `L` is the floor of the leftover length divided by `k`.
 3. Trimming the ends means leftover wire is allowed, which floor division models exactly.
 4. When the losses alone exceed `n`, no positive piece fits; clamping the leftover at 0 gives length 0, which the statement guarantees is always possible.
 5. The product `(k - 1) * m` reaches about 10^18, so the arithmetic is done in 64-bit integers to avoid overflow.
 
 | Term | Meaning |
 |---|---|
-| `wireLength` | `n`, the length in metres |
+| `wireLength` | `n`, the length in meters |
 | `sectionCount` | `k`, the number of equal pieces |
-| `cutLoss` | `m`, the metres lost per cut |
+| `cutLoss` | `m`, the meters lost per cut |
 | `usableLength` | `n - (k - 1) * m`, clamped at 0 |
 | `sectionLength` | the answer for the case |
 

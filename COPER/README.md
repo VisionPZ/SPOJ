@@ -50,7 +50,7 @@ Across all three regimes of `g` vs `maxC = max(c_i)`:
 - **`1 < g <= maxC + 1`**: At most `g * ((maxC div g) + 2) <= 30 000` runs total across all `g` rows, fitting inside L2 cache (~240 KB). Tracking `rowActiveRuns` eliminates per-box row fullness checks on the fast path.
 - **`g > maxC + 1`**: Only rows `0 .. maxC` receive direct probes (with 2 runs each: carry 0 and carry 1). All remaining rows `maxC + 1 .. g - 1` collapse into a single virtual overflow row filled sequentially row by row.
 
-For the second pass, a single-walker cycle trace stalls on L2/L3 cache latency (one dependent load in flight at a time). Running 24 independent walkers concurrently with work-stealing and write prefetching (`__builtin_prefetch`) keeps ~24 memory loads in flight in parallel. Because every vertex in a permutation has in-degree 1, a walker hitting a visited vertex can only collide with one of the 24 active walker origins, so 24 recycled tags suffice to detect cycles and merge paths in O(1) space.
+For the second pass, a single-walker cycle trace stalls on L2/L3 cache latency (one dependent load in flight at a time). Running 24 independent walkers concurrently with work-stealing and write prefetching (`__builtin_prefetch`) keeps ~24 memory loads in flight in parallel. Every vertex in a permutation has in-degree 1, so a walker hitting a visited vertex can only meet one of the 24 active walker origins. Therefore 24 recycled tags detect cycles and merge paths in O(1) space.
 
 Finally, normalized parameter tuples `(N, M mod N, q mod m, p mod m, m, d_eff)` are memoized in a fixed open-addressing hash table so repeated cases answer in O(1).
 

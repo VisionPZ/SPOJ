@@ -76,7 +76,7 @@ The terms carry the proof.
 
 These names cover the whole driver.
 
-The generator's oracle merge-sorts the sample values 2, -1, 8, 3, 0 into -1, 0, 2, 3, 8: it splits the row in half, sorts each half, then walks both halves together, always taking the smaller head. The listing prints -1 at a[1] and 8 at a[5].
+The generator's oracle merge-sorts `2, -1, 8, 3, 0` into `-1, 0, 2, 3, 8`. It splits the row in half, sorts each half, and merges them by always taking the smaller head. The listing prints -1 at a[1] and 8 at a[5].
 
 No rounding applies. The scanner keeps the minus sign, so -1 survives the parse.
 

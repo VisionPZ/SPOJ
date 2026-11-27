@@ -4,7 +4,7 @@
 
 ## Problem
 
-Two pieces start on a grid of at most 20 by 20 cells, one marked a and one marked b. On each move both pieces step to a neighbouring cell or stay, and the goal is to exchange their starting cells.
+Two pieces start on a grid of at most 20 by 20 cells, one marked a and one marked b. On each move both pieces step to a neighboring cell or stay, and the goal is to exchange their starting cells.
 
 Walls block movement, the pieces may never share a cell, and they may not pass through each other. Each case gives its dimensions and board rows; a line with two zeros ends the input.
 
@@ -48,7 +48,7 @@ IMPOSSIBLE
 
 ## Idea
 
-Treat the two pieces as one traveller, like a pair of dancers moving together. The state is the pair of occupied cells, and one move changes both cells at once. Breadth-first search gives the fewest moves because every step has the same cost.
+Treat the two pieces as one traveler, like a pair of dancers moving together. The state is the pair of occupied cells, and one move changes both cells at once. Breadth-first search gives the fewest moves because every step has the same cost.
 
 From each state there are at most 25 next states, minus the illegal ones. A separate search per permutation would miss the rule that both pieces move in the same turn.
 
@@ -185,7 +185,7 @@ while true:
 
 Positions outside the board or inside walls get a negative marker.
 The starting cells are found with one pass over the board string.
-The neighbour table is reused for both pieces in every state.
+The neighbor table is reused for both pieces in every state.
 
 **Breadth-first search and output.** States are dequeued until the swapped goal appears.
 
@@ -244,7 +244,7 @@ There are at most 400 cells, so at most 160000 joint states.
 
 | phase | time | space |
 |---|---|---|
-| board setup | five checks per cell | one neighbour table |
+| board setup | five checks per cell | one neighbor table |
 | search | 25 transitions per state | state, distance, and queue arrays |
 | output | one line per case | block buffer |
 

@@ -58,7 +58,7 @@ Each candidate costs constant work, so a case is fast.
 4. While the cut stays within the width, the radius grows, and the wrap along `w` has height `h-x`.
 5. The volume pi times x squared times h minus x, divided by four, grows until x equals two thirds of h.
 6. The best cut is therefore at a feasibility boundary, where a strip length equals the circumference.
-7. Checking every boundary plus a small neighbourhood covers all maximum points.
+7. Checking every boundary plus a small neighborhood covers all maximum points.
 
 | Term | Meaning |
 |---|---|

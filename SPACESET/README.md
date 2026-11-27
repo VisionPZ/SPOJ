@@ -4,7 +4,7 @@
 
 ## Problem
 
-A colony has m ring-shaped levels, each holding n settlements, with every settlement linked to all settlements on neighbouring levels. Count the routes that use exactly k stops, starting settlement included, modulo a fixed number.
+A colony has m ring-shaped levels, each holding n settlements, with every settlement linked to all settlements on neighboring levels. Count the routes that use exactly k stops, starting settlement included, modulo a fixed number.
 
 The first input line holds the test count `T`. Each test line holds `m`, `n`, and `k` in that order. Print one line per test with the route count modulo 12345678.
 
@@ -47,7 +47,7 @@ Every settlement in the colony offers the same number of next stops, like a news
 
 The algorithm counts the outgoing stops at one settlement and raises that count to the power of k minus 1, then multiplies by the number of starting settlements. Modular exponentiation handles large exponents in logarithmic time.
 
-A ring with one or two settlements offers one ring move; a larger ring offers two. Cross-level moves offer n choices for each neighbouring level, of which there are none, one, or two depending on m.
+A ring with one or two settlements offers one ring move; a larger ring offers two. Cross-level moves offer n choices for each neighboring level, of which there are none, one, or two depending on m.
 
 Walking the whole graph once per test would need m times n vertices, which is impossible at the stated bounds.
 
@@ -56,8 +56,8 @@ The uniform out-degree reduces each test to one short exponentiation.
 ## Why It Works
 
 1. A route with k stops makes k minus 1 moves between settlements.
-2. Each settlement has `ringMoves` ring choices and `levelNeighbors` neighbouring levels.
-3. Each neighbouring level contributes n choices, so the out-degree is the ring moves plus those choices.
+2. Each settlement has `ringMoves` ring choices and `levelNeighbors` neighboring levels.
+3. Each neighboring level contributes n choices, so the out-degree is the ring moves plus those choices.
 4. Every settlement has this same out-degree, so the walk count is the starting places times that degree raised to d.
 5. With d equal to k minus 1 and arithmetic modulo 12345678, fast exponentiation gives the answer directly.
 
@@ -66,7 +66,7 @@ The main terms and formulas:
 | term | meaning |
 |---|---|
 | `ringMoves` | ring choices at one settlement |
-| `levelNeighbors` | count of distinct neighbouring levels |
+| `levelNeighbors` | count of distinct neighboring levels |
 | `baseMoves` | total choices at one settlement |
 | `crossings` | k minus 1, the number of moves |
 
@@ -159,7 +159,7 @@ outputBuffer.setLen 0
 ```
 
 One level removes cross-level travel entirely.
-Two levels meet only once, so they count as one neighbour.
+Two levels meet only once, so they count as one neighbor.
 One buffered write emits all test answers.
 
 ## Complexity

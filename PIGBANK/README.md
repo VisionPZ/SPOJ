@@ -1,4 +1,6 @@
-# PIGBANK - Piggy-Bank
+# PIGBANK — Piggy-Bank (SPOJ)
+
+<https://www.spoj.com/problems/PIGBANK/>
 
 ## Problem
 

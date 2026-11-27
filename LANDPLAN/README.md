@@ -42,7 +42,7 @@ Sample output:
 
 ## Idea
 
-A picture frame needs two full rows and, between them, rows that are just two nails with empty space. The program builds one border row and one inner row per case, then prints them in the right order.
+A picture frame needs two full rows and, between them, rows with two nails and empty space. The program builds one border row and one inner row per case, then prints them in the right order.
 
 Reusing the same two row strings avoids rebuilding text for every line. A blank line after each plot keeps the cases apart.
 

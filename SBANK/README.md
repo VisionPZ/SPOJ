@@ -1,4 +1,6 @@
-# SBANK - Sorting Bank Accounts
+# SBANK — Sorting Bank Accounts (SPOJ)
+
+<https://www.spoj.com/problems/SBANK/>
 
 ## Problem
 
@@ -13,14 +15,14 @@ so reading and sorting must be fast.
 ## Idea
 
 Read every account line as one string, collapse its spaces so equal accounts
-become byte identical, sort the strings and count equal neighbours.
+become byte identical, sort the strings and count equal neighbors.
 
 ## Why It Works
 
 All accounts have the same field layout, so ordinary string order is exactly the
 required numeric order: comparing character by character compares the control
 digits, then the bank code, then the owner groups in that order. After sorting,
-identical accounts are neighbours, so one forward pass counts each group. Collapsing
+identical accounts are neighbors, so one forward pass counts each group. Collapsing
 runs of spaces matters because the input may carry a trailing space on each line
 while the expected output has single spaces between the groups.
 

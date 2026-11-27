@@ -4,7 +4,7 @@
 
 ## Problem
 
-For every tree in a row, find the smallest disorder coefficient after swapping it with any other tree, or after leaving the row unchanged. Disorder is the sum of absolute height differences between neighbours.
+For every tree in a row, find the smallest disorder coefficient after swapping it with any other tree, or after leaving the row unchanged. Disorder is the sum of absolute height differences between neighbors.
 
 Input gives n, then n heights from 1 to 100000000. Output gives n lines, one minimum disorder per tree position.
 
@@ -14,7 +14,7 @@ Input gives n, then n heights from 1 to 100000000. Output gives n lines, one min
 | height h_i | 1 to 100000000 |
 | judge limit | 1000 ms, 1536 MB |
 
-The fixed two-neighbour cost shape allows a height sweep instead of testing every pair.
+The fixed two-neighbor cost shape allows a height sweep instead of testing every pair.
 
 Sample input and output:
 
@@ -35,27 +35,27 @@ The two blocks come from the statement and drive the checks.
 
 ## Idea
 
-Think of replacing one tile in a mosaic: only its two neighbours and the other tile's two neighbours change. Write each candidate's cost as a V-shaped function of height, then sweep heights with nine range-minimum trees to find the best partner.
+Think of replacing one tile in a mosaic: only its two neighbors and the other tile's two neighbors change. Write each candidate's cost as a V-shaped function of height, then sweep heights with nine range-minimum trees to find the best partner.
 
-The program sorts inner trees by height and moves each tree through three cost states as the sweep passes its neighbours. Each event and each query costs O(log n). Testing all pairs directly costs O(n^2).
+The program sorts inner trees by height and moves each tree through three cost states as the sweep passes its neighbors. Each event and each query costs O(log n). Testing all pairs directly costs O(n^2).
 
 A few range-minimum trees replace the quadratic pair search.
 
 ## Why It Works
 
-1. For an inner tree, replacing height x costs a constant plus twice the distance from x to its neighbour interval.
+1. For an inner tree, replacing height x costs a constant plus twice the distance from x to its neighbor interval.
 2. The constants cancel in a swap, leaving twice the sum of two distance changes.
-3. Each candidate's contribution changes slope only at its neighbour interval bounds.
+3. Each candidate's contribution changes slope only at its neighbor interval bounds.
 4. Sorting candidates by height lets one sweep move each tree through three states.
 5. Range queries on height splits the best partner into below, inside and above cases.
 6. Three states times three height offsets give nine trees with constant query work.
-7. End trees and neighbour positions use a direct O(1) swap check.
+7. End trees and neighbor positions use a direct O(1) swap check.
 
 | term | meaning |
 |---|---|
-| `distanceValue` | distance from a height to its neighbour interval |
+| `distanceValue` | distance from a height to its neighbor interval |
 | `stateTrees` | nine range-minimum trees for states and offsets |
-| `moveEvents` | neighbour-boundary crossings in sweep order |
+| `moveEvents` | neighbor-boundary crossings in sweep order |
 | `swapDelta` | direct cost change for one pair |
 
 The sweep finds the best inner partner while direct checks cover the boundary cases.
@@ -109,7 +109,7 @@ proc appendOutput(text: string) =
 ```
 
 magnitude avoids signed overflow in differences.
-distanceToRange measures distance to a neighbour interval.
+distanceToRange measures distance to a neighbor interval.
 
 **Range-minimum tree and sweep helpers.**
 
@@ -263,7 +263,7 @@ for position in [1, treeCount]:
 var interiorPositions = newSeq[int](treeCount - 2)
 ```
 
-Inner trees use a neighbour interval and twice its distance.
+Inner trees use a neighbor interval and twice its distance.
 Adjacent swaps recompute only the three touched edges.
 
 **Height sweep and final answers.**
@@ -396,7 +396,7 @@ outputBuffer.setLen 0
 
 Nine trees hold candidate values for the three offsets.
 Events move a tree into its next state at each boundary.
-Excluded neighbours are removed, queried, then restored.
+Excluded neighbors are removed, queried, then restored.
 
 ## Complexity
 

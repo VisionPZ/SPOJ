@@ -34,15 +34,22 @@ var queryValues = newSeq[int](caseCount)
 for caseIndex in 0 .. caseCount - 1:
   queryValues[caseIndex] = nextInt(inputData, scanPos)
 
-var popcountTable = newSeq[int](1 shl tableBits)
+var popcountTable = newSeq[uint8](1 shl tableBits)
 for tableIndex in 1 .. (1 shl tableBits) - 1:
-  popcountTable[tableIndex] = popcountTable[tableIndex div 2] + (tableIndex and 1)
+  popcountTable[tableIndex] = popcountTable[tableIndex shr 1] + uint8(tableIndex and 1)
 
-var compositeFlags = newSeq[bool](sieveLimit div 2 + 1)
+let halfLimit = sieveLimit div 2
+var compositeBits = newSeq[uint64]((halfLimit shr 6) + 1)
 let rootValue = int(sqrt(float(sieveLimit))) + 1
-var rootIndex = 1
-while 2 * rootIndex + 1 <= rootValue:
-  rootIndex += 1
+let rootHalf = rootValue div 2
+
+for index in 1 .. rootHalf:
+  if (compositeBits[index shr 6] and (1'u64 shl (index and 63))) == 0'u64:
+    let primeValue = 2 * index + 1
+    var multipleIndex = (primeValue * primeValue) shr 1
+    while multipleIndex <= halfLimit:
+      compositeBits[multipleIndex shr 6] = compositeBits[multipleIndex shr 6] or (1'u64 shl (multipleIndex and 63))
+      multipleIndex += primeValue
 
 var primeValues = newSeq[int32](1)
 primeValues[0] = 2'i32
@@ -57,19 +64,15 @@ var nextBitBoundary = 4
 var bitsSoFar: int32 = 2
 var onesSoFar: int32 = 1
 
-for index in 1 .. sieveLimit div 2:
-  if compositeFlags[index]:
+for index in 1 .. halfLimit:
+  if (compositeBits[index shr 6] and (1'u64 shl (index and 63))) != 0'u64:
     continue
   let primeValue = 2 * index + 1
-  var multipleIndex = (primeValue * primeValue) div 2
-  while multipleIndex <= sieveLimit div 2:
-    compositeFlags[multipleIndex] = true
-    multipleIndex += primeValue
   if primeValue >= nextBitBoundary:
     currentBitLength += 1
     nextBitBoundary = 1 shl currentBitLength
-  let onesInPrime = popcountTable[primeValue and ((1 shl tableBits) - 1)] +
-                    popcountTable[primeValue shr tableBits]
+  let onesInPrime = int(popcountTable[primeValue and ((1 shl tableBits) - 1)]) +
+                    int(popcountTable[primeValue shr tableBits])
   bitsSoFar += int32(currentBitLength)
   onesSoFar += int32(onesInPrime)
   primeValues.add int32(primeValue)

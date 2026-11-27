@@ -47,11 +47,11 @@ The algorithm is a linear scan with a hand-written integer reader and a block ou
 
 | term | meaning |
 |---|---|
-| `inputData` | all stdin text read in one pass |
-| `scanPos` | current byte position in the input text |
+| `buffer` | 64 KiB read buffer filled by `fread` |
+| `position` | current byte cursor inside `buffer` |
 | `leftHand` | first integer of the current pair |
 | `rightHand` | second integer of the current pair |
-| `outputBuffer` | pending answer lines |
+| `outputBuffer` | 128 KiB buffer for pending answer lines |
 
 The scanner skips spaces and line breaks, so extra whitespace is harmless.
 
@@ -67,68 +67,83 @@ The trace reproduces the sample output exactly.
 
 ## Code
 
-**Input and scanner.** The program reads all of stdin, then scans integers by hand.
+**Buffered scanner.** `Scanner` refills a 64 KiB buffer with `fread` and returns false at EOF.
 
-```nim
-const flushBlockBytes = 1 shl 17
+```cpp
+#include <cstdio>
+#include <cstddef>
 
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
+typedef unsigned long long u64;
 
-var scanPos = 0
-
-proc nextInt(data: string, pos: var int): int =
-  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
-    pos += 1
-  var value = 0
-  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    value = value * 10 + int(data[pos]) - 48
-    pos += 1
-  return value
+struct Scanner {
+  static const int BufferSize = 1 << 16;
+  char buffer[BufferSize];
+  int position = 0;
+  int length = 0;
+  int get() {
+    if (position >= length) {
+      length = (int)fread(buffer, 1, BufferSize, stdin);
+      position = 0;
+      if (length == 0) return -1;
+    }
+    return buffer[position++];
+  }
+  bool nextNumber(u64 &value) {
+    int c = get();
+    while (c != -1 && (c < '0' || c > '9')) c = get();
+    if (c == -1) return false;
+    value = 0;
+    while (c >= '0' && c <= '9') {
+      value = value * 10ULL + (u64)(c - '0');
+      c = get();
+    }
+    return true;
+  }
+} scanner;
 ```
 
-One read loop captures the entire input.
-The scanner advances over digits and ignores separators.
-No parse work happens during the read loop.
+`nextNumber` skips non-digit bytes and stops cleanly at EOF.
+Reading in 64 KiB blocks avoids per-line syscalls.
+Unsigned 64-bit parsing keeps large sums exact.
 
-**Buffered output.** One helper holds answers until the block is full.
+**Pair loop and block output.** Each pair is summed, formatted into `outputBuffer`, and flushed every 64 KiB.
 
-```nim
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
+```cpp
+int main() {
+  static char outputBuffer[1 << 17];
+  int outputLength = 0;
+  u64 leftHand, rightHand;
+  while (scanner.nextNumber(leftHand)) {
+    if (!scanner.nextNumber(rightHand)) break;
+    u64 sum = leftHand + rightHand;
+    char scratch[24];
+    int scratchLength = 0;
+    if (sum == 0) scratch[scratchLength++] = '0';
+    while (sum > 0) {
+      scratch[scratchLength++] = (char)('0' + (sum % 10ULL));
+      sum /= 10ULL;
+    }
+    while (scratchLength > 0) {
+      outputBuffer[outputLength++] = scratch[--scratchLength];
+      if (outputLength >= (1 << 16)) {
+        fwrite(outputBuffer, 1, (size_t)outputLength, stdout);
+        outputLength = 0;
+      }
+    }
+    outputBuffer[outputLength++] = '\n';
+    if (outputLength >= (1 << 16)) {
+      fwrite(outputBuffer, 1, (size_t)outputLength, stdout);
+      outputLength = 0;
+    }
+  }
+  fwrite(outputBuffer, 1, (size_t)outputLength, stdout);
+  return 0;
+}
 ```
 
-The buffer grows with appended text.
-A write happens only after crossing the block size.
-The final flush happens after the pair loop.
-
-**Pair loop.** The program reads two integers per iteration until no digits remain.
-
-```nim
-while true:
-  while scanPos < inputData.len and (inputData[scanPos] < '0' or inputData[scanPos] > '9'):
-    scanPos += 1
-  if scanPos >= inputData.len:
-    break
-  let leftHand = int64(nextInt(inputData, scanPos))
-  let rightHand = int64(nextInt(inputData, scanPos))
-  appendOutput($(leftHand + rightHand))
-  outputBuffer.add '\n'
-stdout.write outputBuffer
-outputBuffer.setLen 0
-```
-
-The guard before each pair stops the loop cleanly at EOF.
-Each sum is converted to text and appended with its newline.
-The last write clears the remaining buffer once.
+The second `nextNumber` check guards against an incomplete trailing pair.
+Digits are reversed through `scratch` straight into `outputBuffer`.
+The final `fwrite` flushes all remaining buffered lines.
 
 ## Complexity
 

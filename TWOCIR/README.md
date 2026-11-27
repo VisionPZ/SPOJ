@@ -13,7 +13,7 @@ Input starts with test count T. Each case has two lines of nine integers, three 
 | points per circle | 3 non-collinear points |
 | judge limit | 1000 ms, 1536 MB |
 
-The three points determine each circle's plane, centre, and radius.
+The three points determine each circle's plane, center, and radius.
 
 Sample input:
 
@@ -40,14 +40,14 @@ The real algorithm intersects one circle with the other circle's plane in O(1) t
 1. Three non-collinear points define a plane and a circumcircle.
 2. A circle meets another plane in at most two points.
 3. Those points lie on the line where the two planes cross.
-4. The midpoint of that chord is the projection of the first centre onto the line.
+4. The midpoint of that chord is the projection of the first center onto the line.
 5. Both crossings lie inside the second disk, or both lie outside, when the circles are separate.
 6. One crossing inside and one outside means the curves pass through the disk once, so they are linked.
 7. Parallel planes give no crossings and no link.
 
 | term | meaning |
 |---|---|
-| `CircleData` | centre, radius, and unit plane normal |
+| `CircleData` | center, radius, and unit plane normal |
 | `alignment` | dot product of the two plane normals |
 | `squaredCross` | squared sine of the angle between planes |
 | `chordCenter` | midpoint of the two crossing points |
@@ -56,7 +56,7 @@ The real algorithm intersects one circle with the other circle's plane in O(1) t
 
 A script evaluated the sample with a numerical linking integral and got `1.000000`, confirming `YES`.
 
-The first circle lies in the plane `z = 0` with radius 1. The second lies in `y = 0` with centre `(1, 0, 0)` and radius 1. The crossings are `(1, 0, 0)` inside the disk and `(-1, 0, 0)` outside it.
+The first circle lies in the plane `z = 0` with radius 1. The second lies in `y = 0` with center `(1, 0, 0)` and radius 1. The crossings are `(1, 0, 0)` inside the disk and `(-1, 0, 0)` outside it.
 
 The check runs in both directions as a guard; both directions agree for disjoint circles.
 

@@ -53,8 +53,8 @@ Takeaway: strip leaves first, then settle pairs by turn count.
 
 ## Why It Works
 
-1. Neighbours of any square form an independent set on a triangle-free board.
-2. A runner next to the cop can step to another neighbour at distance two, unless that runner sits at a leaf.
+1. Neighbors of any square form an independent set on a triangle-free board.
+2. A runner next to the cop can step to another neighbor at distance two, unless that runner sits at a leaf.
 3. A catch therefore needs the runner at a leaf with the cop adjacent.
 4. The core survives leaf stripping, so a runner there keeps stepping inside and never becomes a leaf.
 5. Before the runner moves, `before(r, c)` takes the maximum of `after(r', c)` over runner moves. After the runner moves, `after(r, c)` is one plus the minimum over cop moves. Adjacent squares give one directly.

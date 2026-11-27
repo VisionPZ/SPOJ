@@ -156,7 +156,7 @@ The start time is zero.
 All other times begin at a large sentinel.
 Light data is stored by intersection index.
 
-**Relaxation.** Each settled node applies its wait rule once, then updates neighbours.
+**Relaxation.** Each settled node applies its wait rule once, then updates neighbors.
 
 ```nim
 for step in 0 .. intersectionCount - 1:

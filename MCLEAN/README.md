@@ -64,7 +64,7 @@ Sample output:
 
 ## Idea
 
-Turn the floor into a small graph, then take the shortest tour through the dirty tiles. This is a travelling-salesman sweep over at most ten targets.
+Turn the floor into a small graph, then take the shortest tour through the dirty tiles. This is a traveling-salesman sweep over at most ten targets.
 
 Breadth-first search from the robot and from each dirty tile gives every leg length. Bitmask dynamic programming then chooses the visit order, like a delivery driver picking the next stop.
 

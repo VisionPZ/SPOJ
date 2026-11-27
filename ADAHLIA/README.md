@@ -4,7 +4,7 @@
 
 ## Problem
 
-A generator produces flower diameters with the recurrence A[i+1] = (a*A[i] + b) mod c. Sort all N diameters and report the largest gap between neighbouring values.
+A generator produces flower diameters with the recurrence A[i+1] = (a*A[i] + b) mod c. Sort all N diameters and report the largest gap between neighboring values.
 
 Input is one line with N, a, b, c and A[0]. Output one integer, the maximum sorted gap.
 
@@ -36,7 +36,7 @@ The sorted diameters are 2, 2, 6, 6, 7, 7, 15, 15, 17, 17.
 
 ## Idea
 
-Sorting forty million numbers is like sorting a whole library to find the widest shelf gap. Divide the value range into N equal buckets instead. The widest gap across buckets is at least one bucket width, so any gap inside one bucket cannot win. Track the minimum and maximum value per bucket, then compare neighbouring nonempty buckets. Two generator passes avoid storing all diameters, and a 128-bit helper computes each product exactly. Generate twice, then compare bucket edges.
+Sorting forty million numbers is like sorting a whole library to find the widest shelf gap. Divide the value range into N equal buckets instead. The widest gap across buckets is at least one bucket width, so any gap inside one bucket cannot win. Track the minimum and maximum value per bucket, then compare neighboring nonempty buckets. Two generator passes avoid storing all diameters, and a 128-bit helper computes each product exactly. Generate twice, then compare bucket edges.
 
 ## Why It Works
 

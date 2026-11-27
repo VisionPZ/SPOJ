@@ -3,7 +3,7 @@
 
 ## Problem
 
-A world is a string of n spots marked R for rain or . for dry. A mouth of length L drinks from a run of L spots and gains one litre per rainy spot. Among the given mouth lengths, choose one that can drink the most water, breaking ties toward the shortest length. Report that length.
+A world is a string of n spots marked R for rain or . for dry. A mouth of length L drinks from a run of L spots and gains one liter per rainy spot. Among the given mouth lengths, choose one that can drink the most water, breaking ties toward the shortest length. Report that length.
 
 The first line gives n and m. The second line gives the world string. The third line gives m distinct mouth lengths. Print one integer, the chosen length.
 

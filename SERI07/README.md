@@ -1,4 +1,6 @@
-# SERI07 — Strange But Easy
+# SERI07 — Strange But Easy (SPOJ)
+
+<https://www.spoj.com/problems/SERI07/>
 
 ## Problem
 

@@ -41,7 +41,7 @@ Compute the values once for all lengths up to 800, then answer each case in cons
 
 1. An L-piece occupies three cells of a 2×2 block, so one of its columns gets both cells and becomes full.
 2. A full column blocks every future piece, so it splits the board into independent runs.
-3. A partial column has one empty cell and one full neighbour, so only its open side can be used.
+3. A partial column has one empty cell and one full neighbor, so only its open side can be used.
 4. An empty run, a run with one partial end, and a run with two partial ends cover every reachable shape.
 5. The mex of the exclusive-or values of all replies gives each run its Grundy number.
 

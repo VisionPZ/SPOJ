@@ -4,10 +4,10 @@
 
 ## Problem
 
-Children know how many sweets each neighbour gives and want a subset whose total divides evenly.
-Find such neighbours, or report that none exists, for every test case.
+Children know how many sweets each neighbor gives and want a subset whose total divides evenly.
+Find such neighbors, or report that none exists, for every test case.
 
-Each case starts with `c n`, the number of children and neighbours, where `1 ≤ c ≤ n ≤ 100000`.
+Each case starts with `c n`, the number of children and neighbors, where `1 ≤ c ≤ n ≤ 100000`.
 The next line holds `n` sweet counts, each from 1 to 100000.
 A line `0 0` ends the input.
 Print indices of one valid subset on one line, or `no sweets`.
@@ -16,8 +16,8 @@ Any valid subset is accepted.
 | Item | Bound |
 |---|---|
 | Children c | 1 to 100000 |
-| Neighbours n | c to 100000 |
-| Sweets per neighbour | 1 to 100000 |
+| Neighbors n | c to 100000 |
+| Sweets per neighbor | 1 to 100000 |
 | Judge limit | 2235 ms, 1536 MB |
 
 Each printed child must receive at least one sweet, so the chosen total is positive and divisible by `c`.
@@ -44,31 +44,31 @@ Sample output:
 Think of a row of prefix totals and two matching remainders, like two identical marks on a ruler.
 The sweets between those marks form a block whose sum is divisible by the number of children.
 Track the first position for each remainder and stop at the first repeated mark.
-One pass over the neighbours finds the block, and printing its indices costs one more pass.
+One pass over the neighbors finds the block, and printing its indices costs one more pass.
 
 ## Why It Works
 
 1. Let P(i) be the sum of the first i sweet counts.
 2. The sum between positions left and right equals P(right) minus P(left).
 3. That difference is divisible by `c` exactly when both prefix sums have the same remainder.
-4. A prefix sum with remainder zero pairs with the empty prefix, giving a block starting at neighbour 1.
+4. A prefix sum with remainder zero pairs with the empty prefix, giving a block starting at neighbor 1.
 5. There are n prefix sums and only c remainders, and n is at least c, so a repeat always exists.
 6. Scanning right to left in index order picks the earliest ending position and its earliest partner.
-7. The resulting block has at least one neighbour, so every child gets at least one sweet.
+7. The resulting block has at least one neighbor, so every child gets at least one sweet.
 
 | Term | Meaning |
 |---|---|
 | `runningRemainder` | prefix sum remainder modulo the child count |
-| `firstSeenAt` | first neighbour index seen for each remainder |
+| `firstSeenAt` | first neighbor index seen for each remainder |
 | `firstNeighbour` | first index of the chosen block |
 | `lastNeighbour` | last index of the chosen block |
 
 For the first sample case, the prefix remainders are 1, 3, 2, 1, 2.
-The remainder 2 repeats at positions 3 and 5, so the block from neighbour 4 to 5 works.
-The statement prints another valid subset, neighbour 3 and neighbour 5.
+The remainder 2 repeats at positions 3 and 5, so the block from neighbor 4 to 5 works.
+The statement prints another valid subset, neighbor 3 and neighbor 5.
 Both totals divide by 4, and the judge accepts either.
 
-A case with one child ends at the first neighbour.
+A case with one child ends at the first neighbor.
 No rounding or floating-point arithmetic appears in this solution.
 
 ## Code
@@ -164,12 +164,12 @@ Every sweet count is read even after a block is found.
 
 ## Complexity
 
-Each case reads every neighbour once and prints one chosen block.
+Each case reads every neighbor once and prints one chosen block.
 
 | Phase | Time | Space |
 |---|---|---|
 | Input read | one pass over all sweet counts | one input string |
-| Remainder scan | one step per neighbour | array of c positions |
+| Remainder scan | one step per neighbor | array of c positions |
 | Output | one line per case | one block buffer |
 
 | Measure | Big O |

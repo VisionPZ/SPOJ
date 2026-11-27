@@ -109,6 +109,8 @@ def write(name, cases):
     (ROOT / "out" / f"{name}.out").write_text("\n".join(output_lines) + "\n")
 
 
+(ROOT / "in").mkdir(exist_ok=True)
+(ROOT / "out").mkdir(exist_ok=True)
 generator = random.Random(20261125)
 write("1_sample", [SAMPLE])
 write("2_edges", [

@@ -64,7 +64,7 @@ Repeated rewrite passes over the raw text would need many scans and would mishan
 | `needsSpace` | decides whether two adjacent fragments need a space |
 | `lineCount` | number of identical lines described by a sentence |
 
-The implicit-space rule depends only on the kinds of the two neighbouring fragments.
+The implicit-space rule depends only on the kinds of the two neighboring fragments.
 
 A script split the sample into sentences and traced the decoded lines.
 
@@ -233,7 +233,7 @@ A tens word absorbs a following units word.
 The designator maps each fragment to one of three kinds.
 Two strings never gain an implicit space between them.
 
-**Sequence decoding.** Each fragment is expanded once, then joined with its neighbours.
+**Sequence decoding.** Each fragment is expanded once, then joined with its neighbors.
 
 ```nim
 proc parseSequence(sentence: seq[Token], startPos: int): string =

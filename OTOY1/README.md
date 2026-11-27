@@ -6,7 +6,7 @@
 
 Sum Euler's totient over every number whose prime factors are exactly the first P primes and whose prime factor count is exactly K. Both conditions are about the multiset of prime factors, not their order.
 
-Input starts with T, the number of cases, where T ≤ 10000. Each case gives K and P, with 1 ≤ P ≤ K ≤ 500. Print one labelled line per case with its case number and answer, with the answer modulo 1000000007.
+Input starts with T, the number of cases, where T ≤ 10000. Each case gives K and P, with 1 ≤ P ≤ K ≤ 500. Print one labeled line per case with its case number and answer, with the answer modulo 1000000007.
 
 | item | bound |
 |---|---|

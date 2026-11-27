@@ -187,7 +187,7 @@ The maximum check prunes a settled node before any descent.
 Only overlapping children are visited on an update.
 Both arrays are rebuilt for each test case.
 
-**Driver and buffering.** Cases are labelled, operations are applied, and answers are buffered.
+**Driver and buffering.** Cases are labeled, operations are applied, and answers are buffered.
 
 ```nim
 var outputBuffer = ""

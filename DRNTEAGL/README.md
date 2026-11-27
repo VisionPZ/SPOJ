@@ -1,4 +1,6 @@
-# DRNTEAGL — Duronto Eagle
+# DRNTEAGL — Duronto Eagle (SPOJ)
+
+<https://www.spoj.com/problems/DRNTEAGL/>
 
 ## Problem
 

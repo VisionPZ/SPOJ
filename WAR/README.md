@@ -187,7 +187,7 @@ The scanner accepts minus signs for coordinates.
 A hash table will map endpoint pairs to vertex ids.
 The ray test multiplies in 64-bit integers to stay exact.
 
-**Vertices and angular order.** Each segment is split into two directed edges, and each vertex keeps its neighbours in angle order.
+**Vertices and angular order.** Each segment is split into two directed edges, and each vertex keeps its neighbors in angle order.
 
 ```nim
 while true:

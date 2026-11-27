@@ -4,7 +4,7 @@
 
 ## Problem
 
-Find the longest path on a height grid that goes strictly downhill, reaches one lowest cell, then goes strictly uphill. Cells may not repeat, and neighbouring cells share an edge.
+Find the longest path on a height grid that goes strictly downhill, reaches one lowest cell, then goes strictly uphill. Cells may not repeat, and neighboring cells share an edge.
 
 Input starts with `M N`, followed by M rows of N heights. All heights are distinct and may be negative.
 
@@ -45,7 +45,7 @@ Sample output:
 
 ## Idea
 
-A valley has two high ends and one low centre, like two streams running down opposite slopes into the same basin. Build the path backwards from those two high ends, always stepping to a lower neighbour.
+A valley has two high ends and one low center, like two streams running down opposite slopes into the same basin. Build the path backwards from those two high ends, always stepping to a lower neighbor.
 
 The algorithm is dynamic programming over pairs of current endpoints. A state holds two cells and the longest partial valley ending there. Each step lowers one endpoint and reuses a smaller state.
 
@@ -54,17 +54,17 @@ Trying every simple path would explode with grid size. The height order makes ea
 ## Why It Works
 
 1. Sort all cells by height and give each a rank.
-2. A downhill neighbour always has a smaller rank.
+2. A downhill neighbor always has a smaller rank.
 3. A state with endpoints `firstRank` and `secondRank` tracks the best valley seen so far.
-4. Moving the higher endpoint down to a neighbour extends that state by one cell.
-5. The two branches meet when both ranks are equal, which is the valley centre.
+4. Moving the higher endpoint down to a neighbor extends that state by one cell.
+5. The two branches meet when both ranks are equal, which is the valley center.
 6. Reversing a valid valley gives another valid valley of the same length.
 7. The output is flipped when its first cell is taller than its last cell.
 
 | term | meaning |
 |---|---|
 | `heightRank` | position of a cell in ascending height order |
-| `downhillNeighbors` | neighbours with lower height, stored by rank |
+| `downhillNeighbors` | neighbors with lower height, stored by rank |
 | `valleyLengths` | best length for each ordered pair of ranks |
 | `predecessors` | previous higher endpoint used to reach a state |
 | `valleyPath` | reconstructed cells in output order |
@@ -173,7 +173,7 @@ for rowIndex in 0 .. rowCount - 1:
 ```
 
 Sorting uses an explicit comparator for both compilers.
-Each grid edge contributes at most one downhill neighbour.
+Each grid edge contributes at most one downhill neighbor.
 Ranks turn height comparisons into integer comparisons.
 
 **Endpoint-pair DP.** Each transition lowers one of the two high endpoints.
@@ -255,7 +255,7 @@ outputBuffer.setLen 0
 ```
 
 Predecessor links stop when both branches meet.
-The shared centre is printed once.
+The shared center is printed once.
 The final flip makes the answer independent of branch order.
 
 ## Complexity
@@ -267,10 +267,10 @@ The state space holds one entry per pair of cells.
 | input read | one pass over cell heights | one input string |
 | sorting | one sort of all cells | rank arrays |
 | DP | up to four transitions per state | two square tables |
-| reconstruction | one walk from endpoints to centre | two branch lists |
+| reconstruction | one walk from endpoints to center | two branch lists |
 | output | one line per cell | block buffer |
 
-Each state updates at most four lower neighbours, so the table size controls runtime.
+Each state updates at most four lower neighbors, so the table size controls runtime.
 
 | measure | Big O |
 |---|---|

@@ -1,4 +1,6 @@
-# SMPCPH1 — Substitution cipher
+# SMPCPH1 — Substitution cipher (SPOJ)
+
+<https://www.spoj.com/problems/SMPCPH1/>
 
 ## Problem
 

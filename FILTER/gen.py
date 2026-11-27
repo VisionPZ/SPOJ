@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from functools import lru_cache
 import random
 from pathlib import Path
 
@@ -39,6 +40,7 @@ def brute(width, height, target):
     return str(best_max - best_min)
 
 
+@lru_cache(maxsize=None)
 def build_out_table(width):
     row_values = 1 << width
     counts = [[0] * width for _ in range(row_values)]
@@ -47,17 +49,22 @@ def build_out_table(width):
             left = max(0, column - 1)
             right = min(width - 1, column + 1)
             counts[value][column] = ((value >> left) & 1) + ((value >> column) & 1) + ((value >> right) & 1)
-    table = [[0] * row_values for _ in range(row_values * row_values)]
+    by_pair = {}
     for upper in range(row_values):
+        cu = counts[upper]
         for middle in range(row_values):
-            base = upper * row_values + middle
+            cm = counts[middle]
+            sum_um = [cu[c] + cm[c] for c in range(width)]
+            bucket = {}
             for lower in range(row_values):
+                cl = counts[lower]
                 filtered = 0
                 for column in range(width):
-                    if counts[upper][column] + counts[middle][column] + counts[lower][column] >= 5:
+                    if sum_um[column] + cl[column] >= 5:
                         filtered |= 1 << column
-                table[base][lower] = filtered
-    return table
+                bucket.setdefault(filtered, []).append(lower)
+            by_pair[(upper, middle)] = bucket
+    return by_pair
 
 
 def dp_oracle(width, height, target_rows):
@@ -65,53 +72,52 @@ def dp_oracle(width, height, target_rows):
         target = [[(value >> column) & 1 for column in range(width)] for value in target_rows]
         return brute(width, height, target)
     row_values = 1 << width
-    table = build_out_table(width)
+    by_pair = build_out_table(width)
     black_counts = [bin(value).count("1") for value in range(row_values)]
     if height == 1:
         possibilities = []
         for value in range(row_values):
-            if table[value * row_values + value][value] == target_rows[0]:
+            if value in by_pair[(value, value)].get(target_rows[0], ()):
                 possibilities.append(black_counts[value])
         if not possibilities:
             return "Impossible"
         return str(max(possibilities) - min(possibilities))
-    minimum = [[None] * row_values for _ in range(row_values)]
-    maximum = [[None] * row_values for _ in range(row_values)]
+    state = {}
+    t0 = target_rows[0]
     for upper in range(row_values):
-        for lower in range(row_values):
-            if table[upper * row_values + upper][lower] == target_rows[0]:
-                cost = black_counts[upper] + black_counts[lower]
-                old_min = minimum[upper][lower]
-                minimum[upper][lower] = cost if old_min is None else min(old_min, cost)
-                old_max = maximum[upper][lower]
-                maximum[upper][lower] = cost if old_max is None else max(old_max, cost)
+        for lower in by_pair[(upper, upper)].get(t0, ()):
+            cost = black_counts[upper] + black_counts[lower]
+            key = (upper, lower)
+            if key not in state:
+                state[key] = [cost, cost]
+            else:
+                if cost < state[key][0]: state[key][0] = cost
+                if cost > state[key][1]: state[key][1] = cost
     for row_index in range(1, height - 1):
-        new_min = [[None] * row_values for _ in range(row_values)]
-        new_max = [[None] * row_values for _ in range(row_values)]
-        for upper in range(row_values):
-            for middle in range(row_values):
-                if minimum[upper][middle] is None:
-                    continue
-                for lower in range(row_values):
-                    if table[upper * row_values + middle][lower] != target_rows[row_index]:
-                        continue
-                    cost_min = minimum[upper][middle] + black_counts[lower]
-                    cost_max = maximum[upper][middle] + black_counts[lower]
-                    slot_min = new_min[middle][lower]
-                    new_min[middle][lower] = cost_min if slot_min is None else min(slot_min, cost_min)
-                    slot_max = new_max[middle][lower]
-                    new_max[middle][lower] = cost_max if slot_max is None else max(slot_max, cost_max)
-        minimum, maximum = new_min, new_max
-    answers = []
-    for upper in range(row_values):
-        for middle in range(row_values):
-            if minimum[upper][middle] is None:
-                continue
-            if table[upper * row_values + middle][middle] == target_rows[height - 1]:
-                answers.append((minimum[upper][middle], maximum[upper][middle]))
-    if not answers:
+        new_state = {}
+        target_r = target_rows[row_index]
+        for (upper, middle), (mn, mx) in state.items():
+            for lower in by_pair[(upper, middle)].get(target_r, ()):
+                cmin = mn + black_counts[lower]
+                cmax = mx + black_counts[lower]
+                key = (middle, lower)
+                prev = new_state.get(key)
+                if prev is None:
+                    new_state[key] = [cmin, cmax]
+                else:
+                    if cmin < prev[0]: prev[0] = cmin
+                    if cmax > prev[1]: prev[1] = cmax
+        state = new_state
+    best_min = None
+    best_max = None
+    last_t = target_rows[height - 1]
+    for (upper, middle), (mn, mx) in state.items():
+        if middle in by_pair[(upper, middle)].get(last_t, ()):
+            if best_min is None or mn < best_min: best_min = mn
+            if best_max is None or mx > best_max: best_max = mx
+    if best_min is None:
         return "Impossible"
-    return str(max(value[1] for value in answers) - min(value[0] for value in answers))
+    return str(best_max - best_min)
 
 
 def encode(rows):

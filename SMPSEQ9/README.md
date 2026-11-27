@@ -1,4 +1,6 @@
-# SMPSEQ9 — Fun with Sequences (Act 7)
+# SMPSEQ9 — Fun with Sequences (Act 7) (SPOJ)
+
+<https://www.spoj.com/problems/SMPSEQ9/>
 
 ## Problem
 

@@ -4,7 +4,7 @@
 
 ## Problem
 
-For each range in a sorted list, report how many times the most common value appears there. The list never changes, so the answer depends on runs of equal neighbours.
+For each range in a sorted list, report how many times the most common value appears there. The list never changes, so the answer depends on runs of equal neighbors.
 
 Input: several test cases. Each starts with n and q, then n sorted integers, then q pairs of one-based indices i and j. A line containing 0 ends the input. Output: one maximum frequency per query, on its own line.
 
@@ -40,7 +40,7 @@ The input list contains four runs of equal values.
 
 ## Idea
 
-Group equal neighbours into runs, like stacking identical books into piles. A range starts and ends inside two runs, and the full runs between them form a static maximum question. A sparse table answers that maximum in one comparison pair.
+Group equal neighbors into runs, like stacking identical books into piles. A range starts and ends inside two runs, and the full runs between them form a static maximum question. A sparse table answers that maximum in one comparison pair.
 
 The algorithm builds the runs once and precomputes maxima for every power-of-two span. Each query costs two binary searches plus one table lookup. A naive scan counts every value in every range and costs O(n) per query.
 

@@ -50,7 +50,7 @@ Treat groups of mutually adjacent roads as cities, like gathering all spokes tha
 
 | term | meaning |
 |---|---|
-| `roadAdjacency` | sorted neighbours of each road in the input graph |
+| `roadAdjacency` | sorted neighbors of each road in the input graph |
 | `candidateCliques` | maximal groups of mutually adjacent roads |
 | `memberships` | cliques containing each road |
 | `cityEdges` | adjacency of the reconstructed city graph |
@@ -151,7 +151,7 @@ proc hasNeighbour(source: int, target: int): bool =
   return false
 ```
 
-Sorted lists make neighbour tests logarithmic.
+Sorted lists make neighbor tests logarithmic.
 The buffer flushes at 131072 bytes.
 No write happens per road.
 

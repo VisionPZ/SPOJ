@@ -46,7 +46,7 @@ Sample output:
 
 ## Idea
 
-Treat each grid square at each minute as a separate room, like stations on a railway with several timetables. A step walks to a neighbouring room and picks the next timetable, one minute earlier, later, or the same. Breadth-first search visits rooms in step order, so the first visit to the hostage is the minimum. Trying all time-travel sequences grows exponentially with the layer count.
+Treat each grid square at each minute as a separate room, like stations on a railway with several timetables. A step walks to a neighboring room and picks the next timetable, one minute earlier, later, or the same. Breadth-first search visits rooms in step order, so the first visit to the hostage is the minimum. Trying all time-travel sequences grows exponentially with the layer count.
 
 Room count stays below 2250, so one queue finds the answer quickly.
 

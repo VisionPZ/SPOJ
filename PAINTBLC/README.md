@@ -4,7 +4,7 @@
 
 ## Problem
 
-Paint a row of blocks with `k` kinds of paint, using each kind for a fixed number of blocks. Count the colourings where neighbouring blocks never share a kind, modulo 1000000007.
+Paint a row of blocks with `k` kinds of paint, using each kind for a fixed number of blocks. Count the colorings where neighboring blocks never share a kind, modulo 1000000007.
 
 The first line gives the number of cases. Each case gives `k` on one line and the `k` block counts on the next line. Print one answer per case.
 
@@ -39,7 +39,7 @@ Sample output:
 
 ## Idea
 
-merge adjacent equal blocks and count arrangements of the merged runs. Inclusion-exclusion turns each kind into a small polynomial whose coefficients track merged pairs. Multiply the polynomials once per case, then read the answer from one convolution sum. Enumerating colourings grows exponentially, while the polynomials stay degree at most 90. Take the polynomial product as the counting engine.
+merge adjacent equal blocks and count arrangements of the merged runs. Inclusion-exclusion turns each kind into a small polynomial whose coefficients track merged pairs. Multiply the polynomials once per case, then read the answer from one convolution sum. Enumerating colorings grows exponentially, while the polynomials stay degree at most 90. Take the polynomial product as the counting engine.
 
 ## Why It Works
 
@@ -194,5 +194,5 @@ The short local factors keep two thousand cases cheap.
 | time per case | O(k * n * c) |
 | space | O(total input bytes + n) |
 
-Brute enumeration would visit up to `n! / product(c_i!)` colourings.
+Brute enumeration would visit up to `n! / product(c_i!)` colorings.
 The polynomial method visits only a few hundred coefficient pairs.

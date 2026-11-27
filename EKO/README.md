@@ -4,9 +4,9 @@
 
 ## Problem
 
-A sawblade at integer height H removes the part of every tree above H. Choose the highest H that still removes at least M metres of wood in total.
+A sawblade at integer height H removes the part of every tree above H. Choose the highest H that still removes at least M meters of wood in total.
 
-Input is one case. The first line gives N and M. The second line gives N tree heights in metres. Output one integer: the highest valid H.
+Input is one case. The first line gives N and M. The second line gives N tree heights in meters. Output one integer: the highest valid H.
 
 | item | bound |
 |---|---|

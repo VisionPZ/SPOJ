@@ -3,7 +3,7 @@
 
 ## Problem
 
-Rearrange the players in one row so no three neighbours wear the same team letter. Count the players who leave their original seat, or report `-1` when no rearrangement works.
+Rearrange the players in one row so no three neighbors wear the same team letter. Count the players who leave their original seat, or report `-1` when no rearrangement works.
 
 The first integer gives the test count. Each test starts with `N` and a string of `N` letters from `C`, `P`, `N`, `S`. Print one integer per test.
 

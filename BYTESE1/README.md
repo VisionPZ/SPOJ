@@ -49,7 +49,7 @@ Treat each room as a junction whose entry fee is its guard time, then find the c
 | step | cost |
 |---|---|
 | push or pop one heap entry | logarithmic in rooms |
-| relax four neighbours | constant per room |
+| relax four neighbors | constant per room |
 | total | O(M N log(M N)) per case |
 
 The heap size drives the per-room cost.
@@ -59,7 +59,7 @@ The heap size drives the per-room cost.
 1. Arriving at a room requires paying that room's guard time once, including the starting room and the target room.
 2. Every route uses at least one room, so arrival times stay non-negative and Dijkstra applies.
 3. When a room is popped with its smallest tentative time, that time is final.
-4. Relaxing the four orthogonal neighbours considers every possible next step.
+4. Relaxing the four orthogonal neighbors considers every possible next step.
 5. The bomb deadline compares against the final target time, and the spare equals T minus that time.
 
 | term | meaning |
@@ -202,7 +202,7 @@ proc shortestTime(rows: int, cols: int, guardTimes: seq[int], targetIndex: int):
 
 The start room pays its own fee before any move.
 Each room improves at most when a cheaper route reaches it.
-The four direction arrays define the orthogonal neighbours.
+The four direction arrays define the orthogonal neighbors.
 
 **Case loop.** Each case compares the route time with the deadline and writes one answer.
 
@@ -236,7 +236,7 @@ A final flush writes any partial buffer.
 
 ## Complexity
 
-Each case relaxes four neighbours per settled room, with heap operations on every improvement.
+Each case relaxes four neighbors per settled room, with heap operations on every improvement.
 
 | phase | time | space |
 |---|---|---|

@@ -6,7 +6,7 @@
 
 Find whether one cube throws a shadow on the other, and measure that shadow's area. A point bulb sends rays through the blocking cube, and the shadow lands on the visible faces of the receiving cube.
 
-Each test case gives the bulb point, then four vertices of cube one and four vertices of cube two. The first vertex of each cube is a corner and the next three are its neighbours along the three edges. Input ends at EOF. Print the number of the cube receiving the shadow and its area, or print -1 when neither cube shadows the other.
+Each test case gives the bulb point, then four vertices of cube one and four vertices of cube two. The first vertex of each cube is a corner and the next three are its neighbors along the three edges. Input ends at EOF. Print the number of the cube receiving the shadow and its area, or print -1 when neither cube shadows the other.
 
 | item | bound |
 |---|---|

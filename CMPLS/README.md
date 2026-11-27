@@ -46,7 +46,7 @@ The sample input and output:
 
 ## Idea
 
-Extend a table of differences, like continuing a column of numbers by copying the last change down. Each new row subtracts neighbouring values from the row above.
+Extend a table of differences, like continuing a column of numbers by copying the last change down. Each new row subtracts neighboring values from the row above.
 
 The program builds rows until one value remains, then keeps only each row's last value. Walking from the deepest row upward adds one change at a time and produces the next term.
 

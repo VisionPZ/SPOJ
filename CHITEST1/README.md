@@ -1,4 +1,6 @@
-# CHITEST1 — Sum of two numbers
+# CHITEST1 — Sum of two numbers (SPOJ)
+
+<https://www.spoj.com/problems/CHITEST1/>
 
 ## Problem
 

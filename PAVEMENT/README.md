@@ -37,7 +37,7 @@ The three chosen steps sit in rows 1-2, 3-4 and 6-7, so they share no tile.
 
 ## Idea
 
-Choosing steps is like picking non-adjacent coupons from a strip: each row pair offers two coupons, and one pick blocks the neighbouring row pair. Dynamic programming keeps the best total for the row pair after the current one. Each row costs one comparison and one sum. Enumerating every subset of steps costs O(2^N) and fails for N = 100000. Keep two rolling best totals and scan the rows once from the bottom.
+Choosing steps is like picking non-adjacent coupons from a strip: each row pair offers two coupons, and one pick blocks the neighboring row pair. Dynamic programming keeps the best total for the row pair after the current one. Each row costs one comparison and one sum. Enumerating every subset of steps costs O(2^N) and fails for N = 100000. Keep two rolling best totals and scan the rows once from the bottom.
 
 ## Why It Works
 

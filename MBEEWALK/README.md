@@ -35,23 +35,23 @@ Sample output:
 
 Move a whole crowd of counters cell by cell, like pouring sand through a grid of buckets. This is dynamic programming on a hexagonal grid of coordinates.
 
-Precompute the answer for every step count from one to fourteen. Each step scans the occupied cells and adds six neighbour counts. The naive way lists all 6^n direction strings, which grows far faster.
+Precompute the answer for every step count from one to fourteen. Each step scans the occupied cells and adds six neighbor counts. The naive way lists all 6^n direction strings, which grows far faster.
 
 The table is built once, so each query is one array lookup.
 
 ## Why It Works
 
-1. Axial coordinates `(x, y)` give each cell six neighbours with fixed offsets.
+1. Axial coordinates `(x, y)` give each cell six neighbors with fixed offsets.
 2. A count in a cell after `s` steps equals the sum of counts that can step into it.
 3. The starting cell holds one walk after zero steps, and every other cell holds zero.
-4. The count at the centre after step `s` is the number of closed walks of length `s`.
+4. The count at the center after step `s` is the number of closed walks of length `s`.
 5. Same-length walks stay in one layer, so later steps never rewrite earlier answers.
 
 | term | meaning |
 |---|---|
 | `currentCounts` | walks ending at each cell after the current step |
 | `nextCounts` | walks ending at each cell after the next step |
-| `stepDirections` | the six axial neighbour offsets |
+| `stepDirections` | the six axial neighbor offsets |
 | `walkAnswers` | closed-walk count for each step count |
 
 The term table names the four arrays that carry the computation.
@@ -146,7 +146,7 @@ for stepNumber in 1 .. maxWalkSteps:
 ```
 
 Empty cells are skipped, so only reachable cells do work.
-The centre count is recorded right after each sweep.
+The center count is recorded right after each sweep.
 Two arrays swap roles each sweep, avoiding allocation inside the loop.
 
 **Answer loop.** Each query reads one table entry.

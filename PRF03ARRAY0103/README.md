@@ -48,7 +48,7 @@ The listing holds the same values in descending order.
 
 ## Idea
 
-Sorting a hand of cards from biggest to smallest is the same job as sorting upward, just read backwards. This program sorts upward with the compiler's battle-tested routine, then walks the sorted row from the far end, so the biggest value prints first.
+Sorting a hand of cards from biggest to smallest matches sorting upward and reading backward. This program sorts upward with the standard sort, then walks the sorted row from the far end so the biggest value prints first.
 
 A naive approach rereads the raw text for every output line and reparses every digit. Storing the values once, calling one library sort, and printing from the stored list keeps parsing linear and the code short.
 

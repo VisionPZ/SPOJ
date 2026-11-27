@@ -11,7 +11,7 @@ Input consists of consecutive groups of three lines, each line holding `x y z r`
 | item | bound |
 |---|---|
 | radius r | 1 to 1000000 |
-| centre coordinates | 0 to 1000000000 |
+| center coordinates | 0 to 1000000000 |
 | test cases | until the `-1` sentinel |
 | judge limit | 30000 ms, 1536 MB |
 
@@ -38,24 +38,24 @@ Entire total solar eclipse
 
 ## Idea
 
-Picture a flashlight shining past a ball onto a second ball, like a hand making a shadow puppet. The dark core is a cone that narrows to a point, and the fuzzy outer cone widens forever. We compare the target sphere with each cone by measuring the perpendicular distance from its centre to the cone surface.
+Picture a flashlight shining past a ball onto a second ball, like a hand making a shadow puppet. The dark core is a cone that narrows to a point, and the fuzzy outer cone widens forever. We compare the target sphere with each cone by measuring the perpendicular distance from its center to the cone surface.
 
-The algorithm builds the two shadow cones from the homothety centres of the star and occluder. It then uses point-to-line distance in the meridian plane to test whether the target sphere lies entirely inside a cone or only touches it.
+The algorithm builds the two shadow cones from the homothety centers of the star and occluder. It then uses point-to-line distance in the meridian plane to test whether the target sphere lies entirely inside a cone or only touches it.
 
 A dense ray trace over many surface points would be slow and approximate; the distance test is exact and constant time.
 
 ## Why It Works
 
-1. The star-to-occluder axis gives an axial coordinate `t` and a sideways distance `r` for the target centre.
-2. The penumbra boundary uses the internal homothety centre and has radius `moonRadius + t * (rs + ra) / d`.
-3. The umbra boundary uses the external homothety centre; it narrows when `rs > ra` and widens otherwise.
+1. The star-to-occluder axis gives an axial coordinate `t` and a sideways distance `r` for the target center.
+2. The penumbra boundary uses the internal homothety center and has radius `moonRadius + t * (rs + ra) / d`.
+3. The umbra boundary uses the external homothety center; it narrows when `rs > ra` and widens otherwise.
 4. In the meridian plane the cone surface is a line, so the signed distance from a point to that line is easy to compute.
 5. A sphere lies entirely inside a cone when that distance is at least its radius; it touches when the distance exceeds minus its radius.
 
 | term | meaning |
 |---|---|
-| `axialPosition` | target centre distance behind the occluder along the axis |
-| `sidewaysDistance` | target centre distance from the shadow axis |
+| `axialPosition` | target center distance behind the occluder along the axis |
+| `sidewaysDistance` | target center distance from the shadow axis |
 | `penumbraDistance` | signed distance to the penumbra surface |
 | `umbraDistance` | signed distance to the umbra surface |
 | `umbraApex` | point where the umbra narrows to zero, when it exists |

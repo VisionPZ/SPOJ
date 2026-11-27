@@ -36,26 +36,26 @@ NO
 
 ## Idea
 
-Think of removing vertices one at a time, like peeling layers from an onion. A graph is chordal exactly when every step has a vertex whose neighbours already form a clique.
+Think of removing vertices one at a time, like peeling layers from an onion. A graph is chordal exactly when every step has a vertex whose neighbors already form a clique.
 
-Maximum Cardinality Search builds that removal order by always taking the vertex with the most already-chosen neighbours. The check then confirms each vertex's later neighbours form a clique.
+Maximum Cardinality Search builds that removal order by always taking the vertex with the most already-chosen neighbors. The check then confirms each vertex's later neighbors form a clique.
 
 Testing every cycle would take exponential time. The order gives a linear check.
 
-One order and one neighbour scan decide each graph.
+One order and one neighbor scan decide each graph.
 
 ## Why It Works
 
 1. A graph is chordal when a perfect elimination order exists.
-2. In such an order, neighbours chosen earlier form a clique at each step.
+2. In such an order, neighbors chosen earlier form a clique at each step.
 3. Maximum Cardinality Search produces this order for chordal graphs.
-4. Checking one anchor neighbour against all later neighbours proves the clique.
+4. Checking one anchor neighbor against all later neighbors proves the clique.
 5. A failed anchor pair proves a chordless cycle exists.
 
 | term | meaning |
 |---|---|
 | `adjacency` | flat matrix of edge presence |
-| `neighborMarks` | count of already-chosen neighbours |
+| `neighborMarks` | count of already-chosen neighbors |
 | `eliminationOrder` | vertices in the order chosen |
 | `rankInOrder` | choice step for each vertex |
 
@@ -143,10 +143,10 @@ proc isChordal(vertexCount: int, edgeCount: int, scanPosition: var int): bool =
 ```
 
 A flat matrix answers edge queries in constant time.
-Marks rise only when a chosen vertex is a neighbour.
+Marks rise only when a chosen vertex is a neighbor.
 Choosing the maximum mark gives the search its name.
 
-**Clique verification.** One anchor neighbour tests the whole earlier set.
+**Clique verification.** One anchor neighbor tests the whole earlier set.
 
 ```nim
   var rankInOrder = newSeq[int](vertexCount)
@@ -169,7 +169,7 @@ Choosing the maximum mark gives the search its name.
   return true
 ```
 
-Vertices without earlier neighbours need no check.
+Vertices without earlier neighbors need no check.
 A missing anchor edge rejects the graph.
 The first valid order proves chordality.
 

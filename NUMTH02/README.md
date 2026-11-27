@@ -66,71 +66,91 @@ The code prints `0 0` when the room count divides the power exactly.
 
 ## Code
 
-**Input and modular power.** The reader loads the header and squares the base while halving the exponent.
+**Buffered scanner.** `Scanner` refills a 64 KiB buffer with `fread` and parses unsigned 64-bit integers directly.
 
-```nim
-const flushBlockBytes = 1 shl 17
+```cpp
+#include <cstdio>
+#include <cstddef>
 
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
+typedef unsigned long long u64;
 
-var scanPos = 0
-
-proc nextInt(data: string, pos: var int): int =
-  while pos < data.len and (data[pos] < '0' or data[pos] > '9'):
-    pos += 1
-  var value = 0
-  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    value = value * 10 + int(data[pos]) - 48
-    pos += 1
-  return value
-
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
-
-let bucketBase = nextInt(inputData, scanPos)
-let bucketExponent = nextInt(inputData, scanPos)
-let roomCount = nextInt(inputData, scanPos)
-var powerBase = bucketBase mod roomCount
-var powerResult = 1 mod roomCount
-var exponentCursor = bucketExponent
-while exponentCursor > 0:
-  if (exponentCursor and 1) == 1:
-    powerResult = (powerResult * powerBase) mod roomCount
-  powerBase = (powerBase * powerBase) mod roomCount
-  exponentCursor = exponentCursor shr 1
-let extraBuckets = powerResult
+struct Scanner {
+  static const int BufferSize = 1 << 16;
+  char buffer[BufferSize];
+  int position = 0;
+  int length = 0;
+  int get() {
+    if (position >= length) {
+      length = (int)fread(buffer, 1, BufferSize, stdin);
+      position = 0;
+      if (length == 0) return -1;
+    }
+    return buffer[position++];
+  }
+  u64 nextNumber() {
+    int c = get();
+    while (c != -1 && (c < '0' || c > '9')) c = get();
+    u64 value = 0;
+    while (c >= '0' && c <= '9') {
+      value = value * 10ULL + (u64)(c - '0');
+      c = get();
+    }
+    return value;
+  }
+} scanner;
 ```
 
-The room count is at most 5000, so each product stays tiny.
-Only the low bit of the exponent is tested on each pass.
-The loop runs once per exponent bit.
+All inputs are non-negative, so `nextNumber` needs no sign branch.
+Reading 64 KiB chunks keeps input syscalls minimal.
+Unsigned 64-bit arithmetic holds amounts up to 10^18 directly.
 
-**Reduced mango sum.** Each amount is reduced before it enters the running remainder.
+**Modular power and mango remainder.** Binary exponentiation computes `extraBuckets`, then one pass reduces all mango amounts modulo `extraBuckets`.
 
-```nim
-var mangoRemainder: int64 = 0
-if extraBuckets > 0:
-  let partitionCount = nextInt(inputData, scanPos)
-  for partitionIndex in 0 .. partitionCount - 1:
-    let mangoAmount = nextInt(inputData, scanPos)
-    mangoRemainder = (mangoRemainder + int64(mangoAmount) mod int64(extraBuckets)) mod int64(extraBuckets)
-appendOutput($extraBuckets & " " & $mangoRemainder & "\n")
-stdout.write outputBuffer
-outputBuffer.setLen 0
+```cpp
+int main() {
+  u64 bucketBase = scanner.nextNumber();
+  u64 bucketExponent = scanner.nextNumber();
+  u64 roomCount = scanner.nextNumber();
+  u64 powerBase = bucketBase % roomCount;
+  u64 powerResult = 1 % roomCount;
+  u64 exponentCursor = bucketExponent;
+  while (exponentCursor > 0) {
+    if ((exponentCursor & 1ULL) != 0) powerResult = (powerResult * powerBase) % roomCount;
+    powerBase = (powerBase * powerBase) % roomCount;
+    exponentCursor >>= 1;
+  }
+  u64 extraBuckets = powerResult;
+  u64 mangoRemainder = 0;
+  if (extraBuckets > 0) {
+    u64 partitionCount = scanner.nextNumber();
+    for (u64 partitionIndex = 0; partitionIndex < partitionCount; partitionIndex++) {
+      u64 mangoAmount = scanner.nextNumber();
+      mangoRemainder = (mangoRemainder + mangoAmount % extraBuckets) % extraBuckets;
+    }
+  }
+  char line[32];
+  int lineLength = 0;
+  char scratch[24];
+  int scratchLength = 0;
+  u64 value = extraBuckets;
+  if (value == 0) scratch[scratchLength++] = '0';
+  while (value > 0) { scratch[scratchLength++] = (char)('0' + (value % 10ULL)); value /= 10ULL; }
+  while (scratchLength > 0) line[lineLength++] = scratch[--scratchLength];
+  line[lineLength++] = ' ';
+  scratchLength = 0;
+  value = mangoRemainder;
+  if (value == 0) scratch[scratchLength++] = '0';
+  while (value > 0) { scratch[scratchLength++] = (char)('0' + (value % 10ULL)); value /= 10ULL; }
+  while (scratchLength > 0) line[lineLength++] = scratch[--scratchLength];
+  line[lineLength++] = '\n';
+  fwrite(line, 1, (size_t)lineLength, stdout);
+  return 0;
+}
 ```
 
-The guard avoids division by zero when no buckets remain.
-A 64-bit accumulator holds every reduced amount.
-The single output line passes through the block buffer.
+`roomCount` is at most 5000, so squaring modulo `roomCount` never overflows.
+The `extraBuckets > 0` guard prevents division by zero when `r` divides `b^n`.
+One `fwrite` call emits both formatted remainders.
 
 ## Complexity
 

@@ -36,7 +36,7 @@ The two lines answer the two knight positions in order.
 
 ## Idea
 
-Search outward from the target once, like ripples spreading from a drain, and read every answer from a stored distance table. Breadth-first search on the whole board gives the exact move count from each square to the corner. Each cell costs eight neighbour checks, and each query then costs one lookup. Running a search per query would repeat a million-cell walk up to a thousand times. Precompute once, then answer all queries with table reads.
+Search outward from the target once, like ripples spreading from a drain, and read every answer from a stored distance table. Breadth-first search on the whole board gives the exact move count from each square to the corner. Each cell costs eight neighbor checks, and each query then costs one lookup. Running a search per query would repeat a million-cell walk up to a thousand times. Precompute once, then answer all queries with table reads.
 
 ## Why It Works
 
@@ -156,7 +156,7 @@ One search serves the whole input.
 | phase | time | space |
 |---|---|---|
 | input read | one pass over the query list | one input string |
-| board search | eight neighbour checks per square | distance table and queue |
+| board search | eight neighbor checks per square | distance table and queue |
 | output | one line per query | block buffer |
 
 The board has exactly a million squares.

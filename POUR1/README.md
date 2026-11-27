@@ -64,7 +64,7 @@ The values the program tracks:
 | `gcdOf` | greatest common divisor of the two capacities |
 | `stepsFor` | step count for one pouring order |
 | `stepCeiling` | cap of 2^20 simulated steps |
-| `firstAmount`, `secondAmount` | litres currently in each jug |
+| `firstAmount`, `secondAmount` | liters currently in each jug |
 
 Trying both orders captures the shortest of the two deterministic paths.
 

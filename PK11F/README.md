@@ -4,7 +4,7 @@
 
 ## Problem
 
-For each query word, find the smallest weighted edit distance to any dictionary word and list every dictionary word that reaches that distance. Substitution costs one for listed keyboard neighbours and two otherwise; insertion, deletion, and adjacent transposition cost two.
+For each query word, find the smallest weighted edit distance to any dictionary word and list every dictionary word that reaches that distance. Substitution costs one for listed keyboard neighbors and two otherwise; insertion, deletion, and adjacent transposition cost two.
 
 Input has three parts separated by blank lines: near-substitution rules, dictionary words, and query words. Each rule gives one character followed by its near substitutes. Print word:distance:matches per query, with matches sorted in ascending order and separated by one space.
 

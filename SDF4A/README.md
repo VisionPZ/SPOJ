@@ -4,7 +4,7 @@
 
 ## Problem
 
-Connect every plant with pipes so water reaches the whole garden. Each pipe joins two plants and costs M per metre, and the bill rounds up.
+Connect every plant with pipes so water reaches the whole garden. Each pipe joins two plants and costs M per meter, and the bill rounds up.
 
 The first line is T. Each case gives N and M, then N lines holding x and y. Print one line per case: `Rp ` followed by the bill with dots every three digits.
 
@@ -12,7 +12,7 @@ The first line is T. Each case gives N and M, then N lines holding x and y. Prin
 |---|---|
 | test cases T | not bounded by the statement |
 | plants N | 1 to 1000 |
-| price M | 1000 to 5000 per metre |
+| price M | 1000 to 5000 per meter |
 | x coordinate | 1 to 1000 |
 | y coordinate | 1 to 200 |
 | judge limit | 300 ms, 1536 MB |
@@ -66,7 +66,7 @@ Treat plants as dots and pipes as roads, like linking towns with the shortest ro
 
 The table follows one round of the tree from distances to the printed bill.
 
-A script trace of the second sample case uses distances 3, 4.1231 and 4.4721. The tree takes 3 and 4.1231, so the total is 7.1231 metres. Multiplying by 1375 gives 9794.27, and rounding gives 9795.
+A script trace of the second sample case uses distances 3, 4.1231 and 4.4721. The tree takes 3 and 4.1231, so the total is 7.1231 meters. Multiplying by 1375 gives 9794.27, and rounding gives 9795.
 
 ```
 3 + 4.1231 = 7.1231

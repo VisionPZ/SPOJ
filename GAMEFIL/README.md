@@ -13,7 +13,7 @@ Each test case starts with `m n`, the row and column counts. The next line holds
 | live cells | `0` to `m * n` |
 | judge limit | 1000 ms, 1536 MB |
 
-The grid wraps at both edges, so a cell can meet the same neighbour through more than one direction.
+The grid wraps at both edges, so a cell can meet the same neighbor through more than one direction.
 
 Sample input:
 
@@ -48,29 +48,29 @@ Case 3: Garden of Eden.
 
 ## Idea
 
-Treat the parent pattern like a combination lock with one dial per cell, then try every combination. Brute-force enumeration over all cell subsets is exact because the grid has at most 16 cells. Each candidate needs one pass to add neighbour counts and one pass to apply the Life rules. A list of precomputed neighbours avoids repeated offset arithmetic. The takeaway is that a small state space makes direct counting simpler than search.
+Treat the parent pattern like a combination lock with one dial per cell, then try every combination. Brute-force enumeration over all cell subsets is exact because the grid has at most 16 cells. Each candidate needs one pass to add neighbor counts and one pass to apply the Life rules. A list of precomputed neighbors avoids repeated offset arithmetic. The takeaway is that a small state space makes direct counting simpler than search.
 
 ## Why It Works
 
 1. A binary mask encodes a parent pattern with one bit per cell.
-2. Adding each occupied cell's eight offsets to its neighbours gives every cell's neighbour count.
-3. An occupied cell with two or three neighbours survives; an empty cell with exactly three is born.
+2. Adding each occupied cell's eight offsets to its neighbors gives every cell's neighbor count.
+3. An occupied cell with two or three neighbors survives; an empty cell with exactly three is born.
 4. The resulting mask equals the target for exactly the valid parents.
 5. Counting all masks therefore gives the exact answer.
 
 | term | meaning |
 |---|---|
 | `targetMask` | bits of the live cells in the given pattern |
-| `neighborTable` | eight wrapped neighbour indices per cell |
-| `neighborCounts` | occupied neighbours of each cell in one candidate |
+| `neighborTable` | eight wrapped neighbor indices per cell |
+| `neighborCounts` | occupied neighbors of each cell in one candidate |
 | `nextMask` | pattern produced by the Life rules |
 | `ancestorCount` | number of candidates whose next mask matches |
 
 Each mask is checked once, so no valid parent is missed.
 
-A 2 by 3 parent with live cells `(0,0)` and `(1,2)` has mask `33`. Its neighbour-count grid is `2 3 3` above `3 3 2`. The Life rules turn it into all six cells, so that parent matches a full target.
+A 2 by 3 parent with live cells `(0,0)` and `(1,2)` has mask `33`. Its neighbor-count grid is `2 3 3` above `3 3 2`. The Life rules turn it into all six cells, so that parent matches a full target.
 
-Wrapped neighbours keep their multiplicity, so a 1 by 1 cell counts itself eight times. No rounding is needed because every value is an integer.
+Wrapped neighbors keep their multiplicity, so a 1 by 1 cell counts itself eight times. No rounding is needed because every value is an integer.
 
 ## Code
 
@@ -116,7 +116,7 @@ proc appendOutput(text: string) =
 Large outputs leave the buffer through a single write path.
 Short outputs flush once at the end.
 
-**Parent enumeration.** Each mask is expanded into neighbour counts and then into a child pattern.
+**Parent enumeration.** Each mask is expanded into neighbor counts and then into a child pattern.
 
 ```nim
 var caseNumber = 0
@@ -175,18 +175,18 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-The neighbour table is built once per case.
+The neighbor table is built once per case.
 Counts are reset before each candidate mask.
 The report uses the exact sample wording.
 
 ## Complexity
 
-The neighbour table is built once per case, then every mask is expanded and compared.
+The neighbor table is built once per case, then every mask is expanded and compared.
 
 | phase | time | space |
 |---|---|---|
 | input read | one pass over the case tokens | one input string |
-| neighbour table | eight offsets per cell | eight indices per cell |
+| neighbor table | eight offsets per cell | eight indices per cell |
 | mask scan | `2^(m*n)` masks times `m*n` cells | counts for `m*n` cells |
 | output | one line per case | block buffer |
 
@@ -195,6 +195,6 @@ The neighbour table is built once per case, then every mask is expanded and comp
 | time per case | `O(m*n*2^(m*n))` |
 | space per case | `O(m*n)` |
 
-A fresh neighbour scan per candidate would repeat offset work, while the table removes it.
+A fresh neighbor scan per candidate would repeat offset work, while the table removes it.
 
 The wrap table keeps enumeration exact for every grid size in the statement.

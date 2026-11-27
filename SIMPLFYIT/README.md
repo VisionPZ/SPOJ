@@ -48,7 +48,7 @@ Sample output:
 
 ## Idea
 
-Think of the expression as a labelled shelf with one slot per pair of powers.
+Think of the expression as a labeled shelf with one slot per pair of powers.
 Adding a monomial puts its coefficient into the matching slot; subtracting removes some.
 Printing walks the shelf from the lowest power of `a` upward, skipping empty slots.
 A text-based expression tree would need constant reformatting; a slot table keeps only numbers.

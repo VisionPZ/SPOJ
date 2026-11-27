@@ -4,7 +4,7 @@
 
 ## Problem
 
-Each neighbouring pair in a sequence multiplies to 1 modulo p, and every term lies in 0 to p - 1. Given the first term a1, the modulus p and the length n, report the sum of all n terms, or -1 when the sequence cannot continue. The modulus need not be prime.
+Each neighboring pair in a sequence multiplies to 1 modulo p, and every term lies in 0 to p - 1. Given the first term a1, the modulus p and the length n, report the sum of all n terms, or -1 when the sequence cannot continue. The modulus need not be prime.
 
 The input starts with the test count T. Each following line gives a1, p and n. Print one answer per test in input order.
 
@@ -41,7 +41,7 @@ A modular inverse is a partner that brings a product back to one, and applying i
 
 ## Why It Works
 
-1. The condition on neighbours makes each next term the modular inverse of the current term.
+1. The condition on neighbors makes each next term the modular inverse of the current term.
 2. An inverse exists exactly when the current term and p have gcd 1.
 3. Extended Euclid returns that inverse, or reports a gcd above 1.
 4. The inverse of an inverse is the original value, so the sequence repeats every two terms.

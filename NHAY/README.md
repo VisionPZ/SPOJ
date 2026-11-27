@@ -1,4 +1,6 @@
-# NHAY - A Needle in the Haystack
+# NHAY — A Needle in the Haystack (SPOJ)
+
+<https://www.spoj.com/problems/NHAY/>
 
 ## Problem
 

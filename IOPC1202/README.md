@@ -138,7 +138,7 @@ proc squaredDistance(firstX: int64, firstY: int64, secondX: int64, secondY: int6
   return deltaX * deltaX + deltaY * deltaY
 ```
 
-The shortest vertex pair fixes the side length. The two neighbours of the first corner give the side vectors.
+The shortest vertex pair fixes the side length. The two neighbors of the first corner give the side vectors.
 
 Products stay in `int64` to avoid overflow.
 

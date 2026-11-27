@@ -4,7 +4,7 @@
 
 ## Problem
 
-Find the longest consecutive block whose neighbouring values are all equal. In other words, report the longest run of identical values in each array.
+Find the longest consecutive block whose neighboring values are all equal. In other words, report the longest run of identical values in each array.
 
 The input starts with the test count. Each case gives the array length, then the array values. Print one run length per case.
 
@@ -33,7 +33,7 @@ Sample output:
 
 ## Idea
 
-Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbour. Reset the run when the value changes. The largest run seen is the answer, with no array stored.
+Measure runs like counting how many identical stamps sit side by side on a sheet. Walk the array once and lengthen the current run when a value repeats its neighbor. Reset the run when the value changes. The largest run seen is the answer, with no array stored.
 
 ## Why It Works
 

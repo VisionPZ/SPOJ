@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import random
 
 ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -80,7 +81,15 @@ def check_samples():
 
 
 def main():
+    os.makedirs('in', exist_ok=True)
+    os.makedirs('out', exist_ok=True)
     check_samples()
+    write_case('1_sample', [
+        (1, 'A*X*C', '**CM*'),
+        (4, '*B***A', 'AAAAAA'),
+        (6, '*B***A', 'AAAAAA'),
+        (4, '*AA*******', 'AAAAAAAAAA'),
+    ])
     rng = random.Random(20261123)
 
     edges = [

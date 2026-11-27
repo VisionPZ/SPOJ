@@ -39,8 +39,8 @@ Pedro 31
 Choosing the winner is like picking the shortest jump that still clears a bar.
 Results below the bar do not qualify, and the smallest qualifying result wins.
 The program reads four lines, then gives each participant one result.
-A prime number adds its neighbour, and any other number subtracts its neighbour.
-The neighbour is the next person, except for the last person who uses the previous one.
+A prime number adds its neighbor, and any other number subtracts its neighbor.
+The neighbor is the next person, except for the last person who uses the previous one.
 Each result becomes an absolute value before comparison.
 The program keeps the smallest result at or above the target.
 If none qualifies, it keeps the largest result instead.
@@ -50,8 +50,8 @@ The rule needs only one pass over the participants.
 
 ## Why It Works
 
-1. A prime number adds the neighbour, and every other number subtracts it.
-2. The last participant has no next neighbour, so they use the previous one.
+1. A prime number adds the neighbor, and every other number subtracts it.
+2. The last participant has no next neighbor, so they use the previous one.
 3. Taking the absolute value removes the sign from a subtraction result.
 4. A result at or above the target qualifies, and the smallest one wins.
 5. If nothing qualifies, the largest result is the nearest one below.
@@ -232,7 +232,7 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-A single participant uses their own number as the neighbour.
+A single participant uses their own number as the neighbor.
 The flag records whether any result reaches the target.
 The final write flushes the buffered answer.
 

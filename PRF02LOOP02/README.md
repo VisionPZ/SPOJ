@@ -25,7 +25,7 @@ The sample input is empty. The sample output follows.
 
 ## Idea
 
-A fixed alphabet is like a row of labelled mailboxes: walk down the row once and copy each label out.
+A fixed alphabet is like a row of labeled mailboxes: walk down the row once and copy each label out.
 The program walks character codes 97 through 122 and converts each code to its letter.
 A separator goes out before every letter except the first, so no trailing comma appears.
 The title goes out first, then the letters, and one final newline ends the stream.

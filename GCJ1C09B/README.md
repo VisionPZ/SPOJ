@@ -4,7 +4,7 @@
 
 ## Problem
 
-Fireflies move at constant velocity from known starting points. Their centre of mass traces a straight line through space. Report its smallest distance from the origin and the earliest time that distance occurs.
+Fireflies move at constant velocity from known starting points. Their center of mass traces a straight line through space. Report its smallest distance from the origin and the earliest time that distance occurs.
 
 Input starts with T cases. Each case gives N, then N lines of x y z vx vy vz with integer values from -5000 to 5000. Output `Case #X: dmin tmin`, with eight decimals and an error below 10^-6.
 
@@ -50,8 +50,8 @@ The average of moving points moves in a straight line, like the average position
 
 ## Why It Works
 
-1. The centre of mass equals the sum of positions divided by N, and its velocity equals the sum of velocities divided by N.
-2. Write S for the position sum and D for the velocity sum, so the centre is (S + Dt) / N.
+1. The center of mass equals the sum of positions divided by N, and its velocity equals the sum of velocities divided by N.
+2. Write S for the position sum and D for the velocity sum, so the center is (S + Dt) / N.
 3. The squared distance is a quadratic in t with leading coefficient |D|^2 and linear coefficient 2 S dot D.
 4. Its vertex is at t = -(S dot D) / |D|^2, which is negative when the swarm moves away from the origin.
 5. Negative or zero time is clipped to zero, because the statement only allows t at or after zero.
@@ -61,7 +61,7 @@ The average of moving points moves in a straight line, like the average position
 | `crossTerm` | dot product of position sum and velocity sum |
 | `speedTerm` | squared norm of the velocity sum |
 | `bestTime` | vertex time, clipped to zero when needed |
-| `closestDistance` | norm of the centre at `bestTime` |
+| `closestDistance` | norm of the center at `bestTime` |
 
 The table names the four values computed per case.
 

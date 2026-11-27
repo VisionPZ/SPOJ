@@ -243,7 +243,7 @@ The `need == 1` branch keeps the largest period without a clique test. The gcd l
         need -= 1
 ```
 
-Removing a holiday succeeds when a clique of `need` holidays still fits. Otherwise the scan keeps it and narrows `allowed` to its neighbours. The block runs one clique test per holiday.
+Removing a holiday succeeds when a clique of `need` holidays still fits. Otherwise the scan keeps it and narrows `allowed` to its neighbors. The block runs one clique test per holiday.
 
 **Output.** The final scan writes removed numbers in increasing order.
 

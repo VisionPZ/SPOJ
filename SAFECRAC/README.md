@@ -4,7 +4,7 @@
 
 ## Problem
 
-Count the passcodes of length N whose neighbouring digits are adjacent on the keypad. Two digits are adjacent when their keys share an edge; the `Enter` key is never part of a passcode. Output each count modulo 1000000007.
+Count the passcodes of length N whose neighboring digits are adjacent on the keypad. Two digits are adjacent when their keys share an edge; the `Enter` key is never part of a passcode. Output each count modulo 1000000007.
 
 Input starts with T, the number of test cases. Each of the next T lines holds one length N. Output one count per line.
 
@@ -33,17 +33,17 @@ Sample output:
 
 ## Idea
 
-A passcode is a walk on the keypad, like tracing a route between neighbouring keys with at most one step per digit. Keep one count per ending digit and extend it by the neighbouring digits at each step.
+A passcode is a walk on the keypad, like tracing a route between neighboring keys with at most one step per digit. Keep one count per ending digit and extend it by the neighboring digits at each step.
 
-A step scans the small neighbour lists once, so the precomputation costs a constant amount per length. Enumerating every passcode grows exponentially with N and cannot reach length 100000.
+A step scans the small neighbor lists once, so the precomputation costs a constant amount per length. Enumerating every passcode grows exponentially with N and cannot reach length 100000.
 
 One precomputed table answers all test cases in constant time each.
 
 ## Why It Works
 
 1. A passcode of length N ends with some digit d.
-2. Its prefix of length N minus one must end with a neighbour of d.
-3. Therefore the count for d is the sum of the counts of its neighbours.
+2. Its prefix of length N minus one must end with a neighbor of d.
+3. Therefore the count for d is the sum of the counts of its neighbors.
 4. Summing over all ending digits gives the count for length N.
 5. Reducing after each step keeps every value below the modulus.
 
@@ -56,7 +56,7 @@ One precomputed table answers all test cases in constant time each.
 
 The keypad places 0 below 7 and `Enter` below 8.
 
-| digit | neighbours |
+| digit | neighbors |
 |---|---|
 | 0 | 7 |
 | 5 | 2 4 6 8 |
@@ -67,7 +67,7 @@ A trace of the first three lengths from the generator:
 | length | counts by digit summed | answer |
 |---|---|---|
 | 1 | ten digits start a code | 10 |
-| 2 | sum of neighbour counts over starts | 26 |
+| 2 | sum of neighbor counts over starts | 26 |
 | 3 | sum of next-step counts | 74 |
 
 The third row matches the sample answer for length three.
@@ -110,7 +110,7 @@ The largest length sets the precomputation bound.
 All requests are stored before the table is built.
 The buffer collects one answer line per test case.
 
-**Keypad and table.** Neighbour lists drive one count per ending digit.
+**Keypad and table.** Neighbor lists drive one count per ending digit.
 
 ```nim
 let testCount = nextInt(inputData, scanPos)
@@ -135,7 +135,7 @@ neighborDigits[8] = @[5, 7, 9]
 neighborDigits[9] = @[6, 8]
 ```
 
-The neighbour lists exclude the `Enter` key.
+The neighbor lists exclude the `Enter` key.
 Digit counts stop at nine keys, so the table is tiny.
 The requested lengths stay in input order.
 

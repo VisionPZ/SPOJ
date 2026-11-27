@@ -66,7 +66,7 @@ A script traced four small cases with breadth-first search and compared them wit
 [7, 1, 3, 9, 8] n = 5 inversions = 3 parity = 1 BFS reachable = True
 ```
 
-The second line is the sorted case, the first line is its odd neighbour, and the last line shows why odd lengths never block sorting.
+The second line is the sorted case, the first line is its odd neighbor, and the last line shows why odd lengths never block sorting.
 
 The scanner also reads minus signs because input values may be negative. The N = 2 branch runs before any parity test.
 

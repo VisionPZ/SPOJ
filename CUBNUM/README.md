@@ -4,7 +4,7 @@
 
 ## Problem
 
-Write each integer as a sum of positive cubes using the fewest terms, and print that smallest term count. Input runs until end of file, and each answer is labelled with its case number.
+Write each integer as a sum of positive cubes using the fewest terms, and print that smallest term count. Input runs until end of file, and each answer is labeled with its case number.
 
 Each line of input holds one integer. Print `Case #X: M` for the X-th value, where M is the minimum number of cubes. No extra spaces or blank lines appear.
 
@@ -163,7 +163,7 @@ The precomputation dominates the run, since each case is a lookup.
 |---|---|---|
 | Input read | one pass over the case list | one input string |
 | Precompute | up to 100000 times 46 cube checks | two integer tables |
-| Output | one labelled line per case | block buffer |
+| Output | one labeled line per case | block buffer |
 
 No per-case search is performed.
 

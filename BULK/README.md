@@ -61,7 +61,7 @@ The first bulk has a cavity, which the program subtracts.
 
 ## Idea
 
-Use the divergence theorem (a rule linking a closed surface to the volume inside). The volume is one sixth of the signed sum of face areas times their plane coordinates. The vertex order does not mark the outward side, so the program links neighbouring faces and propagates orientation signs. Think of coloring one face outward, then walking the surface so each shared edge keeps opposite sides consistent.
+Use the divergence theorem (a rule linking a closed surface to the volume inside). The volume is one sixth of the signed sum of face areas times their plane coordinates. The vertex order does not mark the outward side, so the program links neighboring faces and propagates orientation signs. Think of coloring one face outward, then walking the surface so each shared edge keeps opposite sides consistent.
 
 Edges are split at T-junctions before linking, and ray casts find nested surfaces so cavities subtract. Each face costs O(P log P) to sort its edges and vertices. Filling a voxel grid would need over a billion cells and cannot work.
 
@@ -72,7 +72,7 @@ Takeaway: orient the faces, then integrate volume over them.
 1. The shoelace sum in a face's plane gives a signed double area.
 2. The right-handed plane pairs are (y, z), (z, x), and (x, y).
 3. Two faces sharing an edge must point to opposite sides, so their signs differ by `relation = -firstDirection * secondDirection`.
-4. At a non-manifold edge, four faces meet; sorting them by interior angle and linking neighbours in a cycle keeps the orientation consistent.
+4. At a non-manifold edge, four faces meet; sorting them by interior angle and linking neighbors in a cycle keeps the orientation consistent.
 5. For one closed surface, the signed contributions sum to six times its volume. Three factors come from the divergence theorem, and two come from the double area.
 6. A ray cast counts crossings of other surfaces; odd parity means a surface is nested, so its volume flips sign.
 

@@ -166,7 +166,7 @@ The table doubles until it has room for twice the expected labels. Linear probin
     adjacencyFill[rightNode] += 1
 ```
 
-Two passes count degrees, then fill arcs. Each undirected exchange becomes two arcs. The prefix offsets let a search walk one node's neighbours in a single tight loop.
+Two passes count degrees, then fill arcs. Each undirected exchange becomes two arcs. The prefix offsets let a search walk one node's neighbors in a single tight loop.
 
 **Distance rows.** These lines run one breadth-first search per distinct card label.
 

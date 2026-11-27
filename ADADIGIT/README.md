@@ -173,7 +173,7 @@ proc nextPermutation(digits: var seq[int]): bool =
   return true
 ```
 
-The pivot is the first digit smaller than its right neighbour.
+The pivot is the first digit smaller than its right neighbor.
 The suffix is reversed into its lowest order.
 Equal digits produce repeated values, which only cost extra comparisons.
 

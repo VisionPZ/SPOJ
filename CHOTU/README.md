@@ -4,7 +4,7 @@
 
 ## Problem
 
-Two scientists sit equally far from a centre point, one west and one east. A robot carries each stone from one scientist to a student inside a rectangle, then on to the other scientist. Find the largest separation between the scientists that lets every stone arrive with equal weight.
+Two scientists sit equally far from a center point, one west and one east. A robot carries each stone from one scientist to a student inside a rectangle, then on to the other scientist. Find the largest separation between the scientists that lets every stone arrive with equal weight.
 
 Input starts with the case count t. Each of the next t lines holds two integers X and Y, the rectangle half-width and half-height.
 

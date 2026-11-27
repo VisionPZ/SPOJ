@@ -35,7 +35,7 @@ The four matrices are [1 3; 4 2], [2 3; 4 1], [1 4; 3 2] and [2 4; 3 1].
 
 ## Idea
 
-Cells with the same xor value form one pile, like sorting cards into labelled stacks before numbering the whole deck. The rule orders whole piles but never orders cards inside a pile. A Walsh transform counts every pile size in one xor convolution, and the answer is the product of those factorials. A direct double loop over all cells costs N times M per test and repeats that scan for every case.
+Cells with the same xor value form one pile, like sorting cards into labeled stacks before numbering the whole deck. The rule orders whole piles but never orders cards inside a pile. A Walsh transform counts every pile size in one xor convolution, and the answer is the product of those factorials. A direct double loop over all cells costs N times M per test and repeats that scan for every case.
 
 ## Why It Works
 

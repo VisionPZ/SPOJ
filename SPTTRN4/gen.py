@@ -64,7 +64,6 @@ def oracle(text):
 
 
 SAMPLE_INPUT = "3\n3 1 1\n4 3 2\n5 2 3\n"
-# The problem page renders the three one-character answer lines as "*.*".
 STATEMENT_SAMPLE_LITERAL = "*.*\n"
 SAMPLE_OUTPUT = "*\n.\n*\n"
 assert oracle(SAMPLE_INPUT) == SAMPLE_OUTPUT

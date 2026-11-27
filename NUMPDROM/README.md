@@ -40,7 +40,7 @@ Takeaway: reverse by arithmetic, then compare.
 
 1. `remaining mod 10` gives the current last digit.
 2. Shifting the reversed value left by one place and adding that digit grows the mirror correctly.
-3. `remaining div 10` drops the digit that was just copied.
+3. `remaining div 10` drops the digit that was copied.
 4. The loop ends when every digit has been copied, so the mirror is complete.
 5. Equal numbers mean the digit sequence reads the same both ways.
 

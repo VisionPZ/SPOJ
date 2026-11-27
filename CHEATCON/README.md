@@ -90,7 +90,7 @@ The construction is Thompson's automaton. It uses two states per atom and a few 
 | term | meaning |
 |---|---|
 | `epsilonEdges` | free jumps that consume no letter |
-| `charEdges` | letter-labelled arrows between states |
+| `charEdges` | letter-labeled arrows between states |
 | `Fragment` | the start and finish states of one parsed part |
 | `epsilonClosure` | every state reachable through free jumps |
 

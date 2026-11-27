@@ -41,14 +41,14 @@ The far top-left corner is three steps from the nearest white cell.
 
 Spread distances across the grid from each white pixel, like a wave advancing one cell per step. Set white cells to zero and every other cell to a large number. Sweep from the top-left, then from the bottom-right, and keep the smaller value at each cell. This is a two-pass distance transform (a table that replaces a search).
 
-Each sweep visits each cell once and reads only the up, left, down, and right neighbours, so the cost is O(1) per cell. A queue-based multi-source search would push every cell and allocate queue state, which costs more on a 33,124-cell grid.
+Each sweep visits each cell once and reads only the up, left, down, and right neighbors, so the cost is O(1) per cell. A queue-based multi-source search would push every cell and allocate queue state, which costs more on a 33,124-cell grid.
 
 Takeaway: two sweeps replace a full search.
 
 ## Why It Works
 
 1. A white pixel has distance zero, so it anchors every ripple.
-2. Any neighbour of a cell with distance d has a distance of at most d + 1.
+2. Any neighbor of a cell with distance d has a distance of at most d + 1.
 3. The top-left sweep propagates influence from up and left; the bottom-right sweep propagates from down and right.
 4. A shortest Manhattan path to a white cell approaches from one of those four directions, so the two sweeps cover every case.
 5. The smaller of the two sweep values is the true minimum.
@@ -59,7 +59,7 @@ The distance array uses one term per state.
 | --- | --- |
 | distance[cellIndex] | best distance known for that cell |
 | infDistance | large stand-in for a cell not yet reached |
-| candidate | neighbour distance plus one |
+| candidate | neighbor distance plus one |
 | nextBit | reads a single '0' or '1' token |
 
 Each row maps to one part of the code.
@@ -152,7 +152,7 @@ Each case resets `distance` to cellCount entries. A '1' token sets a cell to zer
         if candidate < distance[cellIndex]:
           distance[cellIndex] = candidate
 ```
-The first sweep reads the up and left neighbours. A candidate one step larger replaces the current value when it is smaller. The flat indices subtract columnCount and one.
+The first sweep reads the up and left neighbors. A candidate one step larger replaces the current value when it is smaller. The flat indices subtract columnCount and one.
 
 **Backward sweep.**
 ```nim
@@ -172,7 +172,7 @@ The first sweep reads the up and left neighbours. A candidate one step larger re
         if candidate < distance[cellIndex]:
           distance[cellIndex] = candidate
 ```
-The second sweep walks rows and columns in reverse. It reads the down and right neighbours by adding columnCount and one. Together the two sweeps settle every cell.
+The second sweep walks rows and columns in reverse. It reads the down and right neighbors by adding columnCount and one. Together the two sweeps settle every cell.
 
 **Output.**
 ```nim

@@ -146,7 +146,7 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Equal neighbours extend the current run by one.
+Equal neighbors extend the current run by one.
 A different value restarts the run at one.
 The final line flushes any remaining buffered text.
 

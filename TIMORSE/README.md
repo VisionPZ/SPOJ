@@ -4,7 +4,7 @@
 
 ## Problem
 
-Each message is a line of letters, spaces and other characters. The task is to print the length of that message in Morse code, measured in dot units, where a dash costs 3, a gap inside a character costs 1, the gap between characters costs 3, and the gap between words costs 7.
+Each message is a line of letters, spaces and other characters. Print the length of that message in Morse code, measured in dot units. A dash costs 3, an intra-character gap costs 1, an inter-character gap costs 3, and a word gap costs 7.
 
 Input starts with `n`, the number of messages, followed by `n` lines, one per message. Output holds each message line, then `: length = L`.
 
@@ -29,7 +29,7 @@ sos: length = 27
 
 ## Idea
 
-Walk the message character by character and add up durations, exactly like a telegraph key being pressed. A letter contributes its dot and dash durations plus the 1-unit gaps between its symbols; a letter that follows another letter also pays the 3-unit character gap, and a letter that starts a new word after a gap pays the 7-unit word gap. This needs no Morse string building and no second pass: one left-to-right scan gives the total.
+Walk the message character by character and add up durations, exactly like a telegraph key being pressed. Each letter contributes its dot and dash durations plus 1-unit gaps between symbols. A letter after another letter adds a 3-unit gap, and a letter starting a new word adds a 7-unit gap. This needs no Morse string building and no second pass: one left-to-right scan gives the total.
 
 ## Why It Works
 

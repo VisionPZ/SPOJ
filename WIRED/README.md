@@ -4,11 +4,11 @@
 
 ## Problem
 
-An electrical box has four sockets on the left and four on the right, each labelled with a colour number from 1 to 4. A wire from left socket `i` must go to a right socket with the same number. For each test case, print four numbers: the right-side position each left socket connects to.
+An electrical box has four sockets on the left and four on the right, each labeled with a color number from 1 to 4. A wire from left socket `i` must go to a right socket with the same number. For each test case, print four numbers: the right-side position each left socket connects to.
 
 | item | bound |
 |---|---|
-| colours | 1 to 4 |
+| colors | 1 to 4 |
 | sockets per side | 4 |
 | judge limit | 1000 ms, 1536 MB |
 
@@ -31,20 +31,20 @@ Sample output:
 
 ## Idea
 
-Read the four right-side colours and remember, for each colour, where it sits on the right. Then walk the left side and print the remembered position of each colour. That is the whole job: a tiny table of four entries, built once per case, then four lookups.
+Read the four right-side colors and remember, for each color, where it sits on the right. Then walk the left side and print the remembered position of each color. That is the whole job: a tiny table of four entries, built once per case, then four lookups.
 
 ## Why It Works
 
-1. The required output line is, position by position, "where is this left colour on the right", so a colour-to-position table answers every socket directly.
-2. The program fills the table by comparing every left colour with every right colour and writing `rightIndex + 1` (positions are 1-based). Positions are visited in order, so if a colour appears several times on the right, the last one wins. The independent oracle builds the same table with a dictionary comprehension, which also keeps the last occurrence, so both agree even on repeated colours.
-3. A left colour that never appears on the right has no wire. Its table entry stays 0, and the oracle's `get(color, 0)` also gives 0, so missing colours match too.
-4. In the sample first case, left colour 1 sits on the right at position 4, colour 3 at position 3, colour 4 at position 2 and colour 2 at position 1, which prints `4 3 2 1` exactly as the statement explains.
+1. The required output line is, position by position, "where is this left color on the right", so a color-to-position table answers every socket directly.
+2. The program fills the table by comparing every left color with every right color and writing `rightIndex + 1` (positions are 1-based). Positions are visited in order, so if a color appears several times on the right, the last one wins. The independent oracle builds the same table with a dictionary comprehension, which also keeps the last occurrence, so both agree even on repeated colors.
+3. A left color that never appears on the right has no wire. Its table entry stays 0, and the oracle's `get(color, 0)` also gives 0, so missing colors match too.
+4. In the first sample case, left color 1 sits on the right at position 4, color 3 at 3, color 4 at 2, and color 2 at 1. That prints `4 3 2 1`, matching the statement.
 
 | term | meaning |
 |---|---|
-| `leftColors` | colours on the left, in socket order |
-| `rightColors` | colours on the right, in socket order |
-| `answerPositions` | for each left socket, the right position of its colour |
+| `leftColors` | colors on the left, in socket order |
+| `rightColors` | colors on the right, in socket order |
+| `answerPositions` | for each left socket, the right position of its color |
 
 ## Code
 
@@ -107,7 +107,7 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-`answerPositions` starts all zero, which is the answer for a colour with no wire. The later match overwrites earlier ones, fixing the repeated-colour convention described above.
+`answerPositions` starts all zero, which is the answer for a color with no wire. The later match overwrites earlier ones, fixing the repeated-color convention described above.
 
 ## Complexity
 

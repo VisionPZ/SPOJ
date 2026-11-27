@@ -31,7 +31,7 @@ Sample output:
 
 ## Idea
 
-Treat the reports as two labelled piles, like sorting coins into heads and tails. The larger pile value is the answer, and the smaller pile value sits exactly one below it.
+Treat the reports as two labeled piles, like sorting coins into heads and tails. The larger pile value is the answer, and the smaller pile value sits exactly one below it.
 
 Scanning the reports once finds both values and their frequencies. Testing the two shapes of valid data costs constant time per case. A brute search over every possible D would cost O(n^2) per case. Takeaway: one scan finds the two report values, and two checks decide validity.
 

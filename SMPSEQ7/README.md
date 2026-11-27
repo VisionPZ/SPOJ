@@ -47,7 +47,7 @@ No
 
 Think of cutting a rope once so the left half slopes down and the right half slopes up. The prefix-and-suffix scan finds the longest possible halves.
 
-The scan walks down from the first value and up from the last value. Each step costs one comparison between neighbours. Trying every cut and checking both halves would cost more comparisons.
+The scan walks down from the first value and up from the last value. Each step costs one comparison between neighbors. Trying every cut and checking both halves would cost more comparisons.
 
 The two walks meet when a valid cut exists.
 
@@ -131,7 +131,7 @@ proc appendOutput(text: string) =
 
 `setLen 0` reuses the storage after a write.
 
-**Two walks and answer.** The walks stop at the first broken neighbour.
+**Two walks and answer.** The walks stop at the first broken neighbor.
 
 ```nim
 let sequenceLength = nextInt(inputData, scanPos)
@@ -160,7 +160,7 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Each walk visits a value at most once. Strict inequalities reject equal neighbours. The final write covers the answer line.
+Each walk visits a value at most once. Strict inequalities reject equal neighbors. The final write covers the answer line.
 
 ## Complexity
 
@@ -168,10 +168,10 @@ Each walk visits a value at most once. Strict inequalities reject equal neighbou
 |---|---|---|
 | Input read | one pass over the lines | input bytes |
 | Digit scan | one pass over `n+1` integers | constant |
-| Two walks | one comparison per neighbour | one sequence |
+| Two walks | one comparison per neighbor | one sequence |
 | Output | one write per block | one buffer |
 
-Each neighbour is examined at most once in each walk.
+Each neighbor is examined at most once in each walk.
 
 | Measure | Big O |
 |---|---|

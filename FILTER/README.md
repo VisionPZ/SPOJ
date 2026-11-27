@@ -55,7 +55,7 @@ Case 4: Impossible
 
 ## Idea
 
-walk possible original rows as states, like selecting tiles one row at a time. Each state holds the last two rows, because the filter output for a row depends on its neighbour rows. Keep the smallest and largest black count reaching every state. Take dynamic programming over row pairs as the engine.
+walk possible original rows as states, like selecting tiles one row at a time. Each state holds the last two rows, because the filter output for a row depends on its neighbor rows. Keep the smallest and largest black count reaching every state. Take dynamic programming over row pairs as the engine.
 
 ## Why It Works
 

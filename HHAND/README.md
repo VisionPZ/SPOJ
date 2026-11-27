@@ -52,7 +52,7 @@ One chain table per town answers all peaks in linear time.
 1. Extending a hospital path by one town lowers total distance by that town's subtree size.
 2. An optimal path therefore uses the largest length it can reach.
 3. The shallowest path town is the peak, and both arms descend into distinct children.
-4. A town on an arm pays its total distance minus the two neighbour subtrees on the path.
+4. A town on an arm pays its total distance minus the two neighbor subtrees on the path.
 5. The two best arm lengths combine through a best and second-best table per peak.
 
 | term | meaning |

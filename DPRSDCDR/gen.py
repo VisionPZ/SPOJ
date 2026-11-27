@@ -17,7 +17,6 @@ def oracle(text):
         hours_per_lab = int(tokens[cursor]); cursor += 1
         class_hours = int(tokens[cursor]); cursor += 1
         occupied = ct_count * hours_per_ct + lab_count * hours_per_lab + class_hours
-        # Search every possible amount of free time instead of subtracting.
         jolly = False
         for free_hours in range(15):
             if free_hours >= 3 and occupied + free_hours == 14:

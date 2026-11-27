@@ -36,7 +36,7 @@ Sample output:
 
 ## Idea
 
-Sort the values, like lining up people by height before measuring neighbours. In sorted order the closest pair must sit side by side. Compare each adjacent pair once and keep the smallest gap. Checking every pair would cost quadratic work.
+Sort the values, like lining up people by height before measuring neighbors. In sorted order the closest pair must sit side by side. Compare each adjacent pair once and keep the smallest gap. Checking every pair would cost quadratic work.
 
 ## Why It Works
 

@@ -36,7 +36,7 @@ Sample output:
 
 ## Idea
 
-A form with labelled boxes can be filled by jumping from label to label. The program finds the literal markers `TYPE 1:`, `TYPE 2:`, `TYPE 3:`, `TYPE details:` in order and reads whatever sits after each one.
+A form with labeled boxes can be filled by jumping from label to label. The program finds the literal markers `TYPE 1:`, `TYPE 2:`, `TYPE 3:`, `TYPE details:` in order and reads whatever sits after each one.
 
 An empty field is simply a field where the next character is a comma or the line ends, so the reader writes NULL instead of a number.
 

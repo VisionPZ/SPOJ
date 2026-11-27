@@ -34,7 +34,7 @@ Sample output:
 
 ## Idea
 
-Scale the square root far beyond the printed precision, like measuring a room in millimetres before reporting metres. The answer equals P divided by S plus twice the square root of P times Q. P is the product of radii. S is the sum of pairwise products. Q is the sum of radii. Integer limbs hold P, S, and Q; Newton iteration extracts the square root with 60 fractional digits; one long division produces the 50 printed digits. Machine floating point would lose most of those digits, so integer arithmetic is required. Use the scaled integer formula.
+Scale the square root far beyond the printed precision, like measuring a room in millimetres before reporting meters. The answer equals P divided by S plus twice the square root of P times Q. P is the product of radii. S is the sum of pairwise products. Q is the sum of radii. Integer limbs hold P, S, and Q; Newton iteration extracts the square root with 60 fractional digits; one long division produces the 50 printed digits. Machine floating point would lose most of those digits, so integer arithmetic is required. Use the scaled integer formula.
 
 ## Why It Works
 

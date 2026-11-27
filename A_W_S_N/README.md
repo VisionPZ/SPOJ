@@ -4,7 +4,7 @@
 
 ## Problem
 
-Walk through a maze from `T` to `W`, collecting every `C` on the way. Each step to a side neighbour costs one unit of time, and walls cannot be crossed. Report the minimum time, or `Mission Failed!` when no route collects all chocolates.
+Walk through a maze from `T` to `W`, collecting every `C` on the way. Each step to a side neighbor costs one unit of time, and walls cannot be crossed. Report the minimum time, or `Mission Failed!` when no route collects all chocolates.
 
 Input starts with T, the number of test cases. Each case gives m and n, then m lines of n characters. The characters are `#` for wall, `.` for road, `C` for chocolate, `T` for the start, and `W` for the goal.
 

@@ -91,7 +91,7 @@ Worked example from sample case 3, with edges read from the seven rows:
 
 Rows for people 2, 3, 4, and 6 form one cycle through 6, 4, 3, and back to 6. Person 1 has no outgoing link and person 0 never gets a link back. The groups are `{0}`, `{1}`, and `{2, 3, 4, 5, 6}`, so the answer is 3.
 
-The table is stored as strings, so each neighbour test is one character read.
+The table is stored as strings, so each neighbor test is one character read.
 
 ## Code
 

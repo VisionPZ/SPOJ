@@ -6,7 +6,7 @@
 
 Read the dimensions of a matrix, then read its values, and print the matrix back with tabs between values in each row. The statement pastes its sample with rows joined, so the three source lines are shown below.
 
-The first line holds two integers, the row count and the column count. The next values fill the rows in reading order. The output has one line per row, with a tab between neighbouring values.
+The first line holds two integers, the row count and the column count. The next values fill the rows in reading order. The output has one line per row, with a tab between neighboring values.
 
 | item | bound |
 |---|---|

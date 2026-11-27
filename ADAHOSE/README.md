@@ -4,7 +4,7 @@
 
 ## Problem
 
-A square field gives each cell a hose capacity. Find the largest flow from the field top to the field bottom, where neighbouring hoses share water freely.
+A square field gives each cell a hose capacity. Find the largest flow from the field top to the field bottom, where neighboring hoses share water freely.
 
 The first line gives N. The next N lines give N capacities each. Output one integer, the maximal flow per time.
 
@@ -175,7 +175,7 @@ All other cells begin at `infiniteFlow`.
 One push per left-edge cell seeds the multi-source search.
 Cell indices pack a row and column into one integer.
 
-**Walking and answering.** Each popped cell relaxes its four neighbours, then the cheapest exit is doubled.
+**Walking and answering.** Each popped cell relaxes its four neighbors, then the cheapest exit is doubled.
 
 ```nim
 while heapSize > 0:
@@ -206,7 +206,7 @@ outputBuffer.setLen 0
 ```
 
 Stale heap entries are skipped by the distance check.
-Four neighbour checks cover the whole grid.
+Four neighbor checks cover the whole grid.
 The answer is written once with the buffered writer.
 
 ## Complexity

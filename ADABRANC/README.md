@@ -4,9 +4,9 @@
 
 ## Problem
 
-For each traveller, count the fruits reachable from a starting fruit using only branches that carry the traveller's weight. A branch carries a traveller when its strength is at least that weight.
+For each traveler, count the fruits reachable from a starting fruit using only branches that carry the traveler's weight. A branch carries a traveler when its strength is at least that weight.
 
-The input gives one case: `N` fruits, `M` branches, then `Q` travellers. Each branch line gives two fruit indexes and a strength. Each query line gives a starting fruit and a weight. Fruit indexes run from `0` to `N - 1`. Print one reachable count per query, in input order.
+The input gives one case: `N` fruits, `M` branches, then `Q` travelers. Each branch line gives two fruit indexes and a strength. Each query line gives a starting fruit and a weight. Fruit indexes run from `0` to `N - 1`. Print one reachable count per query, in input order.
 
 | Item | Bound |
 |---|---|
@@ -14,7 +14,7 @@ The input gives one case: `N` fruits, `M` branches, then `Q` travellers. Each br
 | Branches M | 1 to 200000 |
 | Queries Q | 1 to 300000 |
 | Branch strength | 1 to 100000 |
-| Traveller weight | 1 to 100000 |
+| Traveler weight | 1 to 100000 |
 | Judge limit | 2000 ms, 1536 MB |
 
 Parallel branches are allowed and never change reachability.
@@ -44,11 +44,11 @@ At weight three every branch works, at weight four only the strong pair of paths
 
 ## Idea
 
-Add branches from strongest to weakest, like unlocking roads as a storm fades and watching neighborhoods merge. Use a disjoint-set union for the merged neighborhoods. Answer each traveller the moment the weight drops to that traveller's value. Sorting is replaced by buckets, because all strengths and weights are at most 100000.
+Add branches from strongest to weakest, like unlocking roads as a storm fades and watching neighborhoods merge. Use a disjoint-set union for the merged neighborhoods. Answer each traveler the moment the weight drops to that traveler's value. Sorting is replaced by buckets, because all strengths and weights are at most 100000.
 
 ## Why It Works
 
-1. A traveller of weight `Y` may cross exactly the branches with strength at least `Y`.
+1. A traveler of weight `Y` may cross exactly the branches with strength at least `Y`.
 2. Processing strengths downward makes the current union-find contain exactly those branches.
 3. All queries with weight `Y` see the same union-find state.
 4. A root's component size equals the number of fruits reachable from that root.

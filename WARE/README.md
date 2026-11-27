@@ -15,7 +15,7 @@ The bounds size the board:
 | item | bound |
 |---|---|
 | board side n | 1 to 8 |
-| box height | 2, 3 or 4 metres |
+| box height | 2, 3 or 4 meters |
 | start row and column | 1 to n |
 | judge limit | 1000 ms, 1536 MB |
 

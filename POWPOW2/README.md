@@ -34,7 +34,7 @@ Sample output:
 
 ## Idea
 
-Vandermonde's identity collapses the whole sum into one central binomial coefficient, like replacing a long hand count with a single labelled box. The solution computes that coefficient modulo the factors of `500000002`, reduces the double exponent with Fermat's theorem, and finishes with modular exponentiation. Each test costs a few logarithms, so a thousand cases stay cheap.
+Vandermonde's identity collapses the whole sum into one central binomial coefficient, like replacing a long hand count with a single labeled box. The solution computes that coefficient modulo the factors of `500000002`, reduces the double exponent with Fermat's theorem, and finishes with modular exponentiation. Each test costs a few logarithms, so a thousand cases stay cheap.
 
 A direct sum over `r` would need `n` terms per case and would also overflow ordinary integers.
 

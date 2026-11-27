@@ -31,8 +31,6 @@ def brute_best(left, right):
 
 
 def simulate_best(left, right):
-    # Crossing every car on one side before the other puts that side's last
-    # car at the front of the final wait; evaluate both possible last cars.
     return min(max_wait(list(left) + list(right)),
                max_wait(list(right) + list(left)))
 

@@ -4,7 +4,7 @@
 
 ## Problem
 
-Starting on the first digit of a digit string, hop at most two positions per minute. A hop is legal only when the target digit is the current digit or one of its two cyclic neighbours. Report the fewest minutes to reach the last digit, or say it cannot be done.
+Starting on the first digit of a digit string, hop at most two positions per minute. A hop is legal only when the target digit is the current digit or one of its two cyclic neighbors. Report the fewest minutes to reach the last digit, or say it cannot be done.
 
 Input holds one string of digits and no count. Output is `yes` followed by the minute count, or `no` alone.
 
@@ -15,7 +15,7 @@ Input holds one string of digits and no count. Output is `yes` followed by the m
 | hop distance | 1 or 2 positions |
 | judge limit | 1000 ms, 1536 MB |
 
-The digit cycle wraps, so 0 neighbours 9 and 1.
+The digit cycle wraps, so 0 neighbors 9 and 1.
 
 Sample input:
 
@@ -56,8 +56,8 @@ For the sample `5495`, minute 0 reaches only position 0 with digit 5.
 | minute | newly reached positions | reason |
 |---|---|---|
 | 0 | 0 | first key is free |
-| 1 | 1 | digit 4 neighbours 5 |
-| 2 | 3 | digit 5 neighbours 4 |
+| 1 | 1 | digit 4 neighbors 5 |
+| 2 | 3 | digit 5 neighbors 4 |
 
 The last position is reached at minute 2, matching the sample.
 
@@ -88,7 +88,7 @@ proc nextToken(data: string, pos: var int): string =
   return word
 ```
 
-The token reader keeps every digit and skips the trailing newline. The four offsets are the reachable neighbours.
+The token reader keeps every digit and skips the trailing newline. The four offsets are the reachable neighbors.
 
 **Breadth-first search and output.** A queue visits each position once, in minute order.
 
@@ -146,7 +146,7 @@ The queue holds each position at most once.
 | phase | time | space |
 |---|---|---|
 | input read | one pass over stdin | one input string |
-| search | four neighbour checks per position | distance and queue arrays |
+| search | four neighbor checks per position | distance and queue arrays |
 | output | one buffered answer | block buffer |
 
 Each position enters the queue once, so the search is linear.

@@ -61,7 +61,7 @@ The main terms are listed here:
 
 | term | meaning |
 |---|---|
-| `centerX` | x coordinate of the current circle centre |
+| `centerX` | x coordinate of the current circle center |
 | `radius` | radius of the current circle |
 | `pointX` | shuffled community coordinate |
 | `radiusSlack` | tiny tolerance added to the squared radius |
@@ -70,13 +70,13 @@ Shuffling makes the expected number of rebuilds small.
 
 A script trace for the second sample case lists candidate circles:
 
-| boundary points | candidate centre | radius |
+| boundary points | candidate center | radius |
 |---|---|---|
 | (0.5, 0.5), (0.5, -0.5) | (0.5, 0) | 0.5 |
 | (0, 0.5), (0, -0.5) | (0, 0) | 0.5 |
 | (0.5, 0.5), (0, 0.5), (0, -0.5) | (0.25, 0) | 0.5590 |
 
-Only the third circle contains all four points, so the printed centre is `0.2500, 0.0000`.
+Only the third circle contains all four points, so the printed center is `0.2500, 0.0000`.
 
 Guard: values near zero print as `0.0000`, so no negative zero reaches the output.
 

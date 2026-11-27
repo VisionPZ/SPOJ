@@ -4,7 +4,7 @@
 
 ## Problem
 
-A river holds A stones one metre apart, and Mowgli jumps from the near bank to the far bank. Each jump skips at most K stones, so it advances at most K + 1 stone positions. Report the number of distinct crossings for each river, modulo 1000000007.
+A river holds A stones one meter apart, and Mowgli jumps from the near bank to the far bank. Each jump skips at most K stones, so it advances at most K + 1 stone positions. Report the number of distinct crossings for each river, modulo 1000000007.
 
 The input starts with the test count T. Each test gives the river count N and the skip limit K, followed by N stone counts A. Print one line per river, in input order.
 

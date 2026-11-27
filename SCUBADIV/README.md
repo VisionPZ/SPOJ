@@ -11,8 +11,8 @@ The statement sets these bounds.
 
 | Item | Bound |
 | --- | --- |
-| Oxygen needed t | 1 to 21 litres |
-| Nitrogen needed a | 1 to 79 litres |
+| Oxygen needed t | 1 to 21 liters |
+| Nitrogen needed a | 1 to 79 liters |
 | Cylinders n | 1 to 1000 |
 | Gas per cylinder | up to 21 oxygen and 79 nitrogen |
 | Weight per cylinder | 1 to 800 decagrams |

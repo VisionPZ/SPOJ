@@ -5,7 +5,7 @@
 
 Each case gives cities and weighted links listed in both directions. Choose links that connect all cities at the smallest total cost, and print that cost for each case.
 
-Input starts with a case count. Each case gives a city count, then one block per city: its name, its neighbour count, and each neighbour index with a link cost. Both directions of a link appear in the input. Output one cost per case.
+Input starts with a case count. Each case gives a city count, then one block per city: its name, its neighbor count, and each neighbor index with a link cost. Both directions of a link appear in the input. Output one cost per case.
 
 The statement and judge table give these bounds:
 
@@ -202,7 +202,7 @@ for _ in 1 .. testCount:
     outputBuffer.setLen 0
 stdout.write outputBuffer
 ```
-Each case reads all neighbour blocks into `connectionList`. The list is sorted once, then each link is tested. `treeCost` accumulates the accepted costs, and `treeEdges` ends the loop.
+Each case reads all neighbor blocks into `connectionList`. The list is sorted once, then each link is tested. `treeCost` accumulates the accepted costs, and `treeEdges` ends the loop.
 
 ## Complexity
 

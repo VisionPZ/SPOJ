@@ -1,5 +1,7 @@
 # DYZIO — Dyzio (SPOJ)
 
+<https://www.spoj.com/problems/DYZIO/>
+
 ## Problem
 
 The input encodes a rope-cutting procedure as a word of `0` and `1`, where a `1` cuts a piece in half.

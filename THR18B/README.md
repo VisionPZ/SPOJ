@@ -4,7 +4,7 @@
 
 ## Problem
 
-A dartboard has ten scoring rings centered at the origin: a hit at distance `d` millimeters scores 10 for `d ≤ 10`, then 9, 8, and so on down to 1 for `d ≤ 190`, and 0 beyond that. The program sums the scores of all shots.
+A dartboard has ten scoring rings centered at the origin. A hit at distance `d` millimeters scores 10 for `d ≤ 10`, stepping down by 1 every 20 millimeters to 1 for `d ≤ 190`, and 0 beyond that. The program sums the scores of all shots.
 
 Input starts with the number of shots `N`, then `N` lines each hold two integers, the coordinates `(x, y)` of one dart in millimeters. Output holds one line with the total score.
 

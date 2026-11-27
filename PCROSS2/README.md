@@ -4,7 +4,7 @@
 
 ## Problem
 
-Draw an X on grid paper for each test case. Stars fill the two diagonals through the given centre; dots fill everything else. No whole row or column is filled.
+Draw an X on grid paper for each test case. Stars fill the two diagonals through the given center; dots fill everything else. No whole row or column is filled.
 
 Input: a case count `t`, then `t` lines with `m n ci cj`. Output: `m` lines of `n` characters per case, then one blank line after every case.
 
@@ -13,7 +13,7 @@ Input: a case count `t`, then `t` lines with `m n ci cj`. Output: `m` lines of `
 | Test cases `t` | 1 to 100 |
 | Rows `m` | 1 to 100 |
 | Columns `n` | 1 to 100 |
-| Centre | `ci <= m`, `cj <= n` |
+| Center | `ci <= m`, `cj <= n` |
 | Judge limit | 1000 ms, 1536 MB |
 
 The sample, verbatim:
@@ -49,14 +49,14 @@ The sample, verbatim:
 
 Think of drawing two diagonal strokes through one point on squared paper. The distance-equality test writes each character directly.
 
-The code converts the centre to zero-based indices, then compares the row distance with the column distance. Equal distances mark both diagonal strokes. Each cell costs two subtractions, one absolute value and one comparison.
+The code converts the center to zero-based indices, then compares the row distance with the column distance. Equal distances mark both diagonal strokes. Each cell costs two subtractions, one absolute value and one comparison.
 
 The test needs no grid storage and no separate ray walk.
 
 ## Why It Works
 
-1. A cell lies on a diagonal through the centre when its two distances from the centre match.
-2. The centre cell has both distances zero, so it becomes a star.
+1. A cell lies on a diagonal through the center when its two distances from the center match.
+2. The center cell has both distances zero, so it becomes a star.
 3. Loop bounds keep every cell inside the grid, which clips the strokes at the edges.
 4. One extra newline after the grid gives the blank line after every case, including the last.
 
@@ -64,8 +64,8 @@ The test needs no grid storage and no separate ray walk.
 |---|---|
 | `caseCount` | the number of grids |
 | `rowCount`, `columnCount` | the `m` and `n` of one case |
-| `centerRow`, `centerColumn` | zero-based centre indices |
-| `rowDistance`, `columnDistance` | distances from the centre |
+| `centerRow`, `centerColumn` | zero-based center indices |
+| `rowDistance`, `columnDistance` | distances from the center |
 
 Equal distances describe both diagonal strokes at once.
 

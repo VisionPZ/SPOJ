@@ -115,23 +115,24 @@ def oracle(text):
             else:
                 active.append(key)
 
-        @lru_cache(maxsize=None)
-        def survive(key):
-            crowd = crowds[key]
-            if crowd[2]:
-                return crowd[3]
-            node, neighbour = key
-            if crowd[1] == dist[neighbour]:
-                follow = [(neighbour, nxt) for nxt in adj[neighbour] if nxt not in parents[neighbour]]
-                if not follow:
-                    return crowd[1]
-                return max(survive(item) for item in follow)
-            return crowd[1]
-
-        values = []
-        for node in range(1, node_count + 1):
-            keys = [(node, neighbour) for neighbour in adj[node] if neighbour not in parents[node]]
-            values.append(max((survive(key) for key in keys), default=Fraction(dist[node])))
+        node_order = sorted(range(1, node_count + 1), key=lambda u: -dist[u])
+        node_best = [Fraction(0)] * (node_count + 1)
+        for node in node_order:
+            best_val = Fraction(dist[node])
+            for neighbour in adj[node]:
+                if neighbour in parents[node]:
+                    continue
+                crowd = crowds[(node, neighbour)]
+                if crowd[2]:
+                    val = crowd[3]
+                elif crowd[1] == dist[neighbour]:
+                    val = node_best[neighbour]
+                else:
+                    val = crowd[1]
+                if val > best_val:
+                    best_val = val
+            node_best[node] = best_val
+        values = [node_best[node] for node in range(1, node_count + 1)]
         best = max(values)
         answers.append([index + 1 for index, value in enumerate(values) if value == best])
     return "\n".join(" ".join(str(node) for node in answer) for answer in answers) + "\n"
@@ -158,8 +159,9 @@ def exhaustive(text):
                 return Fraction(0)
             return Fraction(dist[neighbour])
 
-        @lru_cache(maxsize=None)
-        def best_from(node):
+        node_order = sorted(range(1, node_count + 1), key=lambda u: -dist[u])
+        best_from_val = [Fraction(0)] * (node_count + 1)
+        for node in node_order:
             result = Fraction(dist[node])
             for neighbour in outgoing(node):
                 forward = weight[(node, neighbour)]
@@ -170,14 +172,14 @@ def exhaustive(text):
                     meet = (Fraction(dist[node]) * backward + opposed * forward + forward * backward) / (forward + backward)
                     value = meet
                 elif arrive == dist[neighbour]:
-                    value = best_from(neighbour)
+                    value = best_from_val[neighbour]
                 else:
                     value = arrive
                 if value > result:
                     result = value
-            return result
+            best_from_val[node] = result
 
-        values = [best_from(node) for node in range(1, node_count + 1)]
+        values = [best_from_val[node] for node in range(1, node_count + 1)]
         top = max(values)
         lines.append(" ".join(str(index + 1) for index, value in enumerate(values) if value == top))
     return "\n".join(lines) + "\n"

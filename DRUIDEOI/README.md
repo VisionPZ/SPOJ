@@ -2,7 +2,7 @@
 
 ## Problem
 
-People stand in a circle and each person has a height. For every person, report the closest taller person when walking left and the closest taller person when walking right, using one-based indices. Unknown neighbours are reported as -1.
+People stand in a circle and each person has a height. For every person, report the closest taller person when walking left and the closest taller person when walking right, using one-based indices. Unknown neighbors are reported as -1.
 
 | item | bound |
 |---|---|
@@ -46,9 +46,9 @@ Walking left is like asking who blocks the view first in a hallway of people wit
 ## Why It Works
 
 1. A taller person to the right blocks every shorter person standing between them.
-2. Discarding a person of smaller or equal height never removes a valid nearest taller neighbour.
+2. Discarding a person of smaller or equal height never removes a valid nearest taller neighbor.
 3. Scanning right to left keeps a stack of strictly decreasing heights.
-4. The stack top after popping shorter or equal heights is the nearest taller neighbour on the right.
+4. The stack top after popping shorter or equal heights is the nearest taller neighbor on the right.
 5. Repeating the scan on a doubled circle covers wrap-around with the same logic.
 
 | term | meaning |
@@ -58,7 +58,7 @@ Walking left is like asking who blocks the view first in a hallway of people wit
 | `rightTaller` | nearest taller person on the right |
 | `leftTaller` | nearest taller person on the left |
 
-The doubled list keeps every wrapped neighbour inside one linear scan.
+The doubled list keeps every wrapped neighbor inside one linear scan.
 
 ## Code
 
@@ -149,7 +149,7 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-Reading the second copy gives left neighbours through the wrap point.
+Reading the second copy gives left neighbors through the wrap point.
 An empty stack means no taller person exists within one full turn.
 The buffer flushes only after many lines accumulate.
 

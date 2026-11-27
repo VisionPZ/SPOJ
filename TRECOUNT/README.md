@@ -36,7 +36,7 @@ Sample output:
 
 ## Idea
 
-Group trees by height before counting them, like sorting mail into pigeonholes before adding each pile. A balanced root has child heights that differ by zero or one, so counts at one height come from two neighbouring piles.
+Group trees by height before counting them, like sorting mail into pigeonholes before adding each pile. A balanced root has child heights that differ by zero or one, so counts at one height come from two neighboring piles.
 
 The `convolve` proc combines child sizes in one sweep. Each height uses two convolutions instead of testing every split again. Naive tree enumeration rebuilds the same subtrees many times.
 

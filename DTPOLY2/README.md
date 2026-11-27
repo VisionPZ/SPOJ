@@ -4,7 +4,7 @@
 
 ## Problem
 
-Count the ways to split a labelled convex N-gon into K pieces using non-crossing vertex-to-vertex diagonals, and report the count modulo M. Cutting order is ignored, and each vertex is distinct.
+Count the ways to split a labeled convex N-gon into K pieces using non-crossing vertex-to-vertex diagonals, and report the count modulo M. Cutting order is ignored, and each vertex is distinct.
 
 Input has no leading count. Each line holds N, K, and M, and reading stops at end of file. Print one answer per line.
 

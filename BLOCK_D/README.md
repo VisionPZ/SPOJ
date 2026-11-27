@@ -177,7 +177,7 @@ proc appendOutput(text: string) =
 ```
 
 The board reader stops after the stated width.
-Colours need no integer conversion.
+Colors need no integer conversion.
 The buffer flushes after 128 KiB.
 
 **Breadth-first search.** Each popped board expands one move per destroyable group.

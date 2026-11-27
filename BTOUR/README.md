@@ -49,13 +49,13 @@ Anchor every loop at its lowest numbered intersection. Self-loops are counted di
 
 Each street pair costs one Dijkstra run over the remaining graph, O(m log n). Enumerating every simple loop would be exponential.
 
-Takeaway: anchor at the smallest vertex, then count shortest paths between its neighbours.
+Takeaway: anchor at the smallest vertex, then count shortest paths between its neighbors.
 
 ## Why It Works
 
 1. A simple loop through an anchor uses exactly two streets at that anchor.
 2. Every other intersection on that loop has a higher number than the anchor, by the anchor choice.
-3. Removing intersections at or below the anchor cannot create a shorter route between the two neighbours, so the restricted subgraph is exact.
+3. Removing intersections at or below the anchor cannot create a shorter route between the two neighbors, so the restricted subgraph is exact.
 4. Dijkstra adds the path counts of equal-distance predecessors, so it counts all shortest paths.
 5. A self-loop is already a simple loop of length d, so it is handled before the main search.
 
@@ -196,7 +196,7 @@ proc runDijkstra(startVert, restrictAbove: int, pruneLimit: int64) =
           pathWays[neighbor] += pathWays[vertex]
       edgeIdx = adjNext[edgeIdx]
 ```
-The run resets `bestDist` and `pathWays`, then relaxes edges to neighbours above `restrictAbove`. Equal-distance relaxations add `pathWays` instead of replacing it. `pruneLimit` stops work that cannot beat the current best.
+The run resets `bestDist` and `pathWays`, then relaxes edges to neighbors above `restrictAbove`. Equal-distance relaxations add `pathWays` instead of replacing it. `pruneLimit` stops work that cannot beat the current best.
 
 **Case input and self-loops.**
 ```nim
@@ -280,7 +280,7 @@ The code reads each street into the adjacency arrays. A street with equal ends u
 stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
-For each anchor, the code collects at most eight higher neighbours. Each neighbour pair triggers a Dijkstra run, and the three-part length updates the best loop and its count. The final line prints `0 0` when no loop was found.
+For each anchor, the code collects at most eight higher neighbors. Each neighbor pair triggers a Dijkstra run, and the three-part length updates the best loop and its count. The final line prints `0 0` when no loop was found.
 
 ## Complexity
 

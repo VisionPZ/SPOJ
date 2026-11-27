@@ -1,4 +1,4 @@
-# AMR12I — Saruman of Many Colours (SPOJ)
+# AMR12I — Saruman of Many Colors (SPOJ)
 
 <https://www.spoj.com/problems/AMR12I/>
 

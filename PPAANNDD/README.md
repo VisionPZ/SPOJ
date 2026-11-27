@@ -40,7 +40,7 @@ The real algorithm pairs a linear feasibility test with binary search on the lev
 2. A level that is reachable makes every smaller level reachable too.
 3. Binary search on that monotone property needs only O(log n) feasibility calls.
 4. The largest possible level is the string length divided by five.
-5. The search stops when the low and high levels become neighbours.
+5. The search stops when the low and high levels become neighbors.
 
 | term | meaning |
 |---|---|

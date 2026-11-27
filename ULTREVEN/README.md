@@ -36,7 +36,7 @@ YES
 
 ## Idea
 
-A subarray of size one is just a single element, so an ultra even array must have every element even. The reverse also holds: adding even numbers always gives an even sum. So the whole test collapses to one question — is every number even? Think of a bouncer checking IDs at the door: one odd number is enough to turn the array away, and the check costs a single parity test per element instead of testing all n(n+1)/2 subarrays.
+A subarray of size one is a single element, so an ultra even array must have every element even. The reverse also holds: adding even numbers always gives an even sum. So the whole test collapses to one question — is every number even? Think of a bouncer checking IDs at the door: one odd number turns the array away, costing one parity test per element instead of testing all n(n+1)/2 subarrays.
 
 ## Why It Works
 
@@ -49,7 +49,7 @@ A subarray of size one is just a single element, so an ultra even array must hav
 | Term | Meaning |
 |---|---|
 | `numberCount` | `n`, the array length |
-| `currentNumber` | the array value just scanned |
+| `currentNumber` | the array value currently scanned |
 | `allEven` | stays true only while every value read is even |
 
 A traced run of the first sample:

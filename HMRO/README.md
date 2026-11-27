@@ -1,4 +1,6 @@
-# HMRO - Help the Military Recruitment Office!
+# HMRO — Help the Military Recruitment Office! (SPOJ)
+
+<https://www.spoj.com/problems/HMRO/>
 
 ## Problem
 

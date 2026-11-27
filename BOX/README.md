@@ -4,7 +4,7 @@
 
 ## Problem
 
-Balls sit in boxes arranged in a circle, with at most one ball per box allowed at the end. Move one ball to a neighbouring box per step and minimize the total number of steps.
+Balls sit in boxes arranged in a circle, with at most one ball per box allowed at the end. Move one ball to a neighboring box per step and minimize the total number of steps.
 
 Input starts with the test count. Each test has `n` and then `n` counts, one per box. The count sum never exceeds `n`.
 

@@ -172,7 +172,7 @@ Blank lines need no special handling.
 The scanner ignores every separator.
 The buffer flushes after 128 KiB.
 
-**Neighbours and candidates.** Blocked channels are removed from both cyclic directions.
+**Neighbors and candidates.** Blocked channels are removed from both cyclic directions.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)
@@ -244,7 +244,7 @@ Large cases use a short list of digit destinations.
 ```
 
 Small boards consider every channel.
-Large boards keep targets, prefixes, and neighbours.
+Large boards keep targets, prefixes, and neighbors.
 Each candidate must be an allowed channel.
 
 **Search.** Each popped state expands every one-press move.
@@ -369,7 +369,7 @@ Each settled state expands up to three one-press moves plus the digit candidates
 | phase | time | space |
 |---|---|---|
 | input read | one pass over all tokens | one input string |
-| neighbour tables | one scan per channel | two arrays |
+| neighbor tables | one scan per channel | two arrays |
 | search | one pop and one expansion per state | one distance table |
 | output | one write per block | one output string |
 

@@ -259,7 +259,7 @@ Identical columns keep only the largest index.
 ```
 
 Each connected component is visited once.
-Insertion compares overlap strength with neighbours already placed.
+Insertion compares overlap strength with neighbors already placed.
 The explicit stack keeps the walk iterative.
 
 **Endpoint sweep.** Artificial coordinates separate interval ends, then groups are covered.

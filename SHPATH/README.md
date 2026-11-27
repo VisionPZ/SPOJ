@@ -5,7 +5,7 @@
 
 Given named cities and positive costs on direct connections, the cost of a path is the sum of its links. Answer the given source-destination pairs with the minimum path cost.
 
-Input: an integer s, then s cases. Each case gives city count n, then for each city a name, neighbour count p, and p pairs of city index and cost. Then come r queries with two names. Output: one cost per query, in input order.
+Input: an integer s, then s cases. Each case gives city count n, then for each city a name, neighbor count p, and p pairs of city index and cost. Then come r queries with two names. Output: one cost per query, in input order.
 
 The statement sets these bounds.
 

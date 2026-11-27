@@ -38,7 +38,7 @@ Those three lines are the exact expected output.
 
 ## Idea
 
-Treat the wishes like a seating chart: a table of N seats must give every guest the exact number of neighbours they request. The Erdős–Gallai theorem turns that chart into N cheap inequality checks.
+Treat the wishes like a seating chart: a table of N seats must give every guest the exact number of neighbors they request. The Erdős–Gallai theorem turns that chart into N cheap inequality checks.
 
 The algorithm sorts wishes by descending value with a counting pass, builds prefix sums, and applies each inequality in one step. Sorting costs O(N + maxWish) here; a pairwise graph search would try far more combinations. The even-sum and max-wish guards reject obvious failures before the sweep.
 

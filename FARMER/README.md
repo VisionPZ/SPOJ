@@ -48,7 +48,7 @@ Complete fields are free, so find the largest free total first.
 
 ## Why It Works
 
-1. A complete field of Ni trees yields Ni olives, because every neighbouring pair is both chosen.
+1. A complete field of Ni trees yields Ni olives, because every neighboring pair is both chosen.
 2. Any other group yields one less olive than trees, because its first tree lacks a chosen predecessor.
 3. Choosing consecutive trees keeps one group per field or strip, which maximizes the olives from it.
 4. The olive count equals Q minus the number of paid groups, since a complete field cancels its own cost.

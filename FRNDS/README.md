@@ -54,7 +54,7 @@ The subtraction gives the answer with one DP pass.
 ## Why It Works
 
 1. Transitive friendship makes the input a partition into connected groups.
-2. A bad order is a word over group labels with no equal neighbours.
+2. A bad order is a word over group labels with no equal neighbors.
 3. The generating function for such words is 1 divided by 1 minus the sum of x over 1 plus x.
 4. Its coefficient uses compositions of each group size into part counts, with alternating signs.
 5. The answer is `factorials[peopleCount]` minus the bad count, reduced modulo `answerModulus`.
@@ -209,7 +209,7 @@ stdout.write outputBuffer
 outputBuffer.setLen 0
 ```
 
-`separatorCount` expands block counts into labelled words. Each group multiplies by its own factorial.
+`separatorCount` expands block counts into labeled words. Each group multiplies by its own factorial.
 
 The subtraction wraps into the modulus range.
 

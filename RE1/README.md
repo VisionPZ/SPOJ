@@ -6,7 +6,7 @@
 
 Count the arrangements of distinct numbers whose sorting cost equals a target swap count. Sorting cost is the fewest adjacent swaps needed to reach ascending order, which equals the number of inverted pairs.
 
-Input starts with T, the number of cases, where T < 200000. Each case gives N and K, with 1 ≤ N ≤ 100 and 0 ≤ K ≤ 10000. Print one labelled line per case with its case number and answer, where the answer counts arrangements of N with exactly K inversions, modulo 1000000007.
+Input starts with T, the number of cases, where T < 200000. Each case gives N and K, with 1 ≤ N ≤ 100 and 0 ≤ K ≤ 10000. Print one labeled line per case with its case number and answer, where the answer counts arrangements of N with exactly K inversions, modulo 1000000007.
 
 | item | bound |
 |---|---|
@@ -139,7 +139,7 @@ The guard keeps the window inside the modulus without a division.
 
 Values beyond 4950 inversions stay zero for 100 numbers.
 
-**Case answers.** Every case reads two numbers and writes one labelled line.
+**Case answers.** Every case reads two numbers and writes one labeled line.
 
 ```nim
 let caseCount = nextInt(inputData, scanPos)

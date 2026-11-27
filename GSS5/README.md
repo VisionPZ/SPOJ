@@ -41,7 +41,7 @@ Sample output:
 
 ## Idea
 
-Think of each range as a bucket holding candidate start and end points, like picking a doorway and an exit in two neighbouring halls. A segment tree reports four numbers for any interval: total sum, best prefix, best suffix, and best subarray. Three cleverly chosen combinations cover every legal start and end pair.
+Think of each range as a bucket holding candidate start and end points, like picking a doorway and an exit in two neighboring halls. A segment tree reports four numbers for any interval: total sum, best prefix, best suffix, and best subarray. Three cleverly chosen combinations cover every legal start and end pair.
 
 A scan over all start and end pairs would cost quadratic time per query, which is too slow at M = 10000.
 

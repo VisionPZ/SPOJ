@@ -38,13 +38,13 @@ Impossible.
 
 Mark the floor like a chessboard, and notice that every domino covers one tile of each shade, like pairing black and white socks.
 
-The board has one more black tile than white tile only when both dimensions are odd. Removing the pit must remove that extra black tile. With row 1 and column 1 coloured black, a tile is black when `i + j` is even.
+The board has one more black tile than white tile only when both dimensions are odd. Removing the pit must remove that extra black tile. With row 1 and column 1 colored black, a tile is black when `i + j` is even.
 
 The test is therefore three parity checks. A brute-force tiling search tries many placements for each case. The parity test reads four numbers and answers at once. Keep the pit at even `i + j` only when both dimensions are odd.
 
 ## Why It Works
 
-1. A domino always covers two tiles of opposite chessboard colours.
+1. A domino always covers two tiles of opposite chessboard colors.
 2. A complete covering needs equal counts of black and white tiles.
 3. The full rectangle has equal counts when its area is even.
 4. When both dimensions are odd, one more black tile exists, so the pit must be black.

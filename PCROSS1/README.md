@@ -4,7 +4,7 @@
 
 ## Problem
 
-Draw a plus sign on grid paper for each test case. Stars fill the centre row and the centre column; dots fill everything else.
+Draw a plus sign on grid paper for each test case. Stars fill the center row and the center column; dots fill everything else.
 
 Input: a case count `t`, then `t` lines with `m n ci cj`. Output: `m` lines of `n` characters per case, then one blank line after every case.
 
@@ -13,7 +13,7 @@ Input: a case count `t`, then `t` lines with `m n ci cj`. Output: `m` lines of `
 | Test cases `t` | 1 to 100 |
 | Rows `m` | 1 to 100 |
 | Columns `n` | 1 to 100 |
-| Centre | `ci <= m`, `cj <= n` |
+| Center | `ci <= m`, `cj <= n` |
 | Judge limit | 1000 ms, 1536 MB |
 
 The sample, verbatim:
@@ -49,14 +49,14 @@ The sample, verbatim:
 
 Think of drawing a plus sign on squared paper by filling one whole row and one whole column. The cell-membership test writes each character directly.
 
-The code converts the given centre to zero-based indices, then tests every cell. Each cell costs two comparisons and one append. Building rows separately would add a copy step.
+The code converts the given center to zero-based indices, then tests every cell. Each cell costs two comparisons and one append. Building rows separately would add a copy step.
 
 The direct test needs no grid storage.
 
 ## Why It Works
 
 1. Subtracting one from `ci` and `cj` aligns them with zero-based loop indices.
-2. A cell is a star when its row equals the centre row or its column equals the centre column.
+2. A cell is a star when its row equals the center row or its column equals the center column.
 3. Each finished row ends with a newline, so the block has exactly `m` lines.
 4. One extra newline after the grid gives the blank line after every case, including the last.
 
@@ -64,7 +64,7 @@ The direct test needs no grid storage.
 |---|---|
 | `caseCount` | the number of grids |
 | `rowCount`, `columnCount` | the `m` and `n` of one case |
-| `centerRow`, `centerColumn` | zero-based centre indices |
+| `centerRow`, `centerColumn` | zero-based center indices |
 | `rowIndex`, `columnIndex` | the current cell |
 
 The membership test decides every character.

@@ -141,7 +141,7 @@ proc squaredGap(firstIndex: int, secondIndex: int): int64 =
 A positive span extends the x range, and a negative span extends the y range.
 A zero-length wall keeps a single point as its box.
 
-**Minimax search.** Each settled wall improves the bottleneck value of its neighbours.
+**Minimax search.** Each settled wall improves the bottleneck value of its neighbors.
 
 ```nim
 proc minimumBoardSquared(): int64 =

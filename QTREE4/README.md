@@ -45,7 +45,7 @@ They have disappeared.
 
 ## Idea
 
-Split the tree into centre regions, like finding the longest trip between two neighbourhoods by keeping the best outgoing road from each neighbourhood.
+Split the tree into center regions, like finding the longest trip between two neighborhoods by keeping the best outgoing road from each neighborhood.
 
 Centroid decomposition gives every node a logarithmic list of ancestor centroids. For each centroid, a heap per branch holds the best white distance from that centroid into the branch. The two best values from different branches give the best path through that centroid. A global heap holds one contribution per centroid.
 A flip touches only the ancestor list of one node. Recomputing all white pairs after a flip would cost quadratic time.

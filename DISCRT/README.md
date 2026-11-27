@@ -31,7 +31,7 @@ Sample output:
 
 ## Idea
 
-Read the multiplicative group like a clock with labelled ticks, and turn each number into its tick number. The equation then becomes a linear congruence in the tick numbers.
+Read the multiplicative group like a clock with labeled ticks, and turn each number into its tick number. The equation then becomes a linear congruence in the tick numbers.
 
 The units modulo p^e form a cyclic group of order phi(n). A primitive root g labels every unit by an exponent d. The equation x^k = a becomes k times the exponent of x equals the exponent of a, modulo phi(n). Baby-step giant-step finds that exponent of a in about sqrt(phi) steps. A linear congruence then gives every admissible exponent, and the primitive root maps each back to a solution.
 

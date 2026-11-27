@@ -47,9 +47,9 @@ Track which totals are possible at each tile, like crossing a bridge and marking
 
 ## Why It Works
 
-1. A tile draws from its west, north, and north-west neighbours.
-2. Row-major order finishes those neighbours before the current tile.
-3. Bit `s` in a neighbour means total `s` is reachable there.
+1. A tile draws from its west, north, and north-west neighbors.
+2. Row-major order finishes those neighbors before the current tile.
+3. Bit `s` in a neighbor means total `s` is reachable there.
 4. Adding the current value shifts every set bit forward by that amount.
 5. Shifting past `K` is dropped by masking the final word.
 6. The highest set bit at the exit tile is the largest legal total.
@@ -115,7 +115,7 @@ proc appendOutput(text: string) =
 ```
 
 The scanner skips all whitespace between tiles.
-The source helper ORs a neighbour's bits into one scratch row.
+The source helper ORs a neighbor's bits into one scratch row.
 The buffer collects answers across cases.
 
 **Case setup.** One mask per case limits totals to `K`.
@@ -141,7 +141,7 @@ for caseIndex in 0 .. caseCount - 1:
 
 The word count covers bits zero through `K`.
 Two rows are enough because moves use only adjacent rows.
-The scratch row holds the three merged neighbours.
+The scratch row holds the three merged neighbors.
 
 **Tile transition.** Each tile shifts its sources by its own value.
 

@@ -35,7 +35,7 @@ Sample output:
 
 ## Idea
 
-Fill the sequence once, like labelling every shelf before answering any question about a shelf. The algorithm is a direct simulation that records used values in an array. Each step costs constant work, so the build up to the largest query costs O(max k). Starting over for every query would repeat the same prefix many times. One shared build answers all queries.
+Fill the sequence once, like labeling every shelf before answering any question about a shelf. The algorithm is a direct simulation that records used values in an array. Each step costs constant work, so the build up to the largest query costs O(max k). Starting over for every query would repeat the same prefix many times. One shared build answers all queries.
 
 ## Why It Works
 

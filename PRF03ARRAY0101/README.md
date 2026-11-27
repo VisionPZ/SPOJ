@@ -41,7 +41,7 @@ The expected output follows.
 
 ## Idea
 
-Filling an array is like completing a labelled form: write each field label while you read its value, then show the filled form.
+Filling an array is like completing a labeled form: write each field label while you read its value, then show the filled form.
 The program prints the count prompt, then one value prompt per input number.
 It stores the parsed integers in `arrayValues` while it reads.
 After reading, it writes two newlines, the count heading and the saved values one per line.

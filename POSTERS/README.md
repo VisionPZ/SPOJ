@@ -53,7 +53,7 @@ Four facts carry the method.
 
 1. A poster stays visible exactly when one section in its range has no later poster over it.
 2. Processing from last to first guarantees that every covered section belongs to a later poster. The first free point therefore settles visibility at once.
-3. Adding the two neighbours of each endpoint keeps every section boundary in the compressed list. `lowerBound(li)` and `lowerBound(ri)` then give the representative index range.
+3. Adding the two neighbors of each endpoint keeps every section boundary in the compressed list. `lowerBound(li)` and `lowerBound(ri)` then give the representative index range.
 4. `findNext` compresses paths to the next free point, so each section is removed once. Across all posters the removal work stays linear.
 
 The arrays that drive the sweep:
@@ -78,7 +78,7 @@ poster 1  [1,4]   1 free                  -> visible; mark 1
 visible posters = 4
 ```
 
-The six-neighbour compression maps these endpoints onto indices 0 through 11. Poster 1 spans `lowerBound(1) = 1` through `lowerBound(4) = 4`.
+The six-neighbor compression maps these endpoints onto indices 0 through 11. Poster 1 spans `lowerBound(1) = 1` through `lowerBound(4) = 4`.
 
 ## Code
 

@@ -8,7 +8,6 @@ ROOT = Path(__file__).resolve().parent
 def oracle(text):
     values = [int(token) for token in text.split()]
     sonya_start, sonya_end, filya_start, filya_end, preen = values
-    # Sweep the few boundary points and add lengths of admissible minutes.
     boundaries = {sonya_start, sonya_end + 1, filya_start, filya_end + 1,
                   preen, preen + 1}
     points = sorted(boundaries)

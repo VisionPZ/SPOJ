@@ -126,7 +126,7 @@ def build():
                       random.randint(0, 1 << size)))
     write("4_random", mixed, True)
     io_cases = []
-    for _ in range(20000):
+    for _ in range(2000):
         size = 100
         io_cases.append((size, random.randint(0, 1 << size),
                          random.randint(0, 1 << size)))

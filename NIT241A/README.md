@@ -33,7 +33,7 @@ A name tag that already reads the answer needs no work. The program drains stand
 
 Draining input keeps the run clean when the judge pipes a file in, and the literal guarantees the punctuation, the single spaces, and the final period.
 
-Takeaway: when the answer is a constant, just print it.
+Takeaway: when the answer is a constant, print it directly.
 
 ## Why It Works
 

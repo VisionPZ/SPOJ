@@ -6,11 +6,11 @@
 
 A ball rolls without slipping inside a cone and traces a horizontal circle. Find the radius of the circle of contact points on the ball when the ball's speed grows without bound.
 
-Each input line holds three integers `l`, `R`, and `u`, in that order. `l` is the radius of the circle traced by the ball's centre, `R` is the ball radius, and `u` is the cone half-angle in degrees. Print one rounded integer per line, until end of input.
+Each input line holds three integers `l`, `R`, and `u`, in that order. `l` is the radius of the circle traced by the ball's center, `R` is the ball radius, and `u` is the cone half-angle in degrees. Print one rounded integer per line, until end of input.
 
 | item | bound |
 |---|---|
-| centre radius `l` | R < l ≤ 1000000 |
+| center radius `l` | R < l ≤ 1000000 |
 | ball radius `R` | 0 < R ≤ 1000 |
 | cone angle `u` | 0 < u < 90 degrees |
 | judge limit | 200 ms, 1536 MB |
@@ -44,10 +44,10 @@ This cost shape makes the problem a pure formula evaluation.
 
 ## Why It Works
 
-1. The contact point sits at distance `R` from the ball centre along the cone normal.
+1. The contact point sits at distance `R` from the ball center along the cone normal.
 2. The cone normal makes angle 90 - u with the downward vertical.
 3. Gravity drops out of the angular equation as the orbital speed grows without bound.
-4. The rolling constraint fixes the spin components around the centre and vertical axes.
+4. The rolling constraint fixes the spin components around the center and vertical axes.
 5. The contact circle radius equals `R` times the sine of the angle between the contact normal and the spin axis.
 6. Algebra cancels the spin factor and leaves a ratio that depends on l / R and `u`.
 
@@ -55,7 +55,7 @@ The table names the values used in the code.
 
 | term | meaning |
 |---|---|
-| `radiusRatio` | centre radius divided by ball radius |
+| `radiusRatio` | center radius divided by ball radius |
 | `sineValue` | sine of the cone angle in radians |
 | `cosineValue` | cosine of the cone angle in radians |
 | `crossTerm` | mixed square term in the denominator |

@@ -16,7 +16,7 @@ The first line holds N, x, y, T. The second line holds M, the number of pairs, f
 | pairs M | 1 ≤ M ≤ 100,000 |
 | judge limit | 1000 ms, 1536 MB |
 
-The answer depends only on the number of types, so the pairs just group questions.
+The answer depends only on the number of types, so the pairs group questions without changing the count.
 
 Sample input:
 

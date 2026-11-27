@@ -21,8 +21,6 @@ def oracle(text):
         coefficients = [int(tokens[cursor + index]) for index in range(DIGIT_COUNT)]
         cursor += DIGIT_COUNT
         limit = int(tokens[cursor]); cursor += 1
-        # Subset dynamic programming: suffix_cost[pos][mask] is the least
-        # cost using the digits in mask for positions pos through nine.
         suffix_cost = [[INFINITY] * (FULL_MASK + 1) for _ in range(DIGIT_COUNT + 1)]
         suffix_cost[DIGIT_COUNT][0] = 0
         for position in range(DIGIT_COUNT - 1, -1, -1):

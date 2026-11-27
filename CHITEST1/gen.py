@@ -23,8 +23,6 @@ def oracle(text):
     return "\n".join(answers) + "\n"
 
 
-# The statement prints its single example line in compressed form; this is its
-# faithful line-broken rendering and the printed answer is the literal sample.
 SAMPLE = "1\n23.33 34\n"
 SAMPLE_OUT = "57.33\n"
 

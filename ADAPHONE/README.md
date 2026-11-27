@@ -4,7 +4,7 @@
 
 ## Problem
 
-For each walk between two friends in a tree, count the independent sets of friends formed when phone numbers spread along consecutive IDs. The answer equals the number of path friends minus the number of adjacent ID pairs that both lie on that path. Think of a row of numbered houses where only neighbours can exchange a slip of paper.
+For each walk between two friends in a tree, count the independent sets of friends formed when phone numbers spread along consecutive IDs. The answer equals the number of path friends minus the number of adjacent ID pairs that both lie on that path. Think of a row of numbered houses where only neighbors can exchange a slip of paper.
 
 | item | bound |
 |---|---|
@@ -214,8 +214,8 @@ for firstLabel in 1 .. friendCount - 1:
       firstHigh.add friendCount - 1
 ```
 
-A child neighbour makes the start side the subtree.
-A parent neighbour makes it the complement of that subtree.
+A child neighbor makes the start side the subtree.
+A parent neighbor makes it the complement of that subtree.
 The same rule applies to the other endpoint.
 
 ```nim

@@ -33,7 +33,7 @@ Sample output:
 
 A full deck has a known total. Pull one card and the missing rank is the gap between the full total and what remains.
 
-The program starts with the sum 1 + 2 + ... + N, computed by the closed formula, then subtracts every number that was actually given. What is left is the missing number.
+The program starts with the sum 1 + 2 + ... + N, computed by the closed formula, then subtracts every given number. What is left is the missing number.
 
 Takeaway: the total minus the seen sum is the unseen value.
 

@@ -246,7 +246,7 @@ outputBuffer.setLen 0
 ```
 
 Four directions cover all adjacent station pairs.
-Only strictly lower neighbours create a link.
+Only strictly lower neighbors create a link.
 The two printed numbers come from one flow result.
 
 ## Complexity

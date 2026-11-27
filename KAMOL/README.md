@@ -33,7 +33,7 @@ A sign that already says the answer needs no reading. The program drains standar
 
 Draining input keeps the run clean on judges that pipe a file into the program. No parsing, no math, no formatting choices.
 
-Takeaway: when the answer is a constant, just print it.
+Takeaway: when the answer is a constant, print it directly.
 
 ## Why It Works
 

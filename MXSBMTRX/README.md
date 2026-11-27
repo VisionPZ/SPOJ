@@ -4,7 +4,7 @@
 
 ## Problem
 
-Find the largest-area rectangle of a matrix whose rows and columns all strictly increase. A cell must exceed its left and upper neighbours inside the rectangle.
+Find the largest-area rectangle of a matrix whose rows and columns all strictly increase. A cell must exceed its left and upper neighbors inside the rectangle.
 
 Line 1 holds the test count `T`. Each test starts with `N M`, followed by `N` rows of `M` integers `Xi,j`. Print the maximum rectangle area on its own line per test.
 
@@ -49,8 +49,8 @@ One sweep over row pairs finds the best rectangle.
 
 ## Why It Works
 
-1. A cell inside the rectangle must exceed its left and upper neighbours there.
-2. The diagonal rule follows: the cell exceeds its upper neighbour, which exceeds the upper-left neighbour.
+1. A cell inside the rectangle must exceed its left and upper neighbors there.
+2. The diagonal rule follows: the cell exceeds its upper neighbor, which exceeds the upper-left neighbor.
 3. So a valid rectangle is exactly one whose rows and columns strictly increase.
 4. Transposing keeps this property and makes the row count the smaller dimension.
 5. `columnUp` records that a column increases from the top row down to the bottom row.

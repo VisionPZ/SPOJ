@@ -3,7 +3,7 @@
 
 ## Problem
 
-Count N-digit integers whose neighbouring digits differ by at least K, and print the count modulo one billion and seven. Each test case supplies the length and the minimum gap.
+Count N-digit integers whose neighboring digits differ by at least K, and print the count modulo one billion and seven. Each test case supplies the length and the minimum gap.
 
 Input starts with the test count, followed by one length and gap per line. Output one line per case with the reduced count.
 
@@ -49,7 +49,7 @@ Each query costs ten by ten matrix-vector products per set bit.
 |---|---|
 | `transitionPowers` | squared transition matrices for each gap |
 | `state` | counts of partial numbers ending at each digit |
-| `gapValue` | required minimum difference between neighbours |
+| `gapValue` | required minimum difference between neighbors |
 | `absoluteDifference` | absolute value of the digit difference |
 
 The worked example uses length two and gap eight.

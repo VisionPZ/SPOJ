@@ -42,7 +42,7 @@ Sample output:
 
 ## Idea
 
-Stamping powers of a divisor is like labelling lockers 2, 4, and 8 with one tag, then asking how many tags of a color sit in a hallway. The smallest divisor above one is the smallest prime factor of `X`. Keep one Fenwick tree per letter, so a range count takes logarithmic time. Scanning the whole range for each query would cost O(n) every time. The divisor is found once per distinct `X` and cached for later updates.
+Stamping powers of a divisor is like labeling lockers 2, 4, and 8 with one tag, then asking how many tags of a color sit in a hallway. The smallest divisor above one is the smallest prime factor of `X`. Keep one Fenwick tree per letter, so a range count takes logarithmic time. Scanning the whole range for each query would cost O(n) every time. The divisor is found once per distinct `X` and cached for later updates.
 
 ## Why It Works
 

@@ -54,7 +54,7 @@ YES
 
 ## Idea
 
-Give each edge a mark: one for the requested subset and zero for the rest. Then try to give every vertex a side, like colouring a map so each marked road crosses a border and each unmarked road stays inside. Walking the graph with parity does this in one pass.
+Give each edge a mark: one for the requested subset and zero for the rest. Then try to give every vertex a side, like coloring a map so each marked road crosses a border and each unmarked road stays inside. Walking the graph with parity does this in one pass.
 
 A triangle with a single marked edge fails, because going around the triangle would flip the side an odd number of times and return to the start. A breadth-first walk detects that conflict immediately.
 

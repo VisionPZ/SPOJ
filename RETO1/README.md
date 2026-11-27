@@ -4,7 +4,7 @@
 
 ## Problem
 
-ZS Coder types words one at a time at recorded seconds. If a word appears at second `B` and the previous one at second `A`, then a gap `B - A` of at most `c` keeps the older words on the screen and adds the new word. A gap greater than `c` clears everything first, and only the new word remains. Given all typing times, print how many words remain after the last one.
+ZS Coder types words one at a time at recorded seconds. Suppose a word appears at second `B` after the previous word at second `A`. A gap `B - A` of at most `c` keeps the older words on screen and adds the new one. A gap greater than `c` clears everything first, and only the new word remains. Given all typing times, print how many words remain after the last one.
 
 The first line holds `N` and `C`. The next line holds the `N` strictly increasing seconds. Print one positive integer.
 

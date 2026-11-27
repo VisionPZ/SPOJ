@@ -43,13 +43,13 @@ The sample wastes 10 units of area.
 
 ## Idea
 
-Store every rectangle's waste twice, once in width order and once in height order, so each cut reads two neighbouring cells. Think of one address book sorted by street and the same book sorted by name.
+Store every rectangle's waste twice, once in width order and once in height order, so each cut reads two neighboring cells. Think of one address book sorted by street and the same book sorted by name.
 
 The program fills a dynamic-programming table of rectangle sizes. For each size it tries cuts up to `currentWidth div 2` or `currentHeight div 2`. A reversed copy supplies the matching half, so both reads advance through adjacent memory. A size matching a desired plate scores zero.
 
 Each size costs one pass over at most half of the widths and heights. Exploring cut trees by recursion repeats the same subrectangles many times, while one table answers each size once.
 
-Takeaway: two views of one table turn every cut pair into a neighbouring read.
+Takeaway: two views of one table turn every cut pair into a neighboring read.
 
 ## Why It Works
 

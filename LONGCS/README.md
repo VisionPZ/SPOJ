@@ -39,7 +39,7 @@ Sample output:
 
 ## Idea
 
-Index every substring of the first string once, then read each other string through that index, like using one map to check several travellers. A suffix automaton stores all those substrings in a small graph. Each state keeps the longest match seen in every string.
+Index every substring of the first string once, then read each other string through that index, like using one map to check several travelers. A suffix automaton stores all those substrings in a small graph. Each state keeps the longest match seen in every string.
 
 Building the automaton costs one pass over the first string. Scanning another string costs one pass over its characters. A counting sort is added once so matches can be pushed from longer states to their suffix links.
 

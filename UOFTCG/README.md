@@ -2,7 +2,7 @@
 
 ## Problem
 
-Students sit in one row of desks. Two neighbouring students must be friends, and an empty desk separates each pair of groups. Find the fewest desks that seat every student.
+Students sit in one row of desks. Two neighboring students must be friends, and an empty desk separates each pair of groups. Find the fewest desks that seat every student.
 
 Input starts with T. Each case gives N students and M friendships, followed by M pairs of friends. Output prints one minimum desk count per case.
 

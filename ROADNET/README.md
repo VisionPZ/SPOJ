@@ -6,7 +6,7 @@
 
 A table gives shortest distances between every pair of towns. Two towns are neighbors when no third town lies on a shortest route between them; list all such pairs.
 
-Input: `t` cases separated by blank lines. Each starts with `n`, followed by `n` rows of `n` distances. Output: all neighbouring pairs, one per line, with the smaller town first. Consecutive cases get a blank line between them.
+Input: `t` cases separated by blank lines. Each starts with `n`, followed by `n` rows of `n` distances. Output: all neighboring pairs, one per line, with the smaller town first. Consecutive cases get a blank line between them.
 
 The bounds from the statement:
 
@@ -38,7 +38,7 @@ The sample input and output:
 
 Use the distance table as the map: a town sits between two others when the direct distance equals the sum through it. Think of checking whether a stop lies on the way, not merely near the route.
 
-The program reads the matrix, then tests every pair against every third town. If `dist[i][k] + dist[k][j] == dist[i][j]` for some `k`, town `k` lies on a shortest route, so the pair is not neighbouring. Otherwise the pair prints.
+The program reads the matrix, then tests every pair against every third town. If `dist[i][k] + dist[k][j] == dist[i][j]` for some `k`, town `k` lies on a shortest route, so the pair is not neighboring. Otherwise the pair prints.
 
 The triple loop costs O(n³), about 8 × 10^6 integer operations at `n = 200`. Enumerating every shortest path would blow up far more quickly.
 
@@ -49,7 +49,7 @@ The triangle equality in the table decides each pair without rebuilding any road
 Four facts carry the test.
 
 1. The statement guarantees that equality `dist[A][B] = dist[A][C] + dist[C][B]` means `C` lies on a shortest A-to-B route.
-2. A neighbouring pair has no such town, so scanning all `k` settles the question.
+2. A neighboring pair has no such town, so scanning all `k` settles the question.
 3. The loops use `i < j`, which prints each pair once and keeps the numbers increasing. Row-major order makes the output sorted.
 4. Cases after the first get one leading blank line, matching the required separator byte for byte.
 
@@ -60,7 +60,7 @@ The values the program uses:
 | `distances` | flat `n × n` matrix of shortest distances |
 | `directDistance` | the candidate distance from town `i` to town `j` |
 | `hasIntermediate` | true when some town lies on a shortest route |
-| `appendPair` | writes one sorted neighbour pair |
+| `appendPair` | writes one sorted neighbor pair |
 
 The equality test is the whole decision rule.
 

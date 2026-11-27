@@ -50,7 +50,7 @@ mx
 
 ## Idea
 
-Reading an MCXI-string is like counting coins in four labelled pockets: the letter names the pocket and a digit gives the coin count. Decode each string into an integer, add the integers, then rebuild the unique string from four decimal digits. Positional decoding and encoding touch each character once. Enumerating all valid strings for every test would be far slower. A short walk over each string is enough.
+Reading an MCXI-string is like counting coins in four labeled pockets: the letter names the pocket and a digit gives the coin count. Decode each string into an integer, add the integers, then rebuild the unique string from four decimal digits. Positional decoding and encoding touch each character once. Enumerating all valid strings for every test would be far slower. A short walk over each string is enough.
 
 ## Why It Works
 

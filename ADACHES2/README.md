@@ -4,7 +4,7 @@
 
 ## Problem
 
-Place N palaces on an N×N board so that no two attack each other, and count the placements modulo 1000000007. A palace attacks along rows, columns, and all eight neighbouring squares.
+Place N palaces on an N×N board so that no two attack each other, and count the placements modulo 1000000007. A palace attacks along rows, columns, and all eight neighboring squares.
 
 Input begins with T, the number of cases. Each following line holds one board size N, from 1 to 10000000.
 
@@ -52,7 +52,7 @@ Each output line belongs to the matching input line.
 
 ## Idea
 
-Treat a placement as a permutation, like assigning one seat per row and one seat per column. The tower rule forces distinct rows and columns; the king rule forbids neighbouring rows from using neighbouring columns.
+Treat a placement as a permutation, like assigning one seat per row and one seat per column. The tower rule forces distinct rows and columns; the king rule forbids neighboring rows from using neighboring columns.
 
 The count of these permutations follows a four-term recurrence with coefficients that depend on N. The program scans N once, keeps the last four values, and stores each answer it passes. Preprocessing costs one step per board size up to the largest query. A brute-force search over placements would grow far faster than that.
 

@@ -7,7 +7,7 @@ Water spreads across a grid each minute while a hedgehog moves toward the den. I
 |---|---|
 | rows and columns | up to 50 |
 | starts and dens | exactly one each |
-| movement | four neighbours per minute |
+| movement | four neighbors per minute |
 | judge limit | 100 ms, 1536 MB |
 
 Water never enters the den or a rock. The hedgehog cannot enter a cell flooded in the same minute.
@@ -38,7 +38,7 @@ The water timetable turns a timing rule into a simple comparison.
 ## Why It Works
 
 1. Water starts at every `*` cell with time zero.
-2. Water spreads to four neighbours unless the cell is a rock or the den.
+2. Water spreads to four neighbors unless the cell is a rock or the den.
 3. Breadth-first order gives the earliest water time for each cell.
 4. The hedgehog starts at time zero and also uses breadth-first order.
 5. A move to a cell at time `t+1` requires `t+1` below that cell's water time.
@@ -93,7 +93,7 @@ Line breaks are skipped while reading cells.
 The map is stored as one flat character array.
 The output buffer collects a single result line.
 
-**Setup and neighbours.** Queues and sentinels are prepared before both searches.
+**Setup and neighbors.** Queues and sentinels are prepared before both searches.
 
 ```nim
 let rowCount = nextInt(inputData, scanPos)
@@ -135,9 +135,9 @@ hedgehogTimes[startCell] = 0
 
 Initial water cells get time zero.
 The start cell enters the hedgehog queue.
-Neighbour indices handle the four grid directions.
+Neighbor indices handle the four grid directions.
 
-**Neighbour lookup.** Four directions map to flat cell indices.
+**Neighbor lookup.** Four directions map to flat cell indices.
 
 ```nim
 proc rowOf(cellIndex: int): int =
