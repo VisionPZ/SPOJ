@@ -170,7 +170,19 @@ proc enoughColors(capacity: int): bool =
     addStreet(edgeFirst[i], edgeSecond[i], capacity)
   return pushRelabel(0, 1) == clientList.len
 
-let inputData = stdin.readAll()
+proc readStreamBytes(): string =
+  var res = ""
+  var chunk = newString(1 shl 16)
+  while true:
+    let got = readBuffer(stdin, addr chunk[0], chunk.len)
+    if got <= 0:
+      break
+    let oldLen = res.len
+    res.setLen(oldLen + got)
+    copyMem(addr res[oldLen], addr chunk[0], got)
+  return res
+
+let inputData = readStreamBytes()
 var scanPos = 0
 let caseCount = nextInt(inputData, scanPos)
 var outputBuffer = ""

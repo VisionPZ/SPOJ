@@ -308,7 +308,7 @@ Client arcs carry one unit each. Street arcs carry `capacity` units. The test su
 **Driver.** Binary search finds the smallest feasible capacity.
 
 ```nim
-let inputData = stdin.readAll()
+let inputData = readStreamBytes()
 var scanPos = 0
 let caseCount = nextInt(inputData, scanPos)
 var outputBuffer = ""
