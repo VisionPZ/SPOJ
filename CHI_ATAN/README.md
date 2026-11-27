@@ -73,8 +73,7 @@ first 101 digits: 785398163397448309615660...
 
 ## Code
 
-**Constants and representation.**
-
+**Constants and representation**.
 ```nim
 const limbBase = 1000000000
 const highPrecision = 304
@@ -88,8 +87,7 @@ type BigNumber = seq[int32]
 
 var fractionalDigits = highPrecision```
 
-**Limb arithmetic.**
-
+**Limb arithmetic**.
 ```nim
 proc trimBig(value: var BigNumber) =
   while value.len > 0 and value[value.len - 1] == 0:
@@ -198,8 +196,7 @@ proc divideSmall(value: BigNumber, divisor: int32): BigNumber =
   divideSmallInPlace(copy, divisor)
   return copy```
 
-**Fixed-point shifts and division.**
-
+**Fixed-point shifts and division**.
 ```nim
 proc powerOfTen(digitCount: int): BigNumber =
   var value: BigNumber = @[int32(1)]
@@ -274,8 +271,7 @@ proc divideFixed(numerator: BigNumber, denominator: BigNumber): BigNumber =
   let dividend = multiplyByPowerOfTen(numerator, fractionalDigits)
   return quotientLongDivision(dividend, denominator)```
 
-**Series, pivots, and pi.**
-
+**Series, pivots, and pi**.
 ```nim
 proc arctanSeries(argument: BigNumber): BigNumber =
   let squared = multiplyFixed(argument, argument)
@@ -372,8 +368,7 @@ proc activate(data: PrecisionData, digits: int) =
   unitConstant = data.unitValue
   pivotValues = data.pivots```
 
-**Precision tiers and the output loop.**
-
+**Precision tiers and the output loop**.
 ```nim
 proc leadingZeroCount(token: string): int =
   var integerPart = 0
