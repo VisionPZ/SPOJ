@@ -6,9 +6,8 @@
 
 A list of bank account numbers is given, with some accounts repeated. Sort them ascending and report how many times each account appears.
 
-Up to 5 test cases, each with up to 100 000 bank account numbers of the same
-fixed shape (`control digits`, an 8 digit bank code and 16 owner digits in
-groups of four). Sort the account numbers ascending and print how many times
+Input gives up to 5 test cases of at most 100 000 bank accounts.
+Each line shares one fixed shape: control digits, 8 bank digits, and 16 owner digits in fours. Sort the account numbers ascending and print how many times
 each one appears, with a blank line after every test case. Time limit is strict,
 so reading and sorting must be fast.
 
@@ -19,9 +18,8 @@ become byte identical, sort the strings and count equal neighbors.
 
 ## Why It Works
 
-All accounts have the same field layout, so ordinary string order is exactly the
-required numeric order: comparing character by character compares the control
-digits, then the bank code, then the owner groups in that order. After sorting,
+All accounts share the same layout, so lexicographic order matches numeric order.
+Character comparison naturally checks control digits, bank code, and owner groups in sequence. After sorting,
 identical accounts are neighbors, so one forward pass counts each group. Collapsing
 runs of spaces matters because the input may carry a trailing space on each line
 while the expected output has single spaces between the groups.
