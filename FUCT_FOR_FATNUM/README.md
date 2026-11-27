@@ -29,7 +29,7 @@ The sample case:
 
 ## Idea
 
-Fat numbers are rare because a digit product grows by multiplication while a digit sum grows by addition, so only short numbers made mostly of 1s ever qualify. Instead of testing all 10 million values, the program lists every digit multiset of size at most 7, keeps the ones whose sum equals their product, and permutes those into numbers. That costs about 11,000 multiset checks once at startup, leaving 182 fat numbers. Each query then costs two binary searches plus the printed numbers. Testing every value in a range costs up to 10 million digit scans per query.
+Fat numbers are rare because a digit product grows by multiplication while a digit sum grows by addition, so only short numbers made mostly of 1s ever qualify. Testing all 10 million values is too slow. Instead, list every digit multiset up to size 7, filter where sum equals product, and permute those into numbers. That costs about 11,000 multiset checks once at startup, leaving 182 fat numbers. Each query then costs two binary searches plus the printed numbers. Testing every value in a range costs up to 10 million digit scans per query.
 
 ## Why It Works
 
