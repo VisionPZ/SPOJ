@@ -91,7 +91,7 @@ import strutils
 const flushBlockBytes = 1 shl 17
 const decimalPlaces = 2
 
-proc readAllInput(): string =
+proc readInputStream(): string =
   var inputData = ""
   var line: string
   while readLine(stdin, line):
@@ -137,7 +137,7 @@ Adding 0.5 before truncation is the round-half-up rule from the statement. `deci
 **Driver.** One pass over the vertices keeps two points and three running sums.
 
 ```nim
-var inputData = readAllInput()
+var inputData = readInputStream()
 var i = 0
 var caseCount = nextInt(inputData, i)
 var outputBuffer: string
