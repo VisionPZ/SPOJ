@@ -4,7 +4,7 @@
 
 ## Problem
 
-Given lines of Latin letters with no spaces, find the smallest number of case flips needed to turn each line into an alternating chain (uppercase and lowercase letters alternating at every step).
+Given lines of Latin letters without spaces, make each line alternate case at every step. Find the smallest number of case flips required.
 
 Input consists of one word per line until end of file. Output one integer per line: the minimum number of case changes for that word.
 
