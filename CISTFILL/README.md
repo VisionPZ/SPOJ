@@ -124,7 +124,7 @@ The arrays are global, so no large allocation runs inside the data-set loop. The
 
 ```nim
 proc solve() =
-  let inputData = stdin.readAll()
+  let inputData = readStreamBytes()
   var i = 0
   let dataSetCount = nextInt(inputData, i)
   var outputBuffer = ""
