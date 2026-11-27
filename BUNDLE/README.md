@@ -163,7 +163,7 @@ The routine keeps only states with the fewest bundles, sorts by stops and lastSt
 
 **Input and template stamps.**
 ```nim
-var inputData = stdin.readAll()
+var inputData = readStreamBytes()
 var i = 0
 let caseCount = nextInteger(inputData, i)
 var templateStamp = newSeq[int](tableSize)
