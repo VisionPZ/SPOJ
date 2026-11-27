@@ -42,16 +42,16 @@ The real algorithm is a single left-to-right pass with a stack and a suffix chec
 
 1. A removable block ends at the value currently being read.
 2. Before that value, the stack holds all earlier values with prior blocks already removed.
-3. If the last `patternLength` values equal `patternValues`, that block is removed now.
+3. If the last `pattern_len` values equal `pattern`, that block is removed now.
 4. Popping exposes earlier values, so a new match at the join is caught on the next push.
 5. Values that never form a block stay on the stack in their original order.
 
 | term | meaning |
 |---|---|
-| `listValues` | values read from the first line |
-| `patternValues` | values read from the second line |
-| `survivingValues` | stack of values after all removals |
-| `matchesPattern` | true when the stack suffix equals the pattern |
+| `list_values` | values read from the first line |
+| `pattern` | values read from the second line |
+| `survivors` | stack of values after all removals |
+| `matches` | nonzero when the stack suffix equals `pattern` |
 
 Each value enters the stack once and is popped at most once.
 
@@ -63,98 +63,158 @@ An empty pattern triggers no check, so the list is printed unchanged. The output
 
 ## Code
 
-**Input and signed scanner.** The scanner accepts the -1 terminator, and both sequences are read until it appears.
+**Input, scanner, and vector buffer.** The reader captures `indata`, scans signed integers, and prepares `outbuf` and dynamic `IntVec` arrays.
 
-```nim
-const firstDigitValue = 48
-const flushBlockBytes = 1 shl 17
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-var inputData = ""
-var inputLine = ""
-while readLine(stdin, inputLine):
-  inputData.add inputLine
-  inputData.add '\n'
+#define FLUSH_BYTES (1 << 17)
 
-var scanPos = 0
+static unsigned char *indata;
+static size_t inlen;
+static size_t inpos;
 
-proc nextInt(data: string, pos: var int): int =
-  while pos < data.len and (data[pos] < '0' or data[pos] > '9') and data[pos] != '-':
-    pos += 1
-  var signValue = 1
-  if pos < data.len and data[pos] == '-':
-    signValue = -1
-    pos += 1
-  var value = 0
-  while pos < data.len and data[pos] >= '0' and data[pos] <= '9':
-    value = value * 10 + int(data[pos]) - firstDigitValue
-    pos += 1
-  return signValue * value
+static void read_all(void) {
+    size_t cap = (size_t)1 << 24;
+    unsigned char *buf = (unsigned char *)malloc(cap + 1);
+    size_t len = 0;
+    for (;;) {
+        ssize_t got = read(0, buf + len, cap - len);
+        if (got <= 0) {
+            break;
+        }
+        len += (size_t)got;
+        if (len == cap) {
+            cap *= 2;
+            buf = (unsigned char *)realloc(buf, cap + 1);
+        }
+    }
+    buf[len] = 0;
+    indata = buf;
+    inlen = len;
+}
+
+static long long next_int(void) {
+    while (inpos < inlen && (indata[inpos] < '0' || indata[inpos] > '9') && indata[inpos] != '-') {
+        inpos++;
+    }
+    int sign = 1;
+    if (inpos < inlen && indata[inpos] == '-') {
+        sign = -1;
+        inpos++;
+    }
+    long long value = 0;
+    while (inpos < inlen && indata[inpos] >= '0' && indata[inpos] <= '9') {
+        value = value * 10 + (indata[inpos] - '0');
+        inpos++;
+    }
+    return sign * value;
+}
+
+static char outbuf[FLUSH_BYTES];
+static size_t outlen;
+
+static void flush_out(void) {
+    if (outlen > 0) {
+        fwrite(outbuf, 1, outlen, stdout);
+        outlen = 0;
+    }
+}
+
+static void put_byte(int c) {
+    if (outlen == FLUSH_BYTES) {
+        flush_out();
+    }
+    outbuf[outlen++] = (char)c;
+}
+
+static void put_int(long long value) {
+    char digits[24];
+    int count = 0;
+    if (value < 0) {
+        put_byte('-');
+        value = -value;
+    }
+    do {
+        digits[count++] = (char)('0' + value % 10);
+        value /= 10;
+    } while (value > 0);
+    while (count > 0) {
+        put_byte(digits[--count]);
+    }
+}
+
+typedef struct {
+    int *data;
+    size_t len;
+    size_t cap;
+} IntVec;
+
+static void iv_push(IntVec *v, int value) {
+    if (v->len == v->cap) {
+        v->cap = v->cap > 0 ? v->cap * 2 : 1024;
+        v->data = (int *)realloc(v->data, v->cap * sizeof(int));
+    }
+    v->data[v->len++] = value;
+}
 ```
 
-The minus sign is handled because -1 ends each line.
-All other values are read as positive integers.
-Scanning skips the spaces between values.
+Dynamic `IntVec` buffers grow by doubling with `realloc`.
 
-**Buffered output and sequence reads.** Each sequence is collected until a scanned value equals -1.
+**Stack removal and output.** Each value enters `survivors`, pops whenever the suffix matches `pattern`, and flushes remaining items.
 
-```nim
-var outputBuffer = ""
-
-proc appendOutput(text: string) =
-  outputBuffer.add text
-  if outputBuffer.len >= flushBlockBytes:
-    stdout.write outputBuffer
-    outputBuffer.setLen 0
-
-var listValues = newSeq[int]()
-while true:
-  let scannedValue = nextInt(inputData, scanPos)
-  if scannedValue == -1:
-    break
-  listValues.add scannedValue
-
-var patternValues = newSeq[int]()
-while true:
-  let scannedValue = nextInt(inputData, scanPos)
-  if scannedValue == -1:
-    break
-  patternValues.add scannedValue
+```c
+int main(void) {
+    read_all();
+    IntVec list_values = {NULL, 0, 0};
+    IntVec pattern = {NULL, 0, 0};
+    IntVec survivors = {NULL, 0, 0};
+    for (;;) {
+        long long scanned = next_int();
+        if (scanned == -1) {
+            break;
+        }
+        iv_push(&list_values, (int)scanned);
+    }
+    for (;;) {
+        long long scanned = next_int();
+        if (scanned == -1) {
+            break;
+        }
+        iv_push(&pattern, (int)scanned);
+    }
+    size_t pattern_len = pattern.len;
+    for (size_t walk = 0; walk < list_values.len; walk++) {
+        iv_push(&survivors, list_values.data[walk]);
+        if (pattern_len > 0 && survivors.len >= pattern_len) {
+            size_t base = survivors.len - pattern_len;
+            int matches = 1;
+            for (size_t probe = 0; probe < pattern_len; probe++) {
+                if (survivors.data[base + probe] != pattern.data[probe]) {
+                    matches = 0;
+                    break;
+                }
+            }
+            if (matches) {
+                survivors.len -= pattern_len;
+            }
+        }
+    }
+    for (size_t k = 0; k < survivors.len; k++) {
+        if (k > 0) {
+            put_byte(' ');
+        }
+        put_int(survivors.data[k]);
+    }
+    put_byte('\n');
+    flush_out();
+    return 0;
+}
 ```
 
-The first loop fills the main list.
-The second loop fills the pattern.
-The terminator is never stored.
-
-**Stack removal and output.** A suffix check after each push removes a completed block.
-
-```nim
-let patternLength = patternValues.len
-var survivingValues = newSeq[int]()
-for listValue in listValues:
-  survivingValues.add listValue
-  if patternLength > 0 and survivingValues.len >= patternLength:
-    var matchesPattern = true
-    for patternIndex in 0 .. patternLength - 1:
-      if survivingValues[survivingValues.len - patternLength + patternIndex] != patternValues[patternIndex]:
-        matchesPattern = false
-        break
-    if matchesPattern:
-      survivingValues.setLen(survivingValues.len - patternLength)
-
-var firstValueWritten = true
-for survivingValue in survivingValues:
-  if not firstValueWritten:
-    appendOutput(" ")
-  appendOutput($survivingValue)
-  firstValueWritten = false
-outputBuffer.add '\n'
-stdout.write outputBuffer
-outputBuffer.setLen 0
-```
-
-The check starts only when the stack is long enough.
-A match shortens the stack by one pattern length.
-The remaining values are written as one space-separated line.
+Every surviving item prints with a separating space and final newline.
 
 ## Complexity
 
