@@ -32,8 +32,8 @@ A dinner picks one item from each of six dish bowls. Counting them multiplies th
 ## Why It Works
 
 1. Two dinners differ if any course differs, and choices in different courses never interfere, so the multiplication principle applies: the total is the product of the six counts.
-2. The sample `1 1 1 2 1 1` has exactly two dinners because only the contorno offers two options: `1 * 1 * 1 * 2 * 1 * 1 = 2`.
-3. The largest possible product is `50^6 = 15625000000000`, about 1.56 x 10^13, which is far past 2^31 but well inside a 64-bit integer, so the running product is kept as `int64`.
+2. The sample `1 1 1 2 1 1` yields two dinners. Only contorno offers two choices, giving `1 * 1 * 1 * 2 * 1 * 1 = 2`.
+3. The maximum product is `50^6 = 15625000000000` (about 1.56 x 10^13), exceeding 32-bit range. Keeping the product in `int64` prevents overflow.
 4. The independent oracle multiplies the same six numbers by a different route: it factorizes each count into primes, adds the exponents per prime, and rebuilds the product from the primes. Prime factorization is unique, so both routes must land on the same integer.
 
 | term | meaning |
