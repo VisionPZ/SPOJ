@@ -1,3 +1,15 @@
+proc readStreamBytes(): string =
+  var res = ""
+  var chunk = newString(1 shl 16)
+  while true:
+    let got = readBuffer(stdin, addr chunk[0], chunk.len)
+    if got <= 0:
+      break
+    let oldLen = res.len
+    res.setLen(oldLen + got)
+    copyMem(addr res[oldLen], addr chunk[0], got)
+  return res
+
 const firstDigitValue = 48
 const answerModulus = 1000000007
 const quarterModulus = 250000002
@@ -5,7 +17,7 @@ const chunkBase = 100000
 const maxChunks = 7
 const flushBlockBytes = 1 shl 16
 
-var inputData = stdin.readAll()
+var inputData = readStreamBytes()
 
 proc powerMod(base: int64, exponent: int64): int64 =
   var productValue: int64 = 1

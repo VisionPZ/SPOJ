@@ -86,7 +86,7 @@ const chunkBase = 100000
 const maxChunks = 7
 const flushBlockBytes = 1 shl 16
 
-var inputData = stdin.readAll()
+var inputData = readStreamBytes()
 
 proc powerMod(base: int64, exponent: int64): int64 =
   var productValue: int64 = 1
