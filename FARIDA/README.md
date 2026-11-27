@@ -38,7 +38,7 @@ Case 2: 10
 
 ## Idea
 
-Walking past the monsters is like picking houses along a street where you cannot visit two neighbors in a row. Rolling dynamic programming keeps only two numbers as it reads each monster: the best total up to two steps back (`prevTwoBest`) and the best total up to one step back (`prevOneBest`). Each monster updates both in `O(1)` time, so the whole test case finishes in `O(N)` time and `O(1)` extra space.
+Walking past the monsters is like picking houses along a street where you cannot visit two neighbors in a row. Rolling dynamic programming keeps only two numbers as it reads each monster. Those are `prevTwoBest` two steps back and `prevOneBest` one step back. Each monster updates both in `O(1)` time, so the whole test case finishes in `O(N)` time and `O(1)` extra space.
 
 Trying every valid subset costs `O(2^N)` time, which explodes past `N = 30`.
 
