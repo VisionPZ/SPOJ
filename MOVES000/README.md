@@ -47,7 +47,7 @@ Takeaway: cut and paste in O(log n) with a tree that stores sizes.
 3. Two splits carve the string into A = s[1..L-1], B = s[L..R], C = s[R+1..n].
 4. Merging B, then A, then C produces B + A + C, which is the requested move.
 5. Priorities are fixed random numbers, so merge keeps heap order and the tree stays balanced in expectation.
-6. The stack build makes the same heap-ordered tree as n merges: the stack holds the right spine, and popping smaller priorities grafts the last subtree as the new node's left child.
+6. The stack build produces the same heap-ordered tree as n merges. It holds the right spine, and popping smaller priorities attaches the last subtree as a left child.
 7. Subtree sizes are recomputed along the visited spines after every split and merge, so later index lookups stay correct.
 8. Node 0 is a null sentinel with size 0, which makes empty subtrees free to handle.
 
