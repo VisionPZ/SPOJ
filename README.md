@@ -1,4 +1,4 @@
-# SPOJ — 1350 problems, one method
+# SPOJ
 
 ![Nim 0.19.4](https://img.shields.io/badge/Nim-0.19.4-yellowgreen) ![1350 problems](https://img.shields.io/badge/problems-1350-brightgreen) ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
